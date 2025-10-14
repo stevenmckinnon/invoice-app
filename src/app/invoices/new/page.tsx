@@ -89,6 +89,7 @@ type FormValues = z.infer<typeof formSchema>;
 export default function NewInvoicePage() {
   const router = useRouter();
   const [profileIncomplete, setProfileIncomplete] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const form = useForm<FormValues>({
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -259,6 +260,7 @@ export default function NewInvoicePage() {
   };
 
   const onSubmit = async (values: FormValues) => {
+    setIsSubmitting(true);
     try {
       const res = await fetch("/api/invoices", {
         method: "POST",
@@ -269,6 +271,7 @@ export default function NewInvoicePage() {
       if (!res.ok) {
         const err = await res.json().catch(() => ({ error: "Request failed" }));
         alert(err.error ?? "Failed to create invoice");
+        setIsSubmitting(false);
         return;
       }
 
@@ -276,6 +279,7 @@ export default function NewInvoicePage() {
       router.push(`/invoices/${data.id}`);
     } catch {
       alert("Failed to create invoice");
+      setIsSubmitting(false);
     }
   };
 
@@ -887,7 +891,9 @@ export default function NewInvoicePage() {
                 )}
               />
               <div className="flex items-end justify-end">
-                <Button type="submit">Create Invoice</Button>
+                <Button type="submit" disabled={isSubmitting}>
+                  {isSubmitting ? "Creating..." : "Create Invoice"}
+                </Button>
               </div>
             </div>
           </CardContent>

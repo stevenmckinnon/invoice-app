@@ -92,6 +92,7 @@ export default function EditInvoicePage() {
   const params = useParams();
   const invoiceId = params.id as string;
   const [isLoading, setIsLoading] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-ignore - React Hook Form type inference issues with complex nested schemas
@@ -263,6 +264,7 @@ export default function EditInvoicePage() {
   };
 
   const onSubmit = async (values: FormValues) => {
+    setIsSubmitting(true);
     try {
       const res = await fetch(`/api/invoices/${invoiceId}`, {
         method: "PUT",
@@ -273,6 +275,7 @@ export default function EditInvoicePage() {
       if (!res.ok) {
         const err = await res.json().catch(() => ({ error: "Request failed" }));
         alert(err.error ?? "Failed to update invoice");
+        setIsSubmitting(false);
         return;
       }
 
@@ -280,6 +283,7 @@ export default function EditInvoicePage() {
       router.push(`/invoices/${data.id}`);
     } catch {
       alert("Failed to update invoice");
+      setIsSubmitting(false);
     }
   };
 
@@ -783,7 +787,9 @@ export default function EditInvoicePage() {
                 <Button type="button" variant="outline" asChild>
                   <Link href="/">Cancel</Link>
                 </Button>
-                <Button type="submit">Update Invoice</Button>
+                <Button type="submit" disabled={isSubmitting}>
+                  {isSubmitting ? "Updating..." : "Update Invoice"}
+                </Button>
               </div>
             </div>
           </CardContent>
