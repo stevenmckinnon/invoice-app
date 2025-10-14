@@ -33,6 +33,14 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 
 const itemSchema = z.object({
   description: z.string().min(1, "Description is required"),
@@ -768,80 +776,91 @@ export default function NewInvoicePage() {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="w-full max-w-[calc(100dvw-3rem)]">
           <CardHeader>
             <CardTitle>Line Items</CardTitle>
           </CardHeader>
-          <CardContent className="grid gap-4">
-            <div className="grid grid-cols-1 md:grid-cols-12 gap-2 font-medium text-sm">
-              <div className="md:col-span-5">Description</div>
-              <div className="md:col-span-2">Quantity</div>
-              <div className="md:col-span-2">Unit Price</div>
-              <div className="md:col-span-2">Cost</div>
-              <div className="md:col-span-1"></div>
+          <CardContent className="space-y-4">
+            <div className="overflow-x-auto">
+              <Table className="w-full min-w-[500px]">
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="w-40">Description</TableHead>
+                    <TableHead className="w-20">Quantity</TableHead>
+                    <TableHead className="w-28">Unit Price</TableHead>
+                    <TableHead className="w-24">Cost</TableHead>
+                    <TableHead className="w-16"></TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {items.map((item, idx) => (
+                    <TableRow key={idx}>
+                      <TableCell className="w-40">
+                        <Input
+                          value={item.description}
+                          onChange={(e) =>
+                            updateItem(idx, "description", e.target.value)
+                          }
+                        />
+                      </TableCell>
+                      <TableCell className="w-20">
+                        <Input
+                          type="number"
+                          value={item.quantity}
+                          onChange={(e) =>
+                            updateItem(idx, "quantity", e.target.value)
+                          }
+                        />
+                      </TableCell>
+                      <TableCell className="w-28">
+                        <Input
+                          type="number"
+                          step="0.01"
+                          value={item.unitPrice}
+                          onChange={(e) =>
+                            updateItem(idx, "unitPrice", e.target.value)
+                          }
+                        />
+                      </TableCell>
+                      <TableCell className="w-24">
+                        <Input
+                          type="number"
+                          step="0.01"
+                          readOnly
+                          value={item.cost ?? item.quantity * item.unitPrice}
+                          onChange={(e) =>
+                            updateItem(idx, "cost", e.target.value)
+                          }
+                        />
+                      </TableCell>
+                      <TableCell className="w-16">
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => removeItem(idx)}
+                              aria-label="Remove item"
+                              className="h-8 w-8 p-0"
+                            >
+                              <TrashIcon className="h-4 w-4 text-red-600" />
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent>Delete entry</TooltipContent>
+                        </Tooltip>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
             </div>
-            {items.map((item, idx) => (
-              <div
-                key={idx}
-                className="grid grid-cols-1 md:grid-cols-12 gap-2 items-start"
-              >
-                <div className="md:col-span-5">
-                  <Input
-                    value={item.description}
-                    onChange={(e) =>
-                      updateItem(idx, "description", e.target.value)
-                    }
-                  />
-                </div>
-                <div className="md:col-span-2">
-                  <Input
-                    type="number"
-                    value={item.quantity}
-                    onChange={(e) =>
-                      updateItem(idx, "quantity", e.target.value)
-                    }
-                  />
-                </div>
-                <div className="md:col-span-2">
-                  <Input
-                    type="number"
-                    step="0.01"
-                    value={item.unitPrice}
-                    onChange={(e) =>
-                      updateItem(idx, "unitPrice", e.target.value)
-                    }
-                  />
-                </div>
-                <div className="md:col-span-2">
-                  <Input
-                    type="number"
-                    step="0.01"
-                    readOnly
-                    value={item.cost ?? item.quantity * item.unitPrice}
-                    onChange={(e) => updateItem(idx, "cost", e.target.value)}
-                  />
-                </div>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      onClick={() => removeItem(idx)}
-                      aria-label="Remove item"
-                    >
-                      <TrashIcon className="h-4 w-4 text-red-600" />
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>Delete entry</TooltipContent>
-                </Tooltip>
-              </div>
-            ))}
             <div>
               <Button type="button" variant="secondary" onClick={addItem}>
                 Add item
               </Button>
             </div>
-            <div className="text-right font-semibold">
+            <div className="text-right font-semibold text-lg pt-2 border-t">
               Items Total: £{totals.itemsTotal.toFixed(2)}
             </div>
           </CardContent>

@@ -99,7 +99,7 @@ export const CustomExpenseManager = ({
       </CardHeader>
       <CardContent className="space-y-4">
         {/* Add new custom expense */}
-        <div className="grid grid-cols-1 md:grid-cols-5 gap-4 p-4 border rounded-lg bg-gray-50 dark:bg-black/50">
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-4 p-4 border rounded-lg bg-gray-50 dark:bg-black/50">
           <FormField
             control={form.control as any}
             name="description"
@@ -211,40 +211,40 @@ export const CustomExpenseManager = ({
         {entries.length > 0 && (
           <div className="space-y-2">
             <div className="overflow-x-auto">
-              <Table className="w-full md:min-w-[600px]">
+              <Table className="w-full min-w-[500px]">
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Description</TableHead>
-                    <TableHead className="w-24">Quantity</TableHead>
-                    <TableHead className="w-32">Unit Price</TableHead>
-                    <TableHead className="w-32">Cost</TableHead>
-                    <TableHead className="w-20"></TableHead>
+                    <TableHead className="w-40">Description</TableHead>
+                    <TableHead className="w-20">Quantity</TableHead>
+                    <TableHead className="w-28">Unit Price</TableHead>
+                    <TableHead className="w-24">Cost</TableHead>
+                    <TableHead className="w-16"></TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {entries.map((entry) => (
                     <TableRow key={entry.id}>
-                      <TableCell>
+                      <TableCell className="w-40">
                         <div className="text-sm font-medium">
                           {entry.description}
                         </div>
                       </TableCell>
-                      <TableCell>
+                      <TableCell className="w-20">
                         <div className="text-sm font-medium">
                           {entry.quantity}
                         </div>
                       </TableCell>
-                      <TableCell>
+                      <TableCell className="w-28">
                         <div className="text-sm font-medium">
                           £{entry.unitPrice.toFixed(2)}
                         </div>
                       </TableCell>
-                      <TableCell>
+                      <TableCell className="w-24">
                         <div className="text-sm font-medium">
                           £{entry.cost.toFixed(2)}
                         </div>
                       </TableCell>
-                      <TableCell>
+                      <TableCell className="w-16">
                         <Tooltip>
                           <TooltipTrigger asChild>
                             <Button
@@ -252,6 +252,7 @@ export const CustomExpenseManager = ({
                               size="sm"
                               onClick={() => removeEntry(entry.id)}
                               aria-label="Remove custom expense entry"
+                              className="h-8 w-8 p-0"
                             >
                               <TrashIcon className="h-4 w-4 text-red-600" />
                             </Button>
