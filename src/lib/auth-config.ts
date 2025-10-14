@@ -6,8 +6,8 @@ import bcrypt from "bcryptjs";
 const prisma = new PrismaClient();
 
 export const authOptions = {
-  // @ts-expect-error - Type mismatch between custom Prisma output and PrismaAdapter
-  adapter: PrismaAdapter(prisma),
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  adapter: PrismaAdapter(prisma as any),
   providers: [
     CredentialsProvider({
       name: "Credentials",
@@ -23,8 +23,14 @@ export const authOptions = {
         const password = credentials?.password as string | undefined;
         const firstName = credentials?.firstName as string | undefined;
         const lastName = credentials?.lastName as string | undefined;
-        
-        if (!email || !password || typeof email !== 'string' || typeof password !== 'string') return null;
+
+        if (
+          !email ||
+          !password ||
+          typeof email !== "string" ||
+          typeof password !== "string"
+        )
+          return null;
 
         const isSignUp = credentials.isSignUp === "true";
 
@@ -49,7 +55,9 @@ export const authOptions = {
             },
           });
 
-          const fullName = `${user.firstName || ""} ${user.lastName || ""}`.trim() || user.email!;
+          const fullName =
+            `${user.firstName || ""} ${user.lastName || ""}`.trim() ||
+            user.email!;
 
           return {
             id: user.id,
@@ -75,7 +83,9 @@ export const authOptions = {
             return null;
           }
 
-          const fullName = `${user.firstName || ""} ${user.lastName || ""}`.trim() || user.email!;
+          const fullName =
+            `${user.firstName || ""} ${user.lastName || ""}`.trim() ||
+            user.email!;
 
           return {
             id: user.id,
