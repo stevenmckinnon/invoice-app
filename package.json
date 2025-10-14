@@ -5,9 +5,9 @@
   "scripts": {
     "predev": "prisma generate",
     "dev": "next dev",
-    "build": "prisma generate && next build",
+    "prebuild": "prisma generate",
+    "build": "next build",
     "start": "next start",
-    "postinstall": "prisma generate",
     "lint": "eslint --ignore-path .eslintignore",
     "db:migrate": "prisma migrate deploy",
     "db:push": "prisma db push",
