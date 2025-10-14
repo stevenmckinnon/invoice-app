@@ -17,11 +17,24 @@ import { DeleteInvoiceButton } from "@/components/DeleteInvoiceButton";
 import { PdfPreviewDialog } from "@/components/PdfPreviewDialog";
 import { InvoiceStatusBadge } from "@/components/InvoiceStatusBadge";
 import { LandingPage } from "@/components/LandingPage";
-import { PlusIcon, FileTextIcon, PencilIcon, SearchIcon } from "lucide-react";
+import {
+  PlusIcon,
+  FileTextIcon,
+  PencilIcon,
+  SearchIcon,
+  Eye,
+  EyeIcon,
+} from "lucide-react";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 // Helper to format date without timezone shift
 const formatDate = (dateStr: Date | string) => {
-  const date = typeof dateStr === "string" ? new Date(dateStr + "T00:00:00") : dateStr;
+  const date =
+    typeof dateStr === "string" ? new Date(dateStr + "T00:00:00") : dateStr;
   return date.toLocaleDateString("en-GB", {
     year: "numeric",
     month: "short",
@@ -230,9 +243,7 @@ export default function Home() {
                     </TableCell>
                     <TableCell>{invoice.clientName || "—"}</TableCell>
                     <TableCell>{invoice.showName}</TableCell>
-                    <TableCell>
-                      {formatDate(invoice.invoiceDate)}
-                    </TableCell>
+                    <TableCell>{formatDate(invoice.invoiceDate)}</TableCell>
                     <TableCell>
                       <InvoiceStatusBadge status={invoice.status} />
                     </TableCell>
@@ -240,25 +251,16 @@ export default function Home() {
                       £{Number(invoice.totalAmount).toFixed(2)}
                     </TableCell>
                     <TableCell className="text-right">
-                      <div className="flex gap-2 justify-end">
-                        <PdfPreviewDialog
-                          invoiceId={invoice.id}
-                          invoiceNumber={invoice.invoiceNumber}
-                          size="sm"
-                          variant="outline"
-                          showText={false}
-                        />
-                        <Button asChild variant="outline" size="sm">
-                          <Link href={`/invoices/${invoice.id}/edit`}>
-                            <PencilIcon className="h-4 w-4" />
-                          </Link>
-                        </Button>
-                        <DeleteInvoiceButton
-                          invoiceId={invoice.id}
-                          invoiceNumber={invoice.invoiceNumber}
-                          onDeleted={fetchInvoices}
-                        />
-                      </div>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button asChild variant="outline" size="sm">
+                            <Link href={`/invoices/${invoice.id}`}>
+                              <EyeIcon className="h-4 w-4" />
+                            </Link>
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>View invoice</TooltipContent>
+                      </Tooltip>
                     </TableCell>
                   </TableRow>
                 ))}

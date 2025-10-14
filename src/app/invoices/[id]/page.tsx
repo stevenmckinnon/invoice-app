@@ -1,9 +1,8 @@
-import { PrismaClient } from "@/generated/prisma";
+"use client";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { ArrowLeftIcon } from "lucide-react";
+import { ArrowLeftIcon, PencilIcon } from "lucide-react";
 import { PdfPreviewDialog } from "@/components/PdfPreviewDialog";
-import { Metadata } from "next";
 import {
   Table,
   TableBody,
@@ -13,32 +12,52 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { DeleteInvoiceButton } from "@/components/DeleteInvoiceButton";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import { Prisma } from "@/generated/prisma";
 
-const prisma = new PrismaClient();
+type InvoiceWithRelations = Prisma.InvoiceGetPayload<{
+  include: {
+    items: true;
+    overtimeEntries: true;
+    customExpenseEntries: true;
+  };
+}>;
 
 type Props = { params: Promise<{ id: string }> };
 
-export const metadata: Metadata = {
-  title: "Invoice Details | WWE Invoices",
-  description: "View the details of a WWE invoice",
-};
+export default function InvoiceDetailPage({ params }: Props) {
+  const router = useRouter();
+  const [invoice, setInvoice] = useState<InvoiceWithRelations | null>(null);
+  const [loading, setLoading] = useState(true);
 
-const getInvoice = async (id: string) => {
-  return prisma.invoice.findUnique({
-    where: { id },
-    include: {
-      items: true,
-      overtimeEntries: true,
-      customExpenseEntries: true,
-    },
-  });
-};
+  useEffect(() => {
+    const fetchInvoice = async () => {
+      try {
+        const { id } = await params;
+        const response = await fetch(`/api/invoices/${id}`);
+        if (response.ok) {
+          const data = await response.json();
+          setInvoice(data);
+        }
+      } catch (error) {
+        console.error("Failed to fetch invoice:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-export default async function InvoiceDetailPage({ params }: Props) {
-  const { id } = await params;
-  const invoice = await getInvoice(id);
-  if (!invoice)
+    fetchInvoice();
+  }, [params]);
+
+  if (loading) {
+    return <div className="max-w-6xl mx-auto py-8">Loading...</div>;
+  }
+
+  if (!invoice) {
     return <div className="max-w-6xl mx-auto py-8">Invoice not found</div>;
+  }
 
   // Calculate overtime costs
   const overtimeEntries = invoice.overtimeEntries || [];
@@ -95,7 +114,7 @@ export default async function InvoiceDetailPage({ params }: Props) {
         </Link>
       </Button>
       <div className="grid gap-4">
-        <div className="flex gap-2 justify-between items-start">
+        <div className="flex gap-2 justify-between items-start md:flex-row flex-col">
           <div>
             <h1 className="text-2xl font-semibold">
               Invoice {invoice.invoiceNumber}
@@ -104,8 +123,14 @@ export default async function InvoiceDetailPage({ params }: Props) {
               Show: {invoice.showName}
             </div>
           </div>
-          <div className="flex gap-2 mt-4">
+          <div className="flex gap-2 mt-4 flex-wrap">
+            <Button asChild>
+              <Link href={`/invoices/${invoice.id}/edit`}>
+                <PencilIcon className="h-4 w-4" /> Edit
+              </Link>
+            </Button>
             <PdfPreviewDialog
+              variant="outline"
               invoiceId={invoice.id}
               invoiceNumber={invoice.invoiceNumber}
             />
@@ -114,9 +139,14 @@ export default async function InvoiceDetailPage({ params }: Props) {
                 Download PDF
               </Link>
             </Button>
+            <DeleteInvoiceButton
+              invoiceId={invoice.id}
+              invoiceNumber={invoice.invoiceNumber}
+              onDeleted={() => router.push("/")}
+            />
           </div>
         </div>
-        <div className="mt-4">
+        <div className="mt-4 max-w-[calc(100dvw-3rem)]">
           <Table>
             <TableHeader>
               <TableRow>

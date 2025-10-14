@@ -45,7 +45,7 @@ export const DeleteInvoiceButton = ({
           ? `Invoice #${invoiceNumber} has been deleted.`
           : "The invoice has been removed.",
       });
-      
+
       // Call the callback to refetch invoices
       if (onDeleted) {
         onDeleted();
@@ -63,8 +63,8 @@ export const DeleteInvoiceButton = ({
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline" size="sm">
-          <TrashIcon className="h-4 w-4 text-red-600" />
+        <Button variant="destructive">
+          <TrashIcon className="h-4 w-4" /> Delete
         </Button>
       </DialogTrigger>
       <DialogContent>
@@ -92,4 +92,3 @@ export const DeleteInvoiceButton = ({
     </Dialog>
   );
 };
-
