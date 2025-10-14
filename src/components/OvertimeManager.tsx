@@ -37,6 +37,7 @@ import {
 import { CalendarIcon, TrashIcon } from "lucide-react";
 import { format } from "date-fns";
 import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
+import { parseDate } from "@/lib/utils";
 
 export interface OvertimeEntry {
   id: string;
@@ -94,7 +95,7 @@ export const OvertimeManager = ({
   const onSubmit = (values: OvertimeFormValues) => {
     const entry: OvertimeEntry = {
       id: Math.random().toString(36).substring(2, 11),
-      date: values.date,
+      date: parseDate(values.date.toISOString().slice(0, 10)),
       hours: values.hours,
       rateType: values.rateType,
     };

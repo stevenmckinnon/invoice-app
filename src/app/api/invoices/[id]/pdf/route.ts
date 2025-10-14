@@ -59,7 +59,7 @@ export const GET = async (
     })),
     overtimeEntries: invoice.overtimeEntries.map((entry) => ({
       id: entry.id,
-      date: new Date(entry.date),
+      date: parseDate(entry.date.toISOString().slice(0, 10)),
       hours: Number(entry.hours),
       rateType: entry.rateType as "1.5x" | "2x",
       description: entry.description || undefined,

@@ -149,7 +149,7 @@ export const PUT = async (req: NextRequest, context: RouteContext) => {
         overtimeEntries: {
           createMany: {
             data: parsed.overtimeEntries.map((entry) => ({
-              date: entry.date,
+              date: parseDate(entry.date),
               hours: entry.hours as unknown as any,
               rateType: entry.rateType,
             })),
