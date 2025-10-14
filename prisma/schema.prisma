@@ -1,0 +1,189 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String    @id @default(cuid())
+  firstName     String?
+  lastName      String?
+  email         String    @unique
+  password      String?
+  emailVerified DateTime?
+  image         String?
+  
+  // Profile fields for invoices
+  fullName      String?
+  addressLine1  String?
+  addressLine2  String?
+  city          String?
+  state         String?
+  postalCode    String?
+  country       String?
+  dateOfBirth   DateTime?
+  
+  // Banking details
+  iban          String?
+  swiftBic      String?
+  accountNumber String?
+  sortCode      String?
+  bankAddress   String?
+  currency      String?   @default("GBP")
+  
+  accounts      Account[]
+  sessions      Session[]
+  invoices      Invoice[]
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+model Invoice {
+  id                 String   @id @default(cuid())
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  // User relationship
+  userId             String
+  user               User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Identification
+  invoiceNumber      String   @unique
+  invoiceDate        DateTime
+  showName           String
+
+  // Personal details
+  fullName           String
+  email              String
+  addressLine1       String
+  addressLine2       String?
+  city               String
+  state              String?
+  postalCode         String
+  country            String
+
+  // Client details
+  clientName         String?
+  clientAddress1     String?
+  clientAddress2     String?
+  clientCity         String?
+  clientState        String?
+  clientPostalCode   String?
+  clientCountry      String?
+  attentionTo        String?
+
+  // Banking details
+  iban               String
+  swiftBic           String
+  accountNumber      String?
+  sortCode           String?
+  bankAddress        String?
+  dateOfBirth        DateTime?
+  currency           String    @default("GBP")
+
+  // Work inputs
+  regularHours       Int      @default(0)
+  overtimeHours      Int      @default(0)
+  regularRate        Decimal  // per hour
+  overtimeRate       Decimal  // per hour
+  perDiemDays        Int      @default(0)
+  perDiemRate        Decimal  // per day
+  travelDays         Int      @default(0)
+  travelDayRate      Decimal  // per day
+
+  // Calculated amounts
+  subtotalLabor      Decimal
+  subtotalPerDiem    Decimal
+  subtotalTravel     Decimal
+  totalAmount        Decimal
+
+  status             String   @default("draft") // draft, sent, paid, overdue
+  notes              String?
+
+  items              InvoiceLineItem[]
+  overtimeEntries    OvertimeEntry[]
+  customExpenseEntries CustomExpenseEntry[]
+}
+
+model InvoiceLineItem {
+  id          String  @id @default(cuid())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  description String
+  quantity    Int
+  unitPrice   Decimal
+  cost        Decimal
+
+  invoiceId   String
+  invoice     Invoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+}
+
+model OvertimeEntry {
+  id          String   @id @default(cuid())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  date        DateTime
+  hours       Decimal
+  rateType    String   // '1.5x' or '2x'
+  description String?
+
+  invoiceId   String
+  invoice     Invoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+}
+
+model CustomExpenseEntry {
+  id          String  @id @default(cuid())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  description String
+  quantity    Int
+  unitPrice   Decimal
+  cost        Decimal
+
+  invoiceId   String
+  invoice     Invoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+}
