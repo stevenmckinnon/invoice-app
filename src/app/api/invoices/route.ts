@@ -5,6 +5,7 @@ import { PrismaClient } from "@/generated/prisma";
 import { z } from "zod";
 import { calculateInvoiceTotals, type InvoicePdfInput } from "@/lib/pdf";
 import { auth } from "@/auth";
+import { parseDate } from "@/lib/utils";
 
 const prisma = new PrismaClient();
 
@@ -80,7 +81,7 @@ export const POST = async (req: NextRequest) => {
 
     const pdfInput: InvoicePdfInput = {
       ...parsed,
-      invoiceDate: new Date(parsed.invoiceDate),
+      invoiceDate: parseDate(parsed.invoiceDate),
     } as any;
 
     const totals = calculateInvoiceTotals(pdfInput);
@@ -122,7 +123,7 @@ export const POST = async (req: NextRequest) => {
         sortCode: pdfInput.sortCode,
         bankAddress: pdfInput.bankAddress,
         dateOfBirth: pdfInput.dateOfBirth
-          ? new Date(pdfInput.dateOfBirth as any)
+          ? parseDate(pdfInput.dateOfBirth as any)
           : null,
         currency: pdfInput.currency ?? "GBP",
         subtotalLabor: totals.subtotalLabor as unknown as any,

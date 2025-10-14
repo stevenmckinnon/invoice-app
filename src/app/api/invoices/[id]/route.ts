@@ -2,11 +2,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { PrismaClient } from "@/generated/prisma";
 import { z } from "zod";
-import {
-  calculateInvoiceTotals,
-  type InvoicePdfInput,
-} from "@/lib/pdf";
+import { calculateInvoiceTotals, type InvoicePdfInput } from "@/lib/pdf";
 import { auth } from "@/auth";
+import { parseDate } from "@/lib/utils";
 
 const prisma = new PrismaClient();
 
@@ -88,7 +86,7 @@ export const PUT = async (req: NextRequest, context: RouteContext) => {
 
     const pdfInput: InvoicePdfInput = {
       ...parsed,
-      invoiceDate: new Date(parsed.invoiceDate),
+      invoiceDate: parseDate(parsed.invoiceDate),
     } as any;
 
     const totals = calculateInvoiceTotals(pdfInput);
@@ -132,7 +130,7 @@ export const PUT = async (req: NextRequest, context: RouteContext) => {
         sortCode: pdfInput.sortCode,
         bankAddress: pdfInput.bankAddress,
         dateOfBirth: pdfInput.dateOfBirth
-          ? new Date(pdfInput.dateOfBirth as any)
+          ? parseDate(pdfInput.dateOfBirth as any)
           : null,
         currency: pdfInput.currency ?? "GBP",
         totalAmount: totals.totalAmount as unknown as any,
@@ -183,10 +181,7 @@ export const PUT = async (req: NextRequest, context: RouteContext) => {
   }
 };
 
-export const DELETE = async (
-  req: NextRequest,
-  context: RouteContext
-) => {
+export const DELETE = async (req: NextRequest, context: RouteContext) => {
   try {
     const session = await auth();
     if (!session?.user?.id) {
@@ -212,10 +207,7 @@ export const DELETE = async (
   }
 };
 
-export const GET = async (
-  req: NextRequest,
-  context: RouteContext
-) => {
+export const GET = async (req: NextRequest, context: RouteContext) => {
   try {
     const session = await auth();
     if (!session?.user?.id) {
@@ -235,10 +227,7 @@ export const GET = async (
     });
 
     if (!invoice) {
-      return NextResponse.json(
-        { error: "Invoice not found" },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: "Invoice not found" }, { status: 404 });
     }
 
     return NextResponse.json(invoice);
@@ -249,4 +238,3 @@ export const GET = async (
     );
   }
 };
-

@@ -1,8 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { PrismaClient } from "@/generated/prisma";
+import { parseDate } from "@/lib/utils";
 
 const prisma = new PrismaClient();
+
 
 export const GET = async () => {
   try {
@@ -90,7 +92,7 @@ export const PUT = async (req: NextRequest) => {
         state,
         postalCode,
         country,
-        dateOfBirth: dateOfBirth ? new Date(dateOfBirth) : null,
+        dateOfBirth: dateOfBirth ? parseDate(dateOfBirth) : null,
         iban,
         swiftBic,
         accountNumber,
