@@ -246,7 +246,7 @@ export const CustomExpenseManager = ({
                       </TableCell>
                       <TableCell>
                         <Tooltip>
-                          <TooltipTrigger>
+                          <TooltipTrigger asChild>
                             <Button
                               variant="ghost"
                               size="sm"

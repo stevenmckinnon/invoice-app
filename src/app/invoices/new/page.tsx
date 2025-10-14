@@ -822,7 +822,7 @@ export default function NewInvoicePage() {
                   />
                 </div>
                 <Tooltip>
-                  <TooltipTrigger>
+                  <TooltipTrigger asChild>
                     <Button
                       type="button"
                       variant="ghost"

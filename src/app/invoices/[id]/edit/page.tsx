@@ -709,7 +709,7 @@ export default function EditInvoicePage() {
                   />
                 </div>
                 <Tooltip>
-                  <TooltipTrigger>
+                  <TooltipTrigger asChild>
                     <Button
                       type="button"
                       variant="ghost"

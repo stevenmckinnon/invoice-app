@@ -93,9 +93,15 @@ export const OvertimeManager = ({
   });
 
   const onSubmit = (values: OvertimeFormValues) => {
+    // Extract date components directly to avoid timezone issues
+    const year = values.date.getFullYear();
+    const month = String(values.date.getMonth() + 1).padStart(2, '0');
+    const day = String(values.date.getDate()).padStart(2, '0');
+    const dateString = `${year}-${month}-${day}`;
+    
     const entry: OvertimeEntry = {
       id: Math.random().toString(36).substring(2, 11),
-      date: parseDate(values.date.toISOString().slice(0, 10)),
+      date: parseDate(dateString),
       hours: values.hours,
       rateType: values.rateType,
     };
@@ -274,7 +280,7 @@ export const OvertimeManager = ({
                         </TableCell>
                         <TableCell>
                           <Tooltip>
-                            <TooltipTrigger>
+                            <TooltipTrigger asChild>
                               <Button
                                 variant="ghost"
                                 size="sm"
