@@ -71,7 +71,7 @@ const invoiceUpdateSchema = z.object({
 });
 
 type RouteContext = {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 };
 
 export const PUT = async (req: NextRequest, context: RouteContext) => {
@@ -81,7 +81,8 @@ export const PUT = async (req: NextRequest, context: RouteContext) => {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { id } = context.params;
+    const params = await context.params;
+    const { id } = params;
     const json = await req.json();
     const parsed = invoiceUpdateSchema.parse(json);
 
@@ -192,7 +193,8 @@ export const DELETE = async (
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { id } = context.params;
+    const params = await context.params;
+    const { id } = params;
 
     // Verify ownership
     const invoice = await prisma.invoice.findUnique({ where: { id } });
@@ -220,7 +222,8 @@ export const GET = async (
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { id } = context.params;
+    const params = await context.params;
+    const { id } = params;
 
     const invoice = await prisma.invoice.findUnique({
       where: { id, userId: session.user.id },

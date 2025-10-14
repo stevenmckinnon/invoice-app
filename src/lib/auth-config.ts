@@ -6,6 +6,7 @@ import bcrypt from "bcryptjs";
 const prisma = new PrismaClient();
 
 export const authOptions = {
+  // @ts-expect-error - Type mismatch between custom Prisma output and PrismaAdapter
   adapter: PrismaAdapter(prisma),
   providers: [
     CredentialsProvider({
