@@ -16,7 +16,7 @@ import {
 
 const prisma = new PrismaClient();
 
-type Props = { params: { id: string } };
+type Props = { params: Promise<{ id: string }> };
 
 export const metadata: Metadata = {
   title: "Invoice Details | WWE Invoices",
@@ -35,7 +35,8 @@ const getInvoice = async (id: string) => {
 };
 
 export default async function InvoiceDetailPage({ params }: Props) {
-  const invoice = await getInvoice(params.id);
+  const { id } = await params;
+  const invoice = await getInvoice(id);
   if (!invoice)
     return <div className="max-w-6xl mx-auto py-8">Invoice not found</div>;
 

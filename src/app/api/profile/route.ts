@@ -4,7 +4,7 @@ import { PrismaClient } from "@/generated/prisma";
 
 const prisma = new PrismaClient();
 
-export const GET = async (req: NextRequest) => {
+export const GET = async () => {
   try {
     const session = await auth();
     if (!session?.user?.email) {
@@ -129,4 +129,3 @@ export const PUT = async (req: NextRequest) => {
     );
   }
 };
-

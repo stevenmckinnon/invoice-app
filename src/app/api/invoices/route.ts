@@ -1,11 +1,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { NextRequest, NextResponse } from "next/server";
 import { PrismaClient } from "@/generated/prisma";
+
 import { z } from "zod";
-import {
-  calculateInvoiceTotals,
-  type InvoicePdfInput,
-} from "@/lib/pdf";
+import { calculateInvoiceTotals, type InvoicePdfInput } from "@/lib/pdf";
 import { auth } from "@/auth";
 
 const prisma = new PrismaClient();
