@@ -26,8 +26,17 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { CalendarIcon } from "lucide-react";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { CalendarIcon, TrashIcon } from "lucide-react";
 import { format } from "date-fns";
+import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
 
 export interface OvertimeEntry {
   id: string;
@@ -121,7 +130,7 @@ export const OvertimeManager = ({
   };
 
   return (
-    <Card>
+    <Card className="w-full max-w-[calc(100dvw-3rem)]">
       <CardHeader>
         <CardTitle>Overtime Entries</CardTitle>
       </CardHeader>
@@ -228,46 +237,63 @@ export const OvertimeManager = ({
         {/* Display existing entries */}
         {entries.length > 0 && (
           <div className="space-y-2">
-            <div className="grid grid-cols-10 gap-2 font-medium text-sm border-b pb-2">
-              <div className="col-span-3">Date</div>
-              <div className="col-span-2">Hours</div>
-              <div className="col-span-2">Rate</div>
-              <div className="col-span-1">Cost</div>
-              <div className="col-span-1">Action</div>
+            <div className="overflow-x-auto">
+              <Table className="w-full md:min-w-[600px]">
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Date</TableHead>
+                    <TableHead>Hours</TableHead>
+                    <TableHead>Rate</TableHead>
+                    <TableHead>Cost</TableHead>
+                    <TableHead className="w-20"></TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {entries.map((entry) => {
+                    const hourlyRate =
+                      regularRate * RATE_MULTIPLIERS[entry.rateType];
+                    const cost = entry.hours * hourlyRate;
+
+                    return (
+                      <TableRow key={entry.id}>
+                        <TableCell
+                          className="text-sm font-medium"
+                          suppressHydrationWarning
+                        >
+                          {format(entry.date, "MMM dd, yyyy")}
+                        </TableCell>
+                        <TableCell className="text-sm font-medium">
+                          {entry.hours}h
+                        </TableCell>
+                        <TableCell className="text-sm font-medium">
+                          {entry.rateType} (£{hourlyRate.toFixed(2)}/hr)
+                        </TableCell>
+                        <TableCell className="text-sm font-medium">
+                          £{cost.toFixed(2)}
+                        </TableCell>
+                        <TableCell>
+                          <Tooltip>
+                            <TooltipTrigger>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => removeEntry(entry.id)}
+                                aria-label="Remove overtime entry"
+                              >
+                                <TrashIcon className="h-4 w-4 text-red-600" />
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>Delete entry</TooltipContent>
+                          </Tooltip>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
+                </TableBody>
+              </Table>
             </div>
-            {entries.map((entry) => {
-              const hourlyRate = regularRate * RATE_MULTIPLIERS[entry.rateType];
-              const cost = entry.hours * hourlyRate;
 
-              return (
-                <div
-                  key={entry.id}
-                  className="grid grid-cols-10 gap-2 items-center py-2 border-b"
-                >
-                  <div className="col-span-3 text-sm" suppressHydrationWarning>
-                    {format(entry.date, "MMM dd, yyyy")}
-                  </div>
-                  <div className="col-span-2 text-sm">{entry.hours}h</div>
-                  <div className="col-span-2 text-sm">
-                    {entry.rateType} (£{hourlyRate.toFixed(2)}/hr)
-                  </div>
-                  <div className="col-span-1 text-sm font-medium">
-                    £{cost.toFixed(2)}
-                  </div>
-                  <div className="col-span-1">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => removeEntry(entry.id)}
-                    >
-                      Remove
-                    </Button>
-                  </div>
-                </div>
-              );
-            })}
-
-            <div className="text-right font-semibold text-lg pt-2">
+            <div className="text-right font-semibold text-lg pt-2 border-t">
               Overtime Total: £{getTotalCost().toFixed(2)}
             </div>
           </div>

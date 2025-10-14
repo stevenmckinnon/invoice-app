@@ -1,12 +1,10 @@
 "use client";
 
 import { useSession, signOut } from "next-auth/react";
-import { useTheme } from "next-themes";
 import { Navbar } from "@/components/ui/shadcn-io/navbar";
 import WWELogo from "@/components/WWELogo";
 
 export const AppHeader = () => {
-  const { setTheme, theme } = useTheme();
   const { data: session } = useSession();
 
   const navigationLinks = [{ href: "/", label: "Dashboard" }];
@@ -31,10 +29,6 @@ export const AppHeader = () => {
     } else if (item === "documentation") {
       window.location.href = "/docs";
     }
-  };
-
-  const handleThemeClick = () => {
-    setTheme(theme === "dark" ? "light" : "dark");
   };
 
   return (

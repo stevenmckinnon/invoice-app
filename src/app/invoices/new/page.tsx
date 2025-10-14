@@ -27,6 +27,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { TrashIcon } from "lucide-react";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 const itemSchema = z.object({
   description: z.string().min(1, "Description is required"),
@@ -161,17 +167,22 @@ export default function NewInvoicePage() {
         const res = await fetch("/api/profile");
         if (res.ok) {
           const profile = await res.json();
-          
+
           // Combine firstName and lastName for the invoice
-          const fullName = profile.fullName || 
-            (profile.firstName || profile.lastName 
-              ? `${profile.firstName || ""} ${profile.lastName || ""}`.trim() 
+          const fullName =
+            profile.fullName ||
+            (profile.firstName || profile.lastName
+              ? `${profile.firstName || ""} ${profile.lastName || ""}`.trim()
               : "");
-          
+
           // Check if essential profile fields are missing
-          const isIncomplete = !fullName || !profile.iban || !profile.swiftBic || !profile.addressLine1;
+          const isIncomplete =
+            !fullName ||
+            !profile.iban ||
+            !profile.swiftBic ||
+            !profile.addressLine1;
           setProfileIncomplete(isIncomplete);
-          
+
           // Only update fields if they have values in the profile
           if (fullName) form.setValue("fullName", fullName);
           if (profile.email) form.setValue("email", profile.email);
@@ -315,9 +326,9 @@ export default function NewInvoicePage() {
                   Profile Setup Required
                 </h3>
                 <p className="text-sm text-amber-700 dark:text-amber-300 mt-1">
-                  Please complete your profile with your personal information and
-                  banking details before creating invoices. This information will
-                  be automatically pre-filled in all your invoices.
+                  Please complete your profile with your personal information
+                  and banking details before creating invoices. This information
+                  will be automatically pre-filled in all your invoices.
                 </p>
                 <Button
                   type="button"
@@ -763,17 +774,18 @@ export default function NewInvoicePage() {
           </CardHeader>
           <CardContent className="grid gap-4">
             <div className="grid grid-cols-1 md:grid-cols-12 gap-2 font-medium text-sm">
-              <div className="md:col-span-6">Description</div>
+              <div className="md:col-span-5">Description</div>
               <div className="md:col-span-2">Quantity</div>
               <div className="md:col-span-2">Unit Price</div>
               <div className="md:col-span-2">Cost</div>
+              <div className="md:col-span-1"></div>
             </div>
             {items.map((item, idx) => (
               <div
                 key={idx}
                 className="grid grid-cols-1 md:grid-cols-12 gap-2 items-start"
               >
-                <div className="md:col-span-6">
+                <div className="md:col-span-5">
                   <Input
                     value={item.description}
                     onChange={(e) =>
@@ -809,15 +821,19 @@ export default function NewInvoicePage() {
                     onChange={(e) => updateItem(idx, "cost", e.target.value)}
                   />
                 </div>
-                <div className="md:col-span-12 flex gap-2">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => removeItem(idx)}
-                  >
-                    Remove
-                  </Button>
-                </div>
+                <Tooltip>
+                  <TooltipTrigger>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      onClick={() => removeItem(idx)}
+                      aria-label="Remove item"
+                    >
+                      <TrashIcon className="h-4 w-4 text-red-600" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>Delete entry</TooltipContent>
+                </Tooltip>
               </div>
             ))}
             <div>
@@ -851,7 +867,7 @@ export default function NewInvoicePage() {
             <CardTitle>Summary</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 text-sm">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
               <div>
                 <div className="font-medium">Items Total</div>
                 <div className="text-lg">£{totals.itemsTotal.toFixed(2)}</div>
@@ -868,7 +884,7 @@ export default function NewInvoicePage() {
                   £{totals.customExpensesTotal.toFixed(2)}
                 </div>
               </div>
-              <div>
+              <div className="col-span-2 md:col-span-1">
                 <div className="font-medium">Grand Total</div>
                 <div className="text-xl font-bold">
                   £{totals.totalAmount.toFixed(2)}

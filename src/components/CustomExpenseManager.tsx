@@ -13,6 +13,16 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { TrashIcon } from "lucide-react";
+import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
 
 export interface CustomExpenseEntry {
   id: string;
@@ -78,32 +88,12 @@ export const CustomExpenseManager = ({
     onEntriesChange(entries.filter((entry) => entry.id !== id));
   };
 
-  const updateEntry = (
-    id: string,
-    field: keyof CustomExpenseEntry,
-    value: string | number
-  ) => {
-    onEntriesChange(
-      entries.map((entry) => {
-        if (entry.id === id) {
-          const updated = { ...entry, [field]: value };
-          // Auto-calculate cost if quantity or unitPrice changes
-          if (field === "quantity" || field === "unitPrice") {
-            updated.cost = updated.quantity * updated.unitPrice;
-          }
-          return updated;
-        }
-        return entry;
-      })
-    );
-  };
-
   const getTotalCost = () => {
     return entries.reduce((total, entry) => total + entry.cost, 0);
   };
 
   return (
-    <Card>
+    <Card className="w-full max-w-[calc(100dvw-3rem)]">
       <CardHeader>
         <CardTitle>Custom Expenses</CardTitle>
       </CardHeader>
@@ -220,79 +210,60 @@ export const CustomExpenseManager = ({
         {/* Display existing entries */}
         {entries.length > 0 && (
           <div className="space-y-2">
-            <div className="grid grid-cols-12 gap-2 font-medium text-sm border-b pb-2">
-              <div className="col-span-4">Description</div>
-              <div className="col-span-2">Quantity</div>
-              <div className="col-span-2">Unit Price</div>
-              <div className="col-span-2">Cost</div>
-              <div className="col-span-2">Action</div>
+            <div className="overflow-x-auto">
+              <Table className="w-full md:min-w-[600px]">
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Description</TableHead>
+                    <TableHead className="w-24">Quantity</TableHead>
+                    <TableHead className="w-32">Unit Price</TableHead>
+                    <TableHead className="w-32">Cost</TableHead>
+                    <TableHead className="w-20"></TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {entries.map((entry) => (
+                    <TableRow key={entry.id}>
+                      <TableCell>
+                        <div className="text-sm font-medium">
+                          {entry.description}
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="text-sm font-medium">
+                          {entry.quantity}
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="text-sm font-medium">
+                          £{entry.unitPrice.toFixed(2)}
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="text-sm font-medium">
+                          £{entry.cost.toFixed(2)}
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <Tooltip>
+                          <TooltipTrigger>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => removeEntry(entry.id)}
+                              aria-label="Remove custom expense entry"
+                            >
+                              <TrashIcon className="h-4 w-4 text-red-600" />
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent>Delete entry</TooltipContent>
+                        </Tooltip>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
             </div>
-            {entries.map((entry) => (
-              <div
-                key={entry.id}
-                className="grid grid-cols-12 gap-2 items-center py-2 border-b"
-              >
-                <div className="col-span-4">
-                  <Input
-                    value={entry.description}
-                    onChange={(e) =>
-                      updateEntry(entry.id, "description", e.target.value)
-                    }
-                    className="text-sm"
-                  />
-                </div>
-                <div className="col-span-2">
-                  <Input
-                    type="number"
-                    min="1"
-                    value={entry.quantity}
-                    onChange={(e) =>
-                      updateEntry(
-                        entry.id,
-                        "quantity",
-                        parseFloat(e.target.value) || 1
-                      )
-                    }
-                    className="text-sm"
-                  />
-                </div>
-                <div className="col-span-2">
-                  <Input
-                    type="number"
-                    min="0"
-                    step="0.01"
-                    value={entry.unitPrice}
-                    onChange={(e) =>
-                      updateEntry(
-                        entry.id,
-                        "unitPrice",
-                        parseFloat(e.target.value) || 0
-                      )
-                    }
-                    className="text-sm"
-                  />
-                </div>
-                <div className="col-span-2">
-                  <Input
-                    type="number"
-                    min="0"
-                    step="0.01"
-                    readOnly
-                    value={entry.cost}
-                    className="text-sm bg-gray-50"
-                  />
-                </div>
-                <div className="col-span-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => removeEntry(entry.id)}
-                  >
-                    Remove
-                  </Button>
-                </div>
-              </div>
-            ))}
 
             <div className="text-right font-semibold text-lg pt-2 border-t">
               Expenses Total: £{getTotalCost().toFixed(2)}

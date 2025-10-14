@@ -297,7 +297,7 @@ export const Navbar = React.forwardRef<HTMLElement, Navbar05Props>(
       notificationCount = 3,
       onNavItemClick,
       onInfoItemClick,
-      onNotificationItemClick,
+      // onNotificationItemClick,
       onUserItemClick,
       ...props
     },

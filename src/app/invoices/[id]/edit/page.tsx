@@ -18,7 +18,7 @@ import {
 } from "@/components/ui/form";
 import { OvertimeManager } from "@/components/OvertimeManager";
 import { CustomExpenseManager } from "@/components/CustomExpenseManager";
-import { ArrowLeftIcon } from "lucide-react";
+import { ArrowLeftIcon, TrashIcon } from "lucide-react";
 import Link from "next/link";
 import { CountryPicker } from "@/components/CountryPicker";
 import {
@@ -28,6 +28,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 const itemSchema = z.object({
   description: z.string().min(1, "Description is required"),
@@ -656,17 +661,18 @@ export default function EditInvoicePage() {
           </CardHeader>
           <CardContent className="grid gap-4">
             <div className="grid grid-cols-1 md:grid-cols-12 gap-2 font-medium text-sm">
-              <div className="md:col-span-6">Description</div>
+              <div className="md:col-span-5">Description</div>
               <div className="md:col-span-2">Quantity</div>
               <div className="md:col-span-2">Unit Price</div>
               <div className="md:col-span-2">Cost</div>
+              <div className="md:col-span-1"></div>
             </div>
             {items.map((item, idx) => (
               <div
                 key={idx}
                 className="grid grid-cols-1 md:grid-cols-12 gap-2 items-start"
               >
-                <div className="md:col-span-6">
+                <div className="md:col-span-5">
                   <Input
                     value={item.description}
                     onChange={(e) =>
@@ -702,15 +708,19 @@ export default function EditInvoicePage() {
                     onChange={(e) => updateItem(idx, "cost", e.target.value)}
                   />
                 </div>
-                <div className="md:col-span-12 flex gap-2">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => removeItem(idx)}
-                  >
-                    Remove
-                  </Button>
-                </div>
+                <Tooltip>
+                  <TooltipTrigger>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      onClick={() => removeItem(idx)}
+                      aria-label="Remove item"
+                    >
+                      <TrashIcon className="h-4 w-4 text-red-600" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>Delete entry</TooltipContent>
+                </Tooltip>
               </div>
             ))}
             <div>
@@ -744,7 +754,7 @@ export default function EditInvoicePage() {
             <CardTitle>Summary</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 text-sm">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
               <div>
                 <div className="font-medium">Items Total</div>
                 <div className="text-lg">£{totals.itemsTotal.toFixed(2)}</div>
@@ -761,7 +771,7 @@ export default function EditInvoicePage() {
                   £{totals.customExpensesTotal.toFixed(2)}
                 </div>
               </div>
-              <div>
+              <div className="col-span-2 md:col-span-1">
                 <div className="font-medium">Grand Total</div>
                 <div className="text-xl font-bold">
                   £{totals.totalAmount.toFixed(2)}

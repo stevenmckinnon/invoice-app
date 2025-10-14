@@ -104,7 +104,7 @@ export default function Home() {
     .reduce((sum, inv) => sum + Number(inv.totalAmount), 0);
 
   return (
-    <div className="h-full w-full max-w-6xl mx-auto p-6 pb-8 grid grid-cols-1 gap-6">
+    <div className="w-full max-w-6xl mx-auto p-6 pb-8 grid grid-cols-1 gap-6">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold">Invoice Dashboard</h1>
