@@ -19,6 +19,16 @@ import { InvoiceStatusBadge } from "@/components/InvoiceStatusBadge";
 import { LandingPage } from "@/components/LandingPage";
 import { PlusIcon, FileTextIcon, PencilIcon, SearchIcon } from "lucide-react";
 
+// Helper to format date without timezone shift
+const formatDate = (dateStr: Date | string) => {
+  const date = typeof dateStr === "string" ? new Date(dateStr + "T00:00:00") : dateStr;
+  return date.toLocaleDateString("en-GB", {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+  });
+};
+
 type Invoice = {
   id: string;
   invoiceNumber: string;
@@ -221,14 +231,7 @@ export default function Home() {
                     <TableCell>{invoice.clientName || "—"}</TableCell>
                     <TableCell>{invoice.showName}</TableCell>
                     <TableCell>
-                      {new Date(invoice.invoiceDate).toLocaleDateString(
-                        "en-GB",
-                        {
-                          year: "numeric",
-                          month: "short",
-                          day: "numeric",
-                        }
-                      )}
+                      {formatDate(invoice.invoiceDate)}
                     </TableCell>
                     <TableCell>
                       <InvoiceStatusBadge status={invoice.status} />

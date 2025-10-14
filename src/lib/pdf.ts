@@ -1,5 +1,20 @@
 import { PDFDocument, StandardFonts, rgb, RGB } from "pdf-lib";
 
+// Helper to format date without timezone conversion
+const formatDateGB = (date: Date | string): string => {
+  const d = typeof date === "string" ? new Date(date + "T00:00:00") : date;
+  return d.toLocaleDateString("en-GB", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
+};
+
+const formatDateGBShort = (date: Date | string): string => {
+  const d = typeof date === "string" ? new Date(date + "T00:00:00") : date;
+  return d.toLocaleDateString("en-GB");
+};
+
 export type InvoiceLine = {
   description: string;
   quantity: number;
@@ -158,11 +173,7 @@ export const generateInvoicePdf = async (
   });
 
   page.drawText(
-    `Date: ${input.invoiceDate.toLocaleDateString("en-GB", {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-    })}`,
+    `Date: ${formatDateGB(input.invoiceDate)}`,
     {
       x: rightMargin - 150,
       y: height - 80,
@@ -272,11 +283,7 @@ export const generateInvoicePdf = async (
   billFromY -= 12;
 
   if (input.dateOfBirth) {
-    const dobDate =
-      typeof input.dateOfBirth === "string"
-        ? new Date(input.dateOfBirth)
-        : input.dateOfBirth;
-    page.drawText(`DOB: ${dobDate.toLocaleDateString("en-GB")}`, {
+    page.drawText(`DOB: ${formatDateGBShort(input.dateOfBirth)}`, {
       x: billFromX,
       y: billFromY,
       size: 9,
@@ -479,7 +486,7 @@ export const generateInvoicePdf = async (
     const multiplier = entry.rateType === "1.5x" ? 1.5 : 2;
     const hourlyRate = 52.5 * multiplier;
     const cost = entry.hours * hourlyRate;
-    const dateStr = entry.date.toLocaleDateString("en-GB");
+    const dateStr = formatDateGBShort(entry.date);
 
     drawLineItem(
       `Overtime ${entry.rateType} - ${dateStr}`,
