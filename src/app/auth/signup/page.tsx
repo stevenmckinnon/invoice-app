@@ -41,7 +41,11 @@ export default function SignUpPage() {
       });
 
       if (result?.error) {
-        alert(result.error === "CredentialsSignin" ? "Email already exists" : result.error);
+        alert(
+          result.error === "CredentialsSignin"
+            ? "Email already exists"
+            : result.error
+        );
         setIsLoading(false);
         return;
       }
@@ -55,8 +59,8 @@ export default function SignUpPage() {
   };
 
   return (
-    <div className="h-[calc(100dvh-64px)] w-full grid grid-cols-2 overflow-hidden">
-      <div className="relative flex items-center justify-center col-span-1 p-6 overflow-hidden">
+    <div className="h-[calc(100dvh-64px)] w-full grid grid-cols-1 md:grid-cols-2 overflow-hidden">
+      <div className="relative items-center justify-center hidden md:flex col-span-1 p-6 overflow-hidden">
         <div className="relative w-full h-full">
           <Image
             src="/roman.JPG"
