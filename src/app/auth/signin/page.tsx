@@ -160,7 +160,7 @@ export default function SignInPage() {
       <div className="relative flex items-center justify-center col-span-1 p-6 overflow-hidden">
         <div className="relative w-full h-full">
           <Image
-            src="/cena.jpg"
+            src="/cena.JPG"
             alt="Cena"
             fill
             className="rounded-lg object-cover object-bottom"

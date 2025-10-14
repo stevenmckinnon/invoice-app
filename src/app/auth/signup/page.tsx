@@ -59,7 +59,7 @@ export default function SignUpPage() {
       <div className="relative flex items-center justify-center col-span-1 p-6 overflow-hidden">
         <div className="relative w-full h-full">
           <Image
-            src="/roman.jpg"
+            src="/roman.JPG"
             alt="Roman"
             fill
             className="rounded-lg object-cover object-bottom"
