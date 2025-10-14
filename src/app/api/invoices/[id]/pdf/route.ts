@@ -1,6 +1,7 @@
 import { NextRequest } from "next/server";
 import { PrismaClient } from "@/generated/prisma";
 import { generateInvoicePdf, type InvoicePdfInput } from "@/lib/pdf";
+import { parseDate } from "@/lib/utils";
 
 const prisma = new PrismaClient();
 
@@ -25,7 +26,7 @@ export const GET = async (
   // Transform database data to PDF input format
   const pdfInput: InvoicePdfInput = {
     invoiceNumber: invoice.invoiceNumber,
-    invoiceDate: new Date(invoice.invoiceDate),
+    invoiceDate: parseDate(invoice.invoiceDate.toISOString().slice(0, 10)),
     showName: invoice.showName,
     fullName: invoice.fullName,
     email: invoice.email,
@@ -79,14 +80,12 @@ export const GET = async (
   return new Response(Buffer.from(pdfBytes), {
     headers: {
       "Content-Type": "application/pdf",
-      "Content-Disposition": `inline; filename="${
-        invoice.invoiceDate instanceof Date
-          ? invoice.invoiceDate.toISOString().slice(0, 10).replace(/-/g, "")
-          : new Date(invoice.invoiceDate)
-              .toISOString()
-              .slice(0, 10)
-              .replace(/-/g, "")
-      } ${invoice.showName} ${invoice.fullName} ${invoice.invoiceNumber}.pdf"`,
+      "Content-Disposition": `inline; filename="${invoice.invoiceDate
+        .toISOString()
+        .slice(0, 10)
+        .replace(/-/g, "")} ${invoice.showName} ${invoice.fullName} ${
+        invoice.invoiceNumber
+      }.pdf"`,
     },
   });
 };
