@@ -52,11 +52,19 @@ export default function InvoiceDetailPage({ params }: Props) {
   }, [params]);
 
   if (loading) {
-    return <div className="max-w-6xl mx-auto py-8">Loading...</div>;
+    return (
+      <div className="min-h-[calc(100dvh-10rem)] flex items-center justify-center max-w-6xl mx-auto py-8">
+        Loading...
+      </div>
+    );
   }
 
   if (!invoice) {
-    return <div className="max-w-6xl mx-auto py-8">Invoice not found</div>;
+    return (
+      <div className="min-h-[calc(100dvh-10rem)] flex items-center justify-center max-w-6xl mx-auto py-8">
+        Invoice not found
+      </div>
+    );
   }
 
   // Calculate overtime costs

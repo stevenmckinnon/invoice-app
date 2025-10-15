@@ -17,12 +17,14 @@ interface DeleteInvoiceButtonProps {
   invoiceId: string;
   invoiceNumber?: string;
   onDeleted?: () => void;
+  size?: "default" | "sm" | "lg" | "icon";
 }
 
 export const DeleteInvoiceButton = ({
   invoiceId,
   invoiceNumber,
   onDeleted,
+  size = "default",
 }: DeleteInvoiceButtonProps) => {
   const [open, setOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -63,7 +65,7 @@ export const DeleteInvoiceButton = ({
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="destructive">
+        <Button variant="destructive" size={size}>
           <TrashIcon className="h-4 w-4" /> Delete
         </Button>
       </DialogTrigger>

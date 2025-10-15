@@ -15,6 +15,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { toast } from "sonner";
 
 export default function SignInPage() {
   const router = useRouter();
@@ -28,20 +29,33 @@ export default function SignInPage() {
     e.preventDefault();
     setIsLoading(true);
 
-    const result = await signIn("credentials", {
-      email: formData.email,
-      password: formData.password,
-      isSignUp: "false",
-      redirect: false,
-    });
+    try {
+      const result = await signIn("credentials", {
+        email: formData.email,
+        password: formData.password,
+        isSignUp: "false",
+        redirect: false,
+      });
 
-    if (result?.error) {
-      alert("Invalid email or password");
+      if (result?.error) {
+        toast.error("Sign in failed", {
+          description: "Invalid email or password. Please check your credentials and try again.",
+        });
+        setIsLoading(false);
+        return;
+      }
+
+      toast.success("Welcome back!", {
+        description: "You have successfully signed in.",
+      });
+      router.push("/");
+    } catch (error) {
+      toast.error("An error occurred", {
+        description: "Unable to sign in. Please try again later.",
+      });
+      console.error(error);
       setIsLoading(false);
-      return;
     }
-
-    router.push("/");
   };
 
   return (

@@ -15,6 +15,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { toast } from "sonner";
 
 export default function SignUpPage() {
   const router = useRouter();
@@ -41,18 +42,27 @@ export default function SignUpPage() {
       });
 
       if (result?.error) {
-        alert(
-          result.error === "CredentialsSignin"
-            ? "Email already exists"
-            : result.error
-        );
+        if (result.error === "CredentialsSignin") {
+          toast.error("Account already exists", {
+            description: "An account with this email already exists. Please sign in instead.",
+          });
+        } else {
+          toast.error("Sign up failed", {
+            description: result.error || "Unable to create account. Please try again.",
+          });
+        }
         setIsLoading(false);
         return;
       }
 
+      toast.success("Account created successfully!", {
+        description: "Welcome to WWE Invoice App. Let's get you set up.",
+      });
       router.push("/");
     } catch (error) {
-      alert("Failed to create account");
+      toast.error("An error occurred", {
+        description: "Failed to create account. Please try again later.",
+      });
       console.error(error);
       setIsLoading(false);
     }

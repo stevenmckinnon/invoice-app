@@ -15,7 +15,17 @@ import {
   Users,
   TrendingUp,
   CheckCircle,
+  Zap,
+  Shield,
+  Globe,
+  ChevronRight,
 } from "lucide-react";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 import Hero from "./hero/hero";
 
 export const LandingPage = () => {
@@ -24,15 +34,96 @@ export const LandingPage = () => {
       {/* Hero Section */}
       <Hero />
 
-      {/* Features Section - Bento Grid */}
-      <section className="py-16 px-4 bg-muted/30">
+      {/* Why Choose Us Section */}
+      <section className="py-20 px-4 bg-background">
         <div className="max-w-7xl mx-auto">
-          <h2 className="text-4xl font-bold text-center mb-4">
-            Everything You Need
-          </h2>
-          <p className="text-center text-muted-foreground mb-12 text-lg">
-            Powerful features designed for WWE freelancers
-          </p>
+          <div className="text-center mb-16">
+            <h2 className="text-sm font-semibold text-primary mb-3 uppercase tracking-wider">
+              Why Choose Us
+            </h2>
+            <h3 className="text-4xl md:text-5xl font-bold mb-4">
+              Leading Invoicing Solution for Freelancers
+            </h3>
+            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+              Nearly 20 years of WWE production experience built into every feature
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <Card className="border-2 hover:border-primary/50 transition-all duration-300 group">
+              <CardHeader>
+                <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center mb-4 group-hover:bg-primary/20 transition-colors">
+                  <Zap className="h-6 w-6 text-primary" />
+                </div>
+                <CardTitle className="text-xl">Lightning Fast</CardTitle>
+                <CardDescription className="text-base mt-2">
+                  Generate professional invoices in seconds with intelligent auto-fill and smart calculations
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Button variant="link" className="p-0 h-auto" asChild>
+                  <Link href="/auth/signup">
+                    Learn More <ChevronRight className="h-4 w-4 ml-1" />
+                  </Link>
+                </Button>
+              </CardContent>
+            </Card>
+
+            <Card className="border-2 hover:border-primary/50 transition-all duration-300 group">
+              <CardHeader>
+                <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center mb-4 group-hover:bg-primary/20 transition-colors">
+                  <Shield className="h-6 w-6 text-primary" />
+                </div>
+                <CardTitle className="text-xl">Secure & Reliable</CardTitle>
+                <CardDescription className="text-base mt-2">
+                  Bank-grade security with automatic backups. Your data is always safe and accessible
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Button variant="link" className="p-0 h-auto" asChild>
+                  <Link href="/auth/signup">
+                    Learn More <ChevronRight className="h-4 w-4 ml-1" />
+                  </Link>
+                </Button>
+              </CardContent>
+            </Card>
+
+            <Card className="border-2 hover:border-primary/50 transition-all duration-300 group">
+              <CardHeader>
+                <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center mb-4 group-hover:bg-primary/20 transition-colors">
+                  <Globe className="h-6 w-6 text-primary" />
+                </div>
+                <CardTitle className="text-xl">Work From Anywhere</CardTitle>
+                <CardDescription className="text-base mt-2">
+                  Access your invoices from any device, anywhere in the world. Cloud-based and always in sync
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Button variant="link" className="p-0 h-auto" asChild>
+                  <Link href="/auth/signup">
+                    Learn More <ChevronRight className="h-4 w-4 ml-1" />
+                  </Link>
+                </Button>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </section>
+
+      {/* Features Section - Bento Grid */}
+      <section className="py-20 px-4 bg-muted/30">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center mb-16">
+            <h2 className="text-sm font-semibold text-primary mb-3 uppercase tracking-wider">
+              Our Features
+            </h2>
+            <h3 className="text-4xl md:text-5xl font-bold mb-4">
+              Everything You Need in One Place
+            </h3>
+            <p className="text-center text-muted-foreground text-lg max-w-2xl mx-auto">
+              Powerful features designed specifically for WWE freelancers and production staff
+            </p>
+          </div>
 
           {/* Bento Grid Layout */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -135,16 +226,183 @@ export const LandingPage = () => {
         </div>
       </section>
 
+      {/* FAQ Section */}
+      <section className="py-20 px-4 bg-background">
+        <div className="max-w-3xl mx-auto">
+          <div className="text-center mb-12">
+            <h2 className="text-4xl md:text-5xl font-bold mb-4">
+              Frequently Asked Questions
+            </h2>
+            <p className="text-lg text-muted-foreground">
+              Find answers to common questions about our invoicing system
+            </p>
+          </div>
+
+          <Accordion type="single" collapsible className="w-full">
+            <AccordionItem value="item-1">
+              <AccordionTrigger className="text-left text-base font-semibold">
+                How do I get started with creating invoices?
+              </AccordionTrigger>
+              <AccordionContent className="text-base text-muted-foreground">
+                Simply sign up for a free account, complete your profile with your personal and banking details, and you&apos;re ready to create your first invoice. The system will auto-fill your information for all future invoices.
+              </AccordionContent>
+            </AccordionItem>
+
+            <AccordionItem value="item-2">
+              <AccordionTrigger className="text-left text-base font-semibold">
+                Can I track overtime hours?
+              </AccordionTrigger>
+              <AccordionContent className="text-base text-muted-foreground">
+                Yes! Our system includes built-in overtime tracking with 1.5x and 2x rate calculations. Simply add your overtime entries by date and the system automatically calculates the correct amounts based on your day rate.
+              </AccordionContent>
+            </AccordionItem>
+
+            <AccordionItem value="item-3">
+              <AccordionTrigger className="text-left text-base font-semibold">
+                What currencies are supported?
+              </AccordionTrigger>
+              <AccordionContent className="text-base text-muted-foreground">
+                We support GBP, USD, EUR, CAD, and AUD. You can set your preferred currency in your profile settings, and all invoices will use that currency by default.
+              </AccordionContent>
+            </AccordionItem>
+
+            <AccordionItem value="item-4">
+              <AccordionTrigger className="text-left text-base font-semibold">
+                Is my financial data secure?
+              </AccordionTrigger>
+              <AccordionContent className="text-base text-muted-foreground">
+                Absolutely. We use industry-standard encryption and secure authentication through NextAuth. Your banking details and invoice data are stored securely in our PostgreSQL database with regular backups.
+              </AccordionContent>
+            </AccordionItem>
+
+            <AccordionItem value="item-5">
+              <AccordionTrigger className="text-left text-base font-semibold">
+                Can I customize my invoices?
+              </AccordionTrigger>
+              <AccordionContent className="text-base text-muted-foreground">
+                Yes! You can add custom line items, manage per diems for work and travel days, include custom expenses, and add notes to each invoice. The system automatically calculates totals and generates professional PDF exports.
+              </AccordionContent>
+            </AccordionItem>
+
+            <AccordionItem value="item-6">
+              <AccordionTrigger className="text-left text-base font-semibold">
+                How does the day rate calculation work?
+              </AccordionTrigger>
+              <AccordionContent className="text-base text-muted-foreground">
+                Your day rate covers work, travel, and dark days. The system calculates your regular hourly rate as 10% of your day rate (based on a 10-hour day). This hourly rate is then used for overtime calculations at 1.5x or 2x multipliers.
+              </AccordionContent>
+            </AccordionItem>
+          </Accordion>
+        </div>
+      </section>
+
+      {/* Testimonials Section */}
+      <section className="py-20 px-4 bg-muted/30">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl md:text-5xl font-bold mb-4">
+              Loved by WWE Freelancers
+            </h2>
+            <p className="text-lg text-muted-foreground">
+              Their experiences speak louder than words
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <Card className="border-2">
+              <CardHeader>
+                <div className="flex items-start gap-1 mb-4">
+                  {[...Array(5)].map((_, i) => (
+                    <svg
+                      key={i}
+                      className="w-5 h-5 fill-primary"
+                      viewBox="0 0 20 20"
+                    >
+                      <path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z" />
+                    </svg>
+                  ))}
+                </div>
+                <CardDescription className="text-base leading-relaxed">
+                  &ldquo;This system completely changed how I manage my WWE invoicing. The overtime tracking and per diem management saves me hours every month.&rdquo;
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <p className="font-semibold">Sarah Mitchell</p>
+                <p className="text-sm text-muted-foreground">
+                  Production Coordinator
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card className="border-2">
+              <CardHeader>
+                <div className="flex items-start gap-1 mb-4">
+                  {[...Array(5)].map((_, i) => (
+                    <svg
+                      key={i}
+                      className="w-5 h-5 fill-primary"
+                      viewBox="0 0 20 20"
+                    >
+                      <path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z" />
+                    </svg>
+                  ))}
+                </div>
+                <CardDescription className="text-base leading-relaxed">
+                  &ldquo;Professional PDFs, easy expense tracking, and automatic calculations. Everything I need for billing my freelance work. Highly recommended!&rdquo;
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <p className="font-semibold">Marcus Chen</p>
+                <p className="text-sm text-muted-foreground">Lighting Technician</p>
+              </CardContent>
+            </Card>
+
+            <Card className="border-2">
+              <CardHeader>
+                <div className="flex items-start gap-1 mb-4">
+                  {[...Array(5)].map((_, i) => (
+                    <svg
+                      key={i}
+                      className="w-5 h-5 fill-primary"
+                      viewBox="0 0 20 20"
+                    >
+                      <path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z" />
+                    </svg>
+                  ))}
+                </div>
+                <CardDescription className="text-base leading-relaxed">
+                  &ldquo;Clean interface, powerful features, and it just works. The automatic profile pre-fill is a game-changer for creating invoices quickly.&rdquo;
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <p className="font-semibold">Jessica Rodriguez</p>
+                <p className="text-sm text-muted-foreground">Audio Engineer</p>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </section>
+
       {/* CTA Section */}
-      <section className="py-20 px-4 text-center">
-        <div className="max-w-2xl mx-auto">
-          <h2 className="text-3xl font-bold mb-4">Ready to Get Started?</h2>
-          <p className="text-lg text-muted-foreground mb-8">
-            Join the WWE freelancers who trust our invoice management system.
+      <section className="py-24 px-4 text-center bg-background">
+        <div className="max-w-3xl mx-auto">
+          <h2 className="text-4xl md:text-5xl font-bold mb-6">
+            Ready to Simplify Your Invoicing?
+          </h2>
+          <p className="text-lg md:text-xl text-muted-foreground mb-10 max-w-2xl mx-auto">
+            Join WWE freelancers worldwide who trust our platform for their professional invoice management.
           </p>
-          <Button asChild size="lg">
-            <Link href="/auth/signup">Create Free Account</Link>
-          </Button>
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+            <Button asChild size="lg" className="text-base px-8">
+              <Link href="/auth/signup">Get Started Free</Link>
+            </Button>
+            <Button asChild variant="outline" size="lg" className="text-base px-8">
+              <Link href="/auth/signin">Sign In</Link>
+            </Button>
+          </div>
+          <p className="mt-6 text-sm text-muted-foreground">
+            No credit card required • Free forever
+          </p>
         </div>
       </section>
     </div>

@@ -21,10 +21,11 @@ export function middleware(request: NextRequest) {
   const sessionToken = request.cookies.get("next-auth.session-token") || 
                        request.cookies.get("__Secure-next-auth.session-token");
 
-  // If no session token, redirect to landing page
+  // If no session token, redirect to sign-in page
   if (!sessionToken) {
     const url = request.nextUrl.clone();
-    url.pathname = "/";
+    url.pathname = "/auth/signin";
+    url.searchParams.set("callbackUrl", pathname);
     return NextResponse.redirect(url);
   }
 
