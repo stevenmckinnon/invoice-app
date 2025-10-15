@@ -74,14 +74,16 @@ export default function InvoiceDetailPage({ params }: Props) {
   };
 
   const allItems: CombinedItem[] = [
-    ...invoice.items.map((item) => ({
-      id: item.id,
-      description: item.description,
-      quantity: item.quantity,
-      unitPrice: Number(item.unitPrice),
-      cost: Number(item.cost),
-      type: "item" as const,
-    })),
+    ...invoice.items
+      .filter((item) => item.quantity > 0)
+      .map((item) => ({
+        id: item.id,
+        description: item.description,
+        quantity: item.quantity,
+        unitPrice: Number(item.unitPrice),
+        cost: Number(item.cost),
+        type: "item" as const,
+      })),
     ...overtimeEntries.map((ot) => {
       const rate = ot.rateType === "1.5x" ? 78.75 : 105;
       const hours = Number(ot.hours);

@@ -18,7 +18,7 @@ import {
 } from "@/components/ui/form";
 import { OvertimeManager } from "@/components/OvertimeManager";
 import { CustomExpenseManager } from "@/components/CustomExpenseManager";
-import { ArrowLeftIcon, TrashIcon } from "lucide-react";
+import { ArrowLeftIcon } from "lucide-react";
 import Link from "next/link";
 import { CountryPicker } from "@/components/CountryPicker";
 import {
@@ -28,11 +28,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
 import {
   Table,
   TableBody,
@@ -247,22 +242,6 @@ export default function EditInvoicePage() {
 
     fetchInvoice();
   }, [invoiceId, router, form]);
-
-  const addItem = () => {
-    const currentItems = form.getValues("items");
-    form.setValue("items", [
-      ...currentItems,
-      { description: "", quantity: 1, unitPrice: 0 },
-    ]);
-  };
-
-  const removeItem = (idx: number) => {
-    const currentItems = form.getValues("items");
-    form.setValue(
-      "items",
-      currentItems.filter((_, i) => i !== idx)
-    );
-  };
 
   const updateItem = (
     idx: number,
@@ -676,7 +655,6 @@ export default function EditInvoicePage() {
                     <TableHead className="w-20">Quantity</TableHead>
                     <TableHead className="w-28">Unit Price</TableHead>
                     <TableHead className="w-24">Cost</TableHead>
-                    <TableHead className="w-16"></TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -685,6 +663,7 @@ export default function EditInvoicePage() {
                       <TableCell className="w-40">
                         <Input
                           value={item.description}
+                          readOnly
                           onChange={(e) =>
                             updateItem(idx, "description", e.target.value)
                           }
@@ -694,6 +673,7 @@ export default function EditInvoicePage() {
                         <Input
                           type="number"
                           value={item.quantity}
+                          min={0}
                           onChange={(e) =>
                             updateItem(idx, "quantity", e.target.value)
                           }
@@ -703,6 +683,7 @@ export default function EditInvoicePage() {
                         <Input
                           type="number"
                           step="0.01"
+                          min={0}
                           value={item.unitPrice}
                           onChange={(e) =>
                             updateItem(idx, "unitPrice", e.target.value)
@@ -720,32 +701,10 @@ export default function EditInvoicePage() {
                           }
                         />
                       </TableCell>
-                      <TableCell className="w-16">
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <Button
-                              type="button"
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => removeItem(idx)}
-                              aria-label="Remove item"
-                              className="h-8 w-8 p-0"
-                            >
-                              <TrashIcon className="h-4 w-4 text-red-600" />
-                            </Button>
-                          </TooltipTrigger>
-                          <TooltipContent>Delete entry</TooltipContent>
-                        </Tooltip>
-                      </TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
               </Table>
-            </div>
-            <div>
-              <Button type="button" variant="secondary" onClick={addItem}>
-                Add item
-              </Button>
             </div>
             <div className="text-right font-semibold text-lg pt-2 border-t">
               Items Total: £{totals.itemsTotal.toFixed(2)}

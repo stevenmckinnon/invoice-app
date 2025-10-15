@@ -38,6 +38,11 @@ model User {
   bankAddress   String?
   currency      String?   @default("GBP")
   
+  // Rate information
+  dayRate       Decimal?  // Day rate for work, travel, and dark days
+  perDiemWork   Decimal?  // Per diem rate for work days
+  perDiemTravel Decimal?  // Per diem rate for travel days
+  
   accounts      Account[]
   sessions      Session[]
   invoices      Invoice[]

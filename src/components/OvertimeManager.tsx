@@ -57,11 +57,6 @@ const RATE_MULTIPLIERS = {
   "2x": 2,
 };
 
-const RATE_PRICES = {
-  "1.5x": 78.75,
-  "2x": 105,
-};
-
 const overtimeFormSchema = z.object({
   date: z.date({
     message: "Please select a date",
@@ -91,6 +86,12 @@ export const OvertimeManager = ({
       rateType: "1.5x",
     },
   });
+
+  // Calculate overtime rates dynamically based on regularRate
+  const ratePrices = {
+    "1.5x": regularRate * RATE_MULTIPLIERS["1.5x"],
+    "2x": regularRate * RATE_MULTIPLIERS["2x"],
+  };
 
   const onSubmit = (values: OvertimeFormValues) => {
     // Extract date components directly to avoid timezone issues
@@ -189,8 +190,8 @@ export const OvertimeManager = ({
                 <FormControl>
                   <Input
                     type="number"
-                    min="0.5"
-                    step="0.5"
+                    min="1"
+                    step="1"
                     placeholder="1"
                     {...field}
                   />
@@ -217,10 +218,10 @@ export const OvertimeManager = ({
                   </FormControl>
                   <SelectContent>
                     <SelectItem value="1.5x">
-                      1.5x (£{RATE_PRICES["1.5x"]}/hr)
+                      1.5x (£{ratePrices["1.5x"].toFixed(2)}/hr)
                     </SelectItem>
                     <SelectItem value="2x">
-                      2x (£{RATE_PRICES["2x"]}/hr)
+                      2x (£{ratePrices["2x"].toFixed(2)}/hr)
                     </SelectItem>
                   </SelectContent>
                 </Select>

@@ -470,16 +470,18 @@ export const generateInvoicePdf = async (
     y -= 18;
   };
 
-  // Draw all items
-  totals.items.forEach((item) => {
-    const cost = item.cost ?? item.quantity * item.unitPrice;
-    drawLineItem(
-      item.description,
-      item.quantity.toString(),
-      fmt.format(item.unitPrice),
-      fmt.format(cost)
-    );
-  });
+  // Draw all items (excluding zero-quantity items)
+  totals.items
+    .filter((item) => item.quantity > 0)
+    .forEach((item) => {
+      const cost = item.cost ?? item.quantity * item.unitPrice;
+      drawLineItem(
+        item.description,
+        item.quantity.toString(),
+        fmt.format(item.unitPrice),
+        fmt.format(cost)
+      );
+    });
 
   // Draw overtime entries
   totals.overtimeEntries.forEach((entry) => {

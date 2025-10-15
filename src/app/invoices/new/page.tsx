@@ -27,12 +27,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { TrashIcon } from "lucide-react";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
 import {
   Table,
   TableBody,
@@ -104,6 +98,7 @@ export default function NewInvoicePage() {
   const router = useRouter();
   const [profileIncomplete, setProfileIncomplete] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [regularRate, setRegularRate] = useState(52.5); // Default £52.50 per hour base rate
 
   const form = useForm<FormValues>({
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -148,8 +143,6 @@ export default function NewInvoicePage() {
       notes: "",
     },
   });
-
-  const regularRate = 52.5; // £52.50 per hour base rate
 
   // Fetch the next invoice number on mount
   useEffect(() => {
@@ -216,6 +209,70 @@ export default function NewInvoicePage() {
           if (profile.bankAddress)
             form.setValue("bankAddress", profile.bankAddress);
           if (profile.currency) form.setValue("currency", profile.currency);
+
+          // Calculate regular rate from day rate (10% of day rate since a day is 10 hours)
+          if (profile.dayRate) {
+            const calculatedRegularRate = Number(profile.dayRate) * 0.1;
+            setRegularRate(calculatedRegularRate);
+          }
+
+          // Update invoice items with profile rates
+          const updatedItems = [];
+          if (profile.dayRate) {
+            updatedItems.push(
+              {
+                description: "Travel Days",
+                quantity: 1,
+                unitPrice: Number(profile.dayRate),
+              },
+              {
+                description: "Work Days",
+                quantity: 1,
+                unitPrice: Number(profile.dayRate),
+              },
+              {
+                description: "Dark days",
+                quantity: 1,
+                unitPrice: Number(profile.dayRate),
+              }
+            );
+          } else {
+            updatedItems.push(
+              { description: "Travel Days", quantity: 1, unitPrice: 525 },
+              { description: "Work Days", quantity: 1, unitPrice: 525 },
+              { description: "Dark days", quantity: 1, unitPrice: 525 }
+            );
+          }
+
+          if (profile.perDiemTravel) {
+            updatedItems.push({
+              description: "Per Diems Travel Days",
+              quantity: 1,
+              unitPrice: Number(profile.perDiemTravel),
+            });
+          } else {
+            updatedItems.push({
+              description: "Per Diems Travel Days",
+              quantity: 1,
+              unitPrice: 70,
+            });
+          }
+
+          if (profile.perDiemWork) {
+            updatedItems.push({
+              description: "Per Diems Work Days",
+              quantity: 1,
+              unitPrice: Number(profile.perDiemWork),
+            });
+          } else {
+            updatedItems.push({
+              description: "Per Diems Work Days",
+              quantity: 1,
+              unitPrice: 50,
+            });
+          }
+
+          form.setValue("items", updatedItems);
         }
       } catch (error) {
         console.error("Failed to fetch user profile:", error);
@@ -248,23 +305,7 @@ export default function NewInvoicePage() {
 
     const totalAmount = itemsTotal + overtimeTotal + customExpensesTotal;
     return { itemsTotal, overtimeTotal, customExpensesTotal, totalAmount };
-  }, [items, overtimeEntries, customExpenseEntries]);
-
-  const addItem = () => {
-    const currentItems = form.getValues("items");
-    form.setValue("items", [
-      ...currentItems,
-      { description: "", quantity: 1, unitPrice: 0 },
-    ]);
-  };
-
-  const removeItem = (idx: number) => {
-    const currentItems = form.getValues("items");
-    form.setValue(
-      "items",
-      currentItems.filter((_, i) => i !== idx)
-    );
-  };
+  }, [items, overtimeEntries, customExpenseEntries, regularRate]);
 
   const updateItem = (
     idx: number,
@@ -789,7 +830,6 @@ export default function NewInvoicePage() {
                     <TableHead className="w-20">Quantity</TableHead>
                     <TableHead className="w-28">Unit Price</TableHead>
                     <TableHead className="w-24">Cost</TableHead>
-                    <TableHead className="w-16"></TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -798,6 +838,7 @@ export default function NewInvoicePage() {
                       <TableCell className="w-40">
                         <Input
                           value={item.description}
+                          readOnly
                           onChange={(e) =>
                             updateItem(idx, "description", e.target.value)
                           }
@@ -807,6 +848,7 @@ export default function NewInvoicePage() {
                         <Input
                           type="number"
                           value={item.quantity}
+                          min={0}
                           onChange={(e) =>
                             updateItem(idx, "quantity", e.target.value)
                           }
@@ -816,6 +858,7 @@ export default function NewInvoicePage() {
                         <Input
                           type="number"
                           step="0.01"
+                          min={0}
                           value={item.unitPrice}
                           onChange={(e) =>
                             updateItem(idx, "unitPrice", e.target.value)
@@ -833,32 +876,10 @@ export default function NewInvoicePage() {
                           }
                         />
                       </TableCell>
-                      <TableCell className="w-16">
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <Button
-                              type="button"
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => removeItem(idx)}
-                              aria-label="Remove item"
-                              className="h-8 w-8 p-0"
-                            >
-                              <TrashIcon className="h-4 w-4 text-red-600" />
-                            </Button>
-                          </TooltipTrigger>
-                          <TooltipContent>Delete entry</TooltipContent>
-                        </Tooltip>
-                      </TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
               </Table>
-            </div>
-            <div>
-              <Button type="button" variant="secondary" onClick={addItem}>
-                Add item
-              </Button>
             </div>
             <div className="text-right font-semibold text-lg pt-2 border-t">
               Items Total: £{totals.itemsTotal.toFixed(2)}

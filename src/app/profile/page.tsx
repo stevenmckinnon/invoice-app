@@ -43,6 +43,9 @@ const profileSchema = z.object({
   sortCode: z.string().optional(),
   bankAddress: z.string().optional(),
   currency: z.string().optional(),
+  dayRate: z.string().optional(),
+  perDiemWork: z.string().optional(),
+  perDiemTravel: z.string().optional(),
 });
 
 type ProfileFormValues = z.infer<typeof profileSchema>;
@@ -71,6 +74,9 @@ export default function ProfilePage() {
       sortCode: "",
       bankAddress: "",
       currency: "GBP",
+      dayRate: "",
+      perDiemWork: "",
+      perDiemTravel: "",
     },
   });
 
@@ -100,6 +106,9 @@ export default function ProfilePage() {
             sortCode: data.sortCode || "",
             bankAddress: data.bankAddress || "",
             currency: data.currency || "GBP",
+            dayRate: data.dayRate ? String(data.dayRate) : "",
+            perDiemWork: data.perDiemWork ? String(data.perDiemWork) : "",
+            perDiemTravel: data.perDiemTravel ? String(data.perDiemTravel) : "",
           });
         } else if (response.status === 401) {
           router.push("/auth/signin");
@@ -118,12 +127,20 @@ export default function ProfilePage() {
   const onSubmit = async (values: ProfileFormValues) => {
     setSaving(true);
     try {
+      // Transform string values to numbers before sending to API
+      const payload = {
+        ...values,
+        dayRate: values.dayRate ? Number(values.dayRate) : null,
+        perDiemWork: values.perDiemWork ? Number(values.perDiemWork) : null,
+        perDiemTravel: values.perDiemTravel ? Number(values.perDiemTravel) : null,
+      };
+
       const response = await fetch("/api/profile", {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(values),
+        body: JSON.stringify(payload),
       });
 
       if (response.ok) {
@@ -460,6 +477,86 @@ export default function ProfilePage() {
                   </FormItem>
                 )}
               />
+            </CardContent>
+          </Card>
+
+          {/* Rate Information */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Rate Information</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <FormField
+                control={form.control}
+                name="dayRate"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Day Rate</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="number"
+                        step="0.01"
+                        placeholder="525.00"
+                        {...field}
+                        value={field.value ?? ""}
+                      />
+                    </FormControl>
+                    <FormDescription>
+                      Daily rate for work, travel and dark days. Regular hourly
+                      rate will be calculated as 10% of this (day = 10 hours).
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <FormField
+                  control={form.control}
+                  name="perDiemWork"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Per Diem (Work Days)</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="number"
+                          step="0.01"
+                          placeholder="50.00"
+                          {...field}
+                          value={field.value ?? ""}
+                        />
+                      </FormControl>
+                      <FormDescription>
+                        Per diem rate for work days
+                      </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="perDiemTravel"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Per Diem (Travel Days)</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="number"
+                          step="0.01"
+                          placeholder="70.00"
+                          {...field}
+                          value={field.value ?? ""}
+                        />
+                      </FormControl>
+                      <FormDescription>
+                        Per diem rate for travel days
+                      </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
             </CardContent>
           </Card>
 
