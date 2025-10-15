@@ -23,7 +23,7 @@ export const AppHeader = () => {
   const pathname = usePathname();
 
   return (
-    <header className="sticky top-0 z-50 w-full bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 flex justify-center">
+    <header className="sticky px-4 md:px-0 top-0 z-50 w-full bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 flex justify-center">
       <div className="container flex h-16 items-center justify-between">
         {/* Logo */}
         <Link
