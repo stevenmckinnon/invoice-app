@@ -1,4 +1,5 @@
 "use client";
+import { AnimatedCounter } from "@/components/AnimatedCounter";
 import { InvoiceStatusBadge } from "@/components/InvoiceStatusBadge";
 import { LandingPage } from "@/components/LandingPage";
 import { Button } from "@/components/ui/button";
@@ -25,7 +26,7 @@ import {
   FileTextIcon,
   PlusIcon,
   TrendingDown,
-  TrendingUp
+  TrendingUp,
 } from "lucide-react";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
@@ -65,7 +66,6 @@ type Invoice = {
 export default function Home() {
   const { status } = useSession();
   const [invoices, setInvoices] = useState<Invoice[]>([]);
-  const [searchQuery, setSearchQuery] = useState("");
   const [isLoading, setIsLoading] = useState(true);
 
   const fetchInvoices = async () => {
@@ -103,15 +103,7 @@ export default function Home() {
     return <LandingPage />;
   }
 
-  const filteredInvoices = invoices
-    .filter((invoice) => {
-      const query = searchQuery.toLowerCase();
-      return (
-        invoice.invoiceNumber.toLowerCase().includes(query) ||
-        invoice.showName.toLowerCase().includes(query) ||
-        invoice.clientName?.toLowerCase().includes(query)
-      );
-    })
+  const sortedInvoices = invoices
     .sort(
       (a, b) =>
         new Date(b.invoiceDate).getTime() - new Date(a.invoiceDate).getTime()
@@ -272,7 +264,14 @@ export default function Home() {
             </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">£{totalRevenue.toFixed(2)}</div>
+            <div className="text-2xl font-bold">
+              <AnimatedCounter
+                value={totalRevenue}
+                prefix="£"
+                duration={1200}
+                decimals={2}
+              />
+            </div>
             <div className="flex items-center gap-1 mt-2">
               {monthlyChange >= 0 ? (
                 <TrendingUp className="h-4 w-4 text-green-600" />
@@ -285,7 +284,12 @@ export default function Home() {
                 }`}
               >
                 {monthlyChange >= 0 ? "+" : ""}
-                {monthlyChange.toFixed(1)}%
+                <AnimatedCounter
+                  value={Math.abs(monthlyChange)}
+                  suffix="%"
+                  duration={1200}
+                  decimals={1}
+                />
               </p>
               <p className="text-xs text-muted-foreground">vs last month</p>
             </div>
@@ -305,7 +309,13 @@ export default function Home() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-green-600">
-              £{paidRevenue.toFixed(2)}
+              <AnimatedCounter
+                value={paidRevenue}
+                prefix="£"
+                duration={1200}
+                decimals={2}
+                delay={100}
+              />
             </div>
             <p className="text-xs text-muted-foreground mt-2">
               {invoices.filter((inv) => inv.status === "paid").length} paid
@@ -327,7 +337,13 @@ export default function Home() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-orange-600">
-              £{outstandingRevenue.toFixed(2)}
+              <AnimatedCounter
+                value={outstandingRevenue}
+                prefix="£"
+                duration={1200}
+                decimals={2}
+                delay={200}
+              />
             </div>
             <p className="text-xs text-muted-foreground mt-2">
               {invoices.filter((inv) => inv.status !== "paid").length} unpaid
@@ -348,7 +364,13 @@ export default function Home() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              £{averageInvoice.toFixed(2)}
+              <AnimatedCounter
+                value={averageInvoice}
+                prefix="£"
+                duration={1200}
+                decimals={2}
+                delay={300}
+              />
             </div>
             <p className="text-xs text-muted-foreground mt-2">per invoice</p>
           </CardContent>
@@ -467,7 +489,13 @@ export default function Home() {
                       </span>
                     </div>
                     <span className="text-sm font-bold">
-                      £{item.revenue.toFixed(2)}
+                      <AnimatedCounter
+                        value={item.revenue}
+                        prefix="£"
+                        duration={1000}
+                        decimals={2}
+                        delay={400 + index * 100}
+                      />
                     </span>
                   </div>
                 ))}
@@ -504,7 +532,13 @@ export default function Home() {
                 Revenue
               </p>
               <p className="text-2xl font-bold">
-                £{currentMonthRevenue.toFixed(2)}
+                <AnimatedCounter
+                  value={currentMonthRevenue}
+                  prefix="£"
+                  duration={1200}
+                  decimals={2}
+                  delay={100}
+                />
               </p>
               <div className="flex items-center gap-1">
                 {monthlyChange >= 0 ? (
@@ -518,7 +552,13 @@ export default function Home() {
                   }`}
                 >
                   {monthlyChange >= 0 ? "+" : ""}
-                  {monthlyChange.toFixed(1)}% from last month
+                  <AnimatedCounter
+                    value={Math.abs(monthlyChange)}
+                    suffix="% from last month"
+                    duration={1000}
+                    decimals={1}
+                    delay={100}
+                  />
                 </p>
               </div>
             </div>
@@ -527,15 +567,20 @@ export default function Home() {
                 Invoices Created
               </p>
               <p className="text-2xl font-bold">
-                {
-                  invoices.filter((inv) => {
-                    const invDate = new Date(inv.invoiceDate);
-                    return (
-                      invDate.getMonth() === currentMonth &&
-                      invDate.getFullYear() === currentYear
-                    );
-                  }).length
-                }
+                <AnimatedCounter
+                  value={
+                    invoices.filter((inv) => {
+                      const invDate = new Date(inv.invoiceDate);
+                      return (
+                        invDate.getMonth() === currentMonth &&
+                        invDate.getFullYear() === currentYear
+                      );
+                    }).length
+                  }
+                  duration={1000}
+                  decimals={0}
+                  delay={200}
+                />
               </p>
               <p className="text-xs text-muted-foreground">This month</p>
             </div>
@@ -544,16 +589,21 @@ export default function Home() {
                 Paid This Month
               </p>
               <p className="text-2xl font-bold text-green-600">
-                {
-                  invoices.filter((inv) => {
-                    const invDate = new Date(inv.invoiceDate);
-                    return (
-                      inv.status === "paid" &&
-                      invDate.getMonth() === currentMonth &&
-                      invDate.getFullYear() === currentYear
-                    );
-                  }).length
-                }
+                <AnimatedCounter
+                  value={
+                    invoices.filter((inv) => {
+                      const invDate = new Date(inv.invoiceDate);
+                      return (
+                        inv.status === "paid" &&
+                        invDate.getMonth() === currentMonth &&
+                        invDate.getFullYear() === currentYear
+                      );
+                    }).length
+                  }
+                  duration={1000}
+                  decimals={0}
+                  delay={300}
+                />
               </p>
               <p className="text-xs text-muted-foreground">Invoices paid</p>
             </div>
@@ -573,14 +623,19 @@ export default function Home() {
           {invoices.length > 0 ? (
             <div className="w-full h-[320px]">
               <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={revenueData} margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
+                <AreaChart
+                  data={revenueData}
+                  margin={{ top: 20, right: 30, left: 20, bottom: 20 }}
+                >
                   <defs>
-                    <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
-                      <stop
-                        offset="5%"
-                        stopColor="#3b82f6"
-                        stopOpacity={0.8}
-                      />
+                    <linearGradient
+                      id="colorRevenue"
+                      x1="0"
+                      y1="0"
+                      x2="0"
+                      y2="1"
+                    >
+                      <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.8} />
                       <stop
                         offset="95%"
                         stopColor="#3b82f6"
@@ -588,8 +643,8 @@ export default function Home() {
                       />
                     </linearGradient>
                   </defs>
-                  <CartesianGrid 
-                    strokeDasharray="1 3" 
+                  <CartesianGrid
+                    strokeDasharray="1 3"
                     stroke="#374151"
                     strokeOpacity={0.3}
                   />
@@ -622,7 +677,10 @@ export default function Home() {
                       fontWeight: "600",
                       marginBottom: "4px",
                     }}
-                    formatter={(value: number) => [`£${value.toFixed(2)}`, "Revenue"]}
+                    formatter={(value: number) => [
+                      `£${value.toFixed(2)}`,
+                      "Revenue",
+                    ]}
                   />
                   <Area
                     type="monotone"
@@ -660,7 +718,13 @@ export default function Home() {
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-sm font-medium">{currentYear}</span>
                   <span className="text-sm font-bold">
-                    £{currentYearRevenue.toFixed(2)}
+                    <AnimatedCounter
+                      value={currentYearRevenue}
+                      prefix="£"
+                      duration={1200}
+                      decimals={2}
+                      delay={100}
+                    />
                   </span>
                 </div>
                 <div className="h-2 bg-muted rounded-full overflow-hidden">
@@ -681,7 +745,13 @@ export default function Home() {
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-sm font-medium">{currentYear - 1}</span>
                   <span className="text-sm font-bold">
-                    £{lastYearRevenue.toFixed(2)}
+                    <AnimatedCounter
+                      value={lastYearRevenue}
+                      prefix="£"
+                      duration={1200}
+                      decimals={2}
+                      delay={200}
+                    />
                   </span>
                 </div>
                 <div className="h-2 bg-muted rounded-full overflow-hidden">
@@ -710,7 +780,13 @@ export default function Home() {
                   }`}
                 >
                   {yearlyChange >= 0 ? "+" : ""}
-                  {yearlyChange.toFixed(1)}% year-over-year
+                  <AnimatedCounter
+                    value={Math.abs(yearlyChange)}
+                    suffix="% year-over-year"
+                    duration={1000}
+                    decimals={1}
+                    delay={300}
+                  />
                 </span>
               </div>
             </div>
@@ -728,27 +804,52 @@ export default function Home() {
             <div className="space-y-4">
               <div className="flex items-center justify-between pb-3 border-b">
                 <span className="text-sm font-medium">Total Invoices</span>
-                <span className="text-2xl font-bold">{invoices.length}</span>
+                <span className="text-2xl font-bold">
+                  <AnimatedCounter
+                    value={invoices.length}
+                    duration={1000}
+                    decimals={0}
+                    delay={100}
+                  />
+                </span>
               </div>
               <div className="flex items-center justify-between pb-3 border-b">
                 <span className="text-sm font-medium">Payment Rate</span>
                 <span className="text-2xl font-bold text-green-600">
-                  {invoices.length > 0
-                    ? ((statusCounts.paid / invoices.length) * 100).toFixed(0)
-                    : 0}
-                  %
+                  <AnimatedCounter
+                    value={
+                      invoices.length > 0
+                        ? (statusCounts.paid / invoices.length) * 100
+                        : 0
+                    }
+                    suffix="%"
+                    duration={1000}
+                    decimals={0}
+                    delay={200}
+                  />
                 </span>
               </div>
               <div className="flex items-center justify-between pb-3 border-b">
                 <span className="text-sm font-medium">Unique Shows</span>
                 <span className="text-2xl font-bold">
-                  {Object.keys(showRevenue).length}
+                  <AnimatedCounter
+                    value={Object.keys(showRevenue).length}
+                    duration={800}
+                    decimals={0}
+                    delay={300}
+                  />
                 </span>
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-sm font-medium">This Month</span>
                 <span className="text-2xl font-bold">
-                  £{currentMonthRevenue.toFixed(2)}
+                  <AnimatedCounter
+                    value={currentMonthRevenue}
+                    prefix="£"
+                    duration={1200}
+                    decimals={2}
+                    delay={400}
+                  />
                 </span>
               </div>
             </div>
@@ -775,7 +876,7 @@ export default function Home() {
             <div className="text-center py-12">
               <p className="text-sm text-muted-foreground">Loading...</p>
             </div>
-          ) : filteredInvoices.length === 0 ? (
+          ) : sortedInvoices.length === 0 ? (
             <div className="text-center py-12">
               <FileTextIcon className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
               <h3 className="text-lg font-medium mb-2">No invoices yet</h3>
@@ -803,7 +904,7 @@ export default function Home() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredInvoices.map((invoice) => (
+                {sortedInvoices.map((invoice) => (
                   <TableRow key={invoice.id}>
                     <TableCell className="font-medium">
                       {invoice.invoiceNumber}

@@ -118,10 +118,8 @@ export default function InvoiceDetailPage({ params }: Props) {
 
   return (
     <div className="max-w-6xl mx-auto px-6 py-4">
-      <Button asChild className="mb-4" variant="outline">
-        <Link href="/">
-          <ArrowLeftIcon /> Back
-        </Link>
+      <Button onClick={() => router.back()} className="mb-4" variant="outline">
+        <ArrowLeftIcon /> Back
       </Button>
       <div className="grid gap-4">
         <div className="flex gap-2 justify-between items-start md:flex-row flex-col">

@@ -45,7 +45,8 @@ export const LandingPage = () => {
               Leading Invoicing Solution for Freelancers
             </h3>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              Nearly 20 years of WWE production experience built into every feature
+              Nearly 20 years of WWE production experience built into every
+              feature
             </p>
           </div>
 
@@ -57,7 +58,8 @@ export const LandingPage = () => {
                 </div>
                 <CardTitle className="text-xl">Lightning Fast</CardTitle>
                 <CardDescription className="text-base mt-2">
-                  Generate professional invoices in seconds with intelligent auto-fill and smart calculations
+                  Generate professional invoices in seconds with intelligent
+                  auto-fill and smart calculations
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -76,7 +78,8 @@ export const LandingPage = () => {
                 </div>
                 <CardTitle className="text-xl">Secure & Reliable</CardTitle>
                 <CardDescription className="text-base mt-2">
-                  Bank-grade security with automatic backups. Your data is always safe and accessible
+                  Bank-grade security with automatic backups. Your data is
+                  always safe and accessible
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -95,7 +98,8 @@ export const LandingPage = () => {
                 </div>
                 <CardTitle className="text-xl">Work From Anywhere</CardTitle>
                 <CardDescription className="text-base mt-2">
-                  Access your invoices from any device, anywhere in the world. Cloud-based and always in sync
+                  Access your invoices from any device, anywhere in the world.
+                  Cloud-based and always in sync
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -121,7 +125,8 @@ export const LandingPage = () => {
               Everything You Need in One Place
             </h3>
             <p className="text-center text-muted-foreground text-lg max-w-2xl mx-auto">
-              Powerful features designed specifically for WWE freelancers and production staff
+              Powerful features designed specifically for WWE freelancers and
+              production staff
             </p>
           </div>
 
@@ -244,7 +249,10 @@ export const LandingPage = () => {
                 How do I get started with creating invoices?
               </AccordionTrigger>
               <AccordionContent className="text-base text-muted-foreground">
-                Simply sign up for a free account, complete your profile with your personal and banking details, and you&apos;re ready to create your first invoice. The system will auto-fill your information for all future invoices.
+                Simply sign up for a free account, complete your profile with
+                your personal and banking details, and you&apos;re ready to
+                create your first invoice. The system will auto-fill your
+                information for all future invoices.
               </AccordionContent>
             </AccordionItem>
 
@@ -253,7 +261,10 @@ export const LandingPage = () => {
                 Can I track overtime hours?
               </AccordionTrigger>
               <AccordionContent className="text-base text-muted-foreground">
-                Yes! Our system includes built-in overtime tracking with 1.5x and 2x rate calculations. Simply add your overtime entries by date and the system automatically calculates the correct amounts based on your day rate.
+                Yes! Our system includes built-in overtime tracking with 1.5x
+                and 2x rate calculations. Simply add your overtime entries by
+                date and the system automatically calculates the correct amounts
+                based on your day rate.
               </AccordionContent>
             </AccordionItem>
 
@@ -262,7 +273,9 @@ export const LandingPage = () => {
                 What currencies are supported?
               </AccordionTrigger>
               <AccordionContent className="text-base text-muted-foreground">
-                We support GBP, USD, EUR, CAD, and AUD. You can set your preferred currency in your profile settings, and all invoices will use that currency by default.
+                We support GBP, USD, EUR, CAD, and AUD. You can set your
+                preferred currency in your profile settings, and all invoices
+                will use that currency by default.
               </AccordionContent>
             </AccordionItem>
 
@@ -271,7 +284,10 @@ export const LandingPage = () => {
                 Is my financial data secure?
               </AccordionTrigger>
               <AccordionContent className="text-base text-muted-foreground">
-                Absolutely. We use industry-standard encryption and secure authentication through NextAuth. Your banking details and invoice data are stored securely in our PostgreSQL database with regular backups.
+                Absolutely. We use industry-standard encryption and secure
+                authentication through NextAuth. Your banking details and
+                invoice data are stored securely in our PostgreSQL database with
+                regular backups.
               </AccordionContent>
             </AccordionItem>
 
@@ -280,7 +296,10 @@ export const LandingPage = () => {
                 Can I customize my invoices?
               </AccordionTrigger>
               <AccordionContent className="text-base text-muted-foreground">
-                Yes! You can add custom line items, manage per diems for work and travel days, include custom expenses, and add notes to each invoice. The system automatically calculates totals and generates professional PDF exports.
+                Yes! You can add custom line items, manage per diems for work
+                and travel days, include custom expenses, and add notes to each
+                invoice. The system automatically calculates totals and
+                generates professional PDF exports.
               </AccordionContent>
             </AccordionItem>
 
@@ -289,7 +308,10 @@ export const LandingPage = () => {
                 How does the day rate calculation work?
               </AccordionTrigger>
               <AccordionContent className="text-base text-muted-foreground">
-                Your day rate covers work, travel, and dark days. The system calculates your regular hourly rate as 10% of your day rate (based on a 10-hour day). This hourly rate is then used for overtime calculations at 1.5x or 2x multipliers.
+                Your day rate covers work, travel, and dark days. The system
+                calculates your regular hourly rate as 10% of your day rate
+                (based on a 10-hour day). This hourly rate is then used for
+                overtime calculations at 1.5x or 2x multipliers.
               </AccordionContent>
             </AccordionItem>
           </Accordion>
@@ -323,10 +345,12 @@ export const LandingPage = () => {
                   ))}
                 </div>
                 <CardDescription className="text-base leading-relaxed">
-                  &ldquo;This system completely changed how I manage my WWE invoicing. The overtime tracking and per diem management saves me hours every month.&rdquo;
+                  &ldquo;This system completely changed how I manage my WWE
+                  invoicing. The overtime tracking and per diem management saves
+                  me hours every month.&rdquo;
                 </CardDescription>
               </CardHeader>
-              <CardContent>
+              <CardContent className="mt-auto">
                 <p className="font-semibold">Sarah Mitchell</p>
                 <p className="text-sm text-muted-foreground">
                   Production Coordinator
@@ -348,12 +372,16 @@ export const LandingPage = () => {
                   ))}
                 </div>
                 <CardDescription className="text-base leading-relaxed">
-                  &ldquo;Professional PDFs, easy expense tracking, and automatic calculations. Everything I need for billing my freelance work. Highly recommended!&rdquo;
+                  &ldquo;Professional PDFs, easy expense tracking, and automatic
+                  calculations. Everything I need for billing my freelance work.
+                  Highly recommended!&rdquo;
                 </CardDescription>
               </CardHeader>
-              <CardContent>
+              <CardContent className="mt-auto">
                 <p className="font-semibold">Marcus Chen</p>
-                <p className="text-sm text-muted-foreground">Lighting Technician</p>
+                <p className="text-sm text-muted-foreground">
+                  Lighting Technician
+                </p>
               </CardContent>
             </Card>
 
@@ -371,10 +399,12 @@ export const LandingPage = () => {
                   ))}
                 </div>
                 <CardDescription className="text-base leading-relaxed">
-                  &ldquo;Clean interface, powerful features, and it just works. The automatic profile pre-fill is a game-changer for creating invoices quickly.&rdquo;
+                  &ldquo;Clean interface, powerful features, and it just works.
+                  The automatic profile pre-fill is a game-changer for creating
+                  invoices quickly.&rdquo;
                 </CardDescription>
               </CardHeader>
-              <CardContent>
+              <CardContent className="mt-auto">
                 <p className="font-semibold">Jessica Rodriguez</p>
                 <p className="text-sm text-muted-foreground">Audio Engineer</p>
               </CardContent>
@@ -390,13 +420,19 @@ export const LandingPage = () => {
             Ready to Simplify Your Invoicing?
           </h2>
           <p className="text-lg md:text-xl text-muted-foreground mb-10 max-w-2xl mx-auto">
-            Join WWE freelancers worldwide who trust our platform for their professional invoice management.
+            Join WWE freelancers worldwide who trust our platform for their
+            professional invoice management.
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <Button asChild size="lg" className="text-base px-8">
               <Link href="/auth/signup">Get Started Free</Link>
             </Button>
-            <Button asChild variant="outline" size="lg" className="text-base px-8">
+            <Button
+              asChild
+              variant="outline"
+              size="lg"
+              className="text-base px-8"
+            >
               <Link href="/auth/signin">Sign In</Link>
             </Button>
           </div>

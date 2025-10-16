@@ -140,6 +140,27 @@ export const generateInvoicePdf = async (
     currency: totals.currency,
   });
 
+  // Calculate total number of line items
+  const totalLineItems =
+    totals.items.filter((item) => item.quantity > 0).length +
+    totals.overtimeEntries.length +
+    totals.customExpenseEntries.length;
+
+  // Dynamic spacing based on number of items
+  // Adjust spacing to fit more items on one page
+  const isCompact = totalLineItems > 15;
+  const isVeryCompact = totalLineItems > 25;
+
+  // Spacing configuration
+  const headerHeight = isVeryCompact ? 80 : isCompact ? 90 : 120;
+  const headerFontSize = isVeryCompact ? 24 : isCompact ? 28 : 32;
+  const sectionSpacing = isVeryCompact ? 12 : isCompact ? 18 : 30;
+  const addressLineHeight = isVeryCompact ? 10 : isCompact ? 11 : 12;
+  const addressFontSize = isVeryCompact ? 7.5 : isCompact ? 8 : 9;
+  const itemLineHeight = isVeryCompact ? 12 : isCompact ? 14 : 18;
+  const itemFontSize = isVeryCompact ? 7 : isCompact ? 8 : 9;
+  const tablePadding = isVeryCompact ? 14 : isCompact ? 16 : 20;
+
   let y = height - 60;
   const leftMargin = 50;
   const rightMargin = width - 50;
@@ -148,17 +169,17 @@ export const generateInvoicePdf = async (
   // Header with colored background
   page.drawRectangle({
     x: 0,
-    y: height - 120,
+    y: height - headerHeight,
     width: width,
-    height: 120,
+    height: headerHeight,
     color: primaryColor,
   });
 
   // INVOICE title
   page.drawText("INVOICE", {
     x: leftMargin,
-    y: height - 70,
-    size: 32,
+    y: height - (headerHeight * 0.6),
+    size: headerFontSize,
     font: fontBold,
     color: rgb(1, 1, 1),
   });
@@ -166,8 +187,8 @@ export const generateInvoicePdf = async (
   // Invoice number and date (white text on colored background)
   page.drawText(`#${input.invoiceNumber}`, {
     x: rightMargin - 150,
-    y: height - 60,
-    size: 14,
+    y: height - (headerHeight * 0.5),
+    size: isVeryCompact ? 11 : isCompact ? 12 : 14,
     font: fontBold,
     color: rgb(1, 1, 1),
   });
@@ -176,35 +197,35 @@ export const generateInvoicePdf = async (
     `Date: ${formatDateGB(input.invoiceDate)}`,
     {
       x: rightMargin - 150,
-      y: height - 80,
-      size: 10,
+      y: height - (headerHeight * 0.7),
+      size: isVeryCompact ? 8 : isCompact ? 9 : 10,
       font: fontRegular,
       color: rgb(0.9, 0.9, 0.9),
     }
   );
 
-  y = height - 150;
+  y = height - headerHeight - sectionSpacing;
 
   // Project name (if exists)
   if (input.showName) {
     page.drawText("PROJECT", {
       x: leftMargin,
       y,
-      size: 9,
+      size: addressFontSize,
       font: fontBold,
       color: accentColor,
     });
-    y -= 15;
+    y -= addressLineHeight + 2;
     page.drawText(input.showName, {
       x: leftMargin,
       y,
-      size: 12,
+      size: addressFontSize + 2,
       font: fontRegular,
       color: textColor,
     });
-    y -= 30;
+    y -= sectionSpacing;
   } else {
-    y -= 20;
+    y -= sectionSpacing * 0.5;
   }
 
   // Two-column layout for Bill From and Bill To
@@ -217,48 +238,48 @@ export const generateInvoicePdf = async (
   page.drawText("BILL FROM", {
     x: billFromX,
     y: billFromY,
-    size: 9,
+    size: addressFontSize,
     font: fontBold,
     color: accentColor,
   });
-  billFromY -= 18;
+  billFromY -= addressLineHeight + 4;
 
   page.drawText(input.fullName, {
     x: billFromX,
     y: billFromY,
-    size: 11,
+    size: addressFontSize + 2,
     font: fontBold,
     color: textColor,
   });
-  billFromY -= 14;
+  billFromY -= addressLineHeight + 2;
 
   page.drawText(input.email, {
     x: billFromX,
     y: billFromY,
-    size: 9,
+    size: addressFontSize,
     font: fontRegular,
     color: textColor,
   });
-  billFromY -= 14;
+  billFromY -= addressLineHeight + 2;
 
   page.drawText(input.addressLine1, {
     x: billFromX,
     y: billFromY,
-    size: 9,
+    size: addressFontSize,
     font: fontRegular,
     color: textColor,
   });
-  billFromY -= 12;
+  billFromY -= addressLineHeight;
 
   if (input.addressLine2) {
     page.drawText(input.addressLine2, {
       x: billFromX,
       y: billFromY,
-      size: 9,
+      size: addressFontSize,
       font: fontRegular,
       color: textColor,
     });
-    billFromY -= 12;
+    billFromY -= addressLineHeight;
   }
 
   page.drawText(
@@ -266,27 +287,27 @@ export const generateInvoicePdf = async (
     {
       x: billFromX,
       y: billFromY,
-      size: 9,
+      size: addressFontSize,
       font: fontRegular,
       color: textColor,
     }
   );
-  billFromY -= 12;
+  billFromY -= addressLineHeight;
 
   page.drawText(input.country, {
     x: billFromX,
     y: billFromY,
-    size: 9,
+    size: addressFontSize,
     font: fontRegular,
     color: textColor,
   });
-  billFromY -= 12;
+  billFromY -= addressLineHeight;
 
   if (input.dateOfBirth) {
     page.drawText(`DOB: ${formatDateGBShort(input.dateOfBirth)}`, {
       x: billFromX,
       y: billFromY,
-      size: 9,
+      size: addressFontSize,
       font: fontRegular,
       color: textColor,
     });
@@ -299,54 +320,54 @@ export const generateInvoicePdf = async (
   page.drawText("BILL TO", {
     x: billToX,
     y: billToY,
-    size: 9,
+    size: addressFontSize,
     font: fontBold,
     color: accentColor,
   });
-  billToY -= 18;
+  billToY -= addressLineHeight + 4;
 
   if (input.clientName) {
     page.drawText(input.clientName, {
       x: billToX,
       y: billToY,
-      size: 11,
+      size: addressFontSize + 2,
       font: fontBold,
       color: textColor,
     });
-    billToY -= 14;
+    billToY -= addressLineHeight + 2;
   }
 
   if (input.attentionTo) {
     page.drawText(`Attn: ${input.attentionTo}`, {
       x: billToX,
       y: billToY,
-      size: 9,
+      size: addressFontSize,
       font: fontRegular,
       color: textColor,
     });
-    billToY -= 14;
+    billToY -= addressLineHeight + 2;
   }
 
   if (input.clientAddress1) {
     page.drawText(input.clientAddress1, {
       x: billToX,
       y: billToY,
-      size: 9,
+      size: addressFontSize,
       font: fontRegular,
       color: textColor,
     });
-    billToY -= 12;
+    billToY -= addressLineHeight;
   }
 
   if (input.clientAddress2) {
     page.drawText(input.clientAddress2, {
       x: billToX,
       y: billToY,
-      size: 9,
+      size: addressFontSize,
       font: fontRegular,
       color: textColor,
     });
-    billToY -= 12;
+    billToY -= addressLineHeight;
   }
 
   if (input.clientCity || input.clientPostalCode || input.clientState) {
@@ -358,25 +379,25 @@ export const generateInvoicePdf = async (
     page.drawText(parts.join(", "), {
       x: billToX,
       y: billToY,
-      size: 9,
+      size: addressFontSize,
       font: fontRegular,
       color: textColor,
     });
-    billToY -= 12;
+    billToY -= addressLineHeight;
   }
 
   if (input.clientCountry) {
     page.drawText(input.clientCountry, {
       x: billToX,
       y: billToY,
-      size: 9,
+      size: addressFontSize,
       font: fontRegular,
       color: textColor,
     });
   }
 
-  // Move to items section
-  y = Math.min(billFromY, billToY) - 40;
+  // Move to items section with extra spacing
+  y = Math.min(billFromY, billToY) - (sectionSpacing * 1.5);
 
   // Items table header with background
   const tableHeaderY = y;
@@ -384,44 +405,44 @@ export const generateInvoicePdf = async (
     x: leftMargin,
     y: tableHeaderY - 2,
     width: contentWidth,
-    height: 20,
+    height: tablePadding,
     color: lightGray,
   });
 
   // Table headers
   page.drawText("DESCRIPTION", {
     x: leftMargin + 5,
-    y: tableHeaderY + 5,
-    size: 9,
+    y: tableHeaderY + (tablePadding * 0.25),
+    size: itemFontSize,
     font: fontBold,
     color: textColor,
   });
 
   page.drawText("QTY", {
     x: rightMargin - 200,
-    y: tableHeaderY + 5,
-    size: 9,
+    y: tableHeaderY + (tablePadding * 0.25),
+    size: itemFontSize,
     font: fontBold,
     color: textColor,
   });
 
   page.drawText("RATE", {
     x: rightMargin - 140,
-    y: tableHeaderY + 5,
-    size: 9,
+    y: tableHeaderY + (tablePadding * 0.25),
+    size: itemFontSize,
     font: fontBold,
     color: textColor,
   });
 
   page.drawText("AMOUNT", {
     x: rightMargin - 75,
-    y: tableHeaderY + 5,
-    size: 9,
+    y: tableHeaderY + (tablePadding * 0.25),
+    size: itemFontSize,
     font: fontBold,
     color: textColor,
   });
 
-  y -= 25;
+  y -= tablePadding + 5;
 
   // Helper to draw a line item
   const drawLineItem = (
@@ -430,15 +451,16 @@ export const generateInvoicePdf = async (
     rate: string,
     amount: string
   ) => {
-    if (y < 150) {
-      pdfDoc.addPage([595.28, 841.89]);
-      y = height - 60;
-    }
+    // Truncate description if too long to prevent overflow
+    const maxDescLength = isVeryCompact ? 45 : isCompact ? 55 : 65;
+    const truncatedDesc = desc.length > maxDescLength 
+      ? desc.substring(0, maxDescLength - 3) + '...' 
+      : desc;
 
-    page.drawText(desc, {
+    page.drawText(truncatedDesc, {
       x: leftMargin + 5,
       y,
-      size: 9,
+      size: itemFontSize,
       font: fontRegular,
       color: textColor,
     });
@@ -446,7 +468,7 @@ export const generateInvoicePdf = async (
     page.drawText(qty, {
       x: rightMargin - 200,
       y,
-      size: 9,
+      size: itemFontSize,
       font: fontRegular,
       color: textColor,
     });
@@ -454,7 +476,7 @@ export const generateInvoicePdf = async (
     page.drawText(rate, {
       x: rightMargin - 140,
       y,
-      size: 9,
+      size: itemFontSize,
       font: fontRegular,
       color: textColor,
     });
@@ -462,12 +484,12 @@ export const generateInvoicePdf = async (
     page.drawText(amount, {
       x: rightMargin - 75,
       y,
-      size: 9,
+      size: itemFontSize,
       font: fontRegular,
       color: textColor,
     });
 
-    y -= 18;
+    y -= itemLineHeight;
   };
 
   // Draw all items (excluding zero-quantity items)
@@ -508,7 +530,7 @@ export const generateInvoicePdf = async (
     );
   });
 
-  y -= 10;
+  y -= sectionSpacing * 0.5;
 
   // Separator line
   page.drawLine({
@@ -518,171 +540,186 @@ export const generateInvoicePdf = async (
     color: borderColor,
   });
 
-  y -= 25;
+  y -= sectionSpacing * 0.8;
 
   // Subtotals and Total
   const summaryX = rightMargin - 200;
+  const summaryFontSize = isVeryCompact ? 8 : isCompact ? 9 : 10;
+  const summaryLineHeight = isVeryCompact ? 12 : isCompact ? 14 : 16;
 
   if (totals.itemsTotal > 0) {
     page.drawText("Items Subtotal:", {
       x: summaryX,
       y,
-      size: 10,
+      size: summaryFontSize,
       font: fontRegular,
       color: textColor,
     });
     page.drawText(fmt.format(totals.itemsTotal), {
       x: rightMargin - 75,
       y,
-      size: 10,
+      size: summaryFontSize,
       font: fontRegular,
       color: textColor,
     });
-    y -= 16;
+    y -= summaryLineHeight;
   }
 
   if (totals.overtimeTotal > 0) {
     page.drawText("Overtime Subtotal:", {
       x: summaryX,
       y,
-      size: 10,
+      size: summaryFontSize,
       font: fontRegular,
       color: textColor,
     });
     page.drawText(fmt.format(totals.overtimeTotal), {
       x: rightMargin - 75,
       y,
-      size: 10,
+      size: summaryFontSize,
       font: fontRegular,
       color: textColor,
     });
-    y -= 16;
+    y -= summaryLineHeight;
   }
 
   if (totals.customExpensesTotal > 0) {
     page.drawText("Expenses Subtotal:", {
       x: summaryX,
       y,
-      size: 10,
+      size: summaryFontSize,
       font: fontRegular,
       color: textColor,
     });
     page.drawText(fmt.format(totals.customExpensesTotal), {
       x: rightMargin - 75,
       y,
-      size: 10,
+      size: summaryFontSize,
       font: fontRegular,
       color: textColor,
     });
-    y -= 16;
+    y -= summaryLineHeight;
   }
 
-  y -= 10;
+  y -= sectionSpacing * 0.4;
 
   // Total with colored background
+  const totalBoxHeight = isVeryCompact ? 18 : isCompact ? 20 : 25;
+  const totalFontSize = isVeryCompact ? 10 : isCompact ? 11 : 12;
+  
   page.drawRectangle({
     x: summaryX - 10,
     y: y - 5,
     width: rightMargin - summaryX + 10,
-    height: 25,
+    height: totalBoxHeight,
     color: primaryColor,
   });
 
   page.drawText("TOTAL", {
     x: summaryX,
-    y: y + 2.5,
-    size: 12,
+    y: y + (totalBoxHeight * 0.1),
+    size: totalFontSize,
     font: fontBold,
     color: rgb(1, 1, 1),
   });
 
   page.drawText(fmt.format(totals.totalAmount), {
     x: rightMargin - 75,
-    y: y + 4,
-    size: 12,
+    y: y + (totalBoxHeight * 0.15),
+    size: totalFontSize,
     font: fontBold,
     color: rgb(1, 1, 1),
   });
 
-  y -= 40;
+  y -= sectionSpacing * 1.2;
 
   // Banking details section
+  const paymentFontSize = isVeryCompact ? 7.5 : isCompact ? 8 : 9;
+  const paymentTitleSize = isVeryCompact ? 8 : isCompact ? 9 : 10;
+  const paymentLineHeight = isVeryCompact ? 10 : isCompact ? 12 : 14;
+  
   page.drawText("PAYMENT DETAILS", {
     x: leftMargin,
     y,
-    size: 10,
+    size: paymentTitleSize,
     font: fontBold,
     color: accentColor,
   });
-  y -= 18;
+  y -= paymentLineHeight + 2;
 
   page.drawText(`IBAN: ${input.iban}`, {
     x: leftMargin,
     y,
-    size: 9,
+    size: paymentFontSize,
     font: fontRegular,
     color: textColor,
   });
-  y -= 14;
+  y -= paymentLineHeight;
 
   page.drawText(`SWIFT/BIC: ${input.swiftBic}`, {
     x: leftMargin,
     y,
-    size: 9,
+    size: paymentFontSize,
     font: fontRegular,
     color: textColor,
   });
-  y -= 14;
+  y -= paymentLineHeight;
 
   if (input.accountNumber) {
     page.drawText(`Account Number: ${input.accountNumber}`, {
       x: leftMargin,
       y,
-      size: 9,
+      size: paymentFontSize,
       font: fontRegular,
       color: textColor,
     });
-    y -= 14;
+    y -= paymentLineHeight;
   }
 
   if (input.sortCode) {
     page.drawText(`Sort Code: ${input.sortCode}`, {
       x: leftMargin,
       y,
-      size: 9,
+      size: paymentFontSize,
       font: fontRegular,
       color: textColor,
     });
-    y -= 14;
+    y -= paymentLineHeight;
   }
 
   if (input.bankAddress) {
     page.drawText(`Bank Address: ${input.bankAddress}`, {
       x: leftMargin,
       y,
-      size: 9,
+      size: paymentFontSize,
       font: fontRegular,
       color: textColor,
     });
-    y -= 14;
+    y -= paymentLineHeight;
   }
 
   // Notes
   if (input.notes) {
-    y -= 10;
+    y -= sectionSpacing * 0.5;
     page.drawText("NOTES", {
       x: leftMargin,
       y,
-      size: 10,
+      size: paymentTitleSize,
       font: fontBold,
       color: accentColor,
     });
-    y -= 18;
+    y -= paymentLineHeight + 2;
 
-    page.drawText(input.notes, {
+    // Truncate notes if too long in compact mode
+    const maxNotesLength = isVeryCompact ? 120 : isCompact ? 150 : 200;
+    const truncatedNotes = input.notes.length > maxNotesLength
+      ? input.notes.substring(0, maxNotesLength - 3) + '...'
+      : input.notes;
+
+    page.drawText(truncatedNotes, {
       x: leftMargin,
       y,
-      size: 9,
+      size: paymentFontSize,
       font: fontRegular,
       color: textColor,
     });

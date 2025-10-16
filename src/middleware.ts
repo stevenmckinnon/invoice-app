@@ -1,37 +1,44 @@
+import { auth } from "@/auth";
 import { NextResponse } from "next/server";
-import type { NextRequest } from "next/server";
 
-export function middleware(request: NextRequest) {
-  const { pathname } = request.nextUrl;
+export default auth((req) => {
+  const { pathname } = req.nextUrl;
+  const isAuthenticated = !!req.auth;
 
   // Public paths that don't require authentication
   const publicPaths = [
     "/",
     "/auth/signin",
     "/auth/signup",
-    "/api/auth",
   ];
 
-  // Allow public paths
-  if (publicPaths.some((path) => pathname === path || pathname.startsWith(path))) {
+  // Auth API routes should always be accessible
+  if (pathname.startsWith("/api/auth")) {
     return NextResponse.next();
   }
 
-  // Check for session token (NextAuth uses this cookie)
-  const sessionToken = request.cookies.get("next-auth.session-token") || 
-                       request.cookies.get("__Secure-next-auth.session-token");
+  // Check if the current path is public
+  const isPublicPath = publicPaths.some(
+    (path) => pathname === path || pathname.startsWith(path)
+  );
 
-  // If no session token, redirect to sign-in page
-  if (!sessionToken) {
-    const url = request.nextUrl.clone();
+  // If user is not authenticated and trying to access protected route
+  if (!isAuthenticated && !isPublicPath) {
+    const url = req.nextUrl.clone();
     url.pathname = "/auth/signin";
     url.searchParams.set("callbackUrl", pathname);
     return NextResponse.redirect(url);
   }
 
-  // User is authenticated, allow the request
+  // If user is authenticated and on auth pages, redirect to home
+  if (isAuthenticated && (pathname === "/auth/signin" || pathname === "/auth/signup")) {
+    const url = req.nextUrl.clone();
+    url.pathname = "/";
+    return NextResponse.redirect(url);
+  }
+
   return NextResponse.next();
-}
+});
 
 export const config = {
   matcher: [
