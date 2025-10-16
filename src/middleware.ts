@@ -1,30 +1,36 @@
-export function middleware(request: Request) {
-  const url = new URL(request.url);
-  const { pathname } = url;
+import { NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
 
-  // Skip API routes
+export function middleware(request: NextRequest) {
+  const { pathname } = request.nextUrl;
+
+  // Public paths that don't require authentication
+  const publicPaths = ["/", "/auth/signin", "/auth/signup"];
+  const isPublicPath = publicPaths.includes(pathname);
+
+  // Skip middleware for API routes
   if (pathname.startsWith("/api/")) {
-    return;
+    return NextResponse.next();
   }
 
-  // Public paths
-  const isPublic = pathname === "/" || pathname === "/auth/signin" || pathname === "/auth/signup";
-  
-  // Get cookies
-  const cookieHeader = request.headers.get("cookie") || "";
-  const hasSession = cookieHeader.includes("better-auth.session_token=");
+  // Check for Better Auth session cookie
+  const sessionToken = request.cookies.get("better-auth.session_token")?.value;
+  const isAuthenticated = !!sessionToken;
 
-  // Redirect logic
-  if (!hasSession && !isPublic) {
+  // Redirect unauthenticated users to sign-in
+  if (!isAuthenticated && !isPublicPath) {
+    const url = request.nextUrl.clone();
     url.pathname = "/auth/signin";
     url.searchParams.set("callbackUrl", pathname);
-    return Response.redirect(url);
+    return NextResponse.redirect(url);
   }
 
-  if (hasSession && (pathname === "/auth/signin" || pathname === "/auth/signup")) {
-    url.pathname = "/";
-    return Response.redirect(url);
+  // Redirect authenticated users away from auth pages
+  if (isAuthenticated && (pathname === "/auth/signin" || pathname === "/auth/signup")) {
+    return NextResponse.redirect(new URL("/", request.url));
   }
+
+  return NextResponse.next();
 }
 
 export const config = {

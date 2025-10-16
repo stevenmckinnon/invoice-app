@@ -14,10 +14,10 @@ import { Mail } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import { toast } from "sonner";
 
-export default function SignInPage() {
+const SignInForm = () => {
   const searchParams = useSearchParams();
   const callbackUrl = searchParams.get("callbackUrl") || "/";
   
@@ -140,5 +140,17 @@ export default function SignInPage() {
         </div>
       </div>
     </div>
+  );
+};
+
+export default function SignInPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex items-center justify-center min-h-[calc(100dvh-64px)]">
+        <p className="text-muted-foreground">Loading...</p>
+      </div>
+    }>
+      <SignInForm />
+    </Suspense>
   );
 }
