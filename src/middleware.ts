@@ -4,17 +4,17 @@ import type { NextRequest } from "next/server";
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
+  // Skip middleware for API routes entirely
+  if (pathname.startsWith("/api/")) {
+    return NextResponse.next();
+  }
+
   // Public paths that don't require authentication
   const publicPaths = [
     "/",
     "/auth/signin",
     "/auth/signup",
   ];
-
-  // Auth API routes should always be accessible
-  if (pathname.startsWith("/api/auth")) {
-    return NextResponse.next();
-  }
 
   // Check if the current path is public
   const isPublicPath = publicPaths.some(
@@ -50,11 +50,12 @@ export const config = {
   matcher: [
     /*
      * Match all request paths except for the ones starting with:
+     * - api (API routes)
      * - _next/static (static files)
      * - _next/image (image optimization files)
      * - favicon.ico (favicon file)
      * - public folder files
      */
-    "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|JPG|jpeg|gif|webp)$).*)",
+    "/((?!api|_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|JPG|jpeg|gif|webp)$).*)",
   ],
 };

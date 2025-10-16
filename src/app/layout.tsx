@@ -1,14 +1,14 @@
 import type { Metadata } from "next";
 import { Roboto, Roboto_Mono } from "next/font/google";
 import "./globals.css";
-import { ThemeProvider } from "@/components/theme-provider";
 import { AppHeader } from "@/components/AppHeader";
-import { SessionProvider } from "next-auth/react";
+import { Providers } from "@/components/Providers";
 import { Toaster } from "@/components/ui/sonner";
 
 const robotoSans = Roboto({
   variable: "--font-roboto-sans",
   subsets: ["latin"],
+  weight: ["400", "500", "700"],
 });
 
 const robotoMono = Roboto_Mono({
@@ -31,18 +31,11 @@ export default function RootLayout({
       <body
         className={`${robotoSans.variable} ${robotoMono.variable} antialiased`}
       >
-        <SessionProvider>
-          <ThemeProvider
-            attribute="class"
-            defaultTheme="system"
-            enableSystem
-            disableTransitionOnChange
-          >
-            <AppHeader />
-            <main className="mx-auto h-[calc(100dvh-64px)]">{children}</main>
-            <Toaster />
-          </ThemeProvider>
-        </SessionProvider>
+        <Providers>
+          <AppHeader />
+          <main className="mx-auto h-[calc(100dvh-64px)]">{children}</main>
+          <Toaster />
+        </Providers>
       </body>
     </html>
   );
