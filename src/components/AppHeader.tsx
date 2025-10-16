@@ -55,7 +55,7 @@ export const AppHeader = () => {
                     WWE Invoicing
                   </SheetTitle>
                 </SheetHeader>
-                <nav className="flex flex-col gap-4 mt-8">
+                <nav className="flex flex-col px-4 gap-4 mt-4">
                   <Link
                     href="/"
                     onClick={() => setMobileMenuOpen(false)}
