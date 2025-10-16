@@ -3,8 +3,9 @@ import { NextRequest, NextResponse } from "next/server";
 import { PrismaClient } from "@/generated/prisma";
 import { z } from "zod";
 import { calculateInvoiceTotals, type InvoicePdfInput } from "@/lib/pdf";
-import { auth } from "@/auth";
+import { auth } from "@/lib/auth";
 import { parseDate } from "@/lib/utils";
+import { headers } from "next/headers";
 
 const prisma = new PrismaClient();
 
@@ -74,7 +75,10 @@ type RouteContext = {
 
 export const PUT = async (req: NextRequest, context: RouteContext) => {
   try {
-    const session = await auth();
+    const session = await auth.api.getSession({
+      headers: await headers(),
+    });
+    
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
@@ -183,7 +187,10 @@ export const PUT = async (req: NextRequest, context: RouteContext) => {
 
 export const DELETE = async (req: NextRequest, context: RouteContext) => {
   try {
-    const session = await auth();
+    const session = await auth.api.getSession({
+      headers: await headers(),
+    });
+    
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
@@ -209,7 +216,10 @@ export const DELETE = async (req: NextRequest, context: RouteContext) => {
 
 export const GET = async (req: NextRequest, context: RouteContext) => {
   try {
-    const session = await auth();
+    const session = await auth.api.getSession({
+      headers: await headers(),
+    });
+    
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }

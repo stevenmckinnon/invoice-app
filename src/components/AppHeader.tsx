@@ -1,8 +1,8 @@
 "use client";
 
-import { useSession, signOut } from "next-auth/react";
+import { useSession, signOut } from "@/lib/auth-client";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -29,7 +29,13 @@ export const AppHeader = () => {
   const { data: session } = useSession();
   const { theme, setTheme } = useTheme();
   const pathname = usePathname();
+  const router = useRouter();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  const handleSignOut = async () => {
+    await signOut();
+    router.push("/auth/signin");
+  };
 
   return (
     <header className="sticky px-4 md:px-0 top-0 z-50 w-full bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 flex justify-center">
@@ -157,21 +163,21 @@ export const AppHeader = () => {
           </Button>
 
           {/* User Menu or Auth Buttons */}
-          {session?.user ? (
+          {session ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" className="h-9 gap-2 px-2">
                   <Avatar className="h-7 w-7">
                     <AvatarFallback className="text-xs">
                       {(
-                        session.user.firstName?.[0] ||
+                        session.user.name?.[0] ||
                         session.user.email?.[0] ||
                         "U"
                       ).toUpperCase()}
                     </AvatarFallback>
                   </Avatar>
                   <span className="hidden sm:inline-block text-sm">
-                    {session.user.firstName || session.user.email}
+                    {session.user.name?.split(' ')[0] || session.user.email}
                   </span>
                 </Button>
               </DropdownMenuTrigger>
@@ -179,9 +185,7 @@ export const AppHeader = () => {
                 <DropdownMenuLabel>
                   <div className="flex flex-col space-y-1">
                     <p className="text-sm font-medium">
-                      {session.user.fullName ||
-                        session.user.firstName ||
-                        "User"}
+                      {session.user.name || "User"}
                     </p>
                     <p className="text-xs text-muted-foreground">
                       {session.user.email}
@@ -197,7 +201,7 @@ export const AppHeader = () => {
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem
-                  onClick={() => signOut({ callbackUrl: "/auth/signin" })}
+                  onClick={handleSignOut}
                   className="cursor-pointer text-red-600 dark:text-red-400"
                 >
                   <LogOut className="mr-2 h-4 w-4" />

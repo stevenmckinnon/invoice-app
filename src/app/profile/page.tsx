@@ -127,9 +127,14 @@ export default function ProfilePage() {
   const onSubmit = async (values: ProfileFormValues) => {
     setSaving(true);
     try {
+      // Combine firstName and lastName to create fullName
+      const fullName = `${values.firstName} ${values.lastName}`.trim();
+      
       // Transform string values to numbers before sending to API
       const payload = {
         ...values,
+        name: fullName,
+        fullName: fullName,
         dayRate: values.dayRate ? Number(values.dayRate) : null,
         perDiemWork: values.perDiemWork ? Number(values.perDiemWork) : null,
         perDiemTravel: values.perDiemTravel ? Number(values.perDiemTravel) : null,

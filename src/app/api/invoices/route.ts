@@ -4,8 +4,9 @@ import { PrismaClient } from "@/generated/prisma";
 
 import { z } from "zod";
 import { calculateInvoiceTotals, type InvoicePdfInput } from "@/lib/pdf";
-import { auth } from "@/auth";
+import { auth } from "@/lib/auth";
 import { parseDate } from "@/lib/utils";
+import { headers } from "next/headers";
 
 const prisma = new PrismaClient();
 
@@ -71,7 +72,10 @@ const invoiceInputSchema = z.object({
 
 export const POST = async (req: NextRequest) => {
   try {
-    const session = await auth();
+    const session = await auth.api.getSession({
+      headers: await headers(),
+    });
+    
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
@@ -178,7 +182,10 @@ export const POST = async (req: NextRequest) => {
 };
 
 export const GET = async () => {
-  const session = await auth();
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  });
+  
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }

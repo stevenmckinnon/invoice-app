@@ -1,14 +1,18 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@/auth";
+import { auth } from "@/lib/auth";
 import { PrismaClient } from "@/generated/prisma";
 import { parseDate } from "@/lib/utils";
+import { headers } from "next/headers";
 
 const prisma = new PrismaClient();
 
 
 export const GET = async () => {
   try {
-    const session = await auth();
+    const session = await auth.api.getSession({
+      headers: await headers(),
+    });
+    
     if (!session?.user?.email) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
@@ -17,6 +21,7 @@ export const GET = async () => {
       where: { email: session.user.email },
       select: {
         id: true,
+        name: true,
         firstName: true,
         lastName: true,
         email: true,
@@ -56,7 +61,10 @@ export const GET = async () => {
 
 export const PUT = async (req: NextRequest) => {
   try {
-    const session = await auth();
+    const session = await auth.api.getSession({
+      headers: await headers(),
+    });
+    
     if (!session?.user?.email) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
@@ -65,6 +73,8 @@ export const PUT = async (req: NextRequest) => {
     const {
       firstName,
       lastName,
+      name,
+      fullName,
       addressLine1,
       addressLine2,
       city,
@@ -83,15 +93,13 @@ export const PUT = async (req: NextRequest) => {
       perDiemTravel,
     } = body;
 
-    // Combine firstName and lastName to create fullName
-    const fullName = `${firstName || ""} ${lastName || ""}`.trim() || null;
-
     const updatedUser = await prisma.user.update({
       where: { email: session.user.email },
       data: {
         firstName,
         lastName,
-        fullName,
+        name: name || fullName || `${firstName} ${lastName}`.trim(),
+        fullName: fullName || `${firstName} ${lastName}`.trim(),
         addressLine1,
         addressLine2,
         city,
@@ -111,6 +119,7 @@ export const PUT = async (req: NextRequest) => {
       },
       select: {
         id: true,
+        name: true,
         firstName: true,
         lastName: true,
         email: true,

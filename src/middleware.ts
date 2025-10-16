@@ -1,16 +1,37 @@
-import { auth } from "@/auth";
+import { NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
 
-export default auth((req) => {
-  if (
-    !req.auth &&
-    req.nextUrl.pathname !== "/auth/signin" &&
-    req.nextUrl.pathname !== "/" &&
-    req.nextUrl.pathname !== "/auth/signup"
-  ) {
-    const newUrl = new URL("/auth/signin", req.nextUrl.origin);
-    return Response.redirect(newUrl);
+export function middleware(request: NextRequest) {
+  const { pathname } = request.nextUrl;
+
+  // Public paths that don't require authentication
+  const publicPaths = ["/", "/auth/signin", "/auth/signup"];
+  const isPublicPath = publicPaths.includes(pathname);
+
+  // Skip middleware for API routes
+  if (pathname.startsWith("/api/")) {
+    return NextResponse.next();
   }
-});
+
+  // Check for Better Auth session cookie
+  const sessionToken = request.cookies.get("better-auth.session_token")?.value;
+  const isAuthenticated = !!sessionToken;
+
+  // Redirect unauthenticated users to sign-in
+  if (!isAuthenticated && !isPublicPath) {
+    const url = request.nextUrl.clone();
+    url.pathname = "/auth/signin";
+    url.searchParams.set("callbackUrl", pathname);
+    return NextResponse.redirect(url);
+  }
+
+  // Redirect authenticated users away from auth pages
+  if (isAuthenticated && (pathname === "/auth/signin" || pathname === "/auth/signup")) {
+    return NextResponse.redirect(new URL("/", request.url));
+  }
+
+  return NextResponse.next();
+}
 
 export const config = {
   matcher: [

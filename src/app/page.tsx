@@ -28,7 +28,7 @@ import {
   TrendingDown,
   TrendingUp,
 } from "lucide-react";
-import { useSession } from "next-auth/react";
+import { useSession } from "@/lib/auth-client";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import {
@@ -64,7 +64,7 @@ type Invoice = {
 };
 
 export default function Home() {
-  const { status } = useSession();
+  const { data: session, isPending } = useSession();
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -83,15 +83,15 @@ export default function Home() {
   };
 
   useEffect(() => {
-    if (status === "authenticated") {
+    if (session) {
       fetchInvoices();
-    } else if (status === "unauthenticated") {
+    } else if (!isPending) {
       setIsLoading(false);
     }
-  }, [status]);
+  }, [session, isPending]);
 
   // Show landing page for non-authenticated users
-  if (status === "loading") {
+  if (isPending) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
         <p className="text-muted-foreground">Loading...</p>
@@ -99,7 +99,7 @@ export default function Home() {
     );
   }
 
-  if (status === "unauthenticated") {
+  if (!session) {
     return <LandingPage />;
   }
 
