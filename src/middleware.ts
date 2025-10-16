@@ -14,11 +14,14 @@ export function middleware(request: NextRequest) {
   }
 
   // Check for Better Auth session cookie - try multiple possible names
-  const sessionToken =
+  // In production (HTTPS), cookies may be prefixed with __Secure- or __Host-
+  const sessionToken = 
     request.cookies.get("better-auth.session_token")?.value ||
+    request.cookies.get("__Secure-better-auth.session_token")?.value ||
+    request.cookies.get("__Host-better-auth.session_token")?.value ||
     request.cookies.get("better_auth_session")?.value ||
     request.cookies.get("better-auth-session")?.value;
-
+  
   const isAuthenticated = !!sessionToken;
 
   // Redirect unauthenticated users to sign-in
