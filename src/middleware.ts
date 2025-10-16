@@ -13,8 +13,12 @@ export function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // Check for Better Auth session cookie
-  const sessionToken = request.cookies.get("better-auth.session_token")?.value;
+  // Check for Better Auth session cookie - try multiple possible names
+  const sessionToken =
+    request.cookies.get("better-auth.session_token")?.value ||
+    request.cookies.get("better_auth_session")?.value ||
+    request.cookies.get("better-auth-session")?.value;
+
   const isAuthenticated = !!sessionToken;
 
   // Redirect unauthenticated users to sign-in
@@ -26,7 +30,10 @@ export function middleware(request: NextRequest) {
   }
 
   // Redirect authenticated users away from auth pages
-  if (isAuthenticated && (pathname === "/auth/signin" || pathname === "/auth/signup")) {
+  if (
+    isAuthenticated &&
+    (pathname === "/auth/signin" || pathname === "/auth/signup")
+  ) {
     return NextResponse.redirect(new URL("/", request.url));
   }
 
