@@ -19,8 +19,8 @@ import { toast } from "sonner";
 
 const SignInForm = () => {
   const searchParams = useSearchParams();
-  const callbackUrl = searchParams.get("callbackUrl") || "/";
-  
+  const callbackUrl = searchParams.get("callbackUrl") || "/dashboard";
+
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -32,20 +32,17 @@ const SignInForm = () => {
     setIsLoading(true);
 
     try {
-      console.log("Attempting signin with:", { email: formData.email });
-      
       const result = await signIn.email({
         email: formData.email,
         password: formData.password,
         callbackURL: callbackUrl,
       });
 
-      console.log("Signin result:", result);
-
       if (result.error) {
-        console.error("Signin error:", result.error);
         toast.error("Sign in failed", {
-          description: result.error.message || "Invalid email or password. Please check your credentials and try again.",
+          description:
+            result.error.message ||
+            "Invalid email or password. Please check your credentials and try again.",
         });
         setIsLoading(false);
         return;
@@ -54,7 +51,7 @@ const SignInForm = () => {
       toast.success("Welcome back!", {
         description: "You have successfully signed in.",
       });
-      
+
       // Force a page refresh to update session
       setTimeout(() => {
         window.location.href = callbackUrl;
@@ -62,7 +59,8 @@ const SignInForm = () => {
     } catch (error) {
       console.error("Signin exception:", error);
       toast.error("Sign in failed", {
-        description: "Invalid email or password. Please check your credentials and try again.",
+        description:
+          "Invalid email or password. Please check your credentials and try again.",
       });
       setIsLoading(false);
     }
@@ -145,12 +143,14 @@ const SignInForm = () => {
 
 export default function SignInPage() {
   return (
-    <Suspense fallback={
-      <div className="flex flex-col items-center justify-center min-h-[calc(100dvh-64px)] gap-4">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-        <p className="text-sm text-muted-foreground">Loading sign in...</p>
-      </div>
-    }>
+    <Suspense
+      fallback={
+        <div className="flex flex-col items-center justify-center min-h-[calc(100dvh-64px)] gap-4">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          <p className="text-sm text-muted-foreground">Loading sign in...</p>
+        </div>
+      }
+    >
       <SignInForm />
     </Suspense>
   );

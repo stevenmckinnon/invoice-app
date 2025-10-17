@@ -5,7 +5,13 @@ export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // Public paths that don't require authentication
-  const publicPaths = ["/", "/auth/signin", "/auth/signup", "/legal", "/cookies"];
+  const publicPaths = [
+    "/",
+    "/auth/signin",
+    "/auth/signup",
+    "/legal",
+    "/cookies",
+  ];
   const isPublicPath = publicPaths.includes(pathname);
 
   // Skip middleware for API routes
@@ -32,12 +38,11 @@ export function middleware(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
-  // Redirect authenticated users away from auth pages
-  if (
-    isAuthenticated &&
-    (pathname === "/auth/signin" || pathname === "/auth/signup")
-  ) {
-    return NextResponse.redirect(new URL("/", request.url));
+  // Redirect authenticated users away from auth pages and root to dashboard
+  if (isAuthenticated) {
+    if (pathname === "/auth/signin" || pathname === "/auth/signup" || pathname === "/") {
+      return NextResponse.redirect(new URL("/dashboard", request.url));
+    }
   }
 
   return NextResponse.next();

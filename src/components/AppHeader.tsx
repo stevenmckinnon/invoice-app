@@ -63,10 +63,10 @@ export const AppHeader = () => {
                 </SheetHeader>
                 <nav className="flex flex-col px-4 gap-4 mt-4">
                   <Link
-                    href="/"
+                    href="/dashboard"
                     onClick={() => setMobileMenuOpen(false)}
                     className={`flex items-center gap-3 rounded-lg px-3 py-2 text-base transition-all hover:bg-accent ${
-                      pathname === "/"
+                      pathname === "/dashboard"
                         ? "bg-accent text-foreground font-semibold"
                         : "text-muted-foreground"
                     }`}
@@ -102,7 +102,7 @@ export const AppHeader = () => {
           )}
           {/* Logo */}
           <Link
-            href="/"
+            href={session?.user ? "/dashboard" : "/"}
             className="flex items-center gap-2 hover:opacity-80 transition-opacity"
           >
             <WWELogo className="h-8 w-8" />
@@ -116,9 +116,9 @@ export const AppHeader = () => {
         {session?.user && (
           <nav className="hidden md:flex items-center gap-6 text-sm font-medium">
             <Link
-              href="/"
+              href="/dashboard"
               className={`transition-colors hover:text-foreground/80 ${
-                pathname === "/"
+                pathname === "/dashboard"
                   ? "text-foreground font-semibold"
                   : "text-foreground/60"
               }`}
@@ -177,7 +177,7 @@ export const AppHeader = () => {
                     </AvatarFallback>
                   </Avatar>
                   <span className="hidden sm:inline-block text-sm">
-                    {session.user.name?.split(' ')[0] || session.user.email}
+                    {session.user.name?.split(" ")[0] || session.user.email}
                   </span>
                 </Button>
               </DropdownMenuTrigger>

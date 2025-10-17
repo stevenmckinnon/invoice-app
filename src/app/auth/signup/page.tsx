@@ -31,29 +31,25 @@ export default function SignUpPage() {
 
     try {
       const fullName = `${formData.firstName} ${formData.lastName}`.trim();
-      console.log("Attempting signup with:", { email: formData.email, name: fullName });
-      
+
       const result = await signUp.email({
         email: formData.email,
         password: formData.password,
         name: fullName,
-        callbackURL: "/",
+        callbackURL: "/dashboard",
       });
 
-      console.log("Signup result:", result);
-      console.log("Signup result.data:", result.data);
-
       if (result.error) {
-        const errorMessage = result.error.message || "Failed to create account. Please try again.";
-        console.error("Signup error details:", {
-          message: result.error.message,
-          status: result.error.status,
-          error: result.error,
-        });
-        
-        if (errorMessage.includes("already exists") || errorMessage.includes("duplicate")) {
+        const errorMessage =
+          result.error.message || "Failed to create account. Please try again.";
+
+        if (
+          errorMessage.includes("already exists") ||
+          errorMessage.includes("duplicate")
+        ) {
           toast.error("Account already exists", {
-            description: "An account with this email already exists. Please sign in instead.",
+            description:
+              "An account with this email already exists. Please sign in instead.",
           });
         } else {
           toast.error("Sign up failed", {
@@ -85,10 +81,10 @@ export default function SignUpPage() {
       toast.success("Account created successfully!", {
         description: "Welcome to WWE Invoice App.",
       });
-      
+
       // Force a page refresh to update session
       setTimeout(() => {
-        window.location.href = "/";
+        window.location.href = "/dashboard";
       }, 500);
     } catch (error) {
       console.error("Signup exception:", error);

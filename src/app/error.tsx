@@ -46,9 +46,9 @@ export default function Error({
                 </h2>
               </div>
               <p className="text-muted-foreground max-w-md mx-auto">
-                We encountered an unexpected error while processing your request.
-                Don&apos;t worry, our team has been notified and we&apos;re
-                working on it!
+                We encountered an unexpected error while processing your
+                request. Don&apos;t worry, our team has been notified and
+                we&apos;re working on it!
               </p>
               {error.digest && (
                 <p className="text-xs text-muted-foreground/70 font-mono">
@@ -81,4 +81,3 @@ export default function Error({
     </div>
   );
 }
-
