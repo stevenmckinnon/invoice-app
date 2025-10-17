@@ -665,7 +665,7 @@ export default function Home() {
             Last 6 months performance
           </p>
         </CardHeader>
-        <CardContent className="pt-6">
+        <CardContent className="px-0 md:px-4 py-6">
           {invoices.length > 0 ? (
             <div className="w-full h-[320px]">
               <ResponsiveContainer width="100%" height="100%">
