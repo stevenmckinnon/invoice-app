@@ -446,10 +446,10 @@ export const LandingPage = () => {
 
       {/* Footer */}
       <footer className="bg-muted/50 border-t">
-        <div className="max-w-7xl mx-auto px-4 py-12">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+        <div className="max-w-7xl mx-auto px-6 py-12">
+          <div className="grid grid-cols-3 md:grid-cols-4 gap-8">
             {/* Brand Column */}
-            <div className="space-y-4">
+            <div className="space-y-4 col-span-3 md:col-span-1">
               <div className="flex items-center gap-2">
                 <WWELogo className="h-8 w-8" />
                 <span className="font-bold text-lg">WWE Invoicing</span>

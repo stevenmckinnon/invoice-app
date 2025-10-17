@@ -13,23 +13,29 @@ const Hero = () => {
             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
             <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
           </span>
-          Make Better Decisions, Faster
+          Beta release!
         </div>
-        
+
         <h1 className="text-5xl sm:text-6xl md:text-7xl font-bold tracking-tight mb-6">
           Professional Invoicing for{" "}
           <span className="text-primary">WWE Freelancers</span>
         </h1>
-        
+
         <p className="mt-6 text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto">
-          Streamline your billing with an intelligent invoicing system. Track overtime, manage expenses, and generate professional PDFs in seconds.
+          Streamline your billing with an intelligent invoicing system. Track
+          overtime, manage expenses, and generate professional PDFs in seconds.
         </p>
-        
+
         <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
           <Button asChild size="lg" className="text-base px-8">
             <Link href="/auth/signup">Get Started Free</Link>
           </Button>
-          <Button asChild variant="outline" size="lg" className="text-base px-8">
+          <Button
+            asChild
+            variant="outline"
+            size="lg"
+            className="text-base px-8"
+          >
             <Link href="/auth/signin">Sign In</Link>
           </Button>
         </div>
