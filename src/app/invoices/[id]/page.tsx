@@ -12,10 +12,19 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { InvoiceStatusBadge } from "@/components/InvoiceStatusBadge";
 import { DeleteInvoiceButton } from "@/components/DeleteInvoiceButton";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Prisma } from "@/generated/prisma";
+import { toast } from "sonner";
 
 type InvoiceWithRelations = Prisma.InvoiceGetPayload<{
   include: {
@@ -31,25 +40,58 @@ export default function InvoiceDetailPage({ params }: Props) {
   const router = useRouter();
   const [invoice, setInvoice] = useState<InvoiceWithRelations | null>(null);
   const [loading, setLoading] = useState(true);
+  const [updatingStatus, setUpdatingStatus] = useState(false);
+
+  const fetchInvoice = useCallback(async () => {
+    try {
+      const { id } = await params;
+      const response = await fetch(`/api/invoices/${id}`);
+      if (response.ok) {
+        const data = await response.json();
+        setInvoice(data);
+      }
+    } catch (error) {
+      console.error("Failed to fetch invoice:", error);
+    } finally {
+      setLoading(false);
+    }
+  }, [params]);
 
   useEffect(() => {
-    const fetchInvoice = async () => {
-      try {
-        const { id } = await params;
-        const response = await fetch(`/api/invoices/${id}`);
-        if (response.ok) {
-          const data = await response.json();
-          setInvoice(data);
-        }
-      } catch (error) {
-        console.error("Failed to fetch invoice:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchInvoice();
-  }, [params]);
+  }, [fetchInvoice]);
+
+  const handleStatusChange = async (newStatus: string) => {
+    if (!invoice) return;
+
+    setUpdatingStatus(true);
+    try {
+      const response = await fetch(`/api/invoices/${invoice.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: newStatus }),
+      });
+
+      if (response.ok) {
+        toast.success("Status updated", {
+          description: `Invoice status changed to ${newStatus}`,
+        });
+        // Refresh invoice data
+        await fetchInvoice();
+      } else {
+        toast.error("Failed to update status", {
+          description: "Please try again later.",
+        });
+      }
+    } catch (error) {
+      console.error("Failed to update status:", error);
+      toast.error("Failed to update status", {
+        description: "An unexpected error occurred.",
+      });
+    } finally {
+      setUpdatingStatus(false);
+    }
+  };
 
   if (loading) {
     return (
@@ -123,12 +165,52 @@ export default function InvoiceDetailPage({ params }: Props) {
       </Button>
       <div className="grid gap-4">
         <div className="flex gap-2 justify-between items-start md:flex-row flex-col">
-          <div>
+          <div className="space-y-2">
             <h1 className="text-2xl font-semibold">
               Invoice {invoice.invoiceNumber}
             </h1>
             <div className="text-sm text-muted-foreground">
               Show: {invoice.showName}
+            </div>
+            <div className="flex items-center gap-3">
+              <span className="text-sm font-medium">Status:</span>
+              <Select
+                value={invoice.status}
+                onValueChange={handleStatusChange}
+                disabled={updatingStatus}
+              >
+                <SelectTrigger className="w-[140px] h-8">
+                  <SelectValue>
+                    <span className="capitalize">{invoice.status}</span>
+                  </SelectValue>
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="draft">
+                    <div className="flex items-center gap-2">
+                      <div className="h-2 w-2 rounded-full bg-gray-500" />
+                      <span>Draft</span>
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="sent">
+                    <div className="flex items-center gap-2">
+                      <div className="h-2 w-2 rounded-full bg-blue-500" />
+                      <span>Sent</span>
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="paid">
+                    <div className="flex items-center gap-2">
+                      <div className="h-2 w-2 rounded-full bg-green-500" />
+                      <span>Paid</span>
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="overdue">
+                    <div className="flex items-center gap-2">
+                      <div className="h-2 w-2 rounded-full bg-red-500" />
+                      <span>Overdue</span>
+                    </div>
+                  </SelectItem>
+                </SelectContent>
+              </Select>
             </div>
           </div>
           <div className="flex gap-2 mt-4 flex-wrap">

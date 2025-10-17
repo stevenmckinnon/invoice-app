@@ -248,3 +248,39 @@ export const GET = async (req: NextRequest, context: RouteContext) => {
     );
   }
 };
+
+export const PATCH = async (req: NextRequest, context: RouteContext) => {
+  try {
+    const session = await auth.api.getSession({
+      headers: await headers(),
+    });
+    
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const params = await context.params;
+    const { id } = params;
+    const body = await req.json();
+
+    // Verify ownership
+    const invoice = await prisma.invoice.findUnique({ where: { id } });
+    if (!invoice || invoice.userId !== session.user.id) {
+      return NextResponse.json({ error: "Not found" }, { status: 404 });
+    }
+
+    // Update only the status
+    const updated = await prisma.invoice.update({
+      where: { id },
+      data: { status: body.status },
+      select: { id: true, status: true },
+    });
+
+    return NextResponse.json(updated);
+  } catch (err: any) {
+    return NextResponse.json(
+      { error: err.message ?? "Failed to update invoice status" },
+      { status: 400 }
+    );
+  }
+};
