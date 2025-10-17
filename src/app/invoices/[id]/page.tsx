@@ -19,12 +19,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { InvoiceStatusBadge } from "@/components/InvoiceStatusBadge";
 import { DeleteInvoiceButton } from "@/components/DeleteInvoiceButton";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { Prisma } from "@/generated/prisma";
 import { toast } from "sonner";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 
 type InvoiceWithRelations = Prisma.InvoiceGetPayload<{
   include: {
@@ -95,8 +96,47 @@ export default function InvoiceDetailPage({ params }: Props) {
 
   if (loading) {
     return (
-      <div className="min-h-[calc(100dvh-10rem)] flex items-center justify-center max-w-6xl mx-auto py-8">
-        Loading...
+      <div className="max-w-6xl mx-auto px-6 py-4">
+        <Skeleton className="h-10 w-24 mb-4" />
+        <div className="grid gap-4">
+          <div className="flex gap-2 justify-between items-start md:flex-row flex-col">
+            <div className="space-y-2">
+              <Skeleton className="h-8 w-48" />
+              <Skeleton className="h-4 w-32" />
+              <Skeleton className="h-8 w-40" />
+            </div>
+            <div className="flex gap-2">
+              <Skeleton className="h-10 w-24" />
+              <Skeleton className="h-10 w-32" />
+              <Skeleton className="h-10 w-36" />
+              <Skeleton className="h-10 w-24" />
+            </div>
+          </div>
+          <Card>
+            <CardHeader>
+              <div className="flex gap-4">
+                <Skeleton className="h-4 w-24" />
+                <Skeleton className="h-4 w-16" />
+                <Skeleton className="h-4 w-20" />
+                <Skeleton className="h-4 w-20" />
+                <Skeleton className="h-4 w-16" />
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                {[...Array(5)].map((_, i) => (
+                  <div key={i} className="flex gap-4">
+                    <Skeleton className="h-4 flex-1" />
+                    <Skeleton className="h-4 w-16" />
+                    <Skeleton className="h-4 w-16" />
+                    <Skeleton className="h-4 w-20" />
+                    <Skeleton className="h-4 w-20" />
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
       </div>
     );
   }
@@ -104,7 +144,16 @@ export default function InvoiceDetailPage({ params }: Props) {
   if (!invoice) {
     return (
       <div className="min-h-[calc(100dvh-10rem)] flex items-center justify-center max-w-6xl mx-auto py-8">
-        Invoice not found
+        <div className="text-center space-y-4">
+          <p className="text-2xl font-semibold">Invoice not found</p>
+          <p className="text-muted-foreground">
+            The invoice you&apos;re looking for doesn&apos;t exist or you don&apos;t have
+            permission to view it.
+          </p>
+          <Button asChild>
+            <Link href="/invoices">Back to Invoices</Link>
+          </Button>
+        </div>
       </div>
     );
   }
@@ -187,25 +236,25 @@ export default function InvoiceDetailPage({ params }: Props) {
                 <SelectContent>
                   <SelectItem value="draft">
                     <div className="flex items-center gap-2">
-                      <div className="h-2 w-2 rounded-full bg-gray-500" />
+                      <div className="h-2.5 w-2.5 rounded-full bg-gray-500" />
                       <span>Draft</span>
                     </div>
                   </SelectItem>
                   <SelectItem value="sent">
                     <div className="flex items-center gap-2">
-                      <div className="h-2 w-2 rounded-full bg-blue-500" />
+                      <div className="h-2.5 w-2.5 rounded-full bg-blue-500" />
                       <span>Sent</span>
                     </div>
                   </SelectItem>
                   <SelectItem value="paid">
                     <div className="flex items-center gap-2">
-                      <div className="h-2 w-2 rounded-full bg-green-500" />
+                      <div className="h-2.5 w-2.5 rounded-full bg-green-500" />
                       <span>Paid</span>
                     </div>
                   </SelectItem>
                   <SelectItem value="overdue">
                     <div className="flex items-center gap-2">
-                      <div className="h-2 w-2 rounded-full bg-red-500" />
+                      <div className="h-2.5 w-2.5 rounded-full bg-red-500" />
                       <span>Overdue</span>
                     </div>
                   </SelectItem>

@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import WWELogo from "@/components/WWELogo";
 import { signIn } from "@/lib/auth-client";
-import { Mail } from "lucide-react";
+import { Mail, Loader2 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
@@ -146,8 +146,9 @@ const SignInForm = () => {
 export default function SignInPage() {
   return (
     <Suspense fallback={
-      <div className="flex items-center justify-center min-h-[calc(100dvh-64px)]">
-        <p className="text-muted-foreground">Loading...</p>
+      <div className="flex flex-col items-center justify-center min-h-[calc(100dvh-64px)] gap-4">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <p className="text-sm text-muted-foreground">Loading sign in...</p>
       </div>
     }>
       <SignInForm />

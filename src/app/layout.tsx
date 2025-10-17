@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Roboto, Roboto_Mono } from "next/font/google";
 import "./globals.css";
 import { AppHeader } from "@/components/AppHeader";
@@ -17,8 +17,58 @@ const robotoMono = Roboto_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Invoice App - Professional Invoice Management",
-  description: "Create and manage professional invoices with ease",
+  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'),
+  title: {
+    default: "WWE Invoice App - Professional Invoice Management",
+    template: "%s | WWE Invoice App",
+  },
+  description: "Create and manage professional invoices for WWE freelancers and production staff. Track overtime, expenses, and revenue with ease.",
+  applicationName: "WWE Invoice App",
+  keywords: ["invoice", "WWE", "freelancer", "production", "billing", "invoicing"],
+  authors: [{ name: "Steve McKinnon", url: "https://stevenmckinnon.co.uk" }],
+  creator: "Steve McKinnon",
+  manifest: "/site.webmanifest",
+  icons: {
+    icon: [
+      { url: "/favicon.ico", sizes: "any" },
+      { url: "/favicon.svg", type: "image/svg+xml" },
+      { url: "/favicon-96x96.png", sizes: "96x96", type: "image/png" },
+    ],
+    apple: [
+      { url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" },
+    ],
+  },
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "WWE Invoice",
+  },
+  formatDetection: {
+    telephone: false,
+  },
+  openGraph: {
+    type: "website",
+    siteName: "WWE Invoice App",
+    title: "WWE Invoice App - Professional Invoice Management",
+    description: "Create and manage professional invoices for WWE freelancers and production staff",
+    url: "/",
+  },
+  twitter: {
+    card: "summary",
+    title: "WWE Invoice App",
+    description: "Professional invoice management for freelancers",
+  },
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 5,
+  userScalable: true,
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#ffffff" },
+    { media: "(prefers-color-scheme: dark)", color: "#09090b" },
+  ],
 };
 
 export default function RootLayout({

@@ -21,7 +21,6 @@ import {
 } from "@/components/ui/select";
 import { InvoiceStatusBadge } from "@/components/InvoiceStatusBadge";
 import { PdfPreviewDialog } from "@/components/PdfPreviewDialog";
-import { DeleteInvoiceButton } from "@/components/DeleteInvoiceButton";
 import {
   PlusIcon,
   SearchIcon,
@@ -34,6 +33,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { Skeleton } from "@/components/ui/skeleton";
 
 // Helper to format date without timezone shift
 const formatDate = (dateStr: Date | string) => {
@@ -81,10 +81,6 @@ export default function AllInvoicesPage() {
   useEffect(() => {
     fetchInvoices();
   }, []);
-
-  const handleDelete = () => {
-    fetchInvoices();
-  };
 
   // Filter and search
   const filteredInvoices = invoices
@@ -182,9 +178,36 @@ export default function AllInvoicesPage() {
         </CardHeader>
         <CardContent>
           {isLoading ? (
-            <div className="text-center py-12">
-              <p className="text-sm text-muted-foreground">Loading...</p>
-            </div>
+            <TableBody>
+              {[...Array(5)].map((_, i) => (
+                <TableRow key={i}>
+                  <TableCell>
+                    <Skeleton className="h-4 w-24" />
+                  </TableCell>
+                  <TableCell>
+                    <Skeleton className="h-4 w-32" />
+                  </TableCell>
+                  <TableCell>
+                    <Skeleton className="h-4 w-28" />
+                  </TableCell>
+                  <TableCell>
+                    <Skeleton className="h-4 w-32" />
+                  </TableCell>
+                  <TableCell>
+                    <Skeleton className="h-4 w-20" />
+                  </TableCell>
+                  <TableCell>
+                    <Skeleton className="h-6 w-16 rounded-full" />
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex items-center gap-2">
+                      <Skeleton className="h-8 w-8 rounded-md" />
+                      <Skeleton className="h-8 w-8 rounded-md" />
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
           ) : paginatedInvoices.length === 0 ? (
             <div className="text-center py-12">
               <p className="text-sm text-muted-foreground">
@@ -249,12 +272,6 @@ export default function AllInvoicesPage() {
                             invoiceNumber={invoice.invoiceNumber}
                             size="sm"
                             variant="outline"
-                          />
-                          <DeleteInvoiceButton
-                            size="sm"
-                            invoiceId={invoice.id}
-                            invoiceNumber={invoice.invoiceNumber}
-                            onDeleted={handleDelete}
                           />
                         </div>
                       </TableCell>

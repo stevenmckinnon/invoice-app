@@ -1,5 +1,6 @@
 "use client";
 import { AnimatedCounter } from "@/components/AnimatedCounter";
+import { DashboardSkeleton } from "@/components/DashboardSkeleton";
 import { InvoiceStatusBadge } from "@/components/InvoiceStatusBadge";
 import { LandingPage } from "@/components/LandingPage";
 import { Button } from "@/components/ui/button";
@@ -67,6 +68,56 @@ export default function Home() {
   const { data: session, isPending } = useSession();
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [chartColors, setChartColors] = useState({
+    primary: "#3b82f6",
+    muted: "#9ca3af",
+    grid: "#374151",
+    cardBg: "#1f2937",
+    border: "#374151",
+  });
+
+  // Get theme colors from CSS variables
+  useEffect(() => {
+    const updateColors = () => {
+      // Create a temporary element to get computed colors
+      const temp = document.createElement('div');
+      document.body.appendChild(temp);
+      
+      // Apply Tailwind classes and read computed RGB colors
+      temp.className = 'text-primary';
+      const primaryColor = getComputedStyle(temp).color;
+      
+      temp.className = 'text-muted-foreground';
+      const mutedColor = getComputedStyle(temp).color;
+      
+      temp.className = 'border-border';
+      const borderColor = getComputedStyle(temp).borderColor;
+      
+      temp.className = 'bg-card';
+      const cardBg = getComputedStyle(temp).backgroundColor;
+      
+      document.body.removeChild(temp);
+      
+      setChartColors({
+        primary: primaryColor || "#3b82f6",
+        muted: mutedColor || "#9ca3af",
+        grid: borderColor || "#374151",
+        cardBg: cardBg || "#1f2937",
+        border: borderColor || "#374151",
+      });
+    };
+
+    updateColors();
+    
+    // Listen for theme changes
+    const observer = new MutationObserver(updateColors);
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ["class"],
+    });
+
+    return () => observer.disconnect();
+  }, []);
 
   const fetchInvoices = async () => {
     try {
@@ -92,15 +143,15 @@ export default function Home() {
 
   // Show landing page for non-authenticated users
   if (isPending) {
-    return (
-      <div className="flex items-center justify-center min-h-[60vh]">
-        <p className="text-muted-foreground">Loading...</p>
-      </div>
-    );
+    return <DashboardSkeleton />;
   }
 
   if (!session) {
     return <LandingPage />;
+  }
+
+  if (isLoading) {
+    return <DashboardSkeleton />;
   }
 
   const sortedInvoices = invoices
@@ -635,17 +686,17 @@ export default function Home() {
                       x2="0"
                       y2="1"
                     >
-                      <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.8} />
+                      <stop offset="5%" stopColor={chartColors.primary} stopOpacity={0.8} />
                       <stop
                         offset="95%"
-                        stopColor="#3b82f6"
+                        stopColor={chartColors.primary}
                         stopOpacity={0.1}
                       />
                     </linearGradient>
                   </defs>
                   <CartesianGrid
                     strokeDasharray="1 3"
-                    stroke="#374151"
+                    stroke={chartColors.grid}
                     strokeOpacity={0.3}
                   />
                   <XAxis
@@ -653,27 +704,25 @@ export default function Home() {
                     fontSize={12}
                     tickLine={false}
                     axisLine={false}
-                    tick={{ fill: "#9ca3af" }}
+                    tick={{ fill: chartColors.muted }}
                     dy={5}
                   />
                   <YAxis
                     fontSize={12}
                     tickLine={false}
                     axisLine={false}
-                    tick={{ fill: "#9ca3af" }}
+                    tick={{ fill: chartColors.muted }}
                     tickFormatter={(value) => `£${value}`}
                     dx={-5}
                   />
                   <RechartsTooltip
                     contentStyle={{
-                      backgroundColor: "#1f2937",
-                      border: "1px solid #374151",
+                      backgroundColor: chartColors.cardBg,
+                      border: `1px solid ${chartColors.border}`,
                       borderRadius: "8px",
                       boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.3)",
-                      color: "#f9fafb",
                     }}
                     labelStyle={{
-                      color: "#f9fafb",
                       fontWeight: "600",
                       marginBottom: "4px",
                     }}
@@ -685,7 +734,7 @@ export default function Home() {
                   <Area
                     type="monotone"
                     dataKey="revenue"
-                    stroke="#3b82f6"
+                    stroke={chartColors.primary}
                     strokeWidth={2}
                     fill="url(#colorRevenue)"
                     animationDuration={800}

@@ -65,7 +65,7 @@ export const DeleteInvoiceButton = ({
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="destructive" size={size}>
+        <Button variant="destructive-outline" size={size}>
           <TrashIcon className="h-4 w-4" /> Delete
         </Button>
       </DialogTrigger>
