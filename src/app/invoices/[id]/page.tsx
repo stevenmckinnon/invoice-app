@@ -214,7 +214,7 @@ export default function InvoiceDetailPage({ params }: Props) {
             </div>
           </div>
           <div className="flex gap-2 mt-4 flex-wrap">
-            <Button asChild>
+            <Button asChild variant="secondary">
               <Link href={`/invoices/${invoice.id}/edit`}>
                 <PencilIcon className="h-4 w-4" /> Edit
               </Link>

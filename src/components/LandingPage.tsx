@@ -19,6 +19,7 @@ import {
   Shield,
   Globe,
   ChevronRight,
+  ExternalLink,
 } from "lucide-react";
 import {
   Accordion,
@@ -27,6 +28,7 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import Hero from "./hero/hero";
+import WWELogo from "./WWELogo";
 
 export const LandingPage = () => {
   return (
@@ -45,8 +47,8 @@ export const LandingPage = () => {
               Leading Invoicing Solution for Freelancers
             </h3>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              Nearly 20 years of WWE production experience built into every
-              feature
+              A professional invoicing system built for WWE freelancers and
+              production staff.
             </p>
           </div>
 
@@ -441,6 +443,119 @@ export const LandingPage = () => {
           </p>
         </div>
       </section>
+
+      {/* Footer */}
+      <footer className="bg-muted/50 border-t">
+        <div className="max-w-7xl mx-auto px-4 py-12">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+            {/* Brand Column */}
+            <div className="space-y-4">
+              <div className="flex items-center gap-2">
+                <WWELogo className="h-8 w-8" />
+                <span className="font-bold text-lg">WWE Invoicing</span>
+              </div>
+              <p className="text-sm text-muted-foreground">
+                Professional invoice management built for WWE freelancers and
+                production staff worldwide.
+              </p>
+            </div>
+
+            {/* Product Column */}
+            <div>
+              <h4 className="font-semibold mb-4">Product</h4>
+              <ul className="space-y-2 text-sm">
+                <li>
+                  <Link
+                    href="/auth/signup"
+                    className="text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    Get Started
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/auth/signin"
+                    className="text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    Sign In
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/#features"
+                    className="text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    Features
+                  </Link>
+                </li>
+              </ul>
+            </div>
+
+            {/* Support Column */}
+            <div>
+              <h4 className="font-semibold mb-4">Support</h4>
+              <ul className="space-y-2 text-sm">
+                <li>
+                  <Link
+                    href="mailto:hello@stevenmckinnon.co.uk"
+                    className="text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    Contact Us
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/#faq"
+                    className="text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    FAQ
+                  </Link>
+                </li>
+              </ul>
+            </div>
+
+            {/* Legal Column */}
+            <div>
+              <h4 className="font-semibold mb-4">Legal</h4>
+              <ul className="space-y-2 text-sm">
+                <li>
+                  <Link
+                    href="/legal"
+                    className="text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    Project Details
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/cookies"
+                    className="text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    Cookie Policy
+                  </Link>
+                </li>
+              </ul>
+            </div>
+          </div>
+
+          {/* Bottom Bar */}
+          <div className="mt-12 pt-8 border-t flex flex-col md:flex-row justify-between items-center gap-4">
+            <p className="text-sm text-muted-foreground">
+              © {new Date().getFullYear()} WWE Invoice App. All rights reserved.
+            </p>
+            <Link
+              href="https://stevenmckinnon.co.uk"
+              className="text-xs text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1"
+              target="_blank"
+            >
+              <span className="text-xs text-muted-foreground">
+                Built by Steve McKinnon
+              </span>
+              <ExternalLink className="h-4 w-4" />
+            </Link>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 };
