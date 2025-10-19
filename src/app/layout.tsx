@@ -17,14 +17,24 @@ const robotoMono = Roboto_Mono({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'),
+  metadataBase: new URL(
+    process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"
+  ),
   title: {
     default: "WWE Invoice App - Professional Invoice Management",
     template: "%s | WWE Invoice App",
   },
-  description: "Create and manage professional invoices for WWE freelancers and production staff. Track overtime, expenses, and revenue with ease.",
+  description:
+    "Create and manage professional invoices for WWE freelancers and production staff. Track overtime, expenses, and revenue with ease.",
   applicationName: "WWE Invoice App",
-  keywords: ["invoice", "WWE", "freelancer", "production", "billing", "invoicing"],
+  keywords: [
+    "invoice",
+    "WWE",
+    "freelancer",
+    "production",
+    "billing",
+    "invoicing",
+  ],
   authors: [{ name: "Steve McKinnon", url: "https://stevenmckinnon.co.uk" }],
   creator: "Steve McKinnon",
   manifest: "/site.webmanifest",
@@ -50,7 +60,8 @@ export const metadata: Metadata = {
     type: "website",
     siteName: "WWE Invoice App",
     title: "WWE Invoice App - Professional Invoice Management",
-    description: "Create and manage professional invoices for WWE freelancers and production staff",
+    description:
+      "Create and manage professional invoices for WWE freelancers and production staff",
     url: "/",
     locale: "en_US",
     images: [
