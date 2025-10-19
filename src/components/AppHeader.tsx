@@ -176,7 +176,7 @@ export const AppHeader = () => {
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" className="h-9 gap-2 px-2">
                   <Avatar className="h-7 w-7">
-                    <AvatarFallback className="text-xs">
+                    <AvatarFallback className="text-xs text-foreground">
                       {(
                         session.user.name?.[0] ||
                         session.user.email?.[0] ||
