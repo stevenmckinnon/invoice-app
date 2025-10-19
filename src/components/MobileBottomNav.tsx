@@ -62,7 +62,7 @@ export const MobileBottomNav = () => {
           <div className="absolute inset-0 bg-background/80 dark:bg-background/90 backdrop-blur-xl rounded-3xl border border-border/50 shadow-lg" />
           
           {/* Navigation Items */}
-          <div className="relative flex items-center gap-2 px-0 py-3">
+          <div className="relative flex items-center justify-around px-0 py-3">
             {navItems.map((item) => {
               const Icon = item.icon;
               const isActive = item.isActive(pathname);
