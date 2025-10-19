@@ -57,7 +57,7 @@ export const MobileBottomNav = () => {
       {/* Bottom Navigation */}
       <nav className="fixed bottom-0 left-0 right-0 z-50 md:hidden">
         {/* Liquid Glass Container */}
-        <div className="relative mx-4 mb-4">
+        <div className="relative mb-4">
           {/* Glass Effect Background */}
           <div className="absolute inset-0 bg-background/80 dark:bg-background/90 backdrop-blur-xl rounded-3xl border border-border/50 shadow-lg" />
           
