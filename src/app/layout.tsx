@@ -52,11 +52,22 @@ export const metadata: Metadata = {
     title: "WWE Invoice App - Professional Invoice Management",
     description: "Create and manage professional invoices for WWE freelancers and production staff",
     url: "/",
+    locale: "en_US",
+    images: [
+      {
+        url: "/web-app-manifest-512x512.png",
+        width: 512,
+        height: 512,
+        alt: "WWE Invoice App",
+        type: "image/png",
+      },
+    ],
   },
   twitter: {
-    card: "summary",
+    card: "summary_large_image",
     title: "WWE Invoice App",
     description: "Professional invoice management for freelancers",
+    images: ["/web-app-manifest-512x512.png"],
   },
 };
 
