@@ -12,18 +12,10 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from "@/components/ui/sheet";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Moon, Sun, User, LogOut, Menu } from "lucide-react";
+import { User, LogOut } from "lucide-react";
 import { useTheme } from "next-themes";
 import WWELogo from "@/components/WWELogo";
-import { useState } from "react";
 import {
   ThemeToggleButton,
   useThemeTransition,
@@ -34,7 +26,6 @@ export const AppHeader = () => {
   const { theme, setTheme } = useTheme();
   const pathname = usePathname();
   const router = useRouter();
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { startTransition } = useThemeTransition();
 
   const handleSignOut = async () => {
@@ -51,77 +42,16 @@ export const AppHeader = () => {
   return (
     <header className="sticky px-4 md:px-0 top-0 z-50 w-full bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 flex justify-center">
       <div className="container flex h-16 items-center justify-between">
-        {/* Mobile Menu (Hamburger) */}
-        <div className="flex items-center gap-2">
-          {session?.user && (
-            <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
-              <SheetTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-9 w-9 md:hidden"
-                >
-                  <Menu className="h-5 w-5" />
-                  <span className="sr-only">Toggle menu</span>
-                </Button>
-              </SheetTrigger>
-              <SheetContent side="left" className="w-[300px] sm:w-[400px]">
-                <SheetHeader>
-                  <SheetTitle className="flex items-center gap-2">
-                    <WWELogo className="h-6 w-6" />
-                    WWE Invoicing
-                  </SheetTitle>
-                </SheetHeader>
-                <nav className="flex flex-col px-4 gap-4 mt-4">
-                  <Link
-                    href="/dashboard"
-                    onClick={() => setMobileMenuOpen(false)}
-                    className={`flex items-center gap-3 rounded-lg px-3 py-2 text-base transition-all hover:bg-accent ${
-                      pathname === "/dashboard"
-                        ? "bg-accent text-foreground font-semibold"
-                        : "text-muted-foreground"
-                    }`}
-                  >
-                    Dashboard
-                  </Link>
-                  <Link
-                    href="/invoices"
-                    onClick={() => setMobileMenuOpen(false)}
-                    className={`flex items-center gap-3 rounded-lg px-3 py-2 text-base transition-all hover:bg-accent ${
-                      pathname.startsWith("/invoices") &&
-                      pathname !== "/invoices/new"
-                        ? "bg-accent text-foreground font-semibold"
-                        : "text-muted-foreground"
-                    }`}
-                  >
-                    Invoices
-                  </Link>
-                  <Link
-                    href="/invoices/new"
-                    onClick={() => setMobileMenuOpen(false)}
-                    className={`flex items-center gap-3 rounded-lg px-3 py-2 text-base transition-all hover:bg-accent ${
-                      pathname === "/invoices/new"
-                        ? "bg-accent text-foreground font-semibold"
-                        : "text-muted-foreground"
-                    }`}
-                  >
-                    New Invoice
-                  </Link>
-                </nav>
-              </SheetContent>
-            </Sheet>
-          )}
-          {/* Logo */}
-          <Link
-            href={session?.user ? "/dashboard" : "/"}
-            className="flex items-center gap-2 hover:opacity-80 transition-opacity"
-          >
-            <WWELogo className="h-8 w-8" />
-            <span className="font-bold text-lg hidden sm:inline-block">
-              WWE Invoicing
-            </span>
-          </Link>
-        </div>
+        {/* Logo */}
+        <Link
+          href={session?.user ? "/dashboard" : "/"}
+          className="flex items-center gap-2 hover:opacity-80 transition-opacity"
+        >
+          <WWELogo className="h-8 w-8" />
+          <span className="font-bold text-lg hidden sm:inline-block">
+            WWE Invoicing
+          </span>
+        </Link>
 
         {/* Navigation */}
         {session?.user && (

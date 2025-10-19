@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Roboto, Roboto_Mono } from "next/font/google";
 import { AppHeader } from "@/components/AppHeader";
+import { MobileBottomNav } from "@/components/MobileBottomNav";
 import { Providers } from "@/components/Providers";
 import { Toaster } from "@/components/ui/sonner";
 
@@ -116,6 +117,7 @@ export default function RootLayout({
         <Providers>
           <AppHeader />
           <main className="mx-auto h-[calc(100dvh-64px)]">{children}</main>
+          <MobileBottomNav />
           <Toaster />
         </Providers>
       </body>
