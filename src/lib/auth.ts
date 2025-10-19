@@ -11,6 +11,18 @@ export const auth = betterAuth({
   emailAndPassword: {
     enabled: true,
   },
+  socialProviders: {
+    google: {
+      clientId: process.env.GOOGLE_CLIENT_ID!,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+    },
+    // Apple requires paid developer account ($99/year)
+    // Uncomment when ready to add Apple OAuth
+    // apple: {
+    //   clientId: process.env.APPLE_CLIENT_ID!,
+    //   clientSecret: process.env.APPLE_CLIENT_SECRET!,
+    // },
+  },
   secret: process.env.BETTER_AUTH_SECRET || process.env.NEXTAUTH_SECRET || "secret-for-development-only",
   baseURL: process.env.BETTER_AUTH_URL || process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000",
   trustedOrigins: [
