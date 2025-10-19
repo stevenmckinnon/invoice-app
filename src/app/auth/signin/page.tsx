@@ -74,8 +74,8 @@ const SignInForm = () => {
             <div className="flex justify-center mb-4">
               <WWELogo className="h-24 w-24" />
             </div>
-            <CardTitle className="text-2xl">
-              Welcome to WWE Invoice App
+            <CardTitle>
+              <h1 className="text-2xl">Welcome to WWE Invoice App</h1>
             </CardTitle>
             <CardDescription>Sign in to manage your invoices</CardDescription>
           </CardHeader>

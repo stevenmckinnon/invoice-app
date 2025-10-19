@@ -113,7 +113,9 @@ export default function SignUpPage() {
             <div className="flex justify-center mb-4">
               <WWELogo className="h-24 w-24" />
             </div>
-            <CardTitle className="text-2xl">Create Your Account</CardTitle>
+            <CardTitle>
+              <h1 className="text-2xl">Create Your Account</h1>
+            </CardTitle>
             <CardDescription>
               Start managing your invoices professionally
             </CardDescription>

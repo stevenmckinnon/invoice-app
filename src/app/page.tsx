@@ -1,7 +1,10 @@
-"use client";
-import Link from "next/link";
-import { useEffect } from "react";
-import { useRouter } from "next/navigation";
+import Hero from "@/components/hero/hero";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -10,56 +13,23 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import {
-  FileText,
-  DollarSign,
-  Clock,
-  Users,
-  TrendingUp,
-  CheckCircle,
-  Zap,
-  Shield,
-  Globe,
-  ChevronRight,
-  ExternalLink,
-} from "lucide-react";
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
-import Hero from "@/components/hero/hero";
 import WWELogo from "@/components/WWELogo";
-import { useSession } from "@/lib/auth-client";
-import { Loader2 } from "lucide-react";
+import {
+  CheckCircle,
+  ChevronRight,
+  Clock,
+  DollarSign,
+  ExternalLink,
+  FileText,
+  Globe,
+  Shield,
+  TrendingUp,
+  Users,
+  Zap,
+} from "lucide-react";
+import Link from "next/link";
 
 export default function Home() {
-  const router = useRouter();
-  const { data: session, isPending } = useSession();
-
-  // Redirect authenticated users to dashboard
-  useEffect(() => {
-    if (!isPending && session) {
-      router.push("/dashboard");
-    }
-  }, [session, isPending, router]);
-
-  // Show loading state while checking authentication
-  if (isPending) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-screen gap-4">
-        <Loader2 className="h-12 w-12 animate-spin text-primary" />
-        <p className="text-sm text-muted-foreground">Loading...</p>
-      </div>
-    );
-  }
-
-  // If authenticated, show nothing (will redirect)
-  if (session) {
-    return null;
-  }
-
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
