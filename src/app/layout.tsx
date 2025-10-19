@@ -49,7 +49,6 @@ export const metadata: Metadata = {
   ],
   authors: [{ name: "Steve McKinnon", url: "https://stevenmckinnon.co.uk" }],
   creator: "Steve McKinnon",
-  manifest: "/site.webmanifest",
   icons: {
     icon: [
       { url: "/favicon.ico", sizes: "any" },
