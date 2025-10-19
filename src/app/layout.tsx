@@ -73,6 +73,7 @@ export const metadata: Metadata = {
     title: "WWE Invoice App - Professional Invoice Management",
     description:
       "Create and manage professional invoices for WWE freelancers and production staff",
+    url: "/",
     locale: "en_US",
   },
   twitter: {
