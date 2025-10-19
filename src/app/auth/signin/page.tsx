@@ -9,7 +9,6 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import WWELogo from "@/components/WWELogo";
-import { OAuthButtons } from "@/components/OAuthButtons";
 import { signIn } from "@/lib/auth-client";
 import { Mail, Loader2 } from "lucide-react";
 import Image from "next/image";
@@ -81,19 +80,6 @@ const SignInForm = () => {
             <CardDescription>Sign in to manage your invoices</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <OAuthButtons callbackUrl={callbackUrl} mode="signin" />
-            
-            <div className="relative">
-              <div className="absolute inset-0 flex items-center">
-                <span className="w-full border-t" />
-              </div>
-              <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-background px-2 text-muted-foreground">
-                  Or continue with email
-                </span>
-              </div>
-            </div>
-
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>
