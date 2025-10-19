@@ -24,6 +24,10 @@ import { Moon, Sun, User, LogOut, Menu } from "lucide-react";
 import { useTheme } from "next-themes";
 import WWELogo from "@/components/WWELogo";
 import { useState } from "react";
+import {
+  ThemeToggleButton,
+  useThemeTransition,
+} from "./ui/shadcn-io/theme-toggle-button";
 
 export const AppHeader = () => {
   const { data: session } = useSession();
@@ -31,10 +35,17 @@ export const AppHeader = () => {
   const pathname = usePathname();
   const router = useRouter();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const { startTransition } = useThemeTransition();
 
   const handleSignOut = async () => {
     await signOut();
     router.push("/auth/signin");
+  };
+
+  const handleThemeToggle = () => {
+    startTransition(() => {
+      setTheme(theme === "dark" ? "light" : "dark");
+    });
   };
 
   return (
@@ -151,16 +162,13 @@ export const AppHeader = () => {
         {/* Right Section */}
         <div className="flex items-center gap-2">
           {/* Theme Toggle */}
-          <Button
-            variant="ghost"
+          <ThemeToggleButton
             size="icon"
-            onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-            className="h-9 w-9"
-          >
-            <Sun className="h-4 w-4 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
-            <Moon className="absolute h-4 w-4 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
-            <span className="sr-only">Toggle theme</span>
-          </Button>
+            theme={theme as "light" | "dark"}
+            onClick={handleThemeToggle}
+            variant="circle-blur"
+            start="top-right"
+          />
 
           {/* User Menu or Auth Buttons */}
           {session ? (
@@ -210,7 +218,7 @@ export const AppHeader = () => {
               </DropdownMenuContent>
             </DropdownMenu>
           ) : (
-            <Button asChild variant="outline" size="sm">
+            <Button asChild variant="outline">
               <Link href="/auth/signin">Sign In</Link>
             </Button>
           )}

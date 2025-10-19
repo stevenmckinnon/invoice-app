@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import WWELogo from "@/components/WWELogo";
 import { signIn } from "@/lib/auth-client";
-import { Mail, Loader2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
@@ -110,7 +110,6 @@ const SignInForm = () => {
               </div>
 
               <Button type="submit" className="w-full" disabled={isLoading}>
-                <Mail className="h-4 w-4" />
                 {isLoading ? "Signing in..." : "Sign In"}
               </Button>
             </form>

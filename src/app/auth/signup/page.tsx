@@ -10,7 +10,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import WWELogo from "@/components/WWELogo";
 import { signUp } from "@/lib/auth-client";
-import { Mail } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
@@ -185,7 +184,6 @@ export default function SignUpPage() {
               </div>
 
               <Button type="submit" className="w-full" disabled={isLoading}>
-                <Mail className="h-4 w-4" />
                 {isLoading ? "Creating Account..." : "Create Account"}
               </Button>
             </form>
