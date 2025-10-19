@@ -62,7 +62,7 @@ export const MobileBottomNav = () => {
           <div className="absolute inset-0 bg-background/80 dark:bg-background/90 backdrop-blur-xl rounded-3xl border border-border/50 shadow-lg" />
           
           {/* Navigation Items */}
-          <div className="relative flex items-center justify-around px-2 py-3">
+          <div className="relative flex items-center justify-around px-0 py-3">
             {navItems.map((item) => {
               const Icon = item.icon;
               const isActive = item.isActive(pathname);
@@ -72,7 +72,7 @@ export const MobileBottomNav = () => {
                   key={item.href}
                   href={item.href}
                   className={cn(
-                    "relative flex flex-col items-center justify-center gap-1 p-2 rounded-2xl transition-all duration-300 ease-out",
+                    "relative flex flex-col items-center justify-center gap-1 px-4 py-2 rounded-2xl transition-all duration-300 ease-out",
                     "hover:scale-105 active:scale-95",
                     isActive
                       ? "text-accent-foreground"
