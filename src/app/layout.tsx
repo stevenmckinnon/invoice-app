@@ -1,9 +1,10 @@
 import type { Metadata, Viewport } from "next";
 import { Roboto, Roboto_Mono } from "next/font/google";
-import "./globals.css";
 import { AppHeader } from "@/components/AppHeader";
 import { Providers } from "@/components/Providers";
 import { Toaster } from "@/components/ui/sonner";
+
+import "./globals.css";
 
 const robotoSans = Roboto({
   variable: "--font-roboto-sans",
@@ -75,6 +76,15 @@ export const metadata: Metadata = {
       "Create and manage professional invoices for WWE freelancers and production staff",
     url: "/",
     locale: "en_US",
+    images: [
+      {
+        url: "/opengraph-image.png",
+        width: 1200,
+        height: 630,
+        alt: "WWE Invoice App",
+        type: "image/png",
+      },
+    ],
   },
   twitter: {
     card: "summary_large_image",
