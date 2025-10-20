@@ -24,7 +24,8 @@ const navItems: NavItem[] = [
     href: "/invoices",
     label: "Invoices",
     icon: FileText,
-    isActive: (pathname) => pathname.startsWith("/invoices") && pathname !== "/invoices/new",
+    isActive: (pathname) =>
+      pathname.startsWith("/invoices") && pathname !== "/invoices/new",
   },
   {
     href: "/invoices/new",
@@ -53,26 +54,26 @@ export const MobileBottomNav = () => {
     <>
       {/* Spacer to prevent content from being hidden behind nav */}
       <div className="h-20 md:hidden" />
-      
+
       {/* Bottom Navigation */}
-      <nav className="fixed bottom-0 left-0 right-0 z-50 md:hidden">
+      <nav className="fixed bottom-0 left-0 right-0 z-50 md:hidden flex justify-center">
         {/* Liquid Glass Container */}
-        <div className="relative mx-4 mb-4">
+        <div className="relative mb-4">
           {/* Glass Effect Background */}
-          <div className="absolute inset-0 bg-background/80 dark:bg-background/90 backdrop-blur-xl rounded-3xl border border-border/50 shadow-lg" />
-          
+          <div className="absolute inset-0 bg-background/80 dark:bg-background/90 backdrop-blur-xl rounded-4xl border border-border/50 shadow-lg" />
+
           {/* Navigation Items */}
-          <div className="relative flex items-center justify-around px-0 py-3">
+          <div className="relative flex items-center justify-center gap-1 p-3">
             {navItems.map((item) => {
               const Icon = item.icon;
               const isActive = item.isActive(pathname);
-              
+
               return (
                 <Link
                   key={item.href}
                   href={item.href}
                   className={cn(
-                    "relative flex flex-col items-center justify-center gap-1 px-4 py-2 rounded-2xl transition-all duration-300 ease-out",
+                    "relative flex flex-col items-center justify-center gap-1 px-6 py-2 rounded-3xl transition-all duration-300 ease-out",
                     "hover:scale-105 active:scale-95",
                     isActive
                       ? "text-accent-foreground"
@@ -81,9 +82,9 @@ export const MobileBottomNav = () => {
                 >
                   {/* Active Background Pill */}
                   {isActive && (
-                    <div className="absolute inset-0 bg-accent rounded-2xl shadow-md animate-in fade-in zoom-in-95 duration-200" />
+                    <div className="absolute inset-0 bg-accent rounded-3xl shadow-md animate-in fade-in zoom-in-95 duration-200" />
                   )}
-                  
+
                   {/* Icon */}
                   <div className="relative">
                     <Icon
@@ -93,7 +94,7 @@ export const MobileBottomNav = () => {
                       )}
                     />
                   </div>
-                  
+
                   {/* Label */}
                   <span
                     className={cn(
@@ -112,4 +113,3 @@ export const MobileBottomNav = () => {
     </>
   );
 };
-

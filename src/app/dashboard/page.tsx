@@ -43,8 +43,13 @@ import {
 
 // Helper to format date without timezone shift
 const formatDate = (dateStr: Date | string) => {
-  const date =
-    typeof dateStr === "string" ? new Date(dateStr + "T00:00:00") : dateStr;
+  const date = typeof dateStr === "string" ? new Date(dateStr) : dateStr;
+  
+  // Check if date is valid
+  if (isNaN(date.getTime())) {
+    return "Invalid Date";
+  }
+  
   return date.toLocaleDateString("en-GB", {
     year: "numeric",
     month: "short",
@@ -280,7 +285,7 @@ export default function Home() {
       : 0;
 
   return (
-    <div className="w-full max-w-6xl mx-auto p-6 pb-8 grid grid-cols-1 gap-6">
+    <div className="w-full max-w-6xl mx-auto p-6 pb-28 md:pb-8 grid grid-cols-1 gap-6">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold">Invoice Dashboard</h1>

@@ -130,7 +130,7 @@ export default function ProfilePage() {
     try {
       // Combine firstName and lastName to create fullName
       const fullName = `${values.firstName} ${values.lastName}`.trim();
-      
+
       // Transform string values to numbers before sending to API
       const payload = {
         ...values,
@@ -138,7 +138,9 @@ export default function ProfilePage() {
         fullName: fullName,
         dayRate: values.dayRate ? Number(values.dayRate) : null,
         perDiemWork: values.perDiemWork ? Number(values.perDiemWork) : null,
-        perDiemTravel: values.perDiemTravel ? Number(values.perDiemTravel) : null,
+        perDiemTravel: values.perDiemTravel
+          ? Number(values.perDiemTravel)
+          : null,
       };
 
       const response = await fetch("/api/profile", {
@@ -171,7 +173,7 @@ export default function ProfilePage() {
 
   if (loading) {
     return (
-      <div className="container mx-auto py-8 px-4 max-w-4xl">
+      <div className="w-full max-w-6xl mx-auto p-6 pb-28 md:pb-8">
         <div className="mb-6 space-y-2">
           <Skeleton className="h-9 w-64" />
           <Skeleton className="h-4 w-96" />
@@ -229,7 +231,7 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="container mx-auto py-8 px-4 max-w-4xl">
+    <div className="w-full max-w-6xl mx-auto p-6 pb-28 md:pb-8 grid grid-cols-1 gap-6">
       <div className="mb-6">
         <h1 className="text-3xl font-bold">Profile Settings</h1>
         <p className="text-muted-foreground mt-2">

@@ -292,12 +292,13 @@ export default function EditInvoicePage() {
       <form
         // @ts-expect-error - React Hook Form type inference issues
         onSubmit={form.handleSubmit(onSubmit)}
-        className="w-full max-w-6xl mx-auto p-6 grid gap-6"
+        className="w-full max-w-6xl mx-auto p-6 pb-28 md:pb-8 grid gap-6"
       >
         <div className="flex items-center gap-4">
           <Button asChild variant="outline" size="sm">
             <Link href="/">
               <ArrowLeftIcon className="h-4 w-4" />
+              <span className="hidden md:block">Back</span>
             </Link>
           </Button>
           <h1 className="text-2xl font-semibold">Edit Invoice</h1>

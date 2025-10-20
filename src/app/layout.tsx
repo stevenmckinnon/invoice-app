@@ -116,7 +116,7 @@ export default function RootLayout({
       >
         <Providers>
           <AppHeader />
-          <main className="mx-auto h-[calc(100dvh-64px)] pb-24 md:pb-0">{children}</main>
+          <main className="mx-auto h-[calc(100dvh-64px)]">{children}</main>
           <MobileBottomNav />
           <Toaster />
         </Providers>

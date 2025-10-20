@@ -147,8 +147,8 @@ export default function InvoiceDetailPage({ params }: Props) {
         <div className="text-center space-y-4">
           <p className="text-2xl font-semibold">Invoice not found</p>
           <p className="text-muted-foreground">
-            The invoice you&apos;re looking for doesn&apos;t exist or you don&apos;t have
-            permission to view it.
+            The invoice you&apos;re looking for doesn&apos;t exist or you
+            don&apos;t have permission to view it.
           </p>
           <Button asChild>
             <Link href="/invoices">Back to Invoices</Link>
@@ -208,7 +208,7 @@ export default function InvoiceDetailPage({ params }: Props) {
   ];
 
   return (
-    <div className="max-w-6xl mx-auto px-6 py-4">
+    <div className="w-full max-w-6xl mx-auto p-6 pb-28 md:pb-8">
       <Button onClick={() => router.back()} className="mb-4" variant="outline">
         <ArrowLeftIcon /> Back
       </Button>

@@ -39,7 +39,7 @@
   --font-sans: Roboto, ui-sans-serif, sans-serif, system-ui;
   --font-serif: Roboto Serif, ui-serif, serif;
   --font-mono: Roboto Mono, ui-monospace, monospace;
-  --radius: 0.75rem;
+  --radius: 1em;
   --shadow-x: 0;
   --shadow-y: 0.125rem;
   --shadow-blur: 0.5rem;
@@ -99,7 +99,7 @@
   --font-sans: Roboto, ui-sans-serif, sans-serif, system-ui;
   --font-serif: Roboto Serif, ui-serif, serif;
   --font-mono: Roboto Mono, ui-monospace, monospace;
-  --radius: 0.75rem;
+  --radius: 1rem;
   --shadow-x: 0;
   --shadow-y: 0.25rem;
   --shadow-blur: 0.75rem;
