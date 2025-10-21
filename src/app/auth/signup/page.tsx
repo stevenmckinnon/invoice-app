@@ -96,7 +96,7 @@ export default function SignUpPage() {
 
   return (
     <div className="h-[calc(100dvh-64px)] w-full grid grid-cols-1 md:grid-cols-2 overflow-hidden">
-      <div className="relative items-center justify-center hidden md:flex col-span-1 p-6 overflow-hidden">
+      <div className="relative items-center justify-center hidden md:flex col-span-1 p-6 pt-0 overflow-hidden">
         <div className="relative w-full h-full">
           <Image
             src="/roman.JPG"
@@ -106,7 +106,7 @@ export default function SignUpPage() {
           />
         </div>
       </div>
-      <div className="flex items-center justify-center col-span-1 p-6">
+      <div className="flex items-center justify-center col-span-1 p-6 pt-0">
         <div className="w-full max-w-md -mt-24 md:mt-0">
           <CardHeader className="text-center mb-4">
             <div className="flex justify-center mb-4">

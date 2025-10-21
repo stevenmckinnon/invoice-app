@@ -9,6 +9,8 @@ export function middleware(request: NextRequest) {
     "/",
     "/auth/signin",
     "/auth/signup",
+    "/auth/forgot-password",
+    "/auth/reset-password",
     "/legal",
     "/cookies",
   ];
