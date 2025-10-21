@@ -21,23 +21,17 @@ const navItems: NavItem[] = [
     isActive: (pathname) => pathname === "/dashboard",
   },
   {
-    href: "/invoices",
-    label: "Invoices",
-    icon: FileText,
-    isActive: (pathname) =>
-      pathname.startsWith("/invoices") && pathname !== "/invoices/new",
-  },
-  {
     href: "/invoices/new",
     label: "New",
     icon: PlusCircle,
     isActive: (pathname) => pathname === "/invoices/new",
   },
   {
-    href: "/profile",
-    label: "Profile",
-    icon: User,
-    isActive: (pathname) => pathname === "/profile",
+    href: "/invoices",
+    label: "Invoices",
+    icon: FileText,
+    isActive: (pathname) =>
+      pathname.startsWith("/invoices") && pathname !== "/invoices/new",
   },
 ];
 
@@ -73,7 +67,7 @@ export const MobileBottomNav = () => {
                   key={item.href}
                   href={item.href}
                   className={cn(
-                    "relative flex flex-col items-center justify-center gap-1 px-6 py-2 rounded-3xl transition-all duration-300 ease-out",
+                    "w-[95px] relative flex flex-col items-center justify-center gap-1 px-6 py-2 rounded-3xl transition-all duration-300 ease-out",
                     "hover:scale-105 active:scale-95",
                     isActive
                       ? "text-accent-foreground"
