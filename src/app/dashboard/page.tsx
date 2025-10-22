@@ -30,6 +30,7 @@ import {
 } from "lucide-react";
 import { useSession } from "@/lib/auth-client";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import {
   Area,
@@ -44,12 +45,12 @@ import {
 // Helper to format date without timezone shift
 const formatDate = (dateStr: Date | string) => {
   const date = typeof dateStr === "string" ? new Date(dateStr) : dateStr;
-  
+
   // Check if date is valid
   if (isNaN(date.getTime())) {
     return "Invalid Date";
   }
-  
+
   return date.toLocaleDateString("en-GB", {
     year: "numeric",
     month: "short",
@@ -70,6 +71,7 @@ type Invoice = {
 
 export default function Home() {
   const { data: session, isPending } = useSession();
+  const router = useRouter();
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [chartColors, setChartColors] = useState({
@@ -141,16 +143,13 @@ export default function Home() {
     if (session) {
       fetchInvoices();
     } else if (!isPending) {
-      setIsLoading(false);
+      // Redirect to sign in if not authenticated
+      router.push("/auth/signin");
     }
-  }, [session, isPending]);
+  }, [session, isPending, router]);
 
-  // Show landing page for non-authenticated users
-  if (isPending) {
-    return <DashboardSkeleton />;
-  }
-
-  if (isLoading) {
+  // Show loading while fetching data
+  if (isPending || isLoading) {
     return <DashboardSkeleton />;
   }
 
