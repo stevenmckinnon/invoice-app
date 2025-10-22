@@ -2,7 +2,7 @@
 
 import { useSession, signOut } from "@/lib/auth-client";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -25,12 +25,18 @@ export const AppHeader = () => {
   const { data: session } = useSession();
   const { theme, setTheme } = useTheme();
   const pathname = usePathname();
-  const router = useRouter();
   const { startTransition } = useThemeTransition();
 
   const handleSignOut = async () => {
-    await signOut();
-    router.push("/auth/signin");
+    try {
+      await signOut();
+      // Use window.location for a hard redirect to ensure session is cleared
+      window.location.href = "/auth/signin";
+    } catch (error) {
+      console.error("Error signing out:", error);
+      // Even if signOut fails, redirect to signin
+      window.location.href = "/auth/signin";
+    }
   };
 
   const handleThemeToggle = () => {

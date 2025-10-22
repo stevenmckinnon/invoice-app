@@ -1,20 +1,4 @@
 "use client";
-import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
-import { useSession, signOut, changePassword } from "@/lib/auth-client";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Separator } from "@/components/ui/separator";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -25,9 +9,37 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { toast } from "sonner";
-import { Loader2, Key, Trash2, Shield, Monitor, AlertTriangle } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { changePassword, signOut, useSession } from "@/lib/auth-client";
 import { format } from "date-fns";
+import {
+  AlertTriangle,
+  Key,
+  Loader2,
+  Monitor,
+  Shield,
+  Trash2,
+} from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
 
 interface Session {
   id: string;
@@ -43,7 +55,7 @@ const SettingsPage = () => {
   const { data: session } = useSession();
   const [sessions, setSessions] = useState<Session[]>([]);
   const [loadingSessions, setLoadingSessions] = useState(true);
-  
+
   // Password Change State
   const [showPasswordDialog, setShowPasswordDialog] = useState(false);
   const [changingPassword, setChangingPassword] = useState(false);
@@ -105,18 +117,25 @@ const SettingsPage = () => {
 
       if (result.error) {
         toast.error("Failed to change password", {
-          description: result.error.message || "Please check your current password and try again.",
+          description:
+            result.error.message ||
+            "Please check your current password and try again.",
         });
         setChangingPassword(false);
         return;
       }
 
       toast.success("Password changed successfully!", {
-        description: "Your password has been updated. Other sessions have been revoked.",
+        description:
+          "Your password has been updated. Other sessions have been revoked.",
       });
-      
+
       setShowPasswordDialog(false);
-      setPasswordData({ currentPassword: "", newPassword: "", confirmPassword: "" });
+      setPasswordData({
+        currentPassword: "",
+        newPassword: "",
+        confirmPassword: "",
+      });
       fetchSessions(); // Refresh sessions list
     } catch (error) {
       console.error("Error changing password:", error);
@@ -169,12 +188,13 @@ const SettingsPage = () => {
 
       if (response.ok) {
         toast.success("Account deleted", {
-          description: "Your account and all data have been permanently deleted.",
+          description:
+            "Your account and all data have been permanently deleted.",
         });
-        
+
         // Sign out and redirect
         await signOut();
-        router.push("/");
+        window.location.href = "/";
       } else {
         const error = await response.json();
         toast.error("Failed to delete account", {
@@ -191,7 +211,7 @@ const SettingsPage = () => {
 
   const getBrowserInfo = (userAgent: string | null) => {
     if (!userAgent) return "Unknown Browser";
-    
+
     if (userAgent.includes("Chrome")) return "Chrome";
     if (userAgent.includes("Firefox")) return "Firefox";
     if (userAgent.includes("Safari")) return "Safari";
@@ -232,9 +252,9 @@ const SettingsPage = () => {
         <CardContent className="space-y-4">
           <div>
             <Label>Email Address</Label>
-            <Input 
-              value={session.user.email || ""} 
-              disabled 
+            <Input
+              value={session.user.email || ""}
+              disabled
               className="mt-1.5"
             />
             <p className="text-sm text-muted-foreground mt-1">
@@ -243,9 +263,9 @@ const SettingsPage = () => {
           </div>
           <div>
             <Label>Account ID</Label>
-            <Input 
-              value={session.user.id} 
-              disabled 
+            <Input
+              value={session.user.id}
+              disabled
               className="mt-1.5 font-mono text-xs"
             />
           </div>
@@ -264,10 +284,7 @@ const SettingsPage = () => {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <Button 
-            onClick={() => setShowPasswordDialog(true)}
-            variant="outline"
-          >
+          <Button onClick={() => setShowPasswordDialog(true)} variant="outline">
             Change Password
           </Button>
         </CardContent>
@@ -281,7 +298,7 @@ const SettingsPage = () => {
             Active Sessions
           </CardTitle>
           <CardDescription>
-            Manage devices and sessions where you're currently signed in
+            Manage devices and sessions where you&apos;re currently signed in
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -291,14 +308,16 @@ const SettingsPage = () => {
               <span className="text-sm">Loading sessions...</span>
             </div>
           ) : sessions.length === 0 ? (
-            <p className="text-sm text-muted-foreground">No active sessions found</p>
+            <p className="text-sm text-muted-foreground">
+              No active sessions found
+            </p>
           ) : (
             <div className="space-y-3">
               {sessions.map((sess) => {
                 const isCurrentSession = sess.token === currentSessionToken;
                 return (
-                  <div 
-                    key={sess.id} 
+                  <div
+                    key={sess.id}
                     className="flex items-center justify-between p-3 border rounded-lg"
                   >
                     <div className="flex-1">
@@ -314,10 +333,14 @@ const SettingsPage = () => {
                       </div>
                       <p className="text-xs text-muted-foreground mt-1">
                         {sess.ipAddress || "Unknown IP"} • Signed in{" "}
-                        {format(new Date(sess.createdAt), "MMM d, yyyy 'at' h:mm a")}
+                        {format(
+                          new Date(sess.createdAt),
+                          "MMM d, yyyy 'at' h:mm a"
+                        )}
                       </p>
                       <p className="text-xs text-muted-foreground">
-                        Expires {format(new Date(sess.expiresAt), "MMM d, yyyy")}
+                        Expires{" "}
+                        {format(new Date(sess.expiresAt), "MMM d, yyyy")}
                       </p>
                     </div>
                     {!isCurrentSession && (
@@ -353,9 +376,10 @@ const SettingsPage = () => {
             <div>
               <h4 className="text-sm font-medium mb-1">Delete Account</h4>
               <p className="text-sm text-muted-foreground mb-3">
-                Permanently delete your account and all associated data. This action cannot be undone.
+                Permanently delete your account and all associated data. This
+                action cannot be undone.
               </p>
-              <Button 
+              <Button
                 variant="destructive"
                 onClick={() => setShowDeleteDialog(true)}
               >
@@ -384,7 +408,10 @@ const SettingsPage = () => {
                 type="password"
                 value={passwordData.currentPassword}
                 onChange={(e) =>
-                  setPasswordData({ ...passwordData, currentPassword: e.target.value })
+                  setPasswordData({
+                    ...passwordData,
+                    currentPassword: e.target.value,
+                  })
                 }
                 className="mt-1.5"
               />
@@ -396,7 +423,10 @@ const SettingsPage = () => {
                 type="password"
                 value={passwordData.newPassword}
                 onChange={(e) =>
-                  setPasswordData({ ...passwordData, newPassword: e.target.value })
+                  setPasswordData({
+                    ...passwordData,
+                    newPassword: e.target.value,
+                  })
                 }
                 className="mt-1.5"
               />
@@ -411,7 +441,10 @@ const SettingsPage = () => {
                 type="password"
                 value={passwordData.confirmPassword}
                 onChange={(e) =>
-                  setPasswordData({ ...passwordData, confirmPassword: e.target.value })
+                  setPasswordData({
+                    ...passwordData,
+                    confirmPassword: e.target.value,
+                  })
                 }
                 className="mt-1.5"
               />
@@ -422,7 +455,11 @@ const SettingsPage = () => {
               variant="outline"
               onClick={() => {
                 setShowPasswordDialog(false);
-                setPasswordData({ currentPassword: "", newPassword: "", confirmPassword: "" });
+                setPasswordData({
+                  currentPassword: "",
+                  newPassword: "",
+                  confirmPassword: "",
+                });
               }}
               disabled={changingPassword}
             >
@@ -446,9 +483,12 @@ const SettingsPage = () => {
       <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle className="text-destructive">Delete Account</DialogTitle>
+            <DialogTitle className="text-destructive">
+              Delete Account
+            </DialogTitle>
             <DialogDescription>
-              This action cannot be undone. All your data will be permanently deleted.
+              This action cannot be undone. All your data will be permanently
+              deleted.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
@@ -479,7 +519,7 @@ const SettingsPage = () => {
             </div>
             <div>
               <Label htmlFor="delete-confirmation">
-                Type "DELETE MY ACCOUNT" to confirm
+                Type &quot;DELETE MY ACCOUNT&quot; to confirm
               </Label>
               <Input
                 id="delete-confirmation"
@@ -510,7 +550,7 @@ const SettingsPage = () => {
                 setShowDeleteConfirm(true);
               }}
               disabled={
-                !deleteData.password || 
+                !deleteData.password ||
                 deleteData.confirmation !== "DELETE MY ACCOUNT"
               }
             >
@@ -526,7 +566,9 @@ const SettingsPage = () => {
           <AlertDialogHeader>
             <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
             <AlertDialogDescription>
-              This is your last chance. Once you confirm, your account and all associated data will be permanently deleted. This action cannot be undone.
+              This is your last chance. Once you confirm, your account and all
+              associated data will be permanently deleted. This action cannot be
+              undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -561,4 +603,3 @@ const SettingsPage = () => {
 };
 
 export default SettingsPage;
-
