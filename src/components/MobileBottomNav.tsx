@@ -3,6 +3,8 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Home, FileText, PlusCircle } from "lucide-react";
+import { LiquidGlass } from "@liquidglass/react";
+
 import { cn } from "@/lib/utils";
 import { useSession } from "@/lib/auth-client";
 
@@ -54,54 +56,63 @@ export const MobileBottomNav = () => {
         {/* Liquid Glass Container */}
         <div className="relative mb-4">
           {/* Glass Effect Background */}
-          <div className="absolute inset-0 bg-background/80 dark:bg-background/90 backdrop-blur-xl rounded-4xl border border-border/50 shadow-lg" />
+          <div className="absolute inset-0 rounded-4xl border border-border/50 shadow-lg" />
+          <LiquidGlass
+            borderRadius={64}
+            blur={1.0}
+            contrast={1.5}
+            brightness={1.2}
+            saturation={1.3}
+            shadowIntensity={0.4}
+            elasticity={0.8}
+          >
+            {/* Navigation Items */}
+            <div className="relative flex items-center justify-center gap-1 p-3">
+              {navItems.map((item) => {
+                const Icon = item.icon;
+                const isActive = item.isActive(pathname);
 
-          {/* Navigation Items */}
-          <div className="relative flex items-center justify-center gap-1 p-3">
-            {navItems.map((item) => {
-              const Icon = item.icon;
-              const isActive = item.isActive(pathname);
-
-              return (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  className={cn(
-                    "w-[95px] relative flex flex-col items-center justify-center gap-1 px-6 py-2 rounded-3xl transition-all duration-300 ease-out",
-                    "hover:scale-105 active:scale-95",
-                    isActive
-                      ? "text-accent-foreground"
-                      : "text-muted-foreground hover:text-foreground"
-                  )}
-                >
-                  {/* Active Background Pill */}
-                  {isActive && (
-                    <div className="absolute inset-0 bg-accent rounded-3xl shadow-md animate-in fade-in zoom-in-95 duration-200" />
-                  )}
-
-                  {/* Icon */}
-                  <div className="relative">
-                    <Icon
-                      className={cn(
-                        "h-5 w-5 transition-all duration-300",
-                        isActive && "drop-shadow-sm"
-                      )}
-                    />
-                  </div>
-
-                  {/* Label */}
-                  <span
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
                     className={cn(
-                      "relative text-xs font-medium transition-all duration-300",
-                      isActive ? "opacity-100" : "opacity-70"
+                      "w-[95px] relative flex flex-col items-center justify-center gap-1 px-6 py-2 rounded-3xl transition-all duration-300 ease-out",
+                      "hover:scale-105 active:scale-95",
+                      isActive
+                        ? "text-accent-foreground"
+                        : "text-foreground hover:text-foreground"
                     )}
                   >
-                    {item.label}
-                  </span>
-                </Link>
-              );
-            })}
-          </div>
+                    {/* Active Background Pill */}
+                    {isActive && (
+                      <div className="absolute inset-0 bg-accent rounded-3xl shadow-md animate-in fade-in zoom-in-95 duration-200" />
+                    )}
+
+                    {/* Icon */}
+                    <div className="relative">
+                      <Icon
+                        className={cn(
+                          "h-5 w-5 transition-all duration-300",
+                          isActive && "drop-shadow-sm"
+                        )}
+                      />
+                    </div>
+
+                    {/* Label */}
+                    <span
+                      className={cn(
+                        "relative text-xs font-medium transition-all duration-300",
+                        isActive ? "opacity-100" : "opacity-70"
+                      )}
+                    >
+                      {item.label}
+                    </span>
+                  </Link>
+                );
+              })}
+            </div>
+          </LiquidGlass>
         </div>
       </nav>
     </>
