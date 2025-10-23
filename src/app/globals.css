@@ -371,12 +371,56 @@ button {
     inset 0 1px 0 rgba(255, 255, 255, 0.05);
 }
 
-.zoom {
-  zoom: 25%;
-}
-
+/* Desktop zoom - works on desktop browsers */
 @media (min-width: 768px) {
   .zoom {
     zoom: 70%;
+  }
+}
+
+/* Mobile: Use responsive design instead of scaling */
+@media (max-width: 767px) {
+  .zoom {
+    zoom: unset;
+    transform: scale(0.6);
+    transform-origin: top left;
+    width: 166.67%; /* Compensate for scale reduction (100/0.6) */
+    height: auto; /* Let height be natural */
+    margin: 0 auto; /* Center the scaled content */
+    /* Use responsive spacing and sizing */
+    padding: 1rem;
+    gap: 1rem;
+  }
+
+  /* Ensure the glass frame accommodates the scaled content */
+  .glossy-frame {
+    height: 624px;
+  }
+
+  /* Make demo dashboard mobile-friendly */
+  .zoom .grid-cols-4 {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.75rem;
+  }
+
+  .zoom .grid-cols-2 {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .zoom h1 {
+    font-size: 1.5rem;
+  }
+
+  .zoom .text-2xl {
+    font-size: 1.25rem;
+  }
+
+  .zoom .text-sm {
+    font-size: 0.75rem;
+  }
+
+  .zoom .text-xs {
+    font-size: 0.625rem;
   }
 }
