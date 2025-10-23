@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import Image from "next/image";
 import { BackgroundPattern } from "./background-pattern";
+import { DemoDashboard } from "@/components/DemoDashboard";
 
 const Hero = () => {
   return (
@@ -45,17 +45,10 @@ const Hero = () => {
           No credit card required • Free forever • Cancel anytime
         </p>
 
-        {/* App Demo Image */}
-        <div className="mt-16 max-w-4xl mx-auto w-full">
+        {/* App Demo Dashboard */}
+        <div className="mt-16 max-w-6xl mx-auto w-full">
           <div className="glossy-frame p-0">
-            <Image
-              src="/app-demo.png"
-              alt="Caley Invoice Dashboard - Professional invoice management interface"
-              width={1200}
-              height={800}
-              className="w-full h-auto"
-              priority
-            />
+            <DemoDashboard />
           </div>
         </div>
       </div>
