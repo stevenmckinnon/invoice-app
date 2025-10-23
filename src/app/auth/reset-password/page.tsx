@@ -8,9 +8,9 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import WWELogo from "@/components/WWELogo";
+import CaleyLogo from "@/components/CaleyLogo";
 import { resetPassword } from "@/lib/auth-client";
-import { Loader2 } from "lucide-react";
+import { ArrowLeft, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useState } from "react";
@@ -67,7 +67,8 @@ const ResetPasswordForm = () => {
       }
 
       toast.success("Password reset successful!", {
-        description: "Your password has been updated. Redirecting to sign in...",
+        description:
+          "Your password has been updated. Redirecting to sign in...",
       });
 
       setTimeout(() => {
@@ -84,11 +85,16 @@ const ResetPasswordForm = () => {
 
   if (!token) {
     return (
-      <div className="h-[calc(100dvh-64px)] w-full flex items-center justify-center p-6">
+      <div className="h-screen w-full flex items-center justify-center p-6">
         <div className="w-full max-w-md">
           <CardHeader className="text-center mb-4">
-            <div className="flex justify-center mb-4">
-              <WWELogo className="h-24 w-24" />
+            <div className="flex flex-col items-center mb-4 gap-2">
+              <Button asChild variant="outline">
+                <Link href="/">
+                  <ArrowLeft /> Back Home
+                </Link>
+              </Button>
+              <CaleyLogo className="h-24 w-24" />
             </div>
             <CardTitle>
               <h1 className="text-2xl">Invalid reset link</h1>
@@ -113,18 +119,21 @@ const ResetPasswordForm = () => {
   }
 
   return (
-    <div className="h-[calc(100dvh-64px)] w-full flex items-center justify-center p-6">
+    <div className="h-screen w-full flex items-center justify-center p-6">
       <div className="w-full max-w-md">
         <CardHeader className="text-center mb-4">
-          <div className="flex justify-center mb-4">
-            <WWELogo className="h-24 w-24" />
+          <div className="flex flex-col items-center mb-4 gap-2">
+            <Button asChild variant="outline">
+              <Link href="/">
+                <ArrowLeft /> Back Home
+              </Link>
+            </Button>
+            <CaleyLogo className="h-24 w-24" />
           </div>
           <CardTitle>
             <h1 className="text-2xl">Reset your password</h1>
           </CardTitle>
-          <CardDescription>
-            Enter your new password below.
-          </CardDescription>
+          <CardDescription>Enter your new password below.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -185,7 +194,7 @@ export default function ResetPasswordPage() {
   return (
     <Suspense
       fallback={
-        <div className="flex flex-col items-center justify-center min-h-[calc(100dvh-64px)] gap-4">
+        <div className="flex flex-col items-center justify-center min-h-screen gap-4">
           <Loader2 className="h-8 w-8 animate-spin text-primary" />
           <p className="text-sm text-muted-foreground">Loading...</p>
         </div>
@@ -195,4 +204,3 @@ export default function ResetPasswordPage() {
     </Suspense>
   );
 }
-

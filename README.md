@@ -1,4 +1,4 @@
-# WWE Invoice App
+# Caley
 
 A modern invoice management application built with Next.js, Prisma, and Better Auth.
 

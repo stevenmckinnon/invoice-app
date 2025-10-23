@@ -122,7 +122,7 @@ export default function NewInvoicePage() {
       clientState: "CT",
       clientPostalCode: "06902",
       clientCountry: "United States",
-      attentionTo: "WWE - 31004 GT Prod Evnt Tech Ops",
+      attentionTo: "Caley - Professional Invoice Management",
       iban: "",
       swiftBic: "",
       accountNumber: "",

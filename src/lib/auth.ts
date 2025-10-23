@@ -41,7 +41,7 @@ export const auth = betterAuth({
           const { data, error } = await resend.emails.send({
             from: process.env.EMAIL_FROM || "onboarding@resend.dev",
             to: user.email,
-            subject: "Reset your password - WWE Invoice App",
+            subject: "Reset your password - Caley",
             html: getPasswordResetEmailHtml({
               resetUrl: url,
               userEmail: user.email,

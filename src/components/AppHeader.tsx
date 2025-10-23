@@ -15,7 +15,7 @@ import {
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { User, LogOut, Settings } from "lucide-react";
 import { useTheme } from "next-themes";
-import WWELogo from "@/components/WWELogo";
+import CaleyLogo from "@/components/CaleyLogo";
 import {
   ThemeToggleButton,
   useThemeTransition,
@@ -53,9 +53,9 @@ export const AppHeader = () => {
           href={session?.user ? "/dashboard" : "/"}
           className="flex items-center gap-2 hover:opacity-80 transition-opacity"
         >
-          <WWELogo className="h-8 w-8" />
-          <span className="font-bold text-lg hidden sm:inline-block">
-            WWE Invoicing
+          <CaleyLogo className="h-8 w-8" />
+          <span className="font-bold text-xl hidden sm:inline-block">
+            Caley
           </span>
         </Link>
 

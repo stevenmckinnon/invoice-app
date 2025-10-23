@@ -8,9 +8,9 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import WWELogo from "@/components/WWELogo";
+import CaleyLogo from "@/components/CaleyLogo";
 import { signIn } from "@/lib/auth-client";
-import { Loader2 } from "lucide-react";
+import { ArrowLeft, Loader2 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
@@ -67,15 +67,20 @@ const SignInForm = () => {
   };
 
   return (
-    <div className="h-[calc(100dvh-64px)] w-full grid grid-cols-1 md:grid-cols-2 overflow-hidden">
-      <div className="flex items-center justify-center col-span-1 p-6 pt-0">
-        <div className="w-full max-w-md -mt-24 md:mt-0">
+    <div className="h-screen w-full grid grid-cols-1 md:grid-cols-2 overflow-hidden">
+      <div className="flex items-center justify-center col-span-1 p-6">
+        <div className="w-full max-w-md">
           <CardHeader className="text-center mb-4">
-            <div className="flex justify-center mb-4">
-              <WWELogo className="h-24 w-24" />
+            <div className="flex flex-col items-center mb-4 gap-2">
+              <Button asChild variant="outline">
+                <Link href="/">
+                  <ArrowLeft /> Back Home
+                </Link>
+              </Button>
+              <CaleyLogo className="h-24 w-24" />
             </div>
             <CardTitle>
-              <h1 className="text-2xl">Welcome to WWE Invoice App</h1>
+              <h1 className="text-2xl">Welcome to Caley</h1>
             </CardTitle>
             <CardDescription>Sign in to manage your invoices</CardDescription>
           </CardHeader>
@@ -134,11 +139,11 @@ const SignInForm = () => {
           </CardContent>
         </div>
       </div>
-      <div className="relative items-center justify-center hidden md:flex col-span-1 p-6 pt-0 overflow-hidden">
-        <div className="relative w-full h-full">
+      <div className="relative items-center justify-center hidden md:flex col-span-1 p-6 overflow-hidden">
+        <div className="relative w-full h-full dither-retro">
           <Image
-            src="/cena.JPG"
-            alt="Cena"
+            src="/signin.jpg"
+            alt="Glenfinnan Viaduct, A830 Road, Glenfinnan, Scotland, UK"
             fill
             className="rounded-lg object-cover object-bottom"
           />

@@ -14,7 +14,8 @@ export const getPasswordResetEmailHtml = ({
   logoUrl,
 }: PasswordResetEmailProps): string => {
   // Construct the full logo URL
-  const baseUrl = logoUrl || process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+  const baseUrl =
+    logoUrl || process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
   const fullLogoUrl = logoUrl || `${baseUrl}/email-logo.png`;
   return `
 <!DOCTYPE html>
@@ -35,20 +36,20 @@ export const getPasswordResetEmailHtml = ({
       <td align="center" style="padding: 40px 20px;">
         <table role="presentation" style="width: 600px; max-width: 100%; border-collapse: collapse; background-color: #ffffff; border-radius: 16px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); overflow: hidden;">
           
-          <!-- Header with WWE Logo -->
+          <!-- Header with Caley Logo -->
           <tr>
-            <td style="padding: 48px 40px 32px; text-align: center; background: linear-gradient(135deg, #cf1736 0%, #a01229 100%);">
+            <td style="padding: 48px 40px 32px; text-align: center; background: linear-gradient(135deg, #3467D3 0%, #2B5AA0 100%);">
               <table role="presentation" style="width: 100%;">
                 <tr>
                   <td align="center">
                     <img 
                       src="${fullLogoUrl}" 
-                      alt="WWE Invoice App" 
+                      alt="Caley" 
                       width="96" 
                       height="96" 
-                      style="display: block; margin: 0 auto 20px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);"
                     />
-                    <h1 style="margin: 0; font-size: 28px; font-weight: 700; color: #ffffff; letter-spacing: 0.025em;">WWE Invoice App</h1>
+                    <h1 style="margin: 0; font-size: 28px; font-weight: 700; color: #ffffff; letter-spacing: 0.025em;">Caley</h1>
+                    <p style="margin: 8px 0 0; font-size: 14px; color: rgba(255, 255, 255, 0.8); letter-spacing: 0.025em;">Professional Invoice Management</p>
                   </td>
                 </tr>
               </table>
@@ -72,8 +73,8 @@ export const getPasswordResetEmailHtml = ({
                   <td align="center">
                     <table role="presentation" style="border-collapse: separate;">
                       <tr>
-                        <td style="border-radius: 8px; background: linear-gradient(135deg, #cf1736 0%, #a01229 100%); box-shadow: 0 4px 12px rgba(207, 23, 54, 0.3);">
-                          <a href="${resetUrl}" target="_blank" style="display: inline-block; padding: 16px 48px; font-size: 16px; font-weight: 500; color: #ffffff; text-decoration: none; letter-spacing: 0.025em; border-radius: 8px;">
+                        <td style="border-radius: 18.8px; background: linear-gradient(135deg, #3467D3 0%, #2B5AA0 100%); box-shadow: 0 4px 12px rgba(52, 103, 211, 0.3);">
+                          <a href="${resetUrl}" target="_blank" style="display: inline-block; padding: 8px 12px; font-size: 16px; font-weight: 500; color: #ffffff; text-decoration: none; letter-spacing: 0.025em; border-radius: 8px;">
                             Reset Password
                           </a>
                         </td>
@@ -93,12 +94,12 @@ export const getPasswordResetEmailHtml = ({
               <p style="margin: 0 0 16px; font-size: 14px; line-height: 1.6; color: #737373; letter-spacing: 0.025em;">
                 Or copy and paste this URL into your browser:
               </p>
-              <p style="margin: 0 0 32px; font-size: 13px; line-height: 1.6; color: #cf1736; word-break: break-all; background-color: #fef2f4; padding: 12px 16px; border-radius: 6px; border-left: 3px solid #cf1736; letter-spacing: 0.025em;">
+              <p style="margin: 0 0 32px; font-size: 13px; line-height: 1.6; color: #3467D3; word-break: break-all; background-color: #f0f4ff; padding: 12px 16px; border-radius: 6px; border-left: 3px solid #3467D3; letter-spacing: 0.025em;">
                 ${resetUrl}
               </p>
               
               <!-- Security Notice -->
-              <table role="presentation" style="width: 100%; background-color: #fef2f4; border-radius: 8px; border-left: 4px solid #cf1736;">
+              <table role="presentation" style="width: 100%; background-color: #f0f4ff; border-radius: 8px; border-left: 4px solid #3467D3;">
                 <tr>
                   <td style="padding: 16px 20px;">
                     <p style="margin: 0 0 8px; font-size: 14px; font-weight: 500; line-height: 1.6; color: #171717; letter-spacing: 0.025em;">
@@ -117,10 +118,10 @@ export const getPasswordResetEmailHtml = ({
           <tr>
             <td style="padding: 24px 40px 40px; border-top: 1px solid #e5e5e5; background-color: #fafafa;">
               <p style="margin: 0 0 8px; font-size: 12px; line-height: 1.5; color: #a3a3a3; text-align: center; letter-spacing: 0.025em;">
-                © ${new Date().getFullYear()} WWE Invoice App. All rights reserved.
+                © ${new Date().getFullYear()} Caley. All rights reserved.
               </p>
               <p style="margin: 0; font-size: 11px; line-height: 1.5; color: #a3a3a3; text-align: center; letter-spacing: 0.025em;">
-                Professional invoice management for freelancers and production staff
+                Professional invoice management for freelancers and businesses
               </p>
             </td>
           </tr>
@@ -149,8 +150,8 @@ export const getPasswordResetEmailText = ({
   userEmail,
 }: PasswordResetEmailProps): string => {
   return `
-WWE INVOICE APP
-===============
+CALEY
+=====
 
 RESET YOUR PASSWORD
 -------------------
@@ -167,10 +168,9 @@ This link will expire in 1 hour for your security. If you didn't request this pa
 
 ---
 
-© ${new Date().getFullYear()} WWE Invoice App. All rights reserved.
-Professional invoice management for freelancers and production staff
+© ${new Date().getFullYear()} Caley. All rights reserved.
+Professional invoice management for freelancers and businesses
 
 Need help? Contact support or visit our help center
   `.trim();
 };
-

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, FileText, PlusCircle, User } from "lucide-react";
+import { Home, FileText, PlusCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useSession } from "@/lib/auth-client";
 

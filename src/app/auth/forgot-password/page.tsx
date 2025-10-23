@@ -8,7 +8,7 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import WWELogo from "@/components/WWELogo";
+import CaleyLogo from "@/components/CaleyLogo";
 import { forgetPassword } from "@/lib/auth-client";
 import { ArrowLeft, Loader2 } from "lucide-react";
 import Link from "next/link";
@@ -33,8 +33,7 @@ const ForgotPasswordPage = () => {
       if (result.error) {
         toast.error("Error", {
           description:
-            result.error.message ||
-            "Something went wrong. Please try again.",
+            result.error.message || "Something went wrong. Please try again.",
         });
         setIsLoading(false);
         return;
@@ -56,11 +55,11 @@ const ForgotPasswordPage = () => {
 
   if (emailSent) {
     return (
-      <div className="h-[calc(100dvh-64px)] w-full flex items-center justify-center p-6">
+      <div className="h-screen w-full flex items-center justify-center p-6">
         <div className="w-full max-w-md">
           <CardHeader className="text-center mb-4">
-            <div className="flex justify-center mb-4">
-              <WWELogo className="h-24 w-24" />
+            <div className="flex flex-col items-center mb-4 gap-2">
+              <CaleyLogo className="h-24 w-24" />
             </div>
             <CardTitle>
               <h1 className="text-2xl">Check your email</h1>
@@ -90,11 +89,11 @@ const ForgotPasswordPage = () => {
   }
 
   return (
-    <div className="h-[calc(100dvh-64px)] w-full flex items-center justify-center p-6">
+    <div className="h-screen w-full flex items-center justify-center p-6">
       <div className="w-full max-w-md">
         <CardHeader className="text-center mb-4">
-          <div className="flex justify-center mb-4">
-            <WWELogo className="h-24 w-24" />
+          <div className="flex flex-col items-center mb-4 gap-2">
+            <CaleyLogo className="h-24 w-24" />
           </div>
           <CardTitle>
             <h1 className="text-2xl">Forgot your password?</h1>
@@ -146,4 +145,3 @@ const ForgotPasswordPage = () => {
 };
 
 export default ForgotPasswordPage;
-

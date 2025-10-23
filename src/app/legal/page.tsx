@@ -36,17 +36,8 @@ export default function LegalPage() {
           </CardHeader>
           <CardContent className="space-y-4">
             <p className="text-muted-foreground leading-relaxed">
-              This application is{" "}
-              <strong>
-                not affiliated with, endorsed by, or connected to WWE
-              </strong>{" "}
-              (World Wrestling Entertainment) or any of its subsidiaries,
-              affiliates, or parent companies.
-            </p>
-            <p className="text-muted-foreground leading-relaxed">
               This is a <strong>personal project</strong> created to demonstrate
               invoice management functionality for freelance production staff.
-              Any references to WWE are used purely in a descriptive context.
             </p>
           </CardContent>
         </Card>

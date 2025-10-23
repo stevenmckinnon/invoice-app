@@ -2,7 +2,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Home } from "lucide-react";
-import WWELogo from "@/components/WWELogo";
+import CaleyLogo from "@/components/CaleyLogo";
 import Image from "next/image";
 
 export default function NotFound() {
@@ -54,7 +54,7 @@ export default function NotFound() {
 
             {/* Decorative Element */}
             <div className="pt-8 opacity-50">
-              <WWELogo className="h-8" />
+              <CaleyLogo className="h-8" />
             </div>
           </div>
         </CardContent>

@@ -1,10 +1,11 @@
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
+import Image from "next/image";
 import { BackgroundPattern } from "./background-pattern";
 
 const Hero = () => {
   return (
-    <section className="flex items-center justify-center p-6 py-16 md:p-12 md:py-32 relative overflow-hidden">
+    <section className="flex items-center justify-center p-6 pt-16 md:p-12 md:pt-32 !pb-0 relative overflow-hidden">
       <BackgroundPattern />
 
       <div className="relative z-10 text-center max-w-4xl">
@@ -17,8 +18,8 @@ const Hero = () => {
         </div>
 
         <h1 className="text-5xl sm:text-6xl md:text-7xl font-bold tracking-tight mb-6">
-          Professional Invoicing for{" "}
-          <span className="text-primary">WWE Freelancers</span>
+          Professional Invoicing with{" "}
+          <span className="text-primary">Caley</span>
         </h1>
 
         <p className="mt-6 text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto">
@@ -43,6 +44,20 @@ const Hero = () => {
         <p className="mt-6 text-sm text-muted-foreground">
           No credit card required • Free forever • Cancel anytime
         </p>
+
+        {/* App Demo Image */}
+        <div className="mt-16 max-w-4xl mx-auto w-full">
+          <div className="glossy-frame p-0">
+            <Image
+              src="/app-demo.png"
+              alt="Caley Invoice Dashboard - Professional invoice management interface"
+              width={1200}
+              height={800}
+              className="w-full h-auto"
+              priority
+            />
+          </div>
+        </div>
       </div>
     </section>
   );

@@ -29,7 +29,7 @@ export default function CookiesPage() {
         </div>
 
         <p className="text-lg text-muted-foreground leading-relaxed">
-          This page explains how WWE Invoice App uses cookies and similar
+          This page explains how Caley uses cookies and similar
           technologies to provide you with a better experience.
         </p>
 

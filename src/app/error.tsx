@@ -5,7 +5,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Home, RefreshCcw, AlertTriangle } from "lucide-react";
-import WWELogo from "@/components/WWELogo";
+import CaleyLogo from "@/components/CaleyLogo";
 
 export default function Error({
   error,
@@ -73,7 +73,7 @@ export default function Error({
 
             {/* Decorative Element */}
             <div className="pt-8 opacity-50">
-              <WWELogo className="h-8" />
+              <CaleyLogo className="h-8" />
             </div>
           </div>
         </CardContent>

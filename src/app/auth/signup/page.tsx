@@ -8,12 +8,13 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import WWELogo from "@/components/WWELogo";
+import CaleyLogo from "@/components/CaleyLogo";
 import { signUp } from "@/lib/auth-client";
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
 import { toast } from "sonner";
+import { ArrowLeft } from "lucide-react";
 
 export default function SignUpPage() {
   const [formData, setFormData] = useState({
@@ -78,7 +79,7 @@ export default function SignUpPage() {
       }
 
       toast.success("Account created successfully!", {
-        description: "Welcome to WWE Invoice App.",
+        description: "Welcome to Caley.",
       });
 
       // Force a page refresh to update session
@@ -95,28 +96,33 @@ export default function SignUpPage() {
   };
 
   return (
-    <div className="h-[calc(100dvh-64px)] w-full grid grid-cols-1 md:grid-cols-2 overflow-hidden">
-      <div className="relative items-center justify-center hidden md:flex col-span-1 p-6 pt-0 overflow-hidden">
-        <div className="relative w-full h-full">
+    <div className="h-screen w-full grid grid-cols-1 md:grid-cols-2 overflow-hidden">
+      <div className="relative items-center justify-center hidden md:flex col-span-1 p-6 overflow-hidden">
+        <div className="relative w-full h-full dither-retro">
           <Image
-            src="/roman.JPG"
-            alt="Roman"
+            src="/signup.jpg"
+            alt="Skye, Scotland, UK"
             fill
             className="rounded-lg object-cover object-bottom"
           />
         </div>
       </div>
-      <div className="flex items-center justify-center col-span-1 p-6 pt-0">
-        <div className="w-full max-w-md -mt-24 md:mt-0">
+      <div className="flex items-center justify-center col-span-1 p-6">
+        <div className="w-full max-w-md">
           <CardHeader className="text-center mb-4">
-            <div className="flex justify-center mb-4">
-              <WWELogo className="h-24 w-24" />
+            <div className="flex flex-col items-center mb-4 gap-2">
+              <Button asChild variant="outline">
+                <Link href="/">
+                  <ArrowLeft /> Back Home
+                </Link>
+              </Button>
+              <CaleyLogo className="h-24 w-24" />
             </div>
             <CardTitle>
-              <h1 className="text-2xl">Create Your Account</h1>
+              <h1 className="text-2xl">Join Caley</h1>
             </CardTitle>
             <CardDescription>
-              Start managing your invoices professionally
+              Create your account to start managing invoices
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">

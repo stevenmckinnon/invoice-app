@@ -1,3 +1,4 @@
+import CaleyLogo from "@/components/CaleyLogo";
 import Hero from "@/components/hero/hero";
 import {
   Accordion,
@@ -13,10 +14,8 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import WWELogo from "@/components/WWELogo";
 import {
   CheckCircle,
-  ChevronRight,
   Clock,
   DollarSign,
   ExternalLink,
@@ -46,8 +45,8 @@ export default function Home() {
               Leading Invoicing Solution for Freelancers
             </h3>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              A professional invoicing system built for WWE freelancers and
-              production staff.
+              A professional invoicing system built for freelancers and
+              businesses worldwide.
             </p>
           </div>
 
@@ -63,13 +62,6 @@ export default function Home() {
                   auto-fill and smart calculations
                 </CardDescription>
               </CardHeader>
-              <CardContent>
-                <Button variant="link" className="p-0 h-auto" asChild>
-                  <Link href="/auth/signup">
-                    Learn More <ChevronRight className="h-4 w-4 ml-1" />
-                  </Link>
-                </Button>
-              </CardContent>
             </Card>
 
             <Card className="border-2 hover:border-primary/50 transition-all duration-300 group">
@@ -83,13 +75,6 @@ export default function Home() {
                   always safe and accessible
                 </CardDescription>
               </CardHeader>
-              <CardContent>
-                <Button variant="link" className="p-0 h-auto" asChild>
-                  <Link href="/auth/signup">
-                    Learn More <ChevronRight className="h-4 w-4 ml-1" />
-                  </Link>
-                </Button>
-              </CardContent>
             </Card>
 
             <Card className="border-2 hover:border-primary/50 transition-all duration-300 group">
@@ -103,13 +88,6 @@ export default function Home() {
                   Cloud-based and always in sync
                 </CardDescription>
               </CardHeader>
-              <CardContent>
-                <Button variant="link" className="p-0 h-auto" asChild>
-                  <Link href="/auth/signup">
-                    Learn More <ChevronRight className="h-4 w-4 ml-1" />
-                  </Link>
-                </Button>
-              </CardContent>
             </Card>
           </div>
         </div>
@@ -126,8 +104,8 @@ export default function Home() {
               Everything You Need in One Place
             </h3>
             <p className="text-center text-muted-foreground text-lg max-w-2xl mx-auto">
-              Powerful features designed specifically for WWE freelancers and
-              production staff
+              Powerful features designed specifically for freelancers and
+              businesses
             </p>
           </div>
 
@@ -324,7 +302,7 @@ export default function Home() {
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
             <h2 className="text-4xl md:text-5xl font-bold mb-4">
-              Loved by WWE Freelancers
+              Loved by Freelancers
             </h2>
             <p className="text-lg text-muted-foreground">
               Their experiences speak louder than words
@@ -346,15 +324,15 @@ export default function Home() {
                   ))}
                 </div>
                 <CardDescription className="text-base leading-relaxed">
-                  &ldquo;This system completely changed how I manage my WWE
-                  invoicing. The overtime tracking and per diem management saves
+                  &ldquo;This system completely changed how I manage my
+                  invoicing. The overtime tracking and expense management saves
                   me hours every month.&rdquo;
                 </CardDescription>
               </CardHeader>
               <CardContent className="mt-auto">
                 <p className="font-semibold">Sarah Mitchell</p>
                 <p className="text-sm text-muted-foreground">
-                  Production Coordinator
+                  Freelance Coordinator
                 </p>
               </CardContent>
             </Card>
@@ -381,7 +359,7 @@ export default function Home() {
               <CardContent className="mt-auto">
                 <p className="font-semibold">Marcus Chen</p>
                 <p className="text-sm text-muted-foreground">
-                  Lighting Technician
+                  Technical Specialist
                 </p>
               </CardContent>
             </Card>
@@ -407,7 +385,9 @@ export default function Home() {
               </CardHeader>
               <CardContent className="mt-auto">
                 <p className="font-semibold">Jessica Rodriguez</p>
-                <p className="text-sm text-muted-foreground">Audio Engineer</p>
+                <p className="text-sm text-muted-foreground">
+                  Audio Specialist
+                </p>
               </CardContent>
             </Card>
           </div>
@@ -421,7 +401,7 @@ export default function Home() {
             Ready to Simplify Your Invoicing?
           </h2>
           <p className="text-lg md:text-xl text-muted-foreground mb-10 max-w-2xl mx-auto">
-            Join WWE freelancers worldwide who trust our platform for their
+            Join freelancers worldwide who trust our platform for their
             professional invoice management.
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
@@ -450,12 +430,12 @@ export default function Home() {
             {/* Brand Column */}
             <div className="space-y-4 col-span-3 md:col-span-1">
               <div className="flex items-center gap-2">
-                <WWELogo className="h-8 w-8" />
-                <span className="font-bold text-lg">WWE Invoicing</span>
+                <CaleyLogo className="h-8 w-8" />
+                <span className="font-bold text-xl">Caley</span>
               </div>
               <p className="text-sm text-muted-foreground">
-                Professional invoice management built for WWE freelancers and
-                production staff worldwide.
+                Professional invoice management built for freelancers and
+                businesses worldwide.
               </p>
             </div>
 
@@ -540,7 +520,7 @@ export default function Home() {
           {/* Bottom Bar */}
           <div className="mt-12 pt-8 border-t flex flex-col md:flex-row justify-between items-center gap-4">
             <p className="text-sm text-muted-foreground">
-              © {new Date().getFullYear()} WWE Invoice App. All rights reserved.
+              © {new Date().getFullYear()} Caley. All rights reserved.
             </p>
             <Link
               href="https://stevenmckinnon.co.uk"

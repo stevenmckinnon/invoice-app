@@ -1,9 +1,8 @@
 import type { Metadata, Viewport } from "next";
 import { Roboto, Roboto_Mono } from "next/font/google";
-import { AppHeader } from "@/components/AppHeader";
-import { MobileBottomNav } from "@/components/MobileBottomNav";
 import { Providers } from "@/components/Providers";
 import { Toaster } from "@/components/ui/sonner";
+import { ConditionalLayout } from "@/components/ConditionalLayout";
 
 import "./globals.css";
 
@@ -34,19 +33,19 @@ const getMetadataBase = () => {
 export const metadata: Metadata = {
   metadataBase: new URL(getMetadataBase()),
   title: {
-    default: "WWE Invoice App - Professional Invoice Management",
-    template: "%s | WWE Invoice App",
+    default: "Caley - Professional Invoice Management",
+    template: "%s | Caley",
   },
   description:
-    "Create and manage professional invoices for WWE freelancers and production staff. Track overtime, expenses, and revenue with ease.",
-  applicationName: "WWE Invoice App",
+    "Create and manage professional invoices with ease. Track overtime, expenses, and revenue for freelancers and businesses.",
+  applicationName: "Caley",
   keywords: [
     "invoice",
-    "WWE",
     "freelancer",
-    "production",
     "billing",
     "invoicing",
+    "expense tracking",
+    "revenue management",
   ],
   authors: [{ name: "Steve McKinnon", url: "https://stevenmckinnon.co.uk" }],
   creator: "Steve McKinnon",
@@ -63,17 +62,20 @@ export const metadata: Metadata = {
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
-    title: "WWE Invoice",
+    title: "Caley",
+  },
+  other: {
+    "apple-mobile-web-app-title": "Caley",
   },
   formatDetection: {
     telephone: false,
   },
   openGraph: {
     type: "website",
-    siteName: "WWE Invoice App",
-    title: "WWE Invoice App - Professional Invoice Management",
+    siteName: "Caley",
+    title: "Caley - Professional Invoice Management",
     description:
-      "Create and manage professional invoices for WWE freelancers and production staff",
+      "Create and manage professional invoices with ease. Track overtime, expenses, and revenue.",
     url: "/",
     locale: "en_US",
     images: [
@@ -81,14 +83,14 @@ export const metadata: Metadata = {
         url: "/opengraph-image.png",
         width: 1200,
         height: 630,
-        alt: "WWE Invoice App",
+        alt: "Caley",
         type: "image/png",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "WWE Invoice App",
+    title: "Caley",
     description: "Professional invoice management for freelancers",
   },
 };
@@ -115,9 +117,7 @@ export default function RootLayout({
         className={`${robotoSans.variable} ${robotoMono.variable} antialiased`}
       >
         <Providers>
-          <AppHeader />
-          <main className="mx-auto h-[calc(100dvh-64px)]">{children}</main>
-          <MobileBottomNav />
+          <ConditionalLayout>{children}</ConditionalLayout>
           <Toaster />
         </Providers>
       </body>
