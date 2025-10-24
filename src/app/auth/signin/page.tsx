@@ -72,12 +72,9 @@ const SignInForm = () => {
         <div className="w-full max-w-md">
           <CardHeader className="text-center mb-4">
             <div className="flex flex-col items-center mb-4 gap-2">
-              <Button asChild variant="outline">
-                <Link href="/">
-                  <ArrowLeft /> Back Home
-                </Link>
-              </Button>
-              <CaleyLogo className="h-24 w-24" />
+              <Link href="/">
+                <CaleyLogo className="h-24 w-24" />
+              </Link>
             </div>
             <CardTitle>
               <h1 className="text-2xl">Welcome to Caley</h1>
