@@ -20,7 +20,7 @@ export default function Error({
   }, [error]);
 
   return (
-    <div className="min-h-[calc(100dvh-64px)] flex items-center justify-center p-4">
+    <div className="min-h-[100dvh] flex items-center justify-center p-4">
       <Card className="max-w-2xl w-full border-2">
         <CardContent className="pt-12 pb-12">
           <div className="flex flex-col items-center text-center space-y-8">

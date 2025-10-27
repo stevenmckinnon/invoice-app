@@ -15,17 +15,48 @@ import {
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { User, LogOut, Settings } from "lucide-react";
 import { useTheme } from "next-themes";
+import { useEffect, useState } from "react";
+import { cn } from "@/lib/utils";
 import CaleyLogo from "@/components/CaleyLogo";
 import {
   ThemeToggleButton,
   useThemeTransition,
 } from "./ui/shadcn-io/theme-toggle-button";
 
+const SCROLL_THRESHOLD = 200;
+
 export const AppHeader = () => {
   const { data: session } = useSession();
   const { theme, setTheme } = useTheme();
   const pathname = usePathname();
   const { startTransition } = useThemeTransition();
+  const [isVisible, setIsVisible] = useState(true);
+  const [lastScrollY, setLastScrollY] = useState(0);
+
+  useEffect(() => {
+    const controlHeader = () => {
+      const currentScrollY = window.scrollY;
+
+      // Show header when scrolled to top
+      if (currentScrollY < SCROLL_THRESHOLD) {
+        setIsVisible(true);
+      } else if (
+        currentScrollY > lastScrollY &&
+        currentScrollY > SCROLL_THRESHOLD
+      ) {
+        // Scrolling down - hide header
+        setIsVisible(false);
+      } else {
+        // Scrolling up - show header
+        setIsVisible(true);
+      }
+
+      setLastScrollY(currentScrollY);
+    };
+
+    window.addEventListener("scroll", controlHeader);
+    return () => window.removeEventListener("scroll", controlHeader);
+  }, [lastScrollY]);
 
   const handleSignOut = async () => {
     try {
@@ -46,7 +77,14 @@ export const AppHeader = () => {
   };
 
   return (
-    <header className="sticky px-4 md:px-0 top-0 z-50 w-full bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 flex justify-center">
+    <header
+      className={cn(
+        "fixed px-4 lg:px-6 md:px-0 top-0 md:top-5 w-full md:w-auto left-0 right-0 z-50 max-w-4xl mx-auto md:rounded-4xl bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 flex justify-center md:border border-border/50 transition-transform duration-300 ease-in-out",
+        isVisible
+          ? "translate-y-0"
+          : "-translate-y-full md:-translate-y-[calc(100%+20px)]"
+      )}
+    >
       <div className="container flex h-16 items-center justify-between">
         {/* Logo */}
         <Link

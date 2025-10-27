@@ -53,7 +53,7 @@ export const MobileBottomNav = () => {
       {/* Bottom Navigation */}
       <nav className="fixed bottom-0 left-0 right-0 z-50 md:hidden flex justify-center">
         {/* Glassy Navigation Container */}
-        <div className="relative mb-4 backdrop-blur-md backdrop-saturate-[185%] bg-white/13 dark:bg-black/20 rounded-4xl border border-white/125 dark:border-white/10 shadow-lg">
+        <div className="relative mb-4 backdrop-blur-md backdrop-saturate-[185%] bg-white/13 dark:bg-black/20 rounded-4xl border border-black/10 dark:border-white/10 shadow-lg">
           {/* Navigation Items */}
           <div className="relative flex items-center justify-center gap-1 p-3">
             {navItems.map((item) => {

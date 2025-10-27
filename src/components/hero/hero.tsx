@@ -5,11 +5,14 @@ import { DemoDashboard } from "@/components/DemoDashboard";
 
 const Hero = () => {
   return (
-    <section className="flex items-center justify-center p-6 pt-16 md:p-12 md:pt-32 !pb-0 relative overflow-hidden">
-      <BackgroundPattern />
+    <section className="relative overflow-hidden">
+      <div className="absolute inset-0">
+        <BackgroundPattern />
+      </div>
 
-      <div className="relative z-10 text-center max-w-4xl">
-        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 dark:bg-primary/20 text-sm font-medium mb-6">
+      <div className="relative z-10 flex items-center justify-center px-6 md:px-12 pt-12 md:pt-42 !pb-0 max-w-4xl mx-auto">
+        <div className="text-center">
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 dark:bg-primary/20 text-sm font-medium mb-6">
           <span className="relative flex h-2 w-2">
             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
             <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
@@ -50,6 +53,7 @@ const Hero = () => {
           <div className="glossy-frame p-0">
             <DemoDashboard />
           </div>
+        </div>
         </div>
       </div>
     </section>

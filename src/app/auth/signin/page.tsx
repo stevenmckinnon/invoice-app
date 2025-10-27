@@ -157,7 +157,7 @@ export default function SignInPage() {
   return (
     <Suspense
       fallback={
-        <div className="flex flex-col items-center justify-center min-h-[calc(100dvh-64px)] gap-4">
+        <div className="flex flex-col items-center justify-center min-h-[100dvh] gap-4">
           <Loader2 className="h-8 w-8 animate-spin text-primary" />
           <p className="text-sm text-muted-foreground">Loading sign in...</p>
         </div>

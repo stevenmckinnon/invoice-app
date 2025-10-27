@@ -36,7 +36,7 @@ export default function Home() {
 
       {/* Why Choose Us Section */}
       <section className="py-20 px-4 bg-background">
-        <div className="max-w-7xl mx-auto">
+        <div className="max-w-6xl mx-auto">
           <div className="text-center mb-16">
             <h2 className="text-sm font-semibold text-primary mb-3 uppercase tracking-wider">
               Why Choose Us
@@ -95,7 +95,7 @@ export default function Home() {
 
       {/* Features Section - Bento Grid */}
       <section className="py-20 px-4 bg-muted/30">
-        <div className="max-w-7xl mx-auto">
+        <div className="max-w-6xl mx-auto">
           <div className="text-center mb-16">
             <h2 className="text-sm font-semibold text-primary mb-3 uppercase tracking-wider">
               Our Features
@@ -299,7 +299,7 @@ export default function Home() {
 
       {/* Testimonials Section */}
       <section className="py-20 px-4 bg-muted/30">
-        <div className="max-w-7xl mx-auto">
+        <div className="max-w-6xl mx-auto">
           <div className="text-center mb-16">
             <h2 className="text-4xl md:text-5xl font-bold mb-4">
               Loved by Freelancers
@@ -425,7 +425,7 @@ export default function Home() {
 
       {/* Footer */}
       <footer className="bg-muted/50 border-t">
-        <div className="max-w-7xl mx-auto px-6 py-12">
+        <div className="max-w-6xl mx-auto px-6 py-12">
           <div className="grid grid-cols-3 md:grid-cols-4 gap-8">
             {/* Brand Column */}
             <div className="space-y-4 col-span-3 md:col-span-1">

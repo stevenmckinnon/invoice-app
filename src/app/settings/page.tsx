@@ -37,7 +37,6 @@ import {
   Shield,
   Trash2,
 } from "lucide-react";
-import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
@@ -51,7 +50,6 @@ interface Session {
 }
 
 const SettingsPage = () => {
-  const router = useRouter();
   const { data: session } = useSession();
   const [sessions, setSessions] = useState<Session[]>([]);
   const [loadingSessions, setLoadingSessions] = useState(true);
@@ -223,7 +221,7 @@ const SettingsPage = () => {
 
   if (!session?.user) {
     return (
-      <div className="flex items-center justify-center min-h-[calc(100dvh-64px)]">
+      <div className="flex items-center justify-center min-h-[100dvh]">
         <Loader2 className="h-8 w-8 animate-spin" />
       </div>
     );
