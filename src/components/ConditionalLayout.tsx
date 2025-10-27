@@ -19,12 +19,23 @@ export const ConditionalLayout = ({ children }: ConditionalLayoutProps) => {
     "/auth/reset-password",
   ];
 
+  const isLandingPage = pathname === "/";
+
   const isAuthRoute = authRoutes.some((route) => pathname.startsWith(route));
 
   if (isAuthRoute) {
     // Auth pages: no header, full viewport height
     return (
       <main className="h-[100dvh] w-full overflow-hidden">{children}</main>
+    );
+  }
+
+  if (isLandingPage) {
+    return (
+      <>
+        <AppHeader />
+        <main className="mx-auto">{children}</main>
+      </>
     );
   }
 
