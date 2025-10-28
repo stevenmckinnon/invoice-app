@@ -79,13 +79,13 @@ export const AppHeader = () => {
   return (
     <header
       className={cn(
-        "fixed px-4 lg:px-6 md:px-0 top-0 md:top-5 w-full md:w-auto left-0 right-0 z-50 max-w-4xl mx-auto md:rounded-4xl bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 flex justify-center md:border border-border/50 transition-transform duration-300 ease-in-out",
+        "fixed px-4 top-0 md:top-5 w-full md:w-auto left-0 right-0 z-50 max-w-4xl mx-auto md:rounded-4xl bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 flex justify-center md:border border-border/50 transition-transform duration-300 ease-in-out",
         isVisible
           ? "translate-y-0"
           : "-translate-y-full md:-translate-y-[calc(100%+20px)]"
       )}
     >
-      <div className="container flex h-16 items-center justify-between">
+      <div className="w-full flex h-12 items-center justify-between">
         {/* Logo */}
         <Link
           href={session?.user ? "/dashboard" : "/"}
