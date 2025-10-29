@@ -3,6 +3,7 @@ import { Roboto, Roboto_Mono } from "next/font/google";
 import { Providers } from "@/components/Providers";
 import { Toaster } from "@/components/ui/sonner";
 import { ConditionalLayout } from "@/components/ConditionalLayout";
+import { Analytics } from "@vercel/analytics/next";
 
 import "./globals.css";
 
@@ -116,6 +117,7 @@ export default function RootLayout({
       <body
         className={`${robotoSans.variable} ${robotoMono.variable} antialiased`}
       >
+        <Analytics />
         <Providers>
           <ConditionalLayout>{children}</ConditionalLayout>
           <Toaster />
