@@ -51,9 +51,9 @@ export const MobileBottomNav = () => {
       <div className="h-20 md:hidden" />
 
       {/* Bottom Navigation */}
-      <nav className="fixed bottom-0 left-0 right-0 z-50 md:hidden flex justify-center">
+      <nav className="fixed right-0 bottom-0 left-0 z-50 flex justify-center md:hidden">
         {/* Glassy Navigation Container */}
-        <div className="relative mb-4 backdrop-blur-md backdrop-saturate-[185%] bg-white/13 dark:bg-black/20 rounded-4xl border border-black/10 dark:border-white/10 shadow-lg">
+        <div className="relative mb-4 rounded-4xl border border-black/10 bg-white/13 shadow-lg backdrop-blur-md backdrop-saturate-[185%] dark:border-white/10 dark:bg-black/20">
           {/* Navigation Items */}
           <div className="relative flex items-center justify-center gap-1 p-3">
             {navItems.map((item) => {
@@ -65,16 +65,16 @@ export const MobileBottomNav = () => {
                   key={item.href}
                   href={item.href}
                   className={cn(
-                    "w-[95px] relative flex flex-col items-center justify-center gap-1 px-6 py-2 rounded-3xl transition-all duration-300 ease-out",
+                    "relative flex w-[95px] flex-col items-center justify-center gap-1 rounded-3xl px-6 py-2 transition-all duration-300 ease-out",
                     "hover:scale-105 active:scale-95",
                     isActive
                       ? "text-accent-foreground"
-                      : "text-foreground hover:text-foreground"
+                      : "text-foreground hover:text-foreground",
                   )}
                 >
                   {/* Active Background Pill */}
                   {isActive && (
-                    <div className="absolute inset-0 bg-accent rounded-3xl shadow-md animate-in fade-in zoom-in-95 duration-200" />
+                    <div className="bg-accent animate-in fade-in zoom-in-95 absolute inset-0 rounded-3xl shadow-md duration-200" />
                   )}
 
                   {/* Icon */}
@@ -82,7 +82,7 @@ export const MobileBottomNav = () => {
                     <Icon
                       className={cn(
                         "h-5 w-5 transition-all duration-300",
-                        isActive && "drop-shadow-sm"
+                        isActive && "drop-shadow-sm",
                       )}
                     />
                   </div>
@@ -91,7 +91,7 @@ export const MobileBottomNav = () => {
                   <span
                     className={cn(
                       "relative text-xs font-medium transition-all duration-300",
-                      isActive ? "opacity-100" : "opacity-70"
+                      isActive ? "opacity-100" : "opacity-70",
                     )}
                   >
                     {item.label}

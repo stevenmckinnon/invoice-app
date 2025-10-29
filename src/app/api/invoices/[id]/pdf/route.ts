@@ -7,7 +7,7 @@ const prisma = new PrismaClient();
 
 export const GET = async (
   _req: NextRequest,
-  context: { params: Promise<{ id: string }> }
+  context: { params: Promise<{ id: string }> },
 ) => {
   const { id } = await context.params;
   const invoice = await prisma.invoice.findUnique({

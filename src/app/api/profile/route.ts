@@ -6,13 +6,12 @@ import { headers } from "next/headers";
 
 const prisma = new PrismaClient();
 
-
 export const GET = async () => {
   try {
     const session = await auth.api.getSession({
       headers: await headers(),
     });
-    
+
     if (!session?.user?.email) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
@@ -54,7 +53,7 @@ export const GET = async () => {
     console.error("Error fetching profile:", error);
     return NextResponse.json(
       { error: "Internal server error" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 };
@@ -64,7 +63,7 @@ export const PUT = async (req: NextRequest) => {
     const session = await auth.api.getSession({
       headers: await headers(),
     });
-    
+
     if (!session?.user?.email) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
@@ -148,7 +147,7 @@ export const PUT = async (req: NextRequest) => {
     console.error("Error updating profile:", error);
     return NextResponse.json(
       { error: "Internal server error" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 };

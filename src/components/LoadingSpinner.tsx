@@ -7,10 +7,10 @@ interface LoadingSpinnerProps {
   text?: string;
 }
 
-export const LoadingSpinner = ({ 
-  className, 
+export const LoadingSpinner = ({
+  className,
   size = "md",
-  text = "Loading..."
+  text = "Loading...",
 }: LoadingSpinnerProps) => {
   const sizeClasses = {
     sm: "h-4 w-4",
@@ -19,10 +19,14 @@ export const LoadingSpinner = ({
   };
 
   return (
-    <div className={cn("flex flex-col items-center justify-center gap-4", className)}>
-      <Loader2 className={cn("animate-spin text-primary", sizeClasses[size])} />
-      {text && <p className="text-sm text-muted-foreground">{text}</p>}
+    <div
+      className={cn(
+        "flex flex-col items-center justify-center gap-4",
+        className,
+      )}
+    >
+      <Loader2 className={cn("text-primary animate-spin", sizeClasses[size])} />
+      {text && <p className="text-muted-foreground text-sm">{text}</p>}
     </div>
   );
 };
-

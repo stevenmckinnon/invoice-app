@@ -37,7 +37,7 @@ export const GET = async () => {
     console.error("Error fetching sessions:", error);
     return NextResponse.json(
       { error: "Failed to fetch sessions" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 };
@@ -57,7 +57,7 @@ export const DELETE = async (req: Request) => {
     if (!sessionId) {
       return NextResponse.json(
         { error: "Session ID required" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -65,7 +65,7 @@ export const DELETE = async (req: Request) => {
     if (sessionId === session.session.id) {
       return NextResponse.json(
         { error: "Cannot revoke current session. Please sign out instead." },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -81,8 +81,7 @@ export const DELETE = async (req: Request) => {
     console.error("Error revoking session:", error);
     return NextResponse.json(
       { error: "Failed to revoke session" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 };
-

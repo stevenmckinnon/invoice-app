@@ -199,7 +199,7 @@ export default function NewInvoicePage() {
           if (profile.dateOfBirth)
             form.setValue(
               "dateOfBirth",
-              new Date(profile.dateOfBirth).toISOString().slice(0, 10)
+              new Date(profile.dateOfBirth).toISOString().slice(0, 10),
             );
           if (profile.iban) form.setValue("iban", profile.iban);
           if (profile.swiftBic) form.setValue("swiftBic", profile.swiftBic);
@@ -234,13 +234,13 @@ export default function NewInvoicePage() {
                 description: "Dark days",
                 quantity: 1,
                 unitPrice: Number(profile.dayRate),
-              }
+              },
             );
           } else {
             updatedItems.push(
               { description: "Travel Days", quantity: 1, unitPrice: 525 },
               { description: "Work Days", quantity: 1, unitPrice: 525 },
-              { description: "Dark days", quantity: 1, unitPrice: 525 }
+              { description: "Dark days", quantity: 1, unitPrice: 525 },
             );
           }
 
@@ -289,7 +289,7 @@ export default function NewInvoicePage() {
   const totals = useMemo(() => {
     const itemsTotal = items.reduce(
       (sum, i) => sum + (i.cost ?? i.quantity * i.unitPrice),
-      0
+      0,
     );
 
     const overtimeTotal = overtimeEntries.reduce((sum, entry) => {
@@ -300,7 +300,7 @@ export default function NewInvoicePage() {
 
     const customExpensesTotal = customExpenseEntries.reduce(
       (sum, entry) => sum + entry.cost,
-      0
+      0,
     );
 
     const totalAmount = itemsTotal + overtimeTotal + customExpensesTotal;
@@ -310,7 +310,7 @@ export default function NewInvoicePage() {
   const updateItem = (
     idx: number,
     field: keyof FormValues["items"][number],
-    value: string | number
+    value: string | number,
   ) => {
     const currentItems = form.getValues("items");
     const updatedItems = [...currentItems];
@@ -348,14 +348,14 @@ export default function NewInvoicePage() {
       <form
         // @ts-expect-error - React Hook Form type inference issues
         onSubmit={form.handleSubmit(onSubmit)}
-        className="w-full max-w-6xl mx-auto p-6 pb-28 md:pb-8 grid gap-6"
+        className="mx-auto grid w-full max-w-6xl gap-6 p-6 pb-28 md:pb-8"
       >
         <h1 className="text-2xl font-semibold">New Invoice</h1>
 
         {profileIncomplete && (
-          <div className="bg-amber-50 dark:bg-amber-950 border border-amber-200 dark:border-amber-800 rounded-lg p-4">
+          <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 dark:border-amber-800 dark:bg-amber-950">
             <div className="flex items-start gap-3">
-              <div className="flex-shrink-0 mt-0.5">
+              <div className="mt-0.5 flex-shrink-0">
                 <svg
                   className="h-5 w-5 text-amber-600 dark:text-amber-400"
                   fill="none"
@@ -374,7 +374,7 @@ export default function NewInvoicePage() {
                 <h3 className="text-sm font-medium text-amber-800 dark:text-amber-200">
                   Profile Setup Required
                 </h3>
-                <p className="text-sm text-amber-700 dark:text-amber-300 mt-1">
+                <p className="mt-1 text-sm text-amber-700 dark:text-amber-300">
                   Please complete your profile with your personal information
                   and banking details before creating invoices. This information
                   will be automatically pre-filled in all your invoices.
@@ -397,9 +397,9 @@ export default function NewInvoicePage() {
           <CardHeader>
             <CardTitle>Details</CardTitle>
           </CardHeader>
-          <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <CardContent className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <div className="md:col-span-2">
-              <h3 className="text-sm font-semibold text-muted-foreground mb-4">
+              <h3 className="text-muted-foreground mb-4 text-sm font-semibold">
                 Invoice Information
               </h3>
             </div>
@@ -473,10 +473,10 @@ export default function NewInvoicePage() {
               )}
             />
 
-            <Separator className="md:col-span-2 my-4" />
+            <Separator className="my-4 md:col-span-2" />
 
             <div className="md:col-span-2">
-              <h3 className="text-sm font-semibold text-muted-foreground mb-4">
+              <h3 className="text-muted-foreground mb-4 text-sm font-semibold">
                 Your Information
               </h3>
             </div>
@@ -596,10 +596,10 @@ export default function NewInvoicePage() {
               )}
             />
 
-            <Separator className="md:col-span-2 my-4" />
+            <Separator className="my-4 md:col-span-2" />
 
             <div className="md:col-span-2">
-              <h3 className="text-sm font-semibold text-muted-foreground mb-4">
+              <h3 className="text-muted-foreground mb-4 text-sm font-semibold">
                 Banking Details
               </h3>
             </div>
@@ -688,16 +688,16 @@ export default function NewInvoicePage() {
               )}
             />
 
-            <Separator className="md:col-span-2 my-4" />
+            <Separator className="my-4 md:col-span-2" />
 
             <div className="md:col-span-2">
-              <h3 className="text-sm font-semibold text-muted-foreground mb-4">
+              <h3 className="text-muted-foreground mb-4 text-sm font-semibold">
                 Client Information
               </h3>
             </div>
 
             <div className="md:col-span-2">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                 <FormField
                   control={form.control as any}
                   name="clientName"
@@ -881,7 +881,7 @@ export default function NewInvoicePage() {
                 </TableBody>
               </Table>
             </div>
-            <div className="text-right font-semibold text-lg pt-2 border-t">
+            <div className="border-t pt-2 text-right text-lg font-semibold">
               Items Total: £{totals.itemsTotal.toFixed(2)}
             </div>
           </CardContent>
@@ -907,7 +907,7 @@ export default function NewInvoicePage() {
             <CardTitle>Summary</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+            <div className="grid grid-cols-2 gap-4 text-sm md:grid-cols-4">
               <div>
                 <div className="font-medium">Items Total</div>
                 <div className="text-lg">£{totals.itemsTotal.toFixed(2)}</div>
@@ -932,7 +932,7 @@ export default function NewInvoicePage() {
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               <FormField
                 control={form.control as any}
                 name="notes"

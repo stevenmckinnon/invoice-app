@@ -98,7 +98,7 @@ export default function AllInvoicesPage() {
     })
     .sort(
       (a, b) =>
-        new Date(b.invoiceDate).getTime() - new Date(a.invoiceDate).getTime()
+        new Date(b.invoiceDate).getTime() - new Date(a.invoiceDate).getTime(),
     );
 
   // Pagination
@@ -114,15 +114,15 @@ export default function AllInvoicesPage() {
 
   const totalRevenue = filteredInvoices.reduce(
     (sum, inv) => sum + Number(inv.totalAmount),
-    0
+    0,
   );
 
   return (
-    <div className="w-full max-w-6xl mx-auto p-6 pb-28 md:pb-8 grid grid-cols-1 gap-6">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+    <div className="mx-auto grid w-full max-w-6xl grid-cols-1 gap-6 p-6 pb-28 md:pb-8">
+      <div className="flex flex-col justify-between gap-4 md:flex-row md:items-center">
         <div>
           <h1 className="text-3xl font-bold">All Invoices</h1>
-          <p className="text-sm text-muted-foreground mt-1">
+          <p className="text-muted-foreground mt-1 text-sm">
             {filteredInvoices.length} invoice
             {filteredInvoices.length !== 1 ? "s" : ""} • Total: £
             {totalRevenue.toFixed(2)}
@@ -139,9 +139,9 @@ export default function AllInvoicesPage() {
       {/* Filters */}
       <Card>
         <CardContent>
-          <div className="flex flex-col md:flex-row gap-4">
+          <div className="flex flex-col gap-4 md:flex-row">
             <div className="relative flex-1">
-              <SearchIcon className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+              <SearchIcon className="text-muted-foreground absolute top-2.5 left-2 h-4 w-4" />
               <Input
                 placeholder="Search by invoice number, show name, or client..."
                 value={searchQuery}
@@ -222,8 +222,8 @@ export default function AllInvoicesPage() {
               </TableBody>
             </Table>
           ) : paginatedInvoices.length === 0 ? (
-            <div className="text-center py-12">
-              <p className="text-sm text-muted-foreground">
+            <div className="py-12 text-center">
+              <p className="text-muted-foreground text-sm">
                 {searchQuery || statusFilter !== "all"
                   ? "No invoices match your filters"
                   : "No invoices yet"}
@@ -295,8 +295,8 @@ export default function AllInvoicesPage() {
 
               {/* Pagination */}
               {totalPages > 1 && (
-                <div className="flex items-center justify-between mt-6">
-                  <div className="text-sm text-muted-foreground">
+                <div className="mt-6 flex items-center justify-between">
+                  <div className="text-muted-foreground text-sm">
                     Showing {startIndex + 1}-
                     {Math.min(endIndex, filteredInvoices.length)} of{" "}
                     {filteredInvoices.length}
@@ -330,7 +330,7 @@ export default function AllInvoicesPage() {
                               return (
                                 <span
                                   key={page}
-                                  className="px-2 text-muted-foreground"
+                                  className="text-muted-foreground px-2"
                                 >
                                   ...
                                 </span>
@@ -352,7 +352,7 @@ export default function AllInvoicesPage() {
                               {page}
                             </Button>
                           );
-                        }
+                        },
                       )}
                     </div>
                     <Button

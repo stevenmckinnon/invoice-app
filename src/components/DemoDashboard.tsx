@@ -91,7 +91,7 @@ export const DemoDashboard = () => {
 
   const totalRevenue = invoices.reduce(
     (sum, inv) => sum + Number(inv.totalAmount),
-    0
+    0,
   );
 
   const paidRevenue = invoices
@@ -150,7 +150,7 @@ export const DemoDashboard = () => {
       acc[show] = (acc[show] || 0) + Number(inv.totalAmount);
       return acc;
     },
-    {} as Record<string, number>
+    {} as Record<string, number>,
   );
 
   const topShows = Object.entries(showRevenue)
@@ -163,11 +163,11 @@ export const DemoDashboard = () => {
     invoices.length > 0 ? totalRevenue / invoices.length : 0;
 
   return (
-    <div className="zoom w-full p-12 pb-8 grid grid-cols-1 gap-6 bg-background rounded-tr-lg rounded-tl-lg border border-b-0 shadow-lg">
+    <div className="zoom bg-background grid w-full grid-cols-1 gap-6 rounded-tl-lg rounded-tr-lg border border-b-0 p-12 pb-8 shadow-lg">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold">Invoice Dashboard</h1>
-          <p className="text-sm text-muted-foreground mt-1 text-left">
+          <p className="text-muted-foreground mt-1 text-left text-sm">
             Create and manage your invoices
           </p>
         </div>
@@ -182,16 +182,16 @@ export const DemoDashboard = () => {
         <Card>
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
-              <CardTitle className="text-sm font-medium text-muted-foreground">
+              <CardTitle className="text-muted-foreground text-sm font-medium">
                 Total Revenue
               </CardTitle>
-              <div className="h-8 w-8 rounded-lg bg-blue-500/10 flex items-center justify-center">
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-500/10">
                 <DollarSign className="h-4 w-4 text-blue-600 dark:text-blue-400" />
               </div>
             </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-left">
+            <div className="text-left text-2xl font-bold">
               <AnimatedCounter
                 value={totalRevenue}
                 prefix="£"
@@ -199,7 +199,7 @@ export const DemoDashboard = () => {
                 decimals={2}
               />
             </div>
-            <div className="flex items-center gap-1 mt-2">
+            <div className="mt-2 flex items-center gap-1">
               {monthlyChange >= 0 ? (
                 <TrendingUp className="h-4 w-4 text-green-600" />
               ) : (
@@ -218,7 +218,7 @@ export const DemoDashboard = () => {
                   decimals={1}
                 />
               </p>
-              <p className="text-xs text-muted-foreground">vs last month</p>
+              <p className="text-muted-foreground text-xs">vs last month</p>
             </div>
           </CardContent>
         </Card>
@@ -226,16 +226,16 @@ export const DemoDashboard = () => {
         <Card>
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
-              <CardTitle className="text-sm font-medium text-muted-foreground">
+              <CardTitle className="text-muted-foreground text-sm font-medium">
                 Paid
               </CardTitle>
-              <div className="h-8 w-8 rounded-lg bg-green-500/10 flex items-center justify-center">
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-green-500/10">
                 <CreditCard className="h-4 w-4 text-green-600 dark:text-green-400" />
               </div>
             </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-green-600 text-left">
+            <div className="text-left text-2xl font-bold text-green-600">
               <AnimatedCounter
                 value={paidRevenue}
                 prefix="£"
@@ -244,7 +244,7 @@ export const DemoDashboard = () => {
                 delay={100}
               />
             </div>
-            <p className="text-xs text-muted-foreground mt-2 text-left">
+            <p className="text-muted-foreground mt-2 text-left text-xs">
               {invoices.filter((inv) => inv.status === "paid").length} paid
               invoices
             </p>
@@ -254,16 +254,16 @@ export const DemoDashboard = () => {
         <Card>
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
-              <CardTitle className="text-sm font-medium text-muted-foreground">
+              <CardTitle className="text-muted-foreground text-sm font-medium">
                 Outstanding
               </CardTitle>
-              <div className="h-8 w-8 rounded-lg bg-orange-500/10 flex items-center justify-center">
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-orange-500/10">
                 <Clock className="h-4 w-4 text-orange-600 dark:text-orange-400" />
               </div>
             </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-orange-600 text-left">
+            <div className="text-left text-2xl font-bold text-orange-600">
               <AnimatedCounter
                 value={outstandingRevenue}
                 prefix="£"
@@ -272,7 +272,7 @@ export const DemoDashboard = () => {
                 delay={200}
               />
             </div>
-            <p className="text-xs text-muted-foreground mt-2 text-left">
+            <p className="text-muted-foreground mt-2 text-left text-xs">
               {invoices.filter((inv) => inv.status !== "paid").length} unpaid
             </p>
           </CardContent>
@@ -281,16 +281,16 @@ export const DemoDashboard = () => {
         <Card>
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
-              <CardTitle className="text-sm font-medium text-muted-foreground">
+              <CardTitle className="text-muted-foreground text-sm font-medium">
                 Average Invoice
               </CardTitle>
-              <div className="h-8 w-8 rounded-lg bg-purple-500/10 flex items-center justify-center">
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-purple-500/10">
                 <FileTextIcon className="h-4 w-4 text-purple-600 dark:text-purple-400" />
               </div>
             </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-left">
+            <div className="text-left text-2xl font-bold">
               <AnimatedCounter
                 value={averageInvoice}
                 prefix="£"
@@ -299,7 +299,7 @@ export const DemoDashboard = () => {
                 delay={300}
               />
             </div>
-            <p className="text-xs text-muted-foreground mt-2 text-left">
+            <p className="text-muted-foreground mt-2 text-left text-xs">
               per invoice
             </p>
           </CardContent>
@@ -312,7 +312,7 @@ export const DemoDashboard = () => {
         <Card>
           <CardHeader>
             <CardTitle>Invoice Status</CardTitle>
-            <p className="text-sm text-muted-foreground">Breakdown by status</p>
+            <p className="text-muted-foreground text-sm">Breakdown by status</p>
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
@@ -322,13 +322,13 @@ export const DemoDashboard = () => {
                   <span className="text-sm font-medium">Draft</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="text-sm text-muted-foreground">
+                  <span className="text-muted-foreground text-sm">
                     {statusCounts.draft}
                   </span>
                   <span className="text-sm font-medium">
                     {invoices.length > 0
                       ? ((statusCounts.draft / invoices.length) * 100).toFixed(
-                          0
+                          0,
                         )
                       : 0}
                     %
@@ -341,7 +341,7 @@ export const DemoDashboard = () => {
                   <span className="text-sm font-medium">Sent</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="text-sm text-muted-foreground">
+                  <span className="text-muted-foreground text-sm">
                     {statusCounts.sent}
                   </span>
                   <span className="text-sm font-medium">
@@ -358,7 +358,7 @@ export const DemoDashboard = () => {
                   <span className="text-sm font-medium">Paid</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="text-sm text-muted-foreground">
+                  <span className="text-muted-foreground text-sm">
                     {statusCounts.paid}
                   </span>
                   <span className="text-sm font-medium">
@@ -375,7 +375,7 @@ export const DemoDashboard = () => {
                   <span className="text-sm font-medium">Overdue</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="text-sm text-muted-foreground">
+                  <span className="text-muted-foreground text-sm">
                     {statusCounts.overdue}
                   </span>
                   <span className="text-sm font-medium">
@@ -397,7 +397,7 @@ export const DemoDashboard = () => {
         <Card>
           <CardHeader>
             <CardTitle>Top Shows by Revenue</CardTitle>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-muted-foreground text-sm">
               Your highest earning projects
             </p>
           </CardHeader>
@@ -409,10 +409,10 @@ export const DemoDashboard = () => {
                   className="flex items-center justify-between"
                 >
                   <div className="flex items-center gap-3">
-                    <div className="flex items-center justify-center w-6 h-6 rounded-full bg-primary/10 text-xs font-bold">
+                    <div className="bg-primary/10 flex h-6 w-6 items-center justify-center rounded-full text-xs font-bold">
                       {index + 1}
                     </div>
-                    <span className="text-sm font-medium truncate max-w-[200px]">
+                    <span className="max-w-[200px] truncate text-sm font-medium">
                       {item.show}
                     </span>
                   </div>

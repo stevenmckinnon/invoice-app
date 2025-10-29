@@ -85,10 +85,10 @@ const ResetPasswordForm = () => {
 
   if (!token) {
     return (
-      <div className="h-screen w-full flex items-center justify-center p-6">
+      <div className="flex h-screen w-full items-center justify-center p-6">
         <div className="w-full max-w-md">
-          <CardHeader className="text-center mb-4">
-            <div className="flex flex-col items-center mb-4 gap-2">
+          <CardHeader className="mb-4 text-center">
+            <div className="mb-4 flex flex-col items-center gap-2">
               <Button asChild variant="outline">
                 <Link href="/">
                   <ArrowLeft /> Back Home
@@ -104,7 +104,7 @@ const ResetPasswordForm = () => {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <p className="text-sm text-muted-foreground text-center">
+            <p className="text-muted-foreground text-center text-sm">
               Please request a new password reset link.
             </p>
             <div className="text-center">
@@ -119,10 +119,10 @@ const ResetPasswordForm = () => {
   }
 
   return (
-    <div className="h-screen w-full flex items-center justify-center p-6">
+    <div className="flex h-screen w-full items-center justify-center p-6">
       <div className="w-full max-w-md">
-        <CardHeader className="text-center mb-4">
-          <div className="flex flex-col items-center mb-4 gap-2">
+        <CardHeader className="mb-4 text-center">
+          <div className="mb-4 flex flex-col items-center gap-2">
             <Button asChild variant="outline">
               <Link href="/">
                 <ArrowLeft /> Back Home
@@ -148,7 +148,7 @@ const ResetPasswordForm = () => {
                 required
                 minLength={8}
               />
-              <p className="text-xs text-muted-foreground">
+              <p className="text-muted-foreground text-xs">
                 Must be at least 8 characters long
               </p>
             </div>
@@ -178,7 +178,7 @@ const ResetPasswordForm = () => {
             </Button>
           </form>
 
-          <div className="text-center text-sm text-muted-foreground">
+          <div className="text-muted-foreground text-center text-sm">
             Remember your password?{" "}
             <Link href="/auth/signin" className="text-primary hover:underline">
               Sign in
@@ -194,9 +194,9 @@ export default function ResetPasswordPage() {
   return (
     <Suspense
       fallback={
-        <div className="flex flex-col items-center justify-center min-h-screen gap-4">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
-          <p className="text-sm text-muted-foreground">Loading...</p>
+        <div className="flex min-h-screen flex-col items-center justify-center gap-4">
+          <Loader2 className="text-primary h-8 w-8 animate-spin" />
+          <p className="text-muted-foreground text-sm">Loading...</p>
         </div>
       }
     >

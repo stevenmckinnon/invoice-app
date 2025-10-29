@@ -15,40 +15,46 @@ A modern invoice management application built with Next.js, Prisma, and Better A
 
 ### Prerequisites
 
-- Node.js 20+ 
+- Node.js 20+
 - PostgreSQL database
 - [Resend](https://resend.com) account (for email functionality)
 
 ### Installation
 
 1. Clone the repository:
+
 ```bash
 git clone <your-repo-url>
 cd invoice-app
 ```
 
 2. Install dependencies:
+
 ```bash
 pnpm install
 ```
 
 3. Set up environment variables:
+
 ```bash
 cp .env.example .env.local
 ```
 
 Edit `.env.local` with your values:
+
 - `DATABASE_URL`: Your PostgreSQL connection string
 - `BETTER_AUTH_SECRET`: Random 32+ character string for session encryption
 - `RESEND_API_KEY`: Your Resend API key from [resend.com/api-keys](https://resend.com/api-keys)
 - `EMAIL_FROM`: Verified sender email (use `onboarding@resend.dev` for testing)
 
 4. Run database migrations:
+
 ```bash
 pnpm db:migrate
 ```
 
 5. Start the development server:
+
 ```bash
 pnpm dev
 ```
@@ -84,10 +90,12 @@ pnpm db:push
 ### Email Assets
 
 The email templates use a PNG logo for better email client compatibility:
+
 - `public/email-logo.png` - 128x128px WWE logo with red background
 - `public/email-logo.svg` - SVG source file
 
 To regenerate the email logo (if brand colors change):
+
 ```bash
 npx tsx scripts/generate-email-logo.ts
 ```

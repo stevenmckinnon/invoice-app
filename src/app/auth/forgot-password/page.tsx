@@ -55,10 +55,10 @@ const ForgotPasswordPage = () => {
 
   if (emailSent) {
     return (
-      <div className="h-screen w-full flex items-center justify-center p-6">
+      <div className="flex h-screen w-full items-center justify-center p-6">
         <div className="w-full max-w-md">
-          <CardHeader className="text-center mb-4">
-            <div className="flex flex-col items-center mb-4 gap-2">
+          <CardHeader className="mb-4 text-center">
+            <div className="mb-4 flex flex-col items-center gap-2">
               <CaleyLogo className="h-24 w-24" />
             </div>
             <CardTitle>
@@ -69,14 +69,14 @@ const ForgotPasswordPage = () => {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <p className="text-sm text-muted-foreground text-center">
+            <p className="text-muted-foreground text-center text-sm">
               The link will expire in 1 hour. If you don&apos;t see the email,
               check your spam folder.
             </p>
             <div className="text-center text-sm">
               <Link
                 href="/auth/signin"
-                className="text-primary hover:underline inline-flex items-center gap-2"
+                className="text-primary inline-flex items-center gap-2 hover:underline"
               >
                 <ArrowLeft className="h-4 w-4" />
                 Back to sign in
@@ -89,10 +89,10 @@ const ForgotPasswordPage = () => {
   }
 
   return (
-    <div className="h-screen w-full flex items-center justify-center p-6">
+    <div className="flex h-screen w-full items-center justify-center p-6">
       <div className="w-full max-w-md">
-        <CardHeader className="text-center mb-4">
-          <div className="flex flex-col items-center mb-4 gap-2">
+        <CardHeader className="mb-4 text-center">
+          <div className="mb-4 flex flex-col items-center gap-2">
             <CaleyLogo className="h-24 w-24" />
           </div>
           <CardTitle>
@@ -132,7 +132,7 @@ const ForgotPasswordPage = () => {
           <div className="text-center text-sm">
             <Link
               href="/auth/signin"
-              className="text-primary hover:underline inline-flex items-center gap-2"
+              className="text-primary inline-flex items-center gap-2 hover:underline"
             >
               <ArrowLeft className="h-4 w-4" />
               Back to sign in

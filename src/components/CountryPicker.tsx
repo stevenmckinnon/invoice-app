@@ -35,11 +35,15 @@ interface CountryPickerProps {
   disabled?: boolean;
 }
 
-export function CountryPicker({ value, onChange, disabled }: CountryPickerProps) {
+export function CountryPicker({
+  value,
+  onChange,
+  disabled,
+}: CountryPickerProps) {
   const [open, setOpen] = React.useState(false);
 
   const selectedCountry = countryOptions.find(
-    (country) => country.value === value
+    (country) => country.value === value,
   );
 
   return (
@@ -81,7 +85,7 @@ export function CountryPicker({ value, onChange, disabled }: CountryPickerProps)
                   <Check
                     className={cn(
                       "mr-2 h-4 w-4",
-                      value === country.value ? "opacity-100" : "opacity-0"
+                      value === country.value ? "opacity-100" : "opacity-0",
                     )}
                   />
                   <span className="mr-2 text-lg">{country.flag}</span>
@@ -95,4 +99,3 @@ export function CountryPicker({ value, onChange, disabled }: CountryPickerProps)
     </Popover>
   );
 }
-

@@ -42,7 +42,11 @@ export function proxy(request: NextRequest) {
 
   // Redirect authenticated users away from auth pages and root to dashboard
   if (isAuthenticated) {
-    if (pathname === "/auth/signin" || pathname === "/auth/signup" || pathname === "/") {
+    if (
+      pathname === "/auth/signin" ||
+      pathname === "/auth/signup" ||
+      pathname === "/"
+    ) {
       return NextResponse.redirect(new URL("/dashboard", request.url));
     }
   }

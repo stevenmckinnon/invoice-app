@@ -9,7 +9,7 @@ export const GET = async () => {
     const error = err as Error;
     return NextResponse.json(
       { error: error.message ?? "Failed to generate invoice number" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 };

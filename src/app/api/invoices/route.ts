@@ -75,7 +75,7 @@ export const POST = async (req: NextRequest) => {
     const session = await auth.api.getSession({
       headers: await headers(),
     });
-    
+
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
@@ -171,12 +171,12 @@ export const POST = async (req: NextRequest) => {
 
     return NextResponse.json(
       { id: created.id, invoiceNumber: created.invoiceNumber },
-      { status: 201 }
+      { status: 201 },
     );
   } catch (err: any) {
     return NextResponse.json(
       { error: err.message ?? "Unexpected error" },
-      { status: 400 }
+      { status: 400 },
     );
   }
 };
@@ -185,7 +185,7 @@ export const GET = async () => {
   const session = await auth.api.getSession({
     headers: await headers(),
   });
-  
+
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }

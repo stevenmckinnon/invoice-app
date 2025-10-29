@@ -79,30 +79,30 @@ export const AppHeader = () => {
   return (
     <header
       className={cn(
-        "fixed px-4 top-0 md:top-5 w-full md:w-auto left-0 right-0 z-50 max-w-5xl mx-auto md:rounded-4xl bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 flex justify-center md:border border-border/50 transition-transform duration-300 ease-in-out",
+        "bg-background/95 supports-[backdrop-filter]:bg-background/60 border-border/50 fixed top-0 right-0 left-0 z-50 mx-auto flex w-full max-w-5xl justify-center px-4 backdrop-blur transition-transform duration-300 ease-in-out md:top-5 md:w-auto md:rounded-4xl md:border",
         isVisible
           ? "translate-y-0"
-          : "-translate-y-full md:-translate-y-[calc(100%+20px)]"
+          : "-translate-y-full md:-translate-y-[calc(100%+20px)]",
       )}
     >
-      <div className="w-full flex h-12 items-center justify-between">
+      <div className="flex h-12 w-full items-center justify-between">
         {/* Logo */}
         <Link
           href={session?.user ? "/dashboard" : "/"}
-          className="flex items-center gap-2 hover:opacity-80 transition-opacity"
+          className="flex items-center gap-2 transition-opacity hover:opacity-80"
         >
           <CaleyLogo className="h-8 w-8" />
-          <span className="font-bold text-xl hidden sm:inline-block">
+          <span className="hidden text-xl font-bold sm:inline-block">
             Caley
           </span>
         </Link>
 
         {/* Navigation */}
         {session?.user && (
-          <nav className="hidden md:flex items-center gap-6 text-sm font-medium">
+          <nav className="hidden items-center gap-6 text-sm font-medium md:flex">
             <Link
               href="/dashboard"
-              className={`transition-colors hover:text-foreground/80 ${
+              className={`hover:text-foreground/80 transition-colors ${
                 pathname === "/dashboard"
                   ? "text-foreground font-semibold"
                   : "text-foreground/60"
@@ -112,7 +112,7 @@ export const AppHeader = () => {
             </Link>
             <Link
               href="/invoices"
-              className={`transition-colors hover:text-foreground/80 ${
+              className={`hover:text-foreground/80 transition-colors ${
                 pathname.startsWith("/invoices") && pathname !== "/invoices/new"
                   ? "text-foreground font-semibold"
                   : "text-foreground/60"
@@ -122,7 +122,7 @@ export const AppHeader = () => {
             </Link>
             <Link
               href="/invoices/new"
-              className={`transition-colors hover:text-foreground/80 ${
+              className={`hover:text-foreground/80 transition-colors ${
                 pathname === "/invoices/new"
                   ? "text-foreground font-semibold"
                   : "text-foreground/60"
@@ -150,7 +150,7 @@ export const AppHeader = () => {
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" className="h-9 gap-2 px-2">
                   <Avatar className="h-7 w-7">
-                    <AvatarFallback className="text-xs text-foreground">
+                    <AvatarFallback className="text-foreground text-xs">
                       {(
                         session.user.name?.[0] ||
                         session.user.email?.[0] ||
@@ -158,7 +158,7 @@ export const AppHeader = () => {
                       ).toUpperCase()}
                     </AvatarFallback>
                   </Avatar>
-                  <span className="hidden sm:inline-block text-sm">
+                  <span className="hidden text-sm sm:inline-block">
                     {session.user.name?.split(" ")[0] || session.user.email}
                   </span>
                 </Button>
@@ -169,7 +169,7 @@ export const AppHeader = () => {
                     <p className="text-sm font-medium">
                       {session.user.name || "User"}
                     </p>
-                    <p className="text-xs text-muted-foreground">
+                    <p className="text-muted-foreground text-xs">
                       {session.user.email}
                     </p>
                   </div>

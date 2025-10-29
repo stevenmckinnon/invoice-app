@@ -10,47 +10,47 @@ const Hero = () => {
         <BackgroundPattern />
       </div>
 
-      <div className="relative z-10 flex items-center justify-center px-6 md:px-12 pt-12 md:pt-42 !pb-0 max-w-4xl mx-auto">
+      <div className="relative z-10 mx-auto flex max-w-4xl items-center justify-center px-6 pt-12 !pb-0 md:px-12 md:pt-42">
         <div className="text-center">
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 dark:bg-primary/20 text-sm font-medium mb-6">
+          <div className="bg-primary/10 dark:bg-primary/20 mb-6 inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium">
             <span className="relative flex h-2 w-2">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
+              <span className="bg-primary absolute inline-flex h-full w-full animate-ping rounded-full opacity-75"></span>
+              <span className="bg-primary relative inline-flex h-2 w-2 rounded-full"></span>
             </span>
             Beta release!
           </div>
 
-          <h1 className="text-5xl sm:text-6xl md:text-7xl font-bold tracking-tight mb-6">
+          <h1 className="mb-6 text-5xl font-bold tracking-tight sm:text-6xl md:text-7xl">
             Professional Invoicing with{" "}
             <span className="text-primary">Caley</span>
           </h1>
 
-          <p className="mt-6 text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto">
+          <p className="text-muted-foreground mx-auto mt-6 max-w-2xl text-lg md:text-xl">
             Streamline your billing with an intelligent invoicing system. Track
             overtime, manage expenses, and generate professional PDFs in
             seconds.
           </p>
 
-          <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
-            <Button asChild size="lg" className="text-base px-8">
+          <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
+            <Button asChild size="lg" className="px-8 text-base">
               <Link href="/auth/signup">Get Started Free</Link>
             </Button>
             <Button
               asChild
               variant="outline"
               size="lg"
-              className="text-base px-8"
+              className="px-8 text-base"
             >
               <Link href="/auth/signin">Sign In</Link>
             </Button>
           </div>
 
-          <p className="mt-6 text-sm text-muted-foreground">
+          <p className="text-muted-foreground mt-6 text-sm">
             No credit card required • Free forever • Cancel anytime
           </p>
 
           {/* App Demo Dashboard */}
-          <div className="mt-16 max-w-6xl mx-auto w-full">
+          <div className="mx-auto mt-16 w-full max-w-6xl">
             <div className="glossy-frame p-0">
               <DemoDashboard />
             </div>

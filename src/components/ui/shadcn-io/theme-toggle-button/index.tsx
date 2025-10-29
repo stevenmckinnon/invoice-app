@@ -200,7 +200,7 @@ export const ThemeToggleButton = ({
         className={cn(
           "relative overflow-hidden transition-all",
           showLabel && "gap-2",
-          className
+          className,
         )}
         disabled
       >
@@ -218,7 +218,7 @@ export const ThemeToggleButton = ({
       className={cn(
         "relative overflow-hidden transition-all",
         showLabel && "gap-2",
-        className
+        className,
       )}
       aria-label={`Switch to ${theme === "light" ? "dark" : "light"} theme`}
     >

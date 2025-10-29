@@ -96,9 +96,9 @@ export default function SignUpPage() {
   };
 
   return (
-    <div className="h-screen w-full grid grid-cols-1 md:grid-cols-2 overflow-hidden">
-      <div className="relative items-center justify-center hidden md:flex col-span-1 p-6 overflow-hidden">
-        <div className="relative w-full h-full dither-retro">
+    <div className="grid h-screen w-full grid-cols-1 overflow-hidden md:grid-cols-2">
+      <div className="relative col-span-1 hidden items-center justify-center overflow-hidden p-6 md:flex">
+        <div className="dither-retro relative h-full w-full">
           <Image
             src="/signup.jpg"
             alt="Skye, Scotland, UK"
@@ -107,10 +107,10 @@ export default function SignUpPage() {
           />
         </div>
       </div>
-      <div className="flex items-center justify-center col-span-1 p-6">
+      <div className="col-span-1 flex items-center justify-center p-6">
         <div className="w-full max-w-md">
-          <CardHeader className="text-center mb-4">
-            <div className="flex flex-col items-center mb-4 gap-2">
+          <CardHeader className="mb-4 text-center">
+            <div className="mb-4 flex flex-col items-center gap-2">
               <Link href="/">
                 <CaleyLogo className="h-24 w-24" />
               </Link>
@@ -181,7 +181,7 @@ export default function SignUpPage() {
                   required
                   minLength={6}
                 />
-                <p className="text-xs text-muted-foreground">
+                <p className="text-muted-foreground text-xs">
                   Must be at least 6 characters
                 </p>
               </div>
@@ -191,7 +191,7 @@ export default function SignUpPage() {
               </Button>
             </form>
 
-            <div className="text-center text-sm text-muted-foreground mt-4">
+            <div className="text-muted-foreground mt-4 text-center text-sm">
               Already have an account?{" "}
               <Link
                 href="/auth/signin"

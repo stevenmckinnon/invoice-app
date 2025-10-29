@@ -156,13 +156,13 @@ export default function Home() {
   const sortedInvoices = invoices
     .sort(
       (a, b) =>
-        new Date(b.invoiceDate).getTime() - new Date(a.invoiceDate).getTime()
+        new Date(b.invoiceDate).getTime() - new Date(a.invoiceDate).getTime(),
     )
     .slice(0, 5); // Show only latest 5 invoices
 
   const totalRevenue = invoices.reduce(
     (sum, inv) => sum + Number(inv.totalAmount),
-    0
+    0,
   );
 
   const paidRevenue = invoices
@@ -203,8 +203,8 @@ export default function Home() {
     lastMonthRevenue > 0
       ? ((currentMonthRevenue - lastMonthRevenue) / lastMonthRevenue) * 100
       : currentMonthRevenue > 0
-      ? 100
-      : 0;
+        ? 100
+        : 0;
 
   // Status breakdown
   const statusCounts = {
@@ -215,11 +215,14 @@ export default function Home() {
   };
 
   // Top shows by revenue
-  const showRevenue = invoices.reduce((acc, inv) => {
-    const show = inv.showName || "Unknown";
-    acc[show] = (acc[show] || 0) + Number(inv.totalAmount);
-    return acc;
-  }, {} as Record<string, number>);
+  const showRevenue = invoices.reduce(
+    (acc, inv) => {
+      const show = inv.showName || "Unknown";
+      acc[show] = (acc[show] || 0) + Number(inv.totalAmount);
+      return acc;
+    },
+    {} as Record<string, number>,
+  );
 
   const topShows = Object.entries(showRevenue)
     .sort(([, a], [, b]) => b - a)
@@ -272,7 +275,7 @@ export default function Home() {
 
   const lastYearRevenue = invoices
     .filter(
-      (inv) => new Date(inv.invoiceDate).getFullYear() === currentYear - 1
+      (inv) => new Date(inv.invoiceDate).getFullYear() === currentYear - 1,
     )
     .reduce((sum, inv) => sum + Number(inv.totalAmount), 0);
 
@@ -280,15 +283,15 @@ export default function Home() {
     lastYearRevenue > 0
       ? ((currentYearRevenue - lastYearRevenue) / lastYearRevenue) * 100
       : currentYearRevenue > 0
-      ? 100
-      : 0;
+        ? 100
+        : 0;
 
   return (
-    <div className="w-full max-w-6xl mx-auto p-6 pb-28 md:pb-8 grid grid-cols-1 gap-6">
+    <div className="mx-auto grid w-full max-w-6xl grid-cols-1 gap-6 p-6 pb-28 md:pb-8">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold">Invoice Dashboard</h1>
-          <p className="text-sm text-muted-foreground mt-1">
+          <p className="text-muted-foreground mt-1 text-sm">
             Create and manage your invoices
           </p>
         </div>
@@ -301,14 +304,14 @@ export default function Home() {
       </div>
 
       {/* Revenue Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Card>
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
-              <CardTitle className="text-sm font-medium text-muted-foreground">
+              <CardTitle className="text-muted-foreground text-sm font-medium">
                 Total Revenue
               </CardTitle>
-              <div className="h-8 w-8 rounded-lg bg-blue-500/10 flex items-center justify-center">
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-500/10">
                 <DollarSign className="h-4 w-4 text-blue-600 dark:text-blue-400" />
               </div>
             </div>
@@ -322,7 +325,7 @@ export default function Home() {
                 decimals={2}
               />
             </div>
-            <div className="flex items-center gap-1 mt-2">
+            <div className="mt-2 flex items-center gap-1">
               {monthlyChange >= 0 ? (
                 <TrendingUp className="h-4 w-4 text-green-600" />
               ) : (
@@ -341,7 +344,7 @@ export default function Home() {
                   decimals={1}
                 />
               </p>
-              <p className="text-xs text-muted-foreground">vs last month</p>
+              <p className="text-muted-foreground text-xs">vs last month</p>
             </div>
           </CardContent>
         </Card>
@@ -349,10 +352,10 @@ export default function Home() {
         <Card>
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
-              <CardTitle className="text-sm font-medium text-muted-foreground">
+              <CardTitle className="text-muted-foreground text-sm font-medium">
                 Paid
               </CardTitle>
-              <div className="h-8 w-8 rounded-lg bg-green-500/10 flex items-center justify-center">
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-green-500/10">
                 <CreditCard className="h-4 w-4 text-green-600 dark:text-green-400" />
               </div>
             </div>
@@ -367,7 +370,7 @@ export default function Home() {
                 delay={100}
               />
             </div>
-            <p className="text-xs text-muted-foreground mt-2">
+            <p className="text-muted-foreground mt-2 text-xs">
               {invoices.filter((inv) => inv.status === "paid").length} paid
               invoices
             </p>
@@ -377,10 +380,10 @@ export default function Home() {
         <Card>
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
-              <CardTitle className="text-sm font-medium text-muted-foreground">
+              <CardTitle className="text-muted-foreground text-sm font-medium">
                 Outstanding
               </CardTitle>
-              <div className="h-8 w-8 rounded-lg bg-orange-500/10 flex items-center justify-center">
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-orange-500/10">
                 <Clock className="h-4 w-4 text-orange-600 dark:text-orange-400" />
               </div>
             </div>
@@ -395,7 +398,7 @@ export default function Home() {
                 delay={200}
               />
             </div>
-            <p className="text-xs text-muted-foreground mt-2">
+            <p className="text-muted-foreground mt-2 text-xs">
               {invoices.filter((inv) => inv.status !== "paid").length} unpaid
             </p>
           </CardContent>
@@ -404,10 +407,10 @@ export default function Home() {
         <Card>
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
-              <CardTitle className="text-sm font-medium text-muted-foreground">
+              <CardTitle className="text-muted-foreground text-sm font-medium">
                 Average Invoice
               </CardTitle>
-              <div className="h-8 w-8 rounded-lg bg-purple-500/10 flex items-center justify-center">
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-purple-500/10">
                 <FileTextIcon className="h-4 w-4 text-purple-600 dark:text-purple-400" />
               </div>
             </div>
@@ -422,18 +425,18 @@ export default function Home() {
                 delay={300}
               />
             </div>
-            <p className="text-xs text-muted-foreground mt-2">per invoice</p>
+            <p className="text-muted-foreground mt-2 text-xs">per invoice</p>
           </CardContent>
         </Card>
       </div>
 
       {/* Charts Row */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         {/* Status Breakdown */}
         <Card>
           <CardHeader>
             <CardTitle>Invoice Status</CardTitle>
-            <p className="text-sm text-muted-foreground">Breakdown by status</p>
+            <p className="text-muted-foreground text-sm">Breakdown by status</p>
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
@@ -443,13 +446,13 @@ export default function Home() {
                   <span className="text-sm font-medium">Draft</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="text-sm text-muted-foreground">
+                  <span className="text-muted-foreground text-sm">
                     {statusCounts.draft}
                   </span>
                   <span className="text-sm font-medium">
                     {invoices.length > 0
                       ? ((statusCounts.draft / invoices.length) * 100).toFixed(
-                          0
+                          0,
                         )
                       : 0}
                     %
@@ -462,7 +465,7 @@ export default function Home() {
                   <span className="text-sm font-medium">Sent</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="text-sm text-muted-foreground">
+                  <span className="text-muted-foreground text-sm">
                     {statusCounts.sent}
                   </span>
                   <span className="text-sm font-medium">
@@ -479,7 +482,7 @@ export default function Home() {
                   <span className="text-sm font-medium">Paid</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="text-sm text-muted-foreground">
+                  <span className="text-muted-foreground text-sm">
                     {statusCounts.paid}
                   </span>
                   <span className="text-sm font-medium">
@@ -496,7 +499,7 @@ export default function Home() {
                   <span className="text-sm font-medium">Overdue</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="text-sm text-muted-foreground">
+                  <span className="text-muted-foreground text-sm">
                     {statusCounts.overdue}
                   </span>
                   <span className="text-sm font-medium">
@@ -518,7 +521,7 @@ export default function Home() {
         <Card>
           <CardHeader>
             <CardTitle>Top Shows by Revenue</CardTitle>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-muted-foreground text-sm">
               Your highest earning projects
             </p>
           </CardHeader>
@@ -531,10 +534,10 @@ export default function Home() {
                     className="flex items-center justify-between"
                   >
                     <div className="flex items-center gap-3">
-                      <div className="flex items-center justify-center w-6 h-6 rounded-full bg-primary/10 text-xs font-bold">
+                      <div className="bg-primary/10 flex h-6 w-6 items-center justify-center rounded-full text-xs font-bold">
                         {index + 1}
                       </div>
-                      <span className="text-sm font-medium truncate max-w-[200px]">
+                      <span className="max-w-[200px] truncate text-sm font-medium">
                         {item.show}
                       </span>
                     </div>
@@ -551,7 +554,7 @@ export default function Home() {
                 ))}
               </div>
             ) : (
-              <p className="text-sm text-muted-foreground text-center py-8">
+              <p className="text-muted-foreground py-8 text-center text-sm">
                 No shows yet. Create your first invoice to see stats.
               </p>
             )}
@@ -565,20 +568,20 @@ export default function Home() {
           <div className="flex items-center justify-between">
             <div>
               <CardTitle>This Month</CardTitle>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-muted-foreground text-sm">
                 {new Date().toLocaleDateString("en-GB", {
                   month: "long",
                   year: "numeric",
                 })}
               </p>
             </div>
-            <Calendar className="h-8 w-8 text-muted-foreground" />
+            <Calendar className="text-muted-foreground h-8 w-8" />
           </div>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
             <div className="space-y-2">
-              <p className="text-sm font-medium text-muted-foreground">
+              <p className="text-muted-foreground text-sm font-medium">
                 Revenue
               </p>
               <p className="text-2xl font-bold">
@@ -613,7 +616,7 @@ export default function Home() {
               </div>
             </div>
             <div className="space-y-2">
-              <p className="text-sm font-medium text-muted-foreground">
+              <p className="text-muted-foreground text-sm font-medium">
                 Invoices Created
               </p>
               <p className="text-2xl font-bold">
@@ -632,10 +635,10 @@ export default function Home() {
                   delay={200}
                 />
               </p>
-              <p className="text-xs text-muted-foreground">This month</p>
+              <p className="text-muted-foreground text-xs">This month</p>
             </div>
             <div className="space-y-2">
-              <p className="text-sm font-medium text-muted-foreground">
+              <p className="text-muted-foreground text-sm font-medium">
                 Paid This Month
               </p>
               <p className="text-2xl font-bold text-green-600">
@@ -655,7 +658,7 @@ export default function Home() {
                   delay={300}
                 />
               </p>
-              <p className="text-xs text-muted-foreground">Invoices paid</p>
+              <p className="text-muted-foreground text-xs">Invoices paid</p>
             </div>
           </div>
         </CardContent>
@@ -665,13 +668,13 @@ export default function Home() {
       <Card>
         <CardHeader>
           <CardTitle>Revenue Trend</CardTitle>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-muted-foreground text-sm">
             Last 6 months performance
           </p>
         </CardHeader>
-        <CardContent className="px-0 md:px-4 py-6">
+        <CardContent className="px-0 py-6 md:px-4">
           {invoices.length > 0 ? (
-            <div className="w-full h-[320px]">
+            <div className="h-[320px] w-full">
               <ResponsiveContainer width="100%" height="100%">
                 <AreaChart
                   data={revenueData}
@@ -746,8 +749,8 @@ export default function Home() {
               </ResponsiveContainer>
             </div>
           ) : (
-            <div className="h-[300px] flex items-center justify-center">
-              <p className="text-sm text-muted-foreground">
+            <div className="flex h-[300px] items-center justify-center">
+              <p className="text-muted-foreground text-sm">
                 No data to display. Create your first invoice to see trends.
               </p>
             </div>
@@ -756,18 +759,18 @@ export default function Home() {
       </Card>
 
       {/* Year Overview */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         <Card>
           <CardHeader>
             <CardTitle>Year-to-Date Performance</CardTitle>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-muted-foreground text-sm">
               {currentYear} vs {currentYear - 1}
             </p>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
               <div>
-                <div className="flex items-center justify-between mb-2">
+                <div className="mb-2 flex items-center justify-between">
                   <span className="text-sm font-medium">{currentYear}</span>
                   <span className="text-sm font-bold">
                     <AnimatedCounter
@@ -779,22 +782,22 @@ export default function Home() {
                     />
                   </span>
                 </div>
-                <div className="h-2 bg-muted rounded-full overflow-hidden">
+                <div className="bg-muted h-2 overflow-hidden rounded-full">
                   <div
-                    className="h-full bg-primary rounded-full"
+                    className="bg-primary h-full rounded-full"
                     style={{
                       width: `${Math.min(
                         100,
                         (currentYearRevenue /
                           Math.max(currentYearRevenue, lastYearRevenue, 1)) *
-                          100
+                          100,
                       )}%`,
                     }}
                   />
                 </div>
               </div>
               <div>
-                <div className="flex items-center justify-between mb-2">
+                <div className="mb-2 flex items-center justify-between">
                   <span className="text-sm font-medium">{currentYear - 1}</span>
                   <span className="text-sm font-bold">
                     <AnimatedCounter
@@ -806,15 +809,15 @@ export default function Home() {
                     />
                   </span>
                 </div>
-                <div className="h-2 bg-muted rounded-full overflow-hidden">
+                <div className="bg-muted h-2 overflow-hidden rounded-full">
                   <div
-                    className="h-full bg-muted-foreground/50 rounded-full"
+                    className="bg-muted-foreground/50 h-full rounded-full"
                     style={{
                       width: `${Math.min(
                         100,
                         (lastYearRevenue /
                           Math.max(currentYearRevenue, lastYearRevenue, 1)) *
-                          100
+                          100,
                       )}%`,
                     }}
                   />
@@ -848,13 +851,13 @@ export default function Home() {
         <Card>
           <CardHeader>
             <CardTitle>Quick Stats</CardTitle>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-muted-foreground text-sm">
               Key metrics at a glance
             </p>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              <div className="flex items-center justify-between pb-3 border-b">
+              <div className="flex items-center justify-between border-b pb-3">
                 <span className="text-sm font-medium">Total Invoices</span>
                 <span className="text-2xl font-bold">
                   <AnimatedCounter
@@ -865,7 +868,7 @@ export default function Home() {
                   />
                 </span>
               </div>
-              <div className="flex items-center justify-between pb-3 border-b">
+              <div className="flex items-center justify-between border-b pb-3">
                 <span className="text-sm font-medium">Payment Rate</span>
                 <span className="text-2xl font-bold text-green-600">
                   <AnimatedCounter
@@ -881,7 +884,7 @@ export default function Home() {
                   />
                 </span>
               </div>
-              <div className="flex items-center justify-between pb-3 border-b">
+              <div className="flex items-center justify-between border-b pb-3">
                 <span className="text-sm font-medium">Unique Shows</span>
                 <span className="text-2xl font-bold">
                   <AnimatedCounter
@@ -914,7 +917,7 @@ export default function Home() {
           <div className="flex items-center justify-between">
             <div>
               <CardTitle>Recent Invoices</CardTitle>
-              <p className="text-sm text-muted-foreground mt-1">
+              <p className="text-muted-foreground mt-1 text-sm">
                 Your latest 5 invoices
               </p>
             </div>
@@ -925,14 +928,14 @@ export default function Home() {
         </CardHeader>
         <CardContent>
           {isLoading ? (
-            <div className="text-center py-12">
-              <p className="text-sm text-muted-foreground">Loading...</p>
+            <div className="py-12 text-center">
+              <p className="text-muted-foreground text-sm">Loading...</p>
             </div>
           ) : sortedInvoices.length === 0 ? (
-            <div className="text-center py-12">
-              <FileTextIcon className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
-              <h3 className="text-lg font-medium mb-2">No invoices yet</h3>
-              <p className="text-sm text-muted-foreground mb-4">
+            <div className="py-12 text-center">
+              <FileTextIcon className="text-muted-foreground mx-auto mb-4 h-12 w-12" />
+              <h3 className="mb-2 text-lg font-medium">No invoices yet</h3>
+              <p className="text-muted-foreground mb-4 text-sm">
                 Get started by creating your first invoice
               </p>
               <Button asChild>

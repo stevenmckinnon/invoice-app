@@ -151,7 +151,7 @@ export default function EditInvoicePage() {
   const totals = useMemo(() => {
     const itemsTotal = items.reduce(
       (sum, i) => sum + (i.cost ?? i.quantity * i.unitPrice),
-      0
+      0,
     );
 
     const overtimeTotal = overtimeEntries.reduce((sum, entry) => {
@@ -162,7 +162,7 @@ export default function EditInvoicePage() {
 
     const customExpensesTotal = customExpenseEntries.reduce(
       (sum, entry) => sum + entry.cost,
-      0
+      0,
     );
 
     const totalAmount = itemsTotal + overtimeTotal + customExpensesTotal;
@@ -226,7 +226,7 @@ export default function EditInvoicePage() {
               quantity: Number(entry.quantity),
               unitPrice: Number(entry.unitPrice),
               cost: Number(entry.cost),
-            })
+            }),
           ),
           status: invoice.status || "draft",
           notes: invoice.notes || "",
@@ -246,7 +246,7 @@ export default function EditInvoicePage() {
   const updateItem = (
     idx: number,
     field: keyof FormValues["items"][number],
-    value: string | number
+    value: string | number,
   ) => {
     const currentItems = form.getValues("items");
     const updatedItems = [...currentItems];
@@ -281,7 +281,7 @@ export default function EditInvoicePage() {
 
   if (isLoading) {
     return (
-      <div className="w-full max-w-6xl mx-auto p-6 grid gap-6 items-center justify-center h-full">
+      <div className="mx-auto grid h-full w-full max-w-6xl items-center justify-center gap-6 p-6">
         <h1 className="text-2xl font-semibold">Loading...</h1>
       </div>
     );
@@ -292,7 +292,7 @@ export default function EditInvoicePage() {
       <form
         // @ts-expect-error - React Hook Form type inference issues
         onSubmit={form.handleSubmit(onSubmit)}
-        className="w-full max-w-6xl mx-auto p-6 pb-28 md:pb-8 grid gap-6"
+        className="mx-auto grid w-full max-w-6xl gap-6 p-6 pb-28 md:pb-8"
       >
         <div className="flex items-center gap-4">
           <Button asChild variant="outline" size="sm">
@@ -308,7 +308,7 @@ export default function EditInvoicePage() {
           <CardHeader>
             <CardTitle>Details</CardTitle>
           </CardHeader>
-          <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <CardContent className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <FormField
               control={form.control as any}
               name="invoiceNumber"
@@ -522,8 +522,8 @@ export default function EditInvoicePage() {
             />
 
             <div className="md:col-span-2">
-              <h3 className="font-medium mb-4">Bill To</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <h3 className="mb-4 font-medium">Bill To</h3>
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                 <FormField
                   control={form.control as any}
                   name="clientName"
@@ -707,7 +707,7 @@ export default function EditInvoicePage() {
                 </TableBody>
               </Table>
             </div>
-            <div className="text-right font-semibold text-lg pt-2 border-t">
+            <div className="border-t pt-2 text-right text-lg font-semibold">
               Items Total: £{totals.itemsTotal.toFixed(2)}
             </div>
           </CardContent>
@@ -733,7 +733,7 @@ export default function EditInvoicePage() {
             <CardTitle>Summary</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+            <div className="grid grid-cols-2 gap-4 text-sm md:grid-cols-4">
               <div>
                 <div className="font-medium">Items Total</div>
                 <div className="text-lg">£{totals.itemsTotal.toFixed(2)}</div>
@@ -758,7 +758,7 @@ export default function EditInvoicePage() {
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               <FormField
                 control={form.control as any}
                 name="notes"

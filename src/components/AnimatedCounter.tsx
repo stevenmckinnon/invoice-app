@@ -38,7 +38,7 @@ export const AnimatedCounter: React.FC<AnimatedCounterProps> = ({
     // Reset and start new animation
     const startAnimation = () => {
       startTimeRef.current = undefined;
-      
+
       const animate = (currentTime: number) => {
         if (!startTimeRef.current) {
           startTimeRef.current = currentTime;
@@ -84,4 +84,3 @@ export const AnimatedCounter: React.FC<AnimatedCounterProps> = ({
     </span>
   );
 };
-

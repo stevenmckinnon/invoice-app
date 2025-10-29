@@ -35,55 +35,55 @@ export default function Home() {
       <Hero />
 
       {/* Why Choose Us Section */}
-      <section className="py-20 px-4 bg-background">
-        <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-sm font-semibold text-primary mb-3 uppercase tracking-wider">
+      <section className="bg-background px-4 py-20">
+        <div className="mx-auto max-w-6xl">
+          <div className="mb-16 text-center">
+            <h2 className="text-primary mb-3 text-sm font-semibold tracking-wider uppercase">
               Why Choose Us
             </h2>
-            <h3 className="text-4xl md:text-5xl font-bold mb-4">
+            <h3 className="mb-4 text-4xl font-bold md:text-5xl">
               Leading Invoicing Solution for Freelancers
             </h3>
-            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+            <p className="text-muted-foreground mx-auto max-w-2xl text-lg">
               A professional invoicing system built for freelancers and
               businesses worldwide.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <Card className="border-2 hover:border-primary/50 transition-all duration-300 group">
+          <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
+            <Card className="hover:border-primary/50 group border-2 transition-all duration-300">
               <CardHeader>
-                <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center mb-4 group-hover:bg-primary/20 transition-colors">
-                  <Zap className="h-6 w-6 text-primary" />
+                <div className="bg-primary/10 group-hover:bg-primary/20 mb-4 flex h-12 w-12 items-center justify-center rounded-lg transition-colors">
+                  <Zap className="text-primary h-6 w-6" />
                 </div>
                 <CardTitle className="text-xl">Lightning Fast</CardTitle>
-                <CardDescription className="text-base mt-2">
+                <CardDescription className="mt-2 text-base">
                   Generate professional invoices in seconds with intelligent
                   auto-fill and smart calculations
                 </CardDescription>
               </CardHeader>
             </Card>
 
-            <Card className="border-2 hover:border-primary/50 transition-all duration-300 group">
+            <Card className="hover:border-primary/50 group border-2 transition-all duration-300">
               <CardHeader>
-                <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center mb-4 group-hover:bg-primary/20 transition-colors">
-                  <Shield className="h-6 w-6 text-primary" />
+                <div className="bg-primary/10 group-hover:bg-primary/20 mb-4 flex h-12 w-12 items-center justify-center rounded-lg transition-colors">
+                  <Shield className="text-primary h-6 w-6" />
                 </div>
                 <CardTitle className="text-xl">Secure & Reliable</CardTitle>
-                <CardDescription className="text-base mt-2">
+                <CardDescription className="mt-2 text-base">
                   Bank-grade security with automatic backups. Your data is
                   always safe and accessible
                 </CardDescription>
               </CardHeader>
             </Card>
 
-            <Card className="border-2 hover:border-primary/50 transition-all duration-300 group">
+            <Card className="hover:border-primary/50 group border-2 transition-all duration-300">
               <CardHeader>
-                <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center mb-4 group-hover:bg-primary/20 transition-colors">
-                  <Globe className="h-6 w-6 text-primary" />
+                <div className="bg-primary/10 group-hover:bg-primary/20 mb-4 flex h-12 w-12 items-center justify-center rounded-lg transition-colors">
+                  <Globe className="text-primary h-6 w-6" />
                 </div>
                 <CardTitle className="text-xl">Work From Anywhere</CardTitle>
-                <CardDescription className="text-base mt-2">
+                <CardDescription className="mt-2 text-base">
                   Access your invoices from any device, anywhere in the world.
                   Cloud-based and always in sync
                 </CardDescription>
@@ -94,30 +94,30 @@ export default function Home() {
       </section>
 
       {/* Features Section - Bento Grid */}
-      <section className="py-20 px-4 bg-muted/30">
-        <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-sm font-semibold text-primary mb-3 uppercase tracking-wider">
+      <section className="bg-muted/30 px-4 py-20">
+        <div className="mx-auto max-w-6xl">
+          <div className="mb-16 text-center">
+            <h2 className="text-primary mb-3 text-sm font-semibold tracking-wider uppercase">
               Our Features
             </h2>
-            <h3 className="text-4xl md:text-5xl font-bold mb-4">
+            <h3 className="mb-4 text-4xl font-bold md:text-5xl">
               Everything You Need in One Place
             </h3>
-            <p className="text-center text-muted-foreground text-lg max-w-2xl mx-auto">
+            <p className="text-muted-foreground mx-auto max-w-2xl text-center text-lg">
               Powerful features designed specifically for freelancers and
               businesses
             </p>
           </div>
 
           {/* Bento Grid Layout */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
             {/* Large Feature - Professional PDFs */}
-            <Card className="md:col-span-2 md:row-span-2 overflow-hidden relative group hover:shadow-xl transition-all duration-300">
+            <Card className="group relative overflow-hidden transition-all duration-300 hover:shadow-xl md:col-span-2 md:row-span-2">
               <CardHeader className="relative z-10">
-                <div className="p-3 bg-blue-500/10 dark:bg-blue-500/20 rounded-xl w-fit mb-4">
+                <div className="mb-4 w-fit rounded-xl bg-blue-500/10 p-3 dark:bg-blue-500/20">
                   <FileText className="h-10 w-10 text-blue-600 dark:text-blue-400" />
                 </div>
-                <CardTitle className="text-3xl mb-3">
+                <CardTitle className="mb-3 text-3xl">
                   Professional PDFs
                 </CardTitle>
                 <CardDescription className="text-base">
@@ -128,13 +128,13 @@ export default function Home() {
               </CardHeader>
               <CardContent className="relative z-10">
                 <div className="flex flex-wrap gap-2">
-                  <span className="px-3 py-1 bg-blue-500/10 dark:bg-blue-500/20 rounded-full text-sm">
+                  <span className="rounded-full bg-blue-500/10 px-3 py-1 text-sm dark:bg-blue-500/20">
                     Custom Branding
                   </span>
-                  <span className="px-3 py-1 bg-blue-500/10 dark:bg-blue-500/20 rounded-full text-sm">
+                  <span className="rounded-full bg-blue-500/10 px-3 py-1 text-sm dark:bg-blue-500/20">
                     Instant Download
                   </span>
-                  <span className="px-3 py-1 bg-blue-500/10 dark:bg-blue-500/20 rounded-full text-sm">
+                  <span className="rounded-full bg-blue-500/10 px-3 py-1 text-sm dark:bg-blue-500/20">
                     Auto-calculation
                   </span>
                 </div>
@@ -142,9 +142,9 @@ export default function Home() {
             </Card>
 
             {/* Overtime Tracking */}
-            <Card className="hover:shadow-lg transition-all duration-300 group">
+            <Card className="group transition-all duration-300 hover:shadow-lg">
               <CardHeader>
-                <div className="p-2 bg-purple-500/10 dark:bg-purple-500/20 rounded-lg w-fit mb-3">
+                <div className="mb-3 w-fit rounded-lg bg-purple-500/10 p-2 dark:bg-purple-500/20">
                   <Clock className="h-8 w-8 text-purple-600 dark:text-purple-400" />
                 </div>
                 <CardTitle className="text-xl">Overtime Tracking</CardTitle>
@@ -155,9 +155,9 @@ export default function Home() {
             </Card>
 
             {/* Custom Expenses */}
-            <Card className="hover:shadow-lg transition-all duration-300 group">
+            <Card className="group transition-all duration-300 hover:shadow-lg">
               <CardHeader>
-                <div className="p-2 bg-emerald-500/10 dark:bg-emerald-500/20 rounded-lg w-fit mb-3">
+                <div className="mb-3 w-fit rounded-lg bg-emerald-500/10 p-2 dark:bg-emerald-500/20">
                   <DollarSign className="h-8 w-8 text-emerald-600 dark:text-emerald-400" />
                 </div>
                 <CardTitle className="text-xl">Custom Expenses</CardTitle>
@@ -168,9 +168,9 @@ export default function Home() {
             </Card>
 
             {/* Revenue Analytics */}
-            <Card className="hover:shadow-lg transition-all duration-300 group">
+            <Card className="group transition-all duration-300 hover:shadow-lg">
               <CardHeader>
-                <div className="p-2 bg-orange-500/10 dark:bg-orange-500/20 rounded-lg w-fit mb-3">
+                <div className="mb-3 w-fit rounded-lg bg-orange-500/10 p-2 dark:bg-orange-500/20">
                   <TrendingUp className="h-8 w-8 text-orange-600 dark:text-orange-400" />
                 </div>
                 <CardTitle className="text-xl">Revenue Analytics</CardTitle>
@@ -182,9 +182,9 @@ export default function Home() {
             </Card>
 
             {/* Status Tracking */}
-            <Card className="hover:shadow-lg transition-all duration-300 group">
+            <Card className="group transition-all duration-300 hover:shadow-lg">
               <CardHeader>
-                <div className="p-2 bg-pink-500/10 dark:bg-pink-500/20 rounded-lg w-fit mb-3">
+                <div className="mb-3 w-fit rounded-lg bg-pink-500/10 p-2 dark:bg-pink-500/20">
                   <CheckCircle className="h-8 w-8 text-pink-600 dark:text-pink-400" />
                 </div>
                 <CardTitle className="text-xl">Status Tracking</CardTitle>
@@ -195,9 +195,9 @@ export default function Home() {
             </Card>
 
             {/* Client Management */}
-            <Card className="hover:shadow-lg transition-all duration-300 group">
+            <Card className="group transition-all duration-300 hover:shadow-lg">
               <CardHeader>
-                <div className="p-2 bg-cyan-500/10 dark:bg-cyan-500/20 rounded-lg w-fit mb-3">
+                <div className="mb-3 w-fit rounded-lg bg-cyan-500/10 p-2 dark:bg-cyan-500/20">
                   <Users className="h-8 w-8 text-cyan-600 dark:text-cyan-400" />
                 </div>
                 <CardTitle className="text-xl">Client Management</CardTitle>
@@ -211,13 +211,13 @@ export default function Home() {
       </section>
 
       {/* FAQ Section */}
-      <section className="py-20 px-4 bg-background">
-        <div className="max-w-3xl mx-auto">
-          <div className="text-center mb-12">
-            <h2 className="text-4xl md:text-5xl font-bold mb-4">
+      <section className="bg-background px-4 py-20">
+        <div className="mx-auto max-w-3xl">
+          <div className="mb-12 text-center">
+            <h2 className="mb-4 text-4xl font-bold md:text-5xl">
               Frequently Asked Questions
             </h2>
-            <p className="text-lg text-muted-foreground">
+            <p className="text-muted-foreground text-lg">
               Find answers to common questions about our invoicing system
             </p>
           </div>
@@ -227,7 +227,7 @@ export default function Home() {
               <AccordionTrigger className="text-left text-base font-semibold">
                 How do I get started with creating invoices?
               </AccordionTrigger>
-              <AccordionContent className="text-base text-muted-foreground">
+              <AccordionContent className="text-muted-foreground text-base">
                 Simply sign up for a free account, complete your profile with
                 your personal and banking details, and you&apos;re ready to
                 create your first invoice. The system will auto-fill your
@@ -239,7 +239,7 @@ export default function Home() {
               <AccordionTrigger className="text-left text-base font-semibold">
                 Can I track overtime hours?
               </AccordionTrigger>
-              <AccordionContent className="text-base text-muted-foreground">
+              <AccordionContent className="text-muted-foreground text-base">
                 Yes! Our system includes built-in overtime tracking with 1.5x
                 and 2x rate calculations. Simply add your overtime entries by
                 date and the system automatically calculates the correct amounts
@@ -251,7 +251,7 @@ export default function Home() {
               <AccordionTrigger className="text-left text-base font-semibold">
                 What currencies are supported?
               </AccordionTrigger>
-              <AccordionContent className="text-base text-muted-foreground">
+              <AccordionContent className="text-muted-foreground text-base">
                 We support GBP, USD, EUR, CAD, and AUD. You can set your
                 preferred currency in your profile settings, and all invoices
                 will use that currency by default.
@@ -262,7 +262,7 @@ export default function Home() {
               <AccordionTrigger className="text-left text-base font-semibold">
                 Is my financial data secure?
               </AccordionTrigger>
-              <AccordionContent className="text-base text-muted-foreground">
+              <AccordionContent className="text-muted-foreground text-base">
                 Absolutely. We use industry-standard encryption and secure
                 authentication through NextAuth. Your banking details and
                 invoice data are stored securely in our PostgreSQL database with
@@ -274,7 +274,7 @@ export default function Home() {
               <AccordionTrigger className="text-left text-base font-semibold">
                 Can I customize my invoices?
               </AccordionTrigger>
-              <AccordionContent className="text-base text-muted-foreground">
+              <AccordionContent className="text-muted-foreground text-base">
                 Yes! You can add custom line items, manage per diems for work
                 and travel days, include custom expenses, and add notes to each
                 invoice. The system automatically calculates totals and
@@ -286,7 +286,7 @@ export default function Home() {
               <AccordionTrigger className="text-left text-base font-semibold">
                 How does the day rate calculation work?
               </AccordionTrigger>
-              <AccordionContent className="text-base text-muted-foreground">
+              <AccordionContent className="text-muted-foreground text-base">
                 Your day rate covers work, travel, and dark days. The system
                 calculates your regular hourly rate as 10% of your day rate
                 (based on a 10-hour day). This hourly rate is then used for
@@ -298,25 +298,25 @@ export default function Home() {
       </section>
 
       {/* Testimonials Section */}
-      <section className="py-20 px-4 bg-muted/30">
-        <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl md:text-5xl font-bold mb-4">
+      <section className="bg-muted/30 px-4 py-20">
+        <div className="mx-auto max-w-6xl">
+          <div className="mb-16 text-center">
+            <h2 className="mb-4 text-4xl font-bold md:text-5xl">
               Loved by Freelancers
             </h2>
-            <p className="text-lg text-muted-foreground">
+            <p className="text-muted-foreground text-lg">
               Their experiences speak louder than words
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
             <Card className="border-2">
               <CardHeader>
-                <div className="flex items-start gap-1 mb-4">
+                <div className="mb-4 flex items-start gap-1">
                   {[...Array(5)].map((_, i) => (
                     <svg
                       key={i}
-                      className="w-5 h-5 fill-primary"
+                      className="fill-primary h-5 w-5"
                       viewBox="0 0 20 20"
                     >
                       <path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z" />
@@ -331,7 +331,7 @@ export default function Home() {
               </CardHeader>
               <CardContent className="mt-auto">
                 <p className="font-semibold">Sarah Mitchell</p>
-                <p className="text-sm text-muted-foreground">
+                <p className="text-muted-foreground text-sm">
                   Freelance Coordinator
                 </p>
               </CardContent>
@@ -339,11 +339,11 @@ export default function Home() {
 
             <Card className="border-2">
               <CardHeader>
-                <div className="flex items-start gap-1 mb-4">
+                <div className="mb-4 flex items-start gap-1">
                   {[...Array(5)].map((_, i) => (
                     <svg
                       key={i}
-                      className="w-5 h-5 fill-primary"
+                      className="fill-primary h-5 w-5"
                       viewBox="0 0 20 20"
                     >
                       <path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z" />
@@ -358,7 +358,7 @@ export default function Home() {
               </CardHeader>
               <CardContent className="mt-auto">
                 <p className="font-semibold">Marcus Chen</p>
-                <p className="text-sm text-muted-foreground">
+                <p className="text-muted-foreground text-sm">
                   Technical Specialist
                 </p>
               </CardContent>
@@ -366,11 +366,11 @@ export default function Home() {
 
             <Card className="border-2">
               <CardHeader>
-                <div className="flex items-start gap-1 mb-4">
+                <div className="mb-4 flex items-start gap-1">
                   {[...Array(5)].map((_, i) => (
                     <svg
                       key={i}
-                      className="w-5 h-5 fill-primary"
+                      className="fill-primary h-5 w-5"
                       viewBox="0 0 20 20"
                     >
                       <path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z" />
@@ -385,7 +385,7 @@ export default function Home() {
               </CardHeader>
               <CardContent className="mt-auto">
                 <p className="font-semibold">Jessica Rodriguez</p>
-                <p className="text-sm text-muted-foreground">
+                <p className="text-muted-foreground text-sm">
                   Audio Specialist
                 </p>
               </CardContent>
@@ -395,29 +395,29 @@ export default function Home() {
       </section>
 
       {/* CTA Section */}
-      <section className="py-24 px-4 text-center bg-background">
-        <div className="max-w-3xl mx-auto">
-          <h2 className="text-4xl md:text-5xl font-bold mb-6">
+      <section className="bg-background px-4 py-24 text-center">
+        <div className="mx-auto max-w-3xl">
+          <h2 className="mb-6 text-4xl font-bold md:text-5xl">
             Ready to Simplify Your Invoicing?
           </h2>
-          <p className="text-lg md:text-xl text-muted-foreground mb-10 max-w-2xl mx-auto">
+          <p className="text-muted-foreground mx-auto mb-10 max-w-2xl text-lg md:text-xl">
             Join freelancers worldwide who trust our platform for their
             professional invoice management.
           </p>
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <Button asChild size="lg" className="text-base px-8">
+          <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
+            <Button asChild size="lg" className="px-8 text-base">
               <Link href="/auth/signup">Get Started Free</Link>
             </Button>
             <Button
               asChild
               variant="outline"
               size="lg"
-              className="text-base px-8"
+              className="px-8 text-base"
             >
               <Link href="/auth/signin">Sign In</Link>
             </Button>
           </div>
-          <p className="mt-6 text-sm text-muted-foreground">
+          <p className="text-muted-foreground mt-6 text-sm">
             No credit card required • Free forever
           </p>
         </div>
@@ -425,15 +425,15 @@ export default function Home() {
 
       {/* Footer */}
       <footer className="bg-muted/50 border-t">
-        <div className="max-w-6xl mx-auto px-6 py-12">
-          <div className="grid grid-cols-3 md:grid-cols-4 gap-8">
+        <div className="mx-auto max-w-6xl px-6 py-12">
+          <div className="grid grid-cols-3 gap-8 md:grid-cols-4">
             {/* Brand Column */}
-            <div className="space-y-4 col-span-3 md:col-span-1">
+            <div className="col-span-3 space-y-4 md:col-span-1">
               <div className="flex items-center gap-2">
                 <CaleyLogo className="h-8 w-8" />
-                <span className="font-bold text-xl">Caley</span>
+                <span className="text-xl font-bold">Caley</span>
               </div>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-muted-foreground text-sm">
                 Professional invoice management built for freelancers and
                 businesses worldwide.
               </p>
@@ -441,7 +441,7 @@ export default function Home() {
 
             {/* Product Column */}
             <div>
-              <h4 className="font-semibold mb-4">Product</h4>
+              <h4 className="mb-4 font-semibold">Product</h4>
               <ul className="space-y-2 text-sm">
                 <li>
                   <Link
@@ -472,7 +472,7 @@ export default function Home() {
 
             {/* Support Column */}
             <div>
-              <h4 className="font-semibold mb-4">Support</h4>
+              <h4 className="mb-4 font-semibold">Support</h4>
               <ul className="space-y-2 text-sm">
                 <li>
                   <Link
@@ -495,7 +495,7 @@ export default function Home() {
 
             {/* Legal Column */}
             <div>
-              <h4 className="font-semibold mb-4">Legal</h4>
+              <h4 className="mb-4 font-semibold">Legal</h4>
               <ul className="space-y-2 text-sm">
                 <li>
                   <Link
@@ -518,16 +518,16 @@ export default function Home() {
           </div>
 
           {/* Bottom Bar */}
-          <div className="mt-12 pt-8 border-t flex flex-col md:flex-row justify-between items-center gap-4">
-            <p className="text-sm text-muted-foreground">
+          <div className="mt-12 flex flex-col items-center justify-between gap-4 border-t pt-8 md:flex-row">
+            <p className="text-muted-foreground text-sm">
               © {new Date().getFullYear()} Caley. All rights reserved.
             </p>
             <Link
               href="https://stevenmckinnon.co.uk"
-              className="text-xs text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1"
+              className="text-muted-foreground hover:text-foreground flex items-center gap-1 text-xs transition-colors"
               target="_blank"
             >
-              <span className="text-xs text-muted-foreground">
+              <span className="text-muted-foreground text-xs">
                 Built by Steve McKinnon
               </span>
               <ExternalLink className="h-4 w-4" />

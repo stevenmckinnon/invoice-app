@@ -65,17 +65,20 @@ export const auth = betterAuth({
         }
       } else {
         console.warn(
-          "⚠️ RESEND_API_KEY not configured. Password reset email not sent."
+          "⚠️ RESEND_API_KEY not configured. Password reset email not sent.",
         );
-        console.log(
-          "Password reset link (copy this for testing):",
-          url
-        );
+        console.log("Password reset link (copy this for testing):", url);
       }
     },
   },
-  secret: process.env.BETTER_AUTH_SECRET || process.env.NEXTAUTH_SECRET || "secret-for-development-only",
-  baseURL: process.env.BETTER_AUTH_URL || process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000",
+  secret:
+    process.env.BETTER_AUTH_SECRET ||
+    process.env.NEXTAUTH_SECRET ||
+    "secret-for-development-only",
+  baseURL:
+    process.env.BETTER_AUTH_URL ||
+    process.env.NEXT_PUBLIC_APP_URL ||
+    "http://localhost:3000",
   trustedOrigins: [
     "http://localhost:3000",
     "https://invoice-app-drab-psi.vercel.app",
@@ -90,4 +93,3 @@ export const auth = betterAuth({
 });
 
 export type Session = typeof auth.$Infer.Session;
-

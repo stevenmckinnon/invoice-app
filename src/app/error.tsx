@@ -20,16 +20,16 @@ export default function Error({
   }, [error]);
 
   return (
-    <div className="min-h-[100dvh] flex items-center justify-center p-4">
-      <Card className="max-w-2xl w-full border-2">
+    <div className="flex min-h-[100dvh] items-center justify-center p-4">
+      <Card className="w-full max-w-2xl border-2">
         <CardContent className="pt-12 pb-12">
-          <div className="flex flex-col items-center text-center space-y-8">
+          <div className="flex flex-col items-center space-y-8 text-center">
             {/* Icon Section */}
             <div className="relative">
-              <div className="absolute inset-0 bg-destructive/10 dark:bg-destructive/5 blur-3xl rounded-full" />
-              <div className="relative bg-muted/50 dark:bg-muted/20 rounded-full p-8 border-2 border-dashed border-destructive/20">
+              <div className="bg-destructive/10 dark:bg-destructive/5 absolute inset-0 rounded-full blur-3xl" />
+              <div className="bg-muted/50 dark:bg-muted/20 border-destructive/20 relative rounded-full border-2 border-dashed p-8">
                 <AlertTriangle
-                  className="h-24 w-24 text-destructive"
+                  className="text-destructive h-24 w-24"
                   strokeWidth={1.5}
                 />
               </div>
@@ -38,27 +38,27 @@ export default function Error({
             {/* Error Message */}
             <div className="space-y-4">
               <div className="space-y-2">
-                <h1 className="text-4xl font-bold bg-gradient-to-br from-destructive via-destructive/80 to-destructive/60 bg-clip-text text-transparent">
+                <h1 className="from-destructive via-destructive/80 to-destructive/60 bg-gradient-to-br bg-clip-text text-4xl font-bold text-transparent">
                   Something Went Wrong
                 </h1>
                 <h2 className="text-xl font-semibold tracking-tight">
                   Unexpected Error
                 </h2>
               </div>
-              <p className="text-muted-foreground max-w-md mx-auto">
+              <p className="text-muted-foreground mx-auto max-w-md">
                 We encountered an unexpected error while processing your
                 request. Don&apos;t worry, our team has been notified and
                 we&apos;re working on it!
               </p>
               {error.digest && (
-                <p className="text-xs text-muted-foreground/70 font-mono">
+                <p className="text-muted-foreground/70 font-mono text-xs">
                   Error ID: {error.digest}
                 </p>
               )}
             </div>
 
             {/* Action Buttons */}
-            <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
+            <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row">
               <Button onClick={reset} size="lg" className="gap-2">
                 <RefreshCcw className="h-4 w-4" />
                 Try Again

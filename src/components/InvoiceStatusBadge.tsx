@@ -7,7 +7,10 @@ interface InvoiceStatusBadgeProps {
   className?: string;
 }
 
-export const InvoiceStatusBadge = ({ status, className }: InvoiceStatusBadgeProps) => {
+export const InvoiceStatusBadge = ({
+  status,
+  className,
+}: InvoiceStatusBadgeProps) => {
   const statusConfig: Record<
     InvoiceStatus,
     { label: string; className: string }
@@ -45,11 +48,10 @@ export const InvoiceStatusBadge = ({ status, className }: InvoiceStatusBadgeProp
       className={cn(
         "inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors",
         config.className,
-        className
+        className,
       )}
     >
       {config.label}
     </span>
   );
 };
-

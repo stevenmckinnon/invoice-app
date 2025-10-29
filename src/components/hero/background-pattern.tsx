@@ -18,8 +18,8 @@ export const BackgroundPattern = () => {
         cy={1}
         cr={1}
         className={cn(
-          "mask-[radial-gradient(ellipse,rgba(0,0,0,0.3)_30%,black_50%)] h-full w-full",
-          "dark:fill-slate-700"
+          "h-full w-full mask-[radial-gradient(ellipse,rgba(0,0,0,0.3)_30%,black_50%)]",
+          "dark:fill-slate-700",
         )}
       />
       <Particles

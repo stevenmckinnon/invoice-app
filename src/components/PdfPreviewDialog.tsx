@@ -41,14 +41,14 @@ export const PdfPreviewDialog = ({
           {showText && "View PDF"}
         </Button>
       </DialogTrigger>
-      <DialogContent className="!max-w-[90dvw] max-h-[90dvh] h-[90dvh] w-[90dvw]">
+      <DialogContent className="h-[90dvh] max-h-[90dvh] w-[90dvw] !max-w-[90dvw]">
         <DialogHeader>
           <DialogTitle>Invoice {invoiceNumber}</DialogTitle>
         </DialogHeader>
-        <div className="flex-1 overflow-hidden h-full">
+        <div className="h-full flex-1 overflow-hidden">
           <iframe
             src={`/api/invoices/${invoiceId}/pdf`}
-            className="w-full h-full border-0"
+            className="h-full w-full border-0"
             title={`Invoice ${invoiceNumber}`}
           />
         </div>

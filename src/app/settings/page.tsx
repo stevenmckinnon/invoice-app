@@ -221,14 +221,14 @@ const SettingsPage = () => {
 
   if (!session?.user) {
     return (
-      <div className="flex items-center justify-center min-h-[100dvh]">
+      <div className="flex min-h-[100dvh] items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin" />
       </div>
     );
   }
 
   return (
-    <div className="w-full max-w-4xl mx-auto p-6 pb-28 md:pb-8 space-y-6">
+    <div className="mx-auto w-full max-w-4xl space-y-6 p-6 pb-28 md:pb-8">
       <div className="mb-6">
         <h1 className="text-3xl font-bold">Account Settings</h1>
         <p className="text-muted-foreground mt-2">
@@ -255,7 +255,7 @@ const SettingsPage = () => {
               disabled
               className="mt-1.5"
             />
-            <p className="text-sm text-muted-foreground mt-1">
+            <p className="text-muted-foreground mt-1 text-sm">
               Your email address cannot be changed
             </p>
           </div>
@@ -301,12 +301,12 @@ const SettingsPage = () => {
         </CardHeader>
         <CardContent>
           {loadingSessions ? (
-            <div className="flex items-center gap-2 text-muted-foreground">
+            <div className="text-muted-foreground flex items-center gap-2">
               <Loader2 className="h-4 w-4 animate-spin" />
               <span className="text-sm">Loading sessions...</span>
             </div>
           ) : sessions.length === 0 ? (
-            <p className="text-sm text-muted-foreground">
+            <p className="text-muted-foreground text-sm">
               No active sessions found
             </p>
           ) : (
@@ -316,7 +316,7 @@ const SettingsPage = () => {
                 return (
                   <div
                     key={sess.id}
-                    className="flex items-center justify-between p-3 border rounded-lg"
+                    className="flex items-center justify-between rounded-lg border p-3"
                   >
                     <div className="flex-1">
                       <div className="flex items-center gap-2">
@@ -324,19 +324,19 @@ const SettingsPage = () => {
                           {getBrowserInfo(sess.userAgent)}
                         </p>
                         {isCurrentSession && (
-                          <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full">
+                          <span className="bg-primary/10 text-primary rounded-full px-2 py-0.5 text-xs">
                             Current
                           </span>
                         )}
                       </div>
-                      <p className="text-xs text-muted-foreground mt-1">
+                      <p className="text-muted-foreground mt-1 text-xs">
                         {sess.ipAddress || "Unknown IP"} • Signed in{" "}
                         {format(
                           new Date(sess.createdAt),
-                          "MMM d, yyyy 'at' h:mm a"
+                          "MMM d, yyyy 'at' h:mm a",
                         )}
                       </p>
-                      <p className="text-xs text-muted-foreground">
+                      <p className="text-muted-foreground text-xs">
                         Expires{" "}
                         {format(new Date(sess.expiresAt), "MMM d, yyyy")}
                       </p>
@@ -361,7 +361,7 @@ const SettingsPage = () => {
       {/* Danger Zone */}
       <Card className="border-destructive">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-destructive">
+          <CardTitle className="text-destructive flex items-center gap-2">
             <AlertTriangle className="h-5 w-5" />
             Danger Zone
           </CardTitle>
@@ -372,8 +372,8 @@ const SettingsPage = () => {
         <CardContent>
           <div className="space-y-3">
             <div>
-              <h4 className="text-sm font-medium mb-1">Delete Account</h4>
-              <p className="text-sm text-muted-foreground mb-3">
+              <h4 className="mb-1 text-sm font-medium">Delete Account</h4>
+              <p className="text-muted-foreground mb-3 text-sm">
                 Permanently delete your account and all associated data. This
                 action cannot be undone.
               </p>
@@ -428,7 +428,7 @@ const SettingsPage = () => {
                 }
                 className="mt-1.5"
               />
-              <p className="text-xs text-muted-foreground mt-1">
+              <p className="text-muted-foreground mt-1 text-xs">
                 Must be at least 8 characters long
               </p>
             </div>
@@ -490,12 +490,12 @@ const SettingsPage = () => {
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
-            <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-4">
-              <h4 className="font-medium text-sm mb-2 flex items-center gap-2">
+            <div className="bg-destructive/10 border-destructive/20 rounded-lg border p-4">
+              <h4 className="mb-2 flex items-center gap-2 text-sm font-medium">
                 <AlertTriangle className="h-4 w-4" />
                 Warning
               </h4>
-              <ul className="text-sm text-muted-foreground space-y-1 list-disc list-inside">
+              <ul className="text-muted-foreground list-inside list-disc space-y-1 text-sm">
                 <li>All your invoices will be deleted</li>
                 <li>Your profile information will be removed</li>
                 <li>All sessions will be terminated</li>

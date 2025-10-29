@@ -96,10 +96,10 @@ export default function InvoiceDetailPage({ params }: Props) {
 
   if (loading) {
     return (
-      <div className="max-w-6xl mx-auto px-6 py-4">
-        <Skeleton className="h-10 w-24 mb-4" />
+      <div className="mx-auto max-w-6xl px-6 py-4">
+        <Skeleton className="mb-4 h-10 w-24" />
         <div className="grid gap-4">
-          <div className="flex gap-2 justify-between items-start md:flex-row flex-col">
+          <div className="flex flex-col items-start justify-between gap-2 md:flex-row">
             <div className="space-y-2">
               <Skeleton className="h-8 w-48" />
               <Skeleton className="h-4 w-32" />
@@ -143,8 +143,8 @@ export default function InvoiceDetailPage({ params }: Props) {
 
   if (!invoice) {
     return (
-      <div className="min-h-[calc(100dvh-10rem)] flex items-center justify-center max-w-6xl mx-auto py-8">
-        <div className="text-center space-y-4">
+      <div className="mx-auto flex min-h-[calc(100dvh-10rem)] max-w-6xl items-center justify-center py-8">
+        <div className="space-y-4 text-center">
           <p className="text-2xl font-semibold">Invoice not found</p>
           <p className="text-muted-foreground">
             The invoice you&apos;re looking for doesn&apos;t exist or you
@@ -189,7 +189,7 @@ export default function InvoiceDetailPage({ params }: Props) {
       return {
         id: ot.id,
         description: `Overtime (${ot.rateType}) - ${new Date(
-          ot.date
+          ot.date,
         ).toLocaleDateString("en-GB")}`,
         quantity: hours,
         unitPrice: rate,
@@ -208,17 +208,17 @@ export default function InvoiceDetailPage({ params }: Props) {
   ];
 
   return (
-    <div className="w-full max-w-6xl mx-auto p-6 pb-28 md:pb-8">
+    <div className="mx-auto w-full max-w-6xl p-6 pb-28 md:pb-8">
       <Button onClick={() => router.back()} className="mb-4" variant="outline">
         <ArrowLeftIcon /> Back
       </Button>
       <div className="grid gap-4">
-        <div className="flex gap-2 justify-between items-start md:flex-row flex-col">
+        <div className="flex flex-col items-start justify-between gap-2 md:flex-row">
           <div className="space-y-2">
             <h1 className="text-2xl font-semibold">
               Invoice {invoice.invoiceNumber}
             </h1>
-            <div className="text-sm text-muted-foreground">
+            <div className="text-muted-foreground text-sm">
               Show: {invoice.showName}
             </div>
             <div className="flex items-center gap-3">
@@ -228,7 +228,7 @@ export default function InvoiceDetailPage({ params }: Props) {
                 onValueChange={handleStatusChange}
                 disabled={updatingStatus}
               >
-                <SelectTrigger className="w-[140px] h-8">
+                <SelectTrigger className="h-8 w-[140px]">
                   <SelectValue>
                     <span className="capitalize">{invoice.status}</span>
                   </SelectValue>
@@ -262,7 +262,7 @@ export default function InvoiceDetailPage({ params }: Props) {
               </Select>
             </div>
           </div>
-          <div className="flex gap-2 mt-4 flex-wrap">
+          <div className="mt-4 flex flex-wrap gap-2">
             <Button asChild variant="secondary">
               <Link href={`/invoices/${invoice.id}/edit`}>
                 <PencilIcon className="h-4 w-4" /> Edit
@@ -300,7 +300,7 @@ export default function InvoiceDetailPage({ params }: Props) {
               {allItems.map((item) => (
                 <TableRow key={item.id}>
                   <TableCell>{item.description}</TableCell>
-                  <TableCell className="capitalize text-muted-foreground">
+                  <TableCell className="text-muted-foreground capitalize">
                     {item.type}
                   </TableCell>
                   <TableCell className="text-right">{item.quantity}</TableCell>

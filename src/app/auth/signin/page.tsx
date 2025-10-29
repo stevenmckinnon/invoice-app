@@ -67,11 +67,11 @@ const SignInForm = () => {
   };
 
   return (
-    <div className="h-screen w-full grid grid-cols-1 md:grid-cols-2 overflow-hidden">
-      <div className="flex items-center justify-center col-span-1 p-6">
+    <div className="grid h-screen w-full grid-cols-1 overflow-hidden md:grid-cols-2">
+      <div className="col-span-1 flex items-center justify-center p-6">
         <div className="w-full max-w-md">
-          <CardHeader className="text-center mb-4">
-            <div className="flex flex-col items-center mb-4 gap-2">
+          <CardHeader className="mb-4 text-center">
+            <div className="mb-4 flex flex-col items-center gap-2">
               <Link href="/">
                 <CaleyLogo className="h-24 w-24" />
               </Link>
@@ -102,7 +102,7 @@ const SignInForm = () => {
                   <Label htmlFor="password">Password</Label>
                   <Link
                     href="/auth/forgot-password"
-                    className="text-xs text-primary hover:underline"
+                    className="text-primary text-xs hover:underline"
                   >
                     Forgot password?
                   </Link>
@@ -124,7 +124,7 @@ const SignInForm = () => {
               </Button>
             </form>
 
-            <div className="text-center text-sm text-muted-foreground mt-4">
+            <div className="text-muted-foreground mt-4 text-center text-sm">
               Don&apos;t have an account?{" "}
               <Link
                 href="/auth/signup"
@@ -136,8 +136,8 @@ const SignInForm = () => {
           </CardContent>
         </div>
       </div>
-      <div className="relative items-center justify-center hidden md:flex col-span-1 p-6 overflow-hidden">
-        <div className="relative w-full h-full dither-retro">
+      <div className="relative col-span-1 hidden items-center justify-center overflow-hidden p-6 md:flex">
+        <div className="dither-retro relative h-full w-full">
           <Image
             src="/signin.jpg"
             alt="Glenfinnan Viaduct, A830 Road, Glenfinnan, Scotland, UK"
@@ -154,9 +154,9 @@ export default function SignInPage() {
   return (
     <Suspense
       fallback={
-        <div className="flex flex-col items-center justify-center min-h-[100dvh] gap-4">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
-          <p className="text-sm text-muted-foreground">Loading sign in...</p>
+        <div className="flex min-h-[100dvh] flex-col items-center justify-center gap-4">
+          <Loader2 className="text-primary h-8 w-8 animate-spin" />
+          <p className="text-muted-foreground text-sm">Loading sign in...</p>
         </div>
       }
     >

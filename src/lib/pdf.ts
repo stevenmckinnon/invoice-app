@@ -93,7 +93,7 @@ export const calculateInvoiceTotals = (input: InvoicePdfInput) => {
 
   const customExpensesTotal = input.customExpenseEntries.reduce(
     (sum, entry) => sum + entry.cost,
-    0
+    0,
   );
 
   const subtotalLabor = 0;
@@ -118,7 +118,7 @@ export const calculateInvoiceTotals = (input: InvoicePdfInput) => {
 };
 
 export const generateInvoicePdf = async (
-  input: InvoicePdfInput
+  input: InvoicePdfInput,
 ): Promise<Uint8Array> => {
   const totals = calculateInvoiceTotals(input);
   const pdfDoc = await PDFDocument.create();
@@ -178,7 +178,7 @@ export const generateInvoicePdf = async (
   // INVOICE title
   page.drawText("INVOICE", {
     x: leftMargin,
-    y: height - (headerHeight * 0.6),
+    y: height - headerHeight * 0.6,
     size: headerFontSize,
     font: fontBold,
     color: rgb(1, 1, 1),
@@ -187,22 +187,19 @@ export const generateInvoicePdf = async (
   // Invoice number and date (white text on colored background)
   page.drawText(`#${input.invoiceNumber}`, {
     x: rightMargin - 150,
-    y: height - (headerHeight * 0.5),
+    y: height - headerHeight * 0.5,
     size: isVeryCompact ? 11 : isCompact ? 12 : 14,
     font: fontBold,
     color: rgb(1, 1, 1),
   });
 
-  page.drawText(
-    `Date: ${formatDateGB(input.invoiceDate)}`,
-    {
-      x: rightMargin - 150,
-      y: height - (headerHeight * 0.7),
-      size: isVeryCompact ? 8 : isCompact ? 9 : 10,
-      font: fontRegular,
-      color: rgb(0.9, 0.9, 0.9),
-    }
-  );
+  page.drawText(`Date: ${formatDateGB(input.invoiceDate)}`, {
+    x: rightMargin - 150,
+    y: height - headerHeight * 0.7,
+    size: isVeryCompact ? 8 : isCompact ? 9 : 10,
+    font: fontRegular,
+    color: rgb(0.9, 0.9, 0.9),
+  });
 
   y = height - headerHeight - sectionSpacing;
 
@@ -290,7 +287,7 @@ export const generateInvoicePdf = async (
       size: addressFontSize,
       font: fontRegular,
       color: textColor,
-    }
+    },
   );
   billFromY -= addressLineHeight;
 
@@ -397,7 +394,7 @@ export const generateInvoicePdf = async (
   }
 
   // Move to items section with extra spacing
-  y = Math.min(billFromY, billToY) - (sectionSpacing * 1.5);
+  y = Math.min(billFromY, billToY) - sectionSpacing * 1.5;
 
   // Items table header with background
   const tableHeaderY = y;
@@ -412,7 +409,7 @@ export const generateInvoicePdf = async (
   // Table headers
   page.drawText("DESCRIPTION", {
     x: leftMargin + 5,
-    y: tableHeaderY + (tablePadding * 0.25),
+    y: tableHeaderY + tablePadding * 0.25,
     size: itemFontSize,
     font: fontBold,
     color: textColor,
@@ -420,7 +417,7 @@ export const generateInvoicePdf = async (
 
   page.drawText("QTY", {
     x: rightMargin - 200,
-    y: tableHeaderY + (tablePadding * 0.25),
+    y: tableHeaderY + tablePadding * 0.25,
     size: itemFontSize,
     font: fontBold,
     color: textColor,
@@ -428,7 +425,7 @@ export const generateInvoicePdf = async (
 
   page.drawText("RATE", {
     x: rightMargin - 140,
-    y: tableHeaderY + (tablePadding * 0.25),
+    y: tableHeaderY + tablePadding * 0.25,
     size: itemFontSize,
     font: fontBold,
     color: textColor,
@@ -436,7 +433,7 @@ export const generateInvoicePdf = async (
 
   page.drawText("AMOUNT", {
     x: rightMargin - 75,
-    y: tableHeaderY + (tablePadding * 0.25),
+    y: tableHeaderY + tablePadding * 0.25,
     size: itemFontSize,
     font: fontBold,
     color: textColor,
@@ -449,13 +446,14 @@ export const generateInvoicePdf = async (
     desc: string,
     qty: string,
     rate: string,
-    amount: string
+    amount: string,
   ) => {
     // Truncate description if too long to prevent overflow
     const maxDescLength = isVeryCompact ? 45 : isCompact ? 55 : 65;
-    const truncatedDesc = desc.length > maxDescLength 
-      ? desc.substring(0, maxDescLength - 3) + '...' 
-      : desc;
+    const truncatedDesc =
+      desc.length > maxDescLength
+        ? desc.substring(0, maxDescLength - 3) + "..."
+        : desc;
 
     page.drawText(truncatedDesc, {
       x: leftMargin + 5,
@@ -501,7 +499,7 @@ export const generateInvoicePdf = async (
         item.description,
         item.quantity.toString(),
         fmt.format(item.unitPrice),
-        fmt.format(cost)
+        fmt.format(cost),
       );
     });
 
@@ -516,7 +514,7 @@ export const generateInvoicePdf = async (
       `Overtime ${entry.rateType} - ${dateStr}`,
       `${entry.hours}h`,
       fmt.format(hourlyRate),
-      fmt.format(cost)
+      fmt.format(cost),
     );
   });
 
@@ -526,7 +524,7 @@ export const generateInvoicePdf = async (
       entry.description,
       entry.quantity.toString(),
       fmt.format(entry.unitPrice),
-      fmt.format(entry.cost)
+      fmt.format(entry.cost),
     );
   });
 
@@ -606,7 +604,7 @@ export const generateInvoicePdf = async (
   // Total with colored background
   const totalBoxHeight = isVeryCompact ? 18 : isCompact ? 20 : 25;
   const totalFontSize = isVeryCompact ? 10 : isCompact ? 11 : 12;
-  
+
   page.drawRectangle({
     x: summaryX - 10,
     y: y - 5,
@@ -617,7 +615,7 @@ export const generateInvoicePdf = async (
 
   page.drawText("TOTAL", {
     x: summaryX,
-    y: y + (totalBoxHeight * 0.1),
+    y: y + totalBoxHeight * 0.1,
     size: totalFontSize,
     font: fontBold,
     color: rgb(1, 1, 1),
@@ -625,7 +623,7 @@ export const generateInvoicePdf = async (
 
   page.drawText(fmt.format(totals.totalAmount), {
     x: rightMargin - 75,
-    y: y + (totalBoxHeight * 0.15),
+    y: y + totalBoxHeight * 0.15,
     size: totalFontSize,
     font: fontBold,
     color: rgb(1, 1, 1),
@@ -637,7 +635,7 @@ export const generateInvoicePdf = async (
   const paymentFontSize = isVeryCompact ? 7.5 : isCompact ? 8 : 9;
   const paymentTitleSize = isVeryCompact ? 8 : isCompact ? 9 : 10;
   const paymentLineHeight = isVeryCompact ? 10 : isCompact ? 12 : 14;
-  
+
   page.drawText("PAYMENT DETAILS", {
     x: leftMargin,
     y,
@@ -712,9 +710,10 @@ export const generateInvoicePdf = async (
 
     // Truncate notes if too long in compact mode
     const maxNotesLength = isVeryCompact ? 120 : isCompact ? 150 : 200;
-    const truncatedNotes = input.notes.length > maxNotesLength
-      ? input.notes.substring(0, maxNotesLength - 3) + '...'
-      : input.notes;
+    const truncatedNotes =
+      input.notes.length > maxNotesLength
+        ? input.notes.substring(0, maxNotesLength - 3) + "..."
+        : input.notes;
 
     page.drawText(truncatedNotes, {
       x: leftMargin,

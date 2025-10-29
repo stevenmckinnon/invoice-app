@@ -13,22 +13,22 @@ import {
 
 export default function LegalPage() {
   return (
-    <div className="max-w-5xl mx-auto px-4 py-12 space-y-8">
+    <div className="mx-auto max-w-5xl space-y-8 px-4 py-12">
       {/* Header */}
-      <div className="text-center space-y-4">
-        <h1 className="text-4xl md:text-5xl font-bold">Project Details</h1>
-        <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
+      <div className="space-y-4 text-center">
+        <h1 className="text-4xl font-bold md:text-5xl">Project Details</h1>
+        <p className="text-muted-foreground mx-auto max-w-3xl text-lg">
           Information about this project, disclaimers, and legal notices
         </p>
       </div>
 
       {/* Main Content Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-12">
+      <div className="mt-12 grid grid-cols-1 gap-6 md:grid-cols-2">
         {/* Disclaimer Card */}
         <Card className="border-2">
           <CardHeader>
-            <div className="flex items-center gap-2 mb-2">
-              <div className="h-10 w-10 rounded-lg bg-amber-500/10 flex items-center justify-center">
+            <div className="mb-2 flex items-center gap-2">
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-amber-500/10">
                 <Info className="h-5 w-5 text-amber-600 dark:text-amber-400" />
               </div>
               <CardTitle className="text-2xl">Disclaimer</CardTitle>
@@ -45,8 +45,8 @@ export default function LegalPage() {
         {/* Creator Card */}
         <Card className="border-2">
           <CardHeader>
-            <div className="flex items-center gap-2 mb-2">
-              <div className="h-10 w-10 rounded-lg bg-blue-500/10 flex items-center justify-center">
+            <div className="mb-2 flex items-center gap-2">
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-500/10">
                 <Code className="h-5 w-5 text-blue-600 dark:text-blue-400" />
               </div>
               <CardTitle className="text-2xl">Created By</CardTitle>
@@ -85,18 +85,18 @@ export default function LegalPage() {
       {/* Technology Stack Card */}
       <Card className="border-2">
         <CardHeader>
-          <div className="flex items-center gap-2 mb-2">
-            <div className="h-10 w-10 rounded-lg bg-purple-500/10 flex items-center justify-center">
+          <div className="mb-2 flex items-center gap-2">
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-purple-500/10">
               <Code className="h-5 w-5 text-purple-600 dark:text-purple-400" />
             </div>
             <CardTitle className="text-2xl">Technology Stack</CardTitle>
           </div>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
             <div className="space-y-1">
-              <p className="font-semibold text-sm">Frontend</p>
-              <ul className="text-sm text-muted-foreground space-y-0.5">
+              <p className="text-sm font-semibold">Frontend</p>
+              <ul className="text-muted-foreground space-y-0.5 text-sm">
                 <li>Next.js 15</li>
                 <li>React 19</li>
                 <li>TypeScript</li>
@@ -104,8 +104,8 @@ export default function LegalPage() {
               </ul>
             </div>
             <div className="space-y-1">
-              <p className="font-semibold text-sm">UI Components</p>
-              <ul className="text-sm text-muted-foreground space-y-0.5">
+              <p className="text-sm font-semibold">UI Components</p>
+              <ul className="text-muted-foreground space-y-0.5 text-sm">
                 <li>shadcn/ui</li>
                 <li>Radix UI</li>
                 <li>Lucide Icons</li>
@@ -113,8 +113,8 @@ export default function LegalPage() {
               </ul>
             </div>
             <div className="space-y-1">
-              <p className="font-semibold text-sm">Backend</p>
-              <ul className="text-sm text-muted-foreground space-y-0.5">
+              <p className="text-sm font-semibold">Backend</p>
+              <ul className="text-muted-foreground space-y-0.5 text-sm">
                 <li>Better Auth</li>
                 <li>Prisma ORM</li>
                 <li>PostgreSQL</li>
@@ -122,8 +122,8 @@ export default function LegalPage() {
               </ul>
             </div>
             <div className="space-y-1">
-              <p className="font-semibold text-sm">Deployment</p>
-              <ul className="text-sm text-muted-foreground space-y-0.5">
+              <p className="text-sm font-semibold">Deployment</p>
+              <ul className="text-muted-foreground space-y-0.5 text-sm">
                 <li>Vercel</li>
                 <li>Neon DB</li>
                 <li>Edge Runtime</li>
@@ -136,8 +136,8 @@ export default function LegalPage() {
       {/* Privacy & Data Card */}
       <Card className="border-2">
         <CardHeader>
-          <div className="flex items-center gap-2 mb-2">
-            <div className="h-10 w-10 rounded-lg bg-green-500/10 flex items-center justify-center">
+          <div className="mb-2 flex items-center gap-2">
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-green-500/10">
               <Shield className="h-5 w-5 text-green-600 dark:text-green-400" />
             </div>
             <CardTitle className="text-2xl">Privacy & Data</CardTitle>
@@ -145,16 +145,16 @@ export default function LegalPage() {
         </CardHeader>
         <CardContent className="space-y-4">
           <div>
-            <h4 className="font-semibold mb-2">Data Collection</h4>
-            <p className="text-sm text-muted-foreground leading-relaxed">
+            <h4 className="mb-2 font-semibold">Data Collection</h4>
+            <p className="text-muted-foreground text-sm leading-relaxed">
               This application collects only the information you provide during
               registration and invoice creation. Your data is stored securely
               and is never shared with third parties.
             </p>
           </div>
           <div>
-            <h4 className="font-semibold mb-2">Security</h4>
-            <p className="text-sm text-muted-foreground leading-relaxed">
+            <h4 className="mb-2 font-semibold">Security</h4>
+            <p className="text-muted-foreground text-sm leading-relaxed">
               All passwords are hashed using industry-standard encryption.
               Authentication is handled by Better Auth with secure session
               management. Your data is stored in a PostgreSQL database hosted on
@@ -162,8 +162,8 @@ export default function LegalPage() {
             </p>
           </div>
           <div>
-            <h4 className="font-semibold mb-2">Your Rights</h4>
-            <p className="text-sm text-muted-foreground leading-relaxed">
+            <h4 className="mb-2 font-semibold">Your Rights</h4>
+            <p className="text-muted-foreground text-sm leading-relaxed">
               You have full control over your data. You can update your profile,
               delete your invoices, and request account deletion at any time by
               contacting the developer.
@@ -173,9 +173,9 @@ export default function LegalPage() {
       </Card>
 
       {/* Use at Own Risk */}
-      <Card className="border-2 border-amber-200 dark:border-amber-900 bg-amber-50/50 dark:bg-amber-950/20">
+      <Card className="border-2 border-amber-200 bg-amber-50/50 dark:border-amber-900 dark:bg-amber-950/20">
         <CardContent>
-          <p className="text-sm text-muted-foreground leading-relaxed text-center">
+          <p className="text-muted-foreground text-center text-sm leading-relaxed">
             <strong className="text-foreground">Note:</strong> This is a demo
             project for portfolio purposes. While functional and secure, it is
             provided &ldquo;as-is&rdquo; without warranty. For production use in
@@ -195,7 +195,7 @@ export default function LegalPage() {
       </div>
 
       {/* Back to Home */}
-      <div className="text-center pt-4">
+      <div className="pt-4 text-center">
         <Button asChild size="lg" variant="outline">
           <Link href="/">
             <ArrowLeft className="h-4 w-4" /> Back to Home

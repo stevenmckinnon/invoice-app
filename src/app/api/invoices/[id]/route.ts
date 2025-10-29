@@ -78,7 +78,7 @@ export const PUT = async (req: NextRequest, context: RouteContext) => {
     const session = await auth.api.getSession({
       headers: await headers(),
     });
-    
+
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
@@ -175,12 +175,12 @@ export const PUT = async (req: NextRequest, context: RouteContext) => {
 
     return NextResponse.json(
       { id: updated.id, invoiceNumber: updated.invoiceNumber },
-      { status: 200 }
+      { status: 200 },
     );
   } catch (err: any) {
     return NextResponse.json(
       { error: err.message ?? "Failed to update invoice" },
-      { status: 400 }
+      { status: 400 },
     );
   }
 };
@@ -190,7 +190,7 @@ export const DELETE = async (req: NextRequest, context: RouteContext) => {
     const session = await auth.api.getSession({
       headers: await headers(),
     });
-    
+
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
@@ -209,7 +209,7 @@ export const DELETE = async (req: NextRequest, context: RouteContext) => {
   } catch (err: any) {
     return NextResponse.json(
       { error: err.message ?? "Failed to delete invoice" },
-      { status: 400 }
+      { status: 400 },
     );
   }
 };
@@ -219,7 +219,7 @@ export const GET = async (req: NextRequest, context: RouteContext) => {
     const session = await auth.api.getSession({
       headers: await headers(),
     });
-    
+
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
@@ -244,7 +244,7 @@ export const GET = async (req: NextRequest, context: RouteContext) => {
   } catch (err: any) {
     return NextResponse.json(
       { error: err.message ?? "Failed to fetch invoice" },
-      { status: 400 }
+      { status: 400 },
     );
   }
 };
@@ -254,7 +254,7 @@ export const PATCH = async (req: NextRequest, context: RouteContext) => {
     const session = await auth.api.getSession({
       headers: await headers(),
     });
-    
+
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
@@ -280,7 +280,7 @@ export const PATCH = async (req: NextRequest, context: RouteContext) => {
   } catch (err: any) {
     return NextResponse.json(
       { error: err.message ?? "Failed to update invoice status" },
-      { status: 400 }
+      { status: 400 },
     );
   }
 };

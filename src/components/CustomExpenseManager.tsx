@@ -99,7 +99,7 @@ export const CustomExpenseManager = ({
       </CardHeader>
       <CardContent className="space-y-4">
         {/* Add new custom expense */}
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-4 p-4 border rounded-lg bg-gray-50 dark:bg-black/50">
+        <div className="grid grid-cols-2 gap-4 rounded-lg border bg-gray-50 p-4 md:grid-cols-5 dark:bg-black/50">
           <FormField
             control={form.control as any}
             name="description"
@@ -135,7 +135,7 @@ export const CustomExpenseManager = ({
                       const newQuantity = parseFloat(e.target.value) || 1;
                       form.setValue(
                         "cost",
-                        newQuantity * form.getValues("unitPrice")
+                        newQuantity * form.getValues("unitPrice"),
                       );
                     }}
                   />
@@ -164,7 +164,7 @@ export const CustomExpenseManager = ({
                       const newUnitPrice = parseFloat(e.target.value) || 0;
                       form.setValue(
                         "cost",
-                        form.getValues("quantity") * newUnitPrice
+                        form.getValues("quantity") * newUnitPrice,
                       );
                     }}
                   />
@@ -266,7 +266,7 @@ export const CustomExpenseManager = ({
               </Table>
             </div>
 
-            <div className="text-right font-semibold text-lg pt-2 border-t">
+            <div className="border-t pt-2 text-right text-lg font-semibold">
               Expenses Total: £{getTotalCost().toFixed(2)}
             </div>
           </div>

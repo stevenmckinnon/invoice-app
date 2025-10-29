@@ -173,7 +173,7 @@ export default function ProfilePage() {
 
   if (loading) {
     return (
-      <div className="w-full max-w-6xl mx-auto p-6 pb-28 md:pb-8">
+      <div className="mx-auto w-full max-w-6xl p-6 pb-28 md:pb-8">
         <div className="mb-6 space-y-2">
           <Skeleton className="h-9 w-64" />
           <Skeleton className="h-4 w-96" />
@@ -231,7 +231,7 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="w-full max-w-6xl mx-auto p-6 pb-28 md:pb-8 grid grid-cols-1 gap-6">
+    <div className="mx-auto grid w-full max-w-6xl grid-cols-1 gap-6 p-6 pb-28 md:pb-8">
       <div className="mb-6">
         <h1 className="text-3xl font-bold">Profile Settings</h1>
         <p className="text-muted-foreground mt-2">
@@ -247,7 +247,7 @@ export default function ProfilePage() {
               <CardTitle>Personal Information</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                 <FormField
                   control={form.control}
                   name="firstName"
@@ -353,7 +353,7 @@ export default function ProfilePage() {
                 )}
               />
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                 <FormField
                   control={form.control}
                   name="city"
@@ -383,7 +383,7 @@ export default function ProfilePage() {
                 />
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                 <FormField
                   control={form.control}
                   name="postalCode"
@@ -488,7 +488,7 @@ export default function ProfilePage() {
                 )}
               />
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                 <FormField
                   control={form.control}
                   name="accountNumber"
@@ -569,7 +569,7 @@ export default function ProfilePage() {
                 )}
               />
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                 <FormField
                   control={form.control}
                   name="perDiemWork"

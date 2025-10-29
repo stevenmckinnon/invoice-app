@@ -96,10 +96,10 @@ export const OvertimeManager = ({
   const onSubmit = (values: OvertimeFormValues) => {
     // Extract date components directly to avoid timezone issues
     const year = values.date.getFullYear();
-    const month = String(values.date.getMonth() + 1).padStart(2, '0');
-    const day = String(values.date.getDate()).padStart(2, '0');
+    const month = String(values.date.getMonth() + 1).padStart(2, "0");
+    const day = String(values.date.getDate()).padStart(2, "0");
     const dateString = `${year}-${month}-${day}`;
-    
+
     const entry: OvertimeEntry = {
       id: Math.random().toString(36).substring(2, 11),
       date: parseDate(dateString),
@@ -144,12 +144,12 @@ export const OvertimeManager = ({
       </CardHeader>
       <CardContent className="space-y-4">
         {/* Add new overtime entry */}
-        <div className="grid grid-cols-1 md:grid-cols-5 gap-4 p-4 border rounded-lg bg-gray-50 dark:bg-black/50">
+        <div className="grid grid-cols-1 gap-4 rounded-lg border bg-gray-50 p-4 md:grid-cols-5 dark:bg-black/50">
           <FormField
             control={form.control as any}
             name="date"
             render={({ field }) => (
-              <FormItem className="flex flex-col col-span-2">
+              <FormItem className="col-span-2 flex flex-col">
                 <FormLabel>Date</FormLabel>
                 <Popover>
                   <PopoverTrigger asChild>
@@ -301,7 +301,7 @@ export const OvertimeManager = ({
               </Table>
             </div>
 
-            <div className="text-right font-semibold text-lg pt-2 border-t">
+            <div className="border-t pt-2 text-right text-lg font-semibold">
               Overtime Total: £{getTotalCost().toFixed(2)}
             </div>
           </div>

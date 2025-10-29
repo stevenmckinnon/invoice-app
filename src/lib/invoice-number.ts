@@ -43,4 +43,3 @@ export const generateNextInvoiceNumber = async (): Promise<string> => {
 
   return `INV-${yearSuffix}${formattedNumber}`;
 };
-
