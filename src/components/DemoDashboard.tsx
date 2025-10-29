@@ -1,6 +1,3 @@
-import { AnimatedCounter } from "@/components/AnimatedCounter";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Clock,
   CreditCard,
@@ -10,6 +7,10 @@ import {
   TrendingDown,
   TrendingUp,
 } from "lucide-react";
+
+import { AnimatedCounter } from "@/components/AnimatedCounter";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 type DemoInvoice = {
   id: string;

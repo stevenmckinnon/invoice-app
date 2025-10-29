@@ -1,9 +1,12 @@
-import type { Metadata, Viewport } from "next";
+import { Analytics } from "@vercel/analytics/next";
 import { Roboto, Roboto_Mono } from "next/font/google";
+
+import { ConditionalLayout } from "@/components/ConditionalLayout";
 import { Providers } from "@/components/Providers";
 import { Toaster } from "@/components/ui/sonner";
-import { ConditionalLayout } from "@/components/ConditionalLayout";
-import { Analytics } from "@vercel/analytics/next";
+
+import type { Metadata, Viewport } from "next";
+
 
 import "./globals.css";
 

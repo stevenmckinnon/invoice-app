@@ -1,4 +1,11 @@
 "use client";
+import { useState } from "react";
+
+import { ArrowLeft, Loader2 } from "lucide-react";
+import Link from "next/link";
+import { toast } from "sonner";
+
+import CaleyLogo from "@/components/CaleyLogo";
 import { Button } from "@/components/ui/button";
 import {
   CardContent,
@@ -8,12 +15,10 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import CaleyLogo from "@/components/CaleyLogo";
 import { forgetPassword } from "@/lib/auth-client";
-import { ArrowLeft, Loader2 } from "lucide-react";
-import Link from "next/link";
-import { useState } from "react";
-import { toast } from "sonner";
+
+
+
 
 const ForgotPasswordPage = () => {
   const [email, setEmail] = useState("");

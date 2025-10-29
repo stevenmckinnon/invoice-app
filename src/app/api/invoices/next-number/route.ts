@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+
 import { generateNextInvoiceNumber } from "@/lib/invoice-number";
 
 export const GET = async () => {

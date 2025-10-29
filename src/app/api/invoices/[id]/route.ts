@@ -1,11 +1,12 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import { NextRequest, NextResponse } from "next/server";
-import { PrismaClient } from "@/generated/prisma";
-import { z } from "zod";
-import { calculateInvoiceTotals, type InvoicePdfInput } from "@/lib/pdf";
-import { auth } from "@/lib/auth";
-import { parseDate } from "@/lib/utils";
+ 
 import { headers } from "next/headers";
+import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
+
+import { PrismaClient } from "@/generated/prisma";
+import { auth } from "@/lib/auth";
+import { calculateInvoiceTotals, type InvoicePdfInput } from "@/lib/pdf";
+import { parseDate } from "@/lib/utils";
 
 const prisma = new PrismaClient();
 

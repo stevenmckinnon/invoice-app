@@ -1,5 +1,8 @@
 "use client";
 import { useState } from "react";
+
+import { FileTextIcon } from "lucide-react";
+
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -8,7 +11,6 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { FileTextIcon } from "lucide-react";
 
 interface PdfPreviewDialogProps {
   invoiceId: string;

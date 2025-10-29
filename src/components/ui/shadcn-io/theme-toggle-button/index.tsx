@@ -1,7 +1,9 @@
 "use client";
 
-import { Moon, Sun } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
+
+import { Moon, Sun } from "lucide-react";
+
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -39,6 +41,7 @@ export const ThemeToggleButton = ({
 
   // Handle hydration
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setMounted(true);
   }, []);
 
@@ -238,7 +241,6 @@ export const ThemeToggleButton = ({
 export const useThemeTransition = () => {
   const startTransition = useCallback((updateFn: () => void) => {
     if ("startViewTransition" in document) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (document as any).startViewTransition(updateFn);
     } else {
       updateFn();

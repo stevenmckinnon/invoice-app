@@ -1,8 +1,9 @@
-import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
-import { PrismaClient } from "@/generated/prisma";
-import { parseDate } from "@/lib/utils";
 import { headers } from "next/headers";
+import { NextRequest, NextResponse } from "next/server";
+
+import { PrismaClient } from "@/generated/prisma";
+import { auth } from "@/lib/auth";
+import { parseDate } from "@/lib/utils";
 
 const prisma = new PrismaClient();
 

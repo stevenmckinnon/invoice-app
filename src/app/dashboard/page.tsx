@@ -1,4 +1,29 @@
 "use client";
+import { useEffect, useState } from "react";
+
+import {
+  Calendar,
+  Clock,
+  CreditCard,
+  DollarSign,
+  EyeIcon,
+  FileTextIcon,
+  PlusIcon,
+  TrendingDown,
+  TrendingUp,
+} from "lucide-react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import {
+  Area,
+  AreaChart,
+  CartesianGrid,
+  Tooltip as RechartsTooltip,
+  ResponsiveContainer,
+  XAxis,
+  YAxis,
+} from "recharts";
+
 import { AnimatedCounter } from "@/components/AnimatedCounter";
 import { DashboardSkeleton } from "@/components/DashboardSkeleton";
 import { InvoiceStatusBadge } from "@/components/InvoiceStatusBadge";
@@ -17,30 +42,8 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import {
-  Calendar,
-  Clock,
-  CreditCard,
-  DollarSign,
-  EyeIcon,
-  FileTextIcon,
-  PlusIcon,
-  TrendingDown,
-  TrendingUp,
-} from "lucide-react";
 import { useSession } from "@/lib/auth-client";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
-import {
-  Area,
-  AreaChart,
-  CartesianGrid,
-  Tooltip as RechartsTooltip,
-  ResponsiveContainer,
-  XAxis,
-  YAxis,
-} from "recharts";
+
 
 // Helper to format date without timezone shift
 const formatDate = (dateStr: Date | string) => {

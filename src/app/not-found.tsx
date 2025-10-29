@@ -1,9 +1,11 @@
+import { Home } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
+
+import CaleyLogo from "@/components/CaleyLogo";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Home } from "lucide-react";
-import CaleyLogo from "@/components/CaleyLogo";
-import Image from "next/image";
+
 
 export default function NotFound() {
   return (

@@ -1,10 +1,10 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
-import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { TrashIcon } from "lucide-react";
+import { useForm, useWatch } from "react-hook-form";
 import { z } from "zod";
+
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   FormControl,
@@ -13,6 +13,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
 import {
   Table,
   TableBody,
@@ -21,7 +22,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { TrashIcon } from "lucide-react";
+
 import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
 
 export interface CustomExpenseEntry {
@@ -60,15 +61,15 @@ export const CustomExpenseManager = ({
     },
   });
 
-  const quantity = form.watch("quantity");
-  const unitPrice = form.watch("unitPrice");
+  const quantity = useWatch({ control: form.control, name: "quantity" });
+  const unitPrice = useWatch({ control: form.control, name: "unitPrice" });
 
   // Auto-calculate cost when quantity or unitPrice changes
   const calculatedCost = quantity * unitPrice;
 
   const onSubmit = (values: ExpenseFormValues) => {
     const entry: CustomExpenseEntry = {
-      id: Math.random().toString(36).substring(2, 11),
+      id: crypto.randomUUID(),
       description: values.description.trim(),
       quantity: values.quantity,
       unitPrice: values.unitPrice,

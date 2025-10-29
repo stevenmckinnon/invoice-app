@@ -1,11 +1,13 @@
 "use client";
 
 import { useEffect } from "react";
+
+import { Home, RefreshCcw, AlertTriangle } from "lucide-react";
 import Link from "next/link";
+
+import CaleyLogo from "@/components/CaleyLogo";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Home, RefreshCcw, AlertTriangle } from "lucide-react";
-import CaleyLogo from "@/components/CaleyLogo";
 
 export default function Error({
   error,

@@ -1,8 +1,14 @@
 "use client";
 
-import { useSession, signOut } from "@/lib/auth-client";
+import { useEffect, useState } from "react";
+
+import { User, LogOut, Settings } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useTheme } from "next-themes";
+
+import CaleyLogo from "@/components/CaleyLogo";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -12,12 +18,9 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { User, LogOut, Settings } from "lucide-react";
-import { useTheme } from "next-themes";
-import { useEffect, useState } from "react";
+import { useSession, signOut } from "@/lib/auth-client";
 import { cn } from "@/lib/utils";
-import CaleyLogo from "@/components/CaleyLogo";
+
 import {
   ThemeToggleButton,
   useThemeTransition,

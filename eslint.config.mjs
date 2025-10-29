@@ -1,16 +1,7 @@
-import { dirname } from "path";
-import { fileURLToPath } from "url";
-import { FlatCompat } from "@eslint/eslintrc";
+import next from "eslint-config-next";
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
-
-const compat = new FlatCompat({
-  baseDirectory: __dirname,
-});
-
-const eslintConfig = [
-  ...compat.extends("next/core-web-vitals", "next/typescript"),
+const config = [
+  ...next,
   {
     ignores: [
       "node_modules/**",
@@ -18,8 +9,31 @@ const eslintConfig = [
       "out/**",
       "build/**",
       "next-env.d.ts",
+      "src/generated/**",
+      "prisma/migrations/**/migration.sql",
     ],
+    settings: {
+      "import/resolver": {
+        typescript: true,
+      },
+    },
+    rules: {
+      "import/order": [
+        "error",
+        {
+          groups: [["builtin", "external"], ["internal"], ["parent", "sibling", "index"], ["object", "type"]],
+          pathGroups: [
+            { pattern: "react", group: "external", position: "before" },
+            { pattern: "react-dom", group: "external", position: "before" },
+            { pattern: "@/**", group: "internal", position: "after" },
+          ],
+          pathGroupsExcludedImportTypes: ["react"],
+          "newlines-between": "always",
+          alphabetize: { order: "asc", caseInsensitive: true },
+        },
+      ],
+    },
   },
 ];
 
-export default eslintConfig;
+export default config;

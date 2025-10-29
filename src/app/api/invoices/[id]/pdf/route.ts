@@ -1,4 +1,5 @@
 import { NextRequest } from "next/server";
+
 import { PrismaClient } from "@/generated/prisma";
 import { generateInvoicePdf, type InvoicePdfInput } from "@/lib/pdf";
 import { parseDate } from "@/lib/utils";

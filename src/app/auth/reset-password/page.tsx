@@ -1,4 +1,12 @@
 "use client";
+import { Suspense, useState } from "react";
+
+import { ArrowLeft, Loader2 } from "lucide-react";
+import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
+import { toast } from "sonner";
+
+import CaleyLogo from "@/components/CaleyLogo";
 import { Button } from "@/components/ui/button";
 import {
   CardContent,
@@ -8,13 +16,8 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import CaleyLogo from "@/components/CaleyLogo";
 import { resetPassword } from "@/lib/auth-client";
-import { ArrowLeft, Loader2 } from "lucide-react";
-import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
-import { Suspense, useState } from "react";
-import { toast } from "sonner";
+
 
 const ResetPasswordForm = () => {
   const router = useRouter();

@@ -1,8 +1,10 @@
 "use client";
 
 import * as React from "react";
+
 import { Check, ChevronsUpDown } from "lucide-react";
-import { cn } from "@/lib/utils";
+import countries from "world-countries";
+
 import { Button } from "@/components/ui/button";
 import {
   Command,
@@ -17,7 +19,8 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import countries from "world-countries";
+import { cn } from "@/lib/utils";
+
 
 // Transform countries data
 const countryOptions = countries

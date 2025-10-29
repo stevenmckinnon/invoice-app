@@ -1,13 +1,17 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
+ 
 "use client";
 import { useMemo, useEffect, useState } from "react";
-import { z } from "zod";
-import { useRouter } from "next/navigation";
-import { useForm } from "react-hook-form";
+
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useRouter } from "next/navigation";
+import { useForm, useWatch } from "react-hook-form";
+import { z } from "zod";
+
+import { CountryPicker } from "@/components/CountryPicker";
+import { CustomExpenseManager } from "@/components/CustomExpenseManager";
+import { OvertimeManager } from "@/components/OvertimeManager";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
 import {
   Form,
   FormControl,
@@ -16,10 +20,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { OvertimeManager } from "@/components/OvertimeManager";
-import { CustomExpenseManager } from "@/components/CustomExpenseManager";
-import { Separator } from "@/components/ui/separator";
-import { CountryPicker } from "@/components/CountryPicker";
+import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
@@ -27,6 +28,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Separator } from "@/components/ui/separator";
 import {
   Table,
   TableBody,
@@ -101,7 +103,7 @@ export default function NewInvoicePage() {
   const [regularRate, setRegularRate] = useState(52.5); // Default £52.50 per hour base rate
 
   const form = useForm<FormValues>({
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+     
     // @ts-ignore - React Hook Form type inference issues with complex nested schemas
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -282,9 +284,9 @@ export default function NewInvoicePage() {
     fetchUserProfile();
   }, [form]);
 
-  const items = form.watch("items");
-  const overtimeEntries = form.watch("overtimeEntries");
-  const customExpenseEntries = form.watch("customExpenseEntries");
+  const items = useWatch({ control: form.control, name: "items" });
+  const overtimeEntries = useWatch({ control: form.control, name: "overtimeEntries" });
+  const customExpenseEntries = useWatch({ control: form.control, name: "customExpenseEntries" });
 
   const totals = useMemo(() => {
     const itemsTotal = items.reduce(

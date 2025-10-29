@@ -1,13 +1,19 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
+ 
 "use client";
 import { useEffect, useMemo, useState } from "react";
-import { z } from "zod";
+
+import { zodResolver } from "@hookform/resolvers/zod";
+import { ArrowLeftIcon } from "lucide-react";
+import Link from "next/link";
 import { useRouter, useParams } from "next/navigation";
 import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+
+import { CountryPicker } from "@/components/CountryPicker";
+import { CustomExpenseManager } from "@/components/CustomExpenseManager";
+import { OvertimeManager } from "@/components/OvertimeManager";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
 import {
   Form,
   FormControl,
@@ -16,11 +22,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { OvertimeManager } from "@/components/OvertimeManager";
-import { CustomExpenseManager } from "@/components/CustomExpenseManager";
-import { ArrowLeftIcon } from "lucide-react";
-import Link from "next/link";
-import { CountryPicker } from "@/components/CountryPicker";
+import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
@@ -102,10 +104,10 @@ export default function EditInvoicePage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+   
   // @ts-ignore - React Hook Form type inference issues with complex nested schemas
   const form = useForm<FormValues>({
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+     
     // @ts-ignore
     resolver: zodResolver(formSchema),
     defaultValues: {

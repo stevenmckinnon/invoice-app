@@ -1,3 +1,17 @@
+import {
+  CheckCircle,
+  Clock,
+  DollarSign,
+  ExternalLink,
+  FileText,
+  Globe,
+  Shield,
+  TrendingUp,
+  Users,
+  Zap,
+} from "lucide-react";
+import Link from "next/link";
+
 import CaleyLogo from "@/components/CaleyLogo";
 import Hero from "@/components/hero/hero";
 import {
@@ -14,19 +28,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import {
-  CheckCircle,
-  Clock,
-  DollarSign,
-  ExternalLink,
-  FileText,
-  Globe,
-  Shield,
-  TrendingUp,
-  Users,
-  Zap,
-} from "lucide-react";
-import Link from "next/link";
 
 export default function Home() {
   return (

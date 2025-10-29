@@ -1,10 +1,12 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
-import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { format } from "date-fns";
+import { CalendarIcon, TrashIcon } from "lucide-react";
+import { useForm } from "react-hook-form";
 import { z } from "zod";
+
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { Calendar } from "@/components/ui/calendar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   FormControl,
@@ -13,6 +15,12 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import {
   Select,
   SelectContent,
@@ -20,12 +28,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Calendar } from "@/components/ui/calendar";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
 import {
   Table,
   TableBody,
@@ -34,10 +36,9 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { CalendarIcon, TrashIcon } from "lucide-react";
-import { format } from "date-fns";
-import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
 import { parseDate } from "@/lib/utils";
+
+import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
 
 export interface OvertimeEntry {
   id: string;
@@ -75,10 +76,8 @@ export const OvertimeManager = ({
   onEntriesChange,
   regularRate,
 }: OvertimeManagerProps) => {
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-ignore - React Hook Form type inference issues
   const form = useForm<OvertimeFormValues>({
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
     resolver: zodResolver(overtimeFormSchema),
     defaultValues: {
@@ -101,7 +100,7 @@ export const OvertimeManager = ({
     const dateString = `${year}-${month}-${day}`;
 
     const entry: OvertimeEntry = {
-      id: Math.random().toString(36).substring(2, 11),
+      id: crypto.randomUUID(),
       date: parseDate(dateString),
       hours: values.hours,
       rateType: values.rateType,

@@ -1,7 +1,10 @@
-import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { BackgroundPattern } from "./background-pattern";
+
 import { DemoDashboard } from "@/components/DemoDashboard";
+import { Button } from "@/components/ui/button";
+
+import { BackgroundPattern } from "./background-pattern";
+
 
 const Hero = () => {
   return (
