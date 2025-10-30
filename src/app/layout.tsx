@@ -51,7 +51,7 @@ export const metadata: Metadata = {
     "expense tracking",
     "revenue management",
   ],
-  authors: [{ name: "Steve McKinnon", url: "https://stevenmckinnon.co.uk" }],
+  authors: [{ name: "Steve McKinnon", url: "https://stevemckinnon.co.uk" }],
   creator: "Steve McKinnon",
   icons: {
     icon: [

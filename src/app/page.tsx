@@ -537,7 +537,7 @@ export default function Home() {
               © {new Date().getFullYear()} Caley. All rights reserved.
             </p>
             <Link
-              href="https://stevenmckinnon.co.uk"
+              href="https://stevemckinnon.co.uk"
               className="text-muted-foreground hover:text-foreground flex items-center gap-1 text-xs transition-colors"
               target="_blank"
             >

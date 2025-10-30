@@ -61,7 +61,7 @@ export default function LegalPage() {
             <div className="space-y-2">
               <Button asChild variant="outline" className="w-full">
                 <Link
-                  href="https://stevenmckinnon.co.uk"
+                  href="https://stevemckinnon.co.uk"
                   target="_blank"
                   className="flex items-center justify-center gap-2"
                 >
