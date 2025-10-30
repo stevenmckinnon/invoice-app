@@ -1,10 +1,11 @@
+"use client";
+import { motion } from "motion/react";
 import Link from "next/link";
 
 import { DemoDashboard } from "@/components/DemoDashboard";
 import { Button } from "@/components/ui/button";
 
 import { BackgroundPattern } from "./background-pattern";
-
 
 const Hero = () => {
   return (
@@ -13,7 +14,12 @@ const Hero = () => {
         <BackgroundPattern />
       </div>
 
-      <div className="relative z-10 mx-auto flex max-w-4xl items-center justify-center px-6 pt-12 !pb-0 md:px-12 md:pt-42">
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.5, ease: "easeOut" }}
+        className="relative z-10 mx-auto flex max-w-4xl items-center justify-center px-6 pt-24 pb-12 md:px-12 md:pt-36"
+      >
         <div className="text-center">
           <div className="bg-primary/10 dark:bg-primary/20 mb-6 inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium">
             <span className="relative flex h-2 w-2">
@@ -54,12 +60,10 @@ const Hero = () => {
 
           {/* App Demo Dashboard */}
           <div className="mx-auto mt-16 w-full max-w-6xl">
-            <div className="glossy-frame p-0">
-              <DemoDashboard />
-            </div>
+            <DemoDashboard />
           </div>
         </div>
-      </div>
+      </motion.div>
     </section>
   );
 };

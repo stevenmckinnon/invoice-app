@@ -22,9 +22,9 @@ export default function Error({
   }, [error]);
 
   return (
-    <div className="flex min-h-[100dvh] items-center justify-center p-4">
+    <div className="flex items-center justify-center p-4 pt-28">
       <Card className="w-full max-w-2xl border-2">
-        <CardContent className="pt-12 pb-12">
+        <CardContent className="py-6">
           <div className="flex flex-col items-center space-y-8 text-center">
             {/* Icon Section */}
             <div className="relative">

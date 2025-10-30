@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 
 import { User, LogOut, Settings } from "lucide-react";
+import { motion } from "motion/react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useTheme } from "next-themes";
@@ -80,15 +81,18 @@ export const AppHeader = () => {
   };
 
   return (
-    <header
+    <motion.header
+      initial={{ opacity: 0, y: -100 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5, ease: "easeOut" }}
       className={cn(
-        "bg-background/95 supports-[backdrop-filter]:bg-background/60 border-border/50 fixed top-0 right-0 left-0 z-50 mx-auto flex w-full max-w-5xl justify-center px-4 backdrop-blur transition-transform duration-300 ease-in-out md:top-5 md:w-auto md:rounded-4xl md:border",
+        "bg-background/95 supports-[backdrop-filter]:bg-background/60 border-border/50 fixed top-0 right-0 left-0 z-50 mx-auto flex w-full max-w-5xl justify-center px-4 py-2 backdrop-blur transition-transform duration-300 ease-in-out md:top-5 md:w-auto md:rounded-4xl md:border",
         isVisible
           ? "translate-y-0"
           : "-translate-y-full md:-translate-y-[calc(100%+20px)]",
       )}
     >
-      <div className="flex h-12 w-full items-center justify-between">
+      <div className="flex w-full items-center justify-between">
         {/* Logo */}
         <Link
           href={session?.user ? "/dashboard" : "/"}
@@ -207,6 +211,6 @@ export const AppHeader = () => {
           )}
         </div>
       </div>
-    </header>
+    </motion.header>
   );
 };

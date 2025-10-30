@@ -44,7 +44,7 @@ export const ConditionalLayout = ({ children }: ConditionalLayoutProps) => {
   return (
     <>
       <AppHeader />
-      <main className="mx-auto pt-12 md:pt-32">{children}</main>
+      <main className="mx-auto pt-12 md:pt-24">{children}</main>
       <MobileBottomNav />
     </>
   );
