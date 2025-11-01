@@ -46,6 +46,7 @@ const invoiceInputSchema = z.object({
   postalCode: z.string().min(1),
   country: z.string().min(1),
 
+  clientId: z.string().optional(),
   clientName: z.string().optional(),
   clientAddress1: z.string().optional(),
   clientAddress2: z.string().optional(),
@@ -93,6 +94,7 @@ export const POST = async (req: NextRequest) => {
     const created = await prisma.invoice.create({
       data: {
         userId: session.user.id,
+        clientId: parsed.clientId,
         invoiceNumber: pdfInput.invoiceNumber,
         invoiceDate: pdfInput.invoiceDate,
         showName: pdfInput.showName,

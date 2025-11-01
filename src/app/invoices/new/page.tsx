@@ -1,4 +1,3 @@
- 
 "use client";
 import { useMemo, useEffect, useState } from "react";
 
@@ -7,7 +6,9 @@ import { useRouter } from "next/navigation";
 import { useForm, useWatch } from "react-hook-form";
 import { z } from "zod";
 
+import { ClientSelector, type Client } from "@/components/ClientSelector";
 import { CountryPicker } from "@/components/CountryPicker";
+import { CreateClientDialog } from "@/components/CreateClientDialog";
 import { CustomExpenseManager } from "@/components/CustomExpenseManager";
 import { OvertimeManager } from "@/components/OvertimeManager";
 import { Button } from "@/components/ui/button";
@@ -100,10 +101,10 @@ export default function NewInvoicePage() {
   const router = useRouter();
   const [profileIncomplete, setProfileIncomplete] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [regularRate, setRegularRate] = useState(52.5); // Default £52.50 per hour base rate
+  const [selectedClientId, setSelectedClientId] = useState<string | null>(null);
+  const [showCreateClientDialog, setShowCreateClientDialog] = useState(false);
 
   const form = useForm<FormValues>({
-     
     // @ts-ignore - React Hook Form type inference issues with complex nested schemas
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -118,13 +119,14 @@ export default function NewInvoicePage() {
       state: "",
       postalCode: "",
       country: "",
-      clientName: "World Wrestling Entertainment, Inc.",
-      clientAddress1: "120 Hamilton Avenue",
-      clientCity: "Stamford",
-      clientState: "CT",
-      clientPostalCode: "06902",
-      clientCountry: "United States",
-      attentionTo: "Caley - Professional Invoice Management",
+      clientName: "",
+      clientAddress1: "",
+      clientAddress2: "",
+      clientCity: "",
+      clientState: "",
+      clientPostalCode: "",
+      clientCountry: "",
+      attentionTo: "",
       iban: "",
       swiftBic: "",
       accountNumber: "",
@@ -133,11 +135,11 @@ export default function NewInvoicePage() {
       dateOfBirth: "",
       currency: "GBP",
       items: [
-        { description: "Travel Days", quantity: 1, unitPrice: 525 },
-        { description: "Work Days", quantity: 1, unitPrice: 525 },
-        { description: "Dark days", quantity: 1, unitPrice: 525 },
-        { description: "Per Diems Travel Days", quantity: 1, unitPrice: 70 },
-        { description: "Per Diems Work Days", quantity: 1, unitPrice: 50 },
+        { description: "Travel Days", quantity: 1, unitPrice: 0 },
+        { description: "Work Days", quantity: 1, unitPrice: 0 },
+        { description: "Dark days", quantity: 1, unitPrice: 0 },
+        { description: "Per Diems Travel Days", quantity: 1, unitPrice: 0 },
+        { description: "Per Diems Work Days", quantity: 1, unitPrice: 0 },
       ],
       overtimeEntries: [],
       customExpenseEntries: [],
@@ -211,70 +213,6 @@ export default function NewInvoicePage() {
           if (profile.bankAddress)
             form.setValue("bankAddress", profile.bankAddress);
           if (profile.currency) form.setValue("currency", profile.currency);
-
-          // Calculate regular rate from day rate (10% of day rate since a day is 10 hours)
-          if (profile.dayRate) {
-            const calculatedRegularRate = Number(profile.dayRate) * 0.1;
-            setRegularRate(calculatedRegularRate);
-          }
-
-          // Update invoice items with profile rates
-          const updatedItems = [];
-          if (profile.dayRate) {
-            updatedItems.push(
-              {
-                description: "Travel Days",
-                quantity: 1,
-                unitPrice: Number(profile.dayRate),
-              },
-              {
-                description: "Work Days",
-                quantity: 1,
-                unitPrice: Number(profile.dayRate),
-              },
-              {
-                description: "Dark days",
-                quantity: 1,
-                unitPrice: Number(profile.dayRate),
-              },
-            );
-          } else {
-            updatedItems.push(
-              { description: "Travel Days", quantity: 1, unitPrice: 525 },
-              { description: "Work Days", quantity: 1, unitPrice: 525 },
-              { description: "Dark days", quantity: 1, unitPrice: 525 },
-            );
-          }
-
-          if (profile.perDiemTravel) {
-            updatedItems.push({
-              description: "Per Diems Travel Days",
-              quantity: 1,
-              unitPrice: Number(profile.perDiemTravel),
-            });
-          } else {
-            updatedItems.push({
-              description: "Per Diems Travel Days",
-              quantity: 1,
-              unitPrice: 70,
-            });
-          }
-
-          if (profile.perDiemWork) {
-            updatedItems.push({
-              description: "Per Diems Work Days",
-              quantity: 1,
-              unitPrice: Number(profile.perDiemWork),
-            });
-          } else {
-            updatedItems.push({
-              description: "Per Diems Work Days",
-              quantity: 1,
-              unitPrice: 50,
-            });
-          }
-
-          form.setValue("items", updatedItems);
         }
       } catch (error) {
         console.error("Failed to fetch user profile:", error);
@@ -285,8 +223,23 @@ export default function NewInvoicePage() {
   }, [form]);
 
   const items = useWatch({ control: form.control, name: "items" });
-  const overtimeEntries = useWatch({ control: form.control, name: "overtimeEntries" });
-  const customExpenseEntries = useWatch({ control: form.control, name: "customExpenseEntries" });
+  const overtimeEntries = useWatch({
+    control: form.control,
+    name: "overtimeEntries",
+  });
+  const customExpenseEntries = useWatch({
+    control: form.control,
+    name: "customExpenseEntries",
+  });
+
+  // Calculate regular rate dynamically from Work Days unit price (10% since a day is 10 hours)
+  const regularRate = useMemo(() => {
+    const workDaysItem = items.find((item) => item.description === "Work Days");
+    if (workDaysItem && workDaysItem.unitPrice > 0) {
+      return Number(workDaysItem.unitPrice) * 0.1;
+    }
+    return 0; // No default - user must set Work Days rate
+  }, [items]);
 
   const totals = useMemo(() => {
     const itemsTotal = items.reduce(
@@ -309,6 +262,49 @@ export default function NewInvoicePage() {
     return { itemsTotal, overtimeTotal, customExpensesTotal, totalAmount };
   }, [items, overtimeEntries, customExpenseEntries, regularRate]);
 
+  const handleClientSelect = (client: Client | null) => {
+    if (client) {
+      form.setValue("clientName", client.name || "");
+      form.setValue("clientAddress1", client.addressLine1 || "");
+      form.setValue("clientAddress2", client.addressLine2 || "");
+      form.setValue("clientCity", client.city || "");
+      form.setValue("clientState", client.state || "");
+      form.setValue("clientPostalCode", client.postalCode || "");
+      form.setValue("clientCountry", client.country || "");
+      form.setValue("attentionTo", client.attentionTo || "");
+
+      // Update line items with client rates - always include all 5 items
+      const updatedItems = [
+        {
+          description: "Travel Days",
+          quantity: 1,
+          unitPrice: client.dayRate ? Number(client.dayRate) : 0,
+        },
+        {
+          description: "Work Days",
+          quantity: 1,
+          unitPrice: client.dayRate ? Number(client.dayRate) : 0,
+        },
+        {
+          description: "Dark days",
+          quantity: 1,
+          unitPrice: client.dayRate ? Number(client.dayRate) : 0,
+        },
+        {
+          description: "Per Diems Travel Days",
+          quantity: 1,
+          unitPrice: client.perDiemTravel ? Number(client.perDiemTravel) : 0,
+        },
+        {
+          description: "Per Diems Work Days",
+          quantity: 1,
+          unitPrice: client.perDiemWork ? Number(client.perDiemWork) : 0,
+        },
+      ];
+      form.setValue("items", updatedItems);
+    }
+  };
+
   const updateItem = (
     idx: number,
     field: keyof FormValues["items"][number],
@@ -327,7 +323,10 @@ export default function NewInvoicePage() {
       const res = await fetch("/api/invoices", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(values),
+        body: JSON.stringify({
+          ...values,
+          clientId: selectedClientId,
+        }),
       });
 
       if (!res.ok) {
@@ -699,6 +698,15 @@ export default function NewInvoicePage() {
             </div>
 
             <div className="md:col-span-2">
+              <ClientSelector
+                value={selectedClientId || undefined}
+                onSelect={setSelectedClientId}
+                onClientData={handleClientSelect}
+                onCreateNew={() => setShowCreateClientDialog(true)}
+              />
+            </div>
+
+            <div className="md:col-span-2">
               <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                 <FormField
                   control={form.control as any}
@@ -839,7 +847,7 @@ export default function NewInvoicePage() {
                     <TableRow key={idx}>
                       <TableCell className="w-40">
                         <Input
-                          value={item.description}
+                          value={item.description || ""}
                           readOnly
                           onChange={(e) =>
                             updateItem(idx, "description", e.target.value)
@@ -849,7 +857,7 @@ export default function NewInvoicePage() {
                       <TableCell className="w-20">
                         <Input
                           type="number"
-                          value={item.quantity}
+                          value={item.quantity ?? 0}
                           min={0}
                           onChange={(e) =>
                             updateItem(idx, "quantity", e.target.value)
@@ -861,7 +869,7 @@ export default function NewInvoicePage() {
                           type="number"
                           step="0.01"
                           min={0}
-                          value={item.unitPrice}
+                          value={item.unitPrice ?? 0}
                           onChange={(e) =>
                             updateItem(idx, "unitPrice", e.target.value)
                           }
@@ -872,7 +880,7 @@ export default function NewInvoicePage() {
                           type="number"
                           step="0.01"
                           readOnly
-                          value={item.cost ?? item.quantity * item.unitPrice}
+                          value={(item.cost ?? item.quantity * item.unitPrice) || 0}
                           onChange={(e) =>
                             updateItem(idx, "cost", e.target.value)
                           }
@@ -957,6 +965,15 @@ export default function NewInvoicePage() {
           </CardContent>
         </Card>
       </form>
+
+      <CreateClientDialog
+        open={showCreateClientDialog}
+        onOpenChange={setShowCreateClientDialog}
+        onClientCreated={(client) => {
+          setSelectedClientId(client.id);
+          handleClientSelect(client);
+        }}
+      />
     </Form>
   );
 }

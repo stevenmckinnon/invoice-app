@@ -118,6 +118,16 @@ export const AppHeader = () => {
               Dashboard
             </Link>
             <Link
+              href="/clients"
+              className={`hover:text-foreground/80 transition-colors ${
+                pathname.startsWith("/clients")
+                  ? "text-foreground font-semibold"
+                  : "text-foreground/60"
+              }`}
+            >
+              Clients
+            </Link>
+            <Link
               href="/invoices"
               className={`hover:text-foreground/80 transition-colors ${
                 pathname.startsWith("/invoices") && pathname !== "/invoices/new"

@@ -1,6 +1,6 @@
 "use client";
 
-import { Home, FileText, PlusCircle } from "lucide-react";
+import { Home, FileText, PlusCircle, Users } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -20,6 +20,12 @@ const navItems: NavItem[] = [
     label: "Home",
     icon: Home,
     isActive: (pathname) => pathname === "/dashboard",
+  },
+  {
+    href: "/clients",
+    label: "Clients",
+    icon: Users,
+    isActive: (pathname) => pathname.startsWith("/clients"),
   },
   {
     href: "/invoices/new",
@@ -65,7 +71,7 @@ export const MobileBottomNav = () => {
                   key={item.href}
                   href={item.href}
                   className={cn(
-                    "relative flex w-[95px] flex-col items-center justify-center gap-1 rounded-3xl px-6 py-2 transition-all duration-300 ease-out",
+                    "relative flex w-[85px] flex-col items-center justify-center gap-1 rounded-3xl px-3 py-2 transition-all duration-300 ease-out",
                     "hover:scale-105 active:scale-95",
                     isActive
                       ? "text-accent-foreground"

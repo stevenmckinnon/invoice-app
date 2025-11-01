@@ -40,14 +40,10 @@ model User {
   bankAddress   String?
   currency      String?   @default("GBP")
   
-  // Rate information
-  dayRate       Decimal?  // Day rate for work, travel, and dark days
-  perDiemWork   Decimal?  // Per diem rate for work days
-  perDiemTravel Decimal?  // Per diem rate for travel days
-  
   accounts      Account[]
   sessions      Session[]
   invoices      Invoice[]
+  clients       Client[]
 }
 
 model Account {
@@ -99,6 +95,10 @@ model Invoice {
   // User relationship
   userId             String
   user               User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Client relationship (nullable for legacy/one-off invoices)
+  clientId           String?
+  client             Client?  @relation(fields: [clientId], references: [id], onDelete: SetNull)
 
   // Identification
   invoiceNumber      String   @unique
@@ -198,4 +198,32 @@ model CustomExpenseEntry {
 
   invoiceId   String
   invoice     Invoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+}
+
+model Client {
+  id          String   @id @default(cuid())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // User relationship
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Client information
+  name        String
+  addressLine1 String?
+  addressLine2 String?
+  city        String?
+  state       String?
+  postalCode  String?
+  country     String?
+  attentionTo String?
+  
+  // Rate information for this client
+  dayRate     Decimal?  // Day rate for work, travel, and dark days
+  perDiemWork Decimal?  // Per diem rate for work days
+  perDiemTravel Decimal? // Per diem rate for travel days
+
+  // Relations
+  invoices    Invoice[]
 }

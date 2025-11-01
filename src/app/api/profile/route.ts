@@ -39,9 +39,6 @@ export const GET = async () => {
         sortCode: true,
         bankAddress: true,
         currency: true,
-        dayRate: true,
-        perDiemWork: true,
-        perDiemTravel: true,
       },
     });
 
@@ -88,9 +85,6 @@ export const PUT = async (req: NextRequest) => {
       sortCode,
       bankAddress,
       currency,
-      dayRate,
-      perDiemWork,
-      perDiemTravel,
     } = body;
 
     const updatedUser = await prisma.user.update({
@@ -113,9 +107,6 @@ export const PUT = async (req: NextRequest) => {
         sortCode,
         bankAddress,
         currency,
-        dayRate: dayRate ? Number(dayRate) : null,
-        perDiemWork: perDiemWork ? Number(perDiemWork) : null,
-        perDiemTravel: perDiemTravel ? Number(perDiemTravel) : null,
       },
       select: {
         id: true,
@@ -137,9 +128,6 @@ export const PUT = async (req: NextRequest) => {
         sortCode: true,
         bankAddress: true,
         currency: true,
-        dayRate: true,
-        perDiemWork: true,
-        perDiemTravel: true,
       },
     });
 

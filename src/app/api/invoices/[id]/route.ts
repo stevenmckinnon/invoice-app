@@ -46,6 +46,7 @@ const invoiceUpdateSchema = z.object({
   postalCode: z.string().min(1),
   country: z.string().min(1),
 
+  clientId: z.string().optional(),
   clientName: z.string().optional(),
   clientAddress1: z.string().optional(),
   clientAddress2: z.string().optional(),
@@ -121,6 +122,7 @@ export const PUT = async (req: NextRequest, context: RouteContext) => {
         state: pdfInput.state,
         postalCode: pdfInput.postalCode,
         country: pdfInput.country,
+        clientId: parsed.clientId,
         clientName: pdfInput.clientName,
         clientAddress1: pdfInput.clientAddress1,
         clientAddress2: pdfInput.clientAddress2,
@@ -243,6 +245,7 @@ export const GET = async (req: NextRequest, context: RouteContext) => {
 
     return NextResponse.json(invoice);
   } catch (err: any) {
+    console.error("Error fetching invoice:", err);
     return NextResponse.json(
       { error: err.message ?? "Failed to fetch invoice" },
       { status: 400 },

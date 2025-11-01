@@ -144,11 +144,18 @@ export default function EditInvoicePage() {
     },
   });
 
-  const regularRate = 52.5;
-
   const items = form.watch("items");
   const overtimeEntries = form.watch("overtimeEntries");
   const customExpenseEntries = form.watch("customExpenseEntries");
+
+  // Calculate regular rate dynamically from Work Days unit price (10% since a day is 10 hours)
+  const regularRate = useMemo(() => {
+    const workDaysItem = items.find((item) => item.description === "Work Days");
+    if (workDaysItem && workDaysItem.unitPrice > 0) {
+      return Number(workDaysItem.unitPrice) * 0.1;
+    }
+    return 0; // No default - user must set Work Days rate
+  }, [items]);
 
   const totals = useMemo(() => {
     const itemsTotal = items.reduce(
@@ -169,7 +176,7 @@ export default function EditInvoicePage() {
 
     const totalAmount = itemsTotal + overtimeTotal + customExpensesTotal;
     return { itemsTotal, overtimeTotal, customExpensesTotal, totalAmount };
-  }, [items, overtimeEntries, customExpenseEntries]);
+  }, [items, overtimeEntries, customExpenseEntries, regularRate]);
 
   useEffect(() => {
     const fetchInvoice = async () => {

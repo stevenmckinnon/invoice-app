@@ -54,6 +54,9 @@ export default function InvoiceDetailPage({ params }: Props) {
       if (response.ok) {
         const data = await response.json();
         setInvoice(data);
+      } else {
+        const errorData = await response.json().catch(() => ({}));
+        console.error("Failed to fetch invoice:", response.status, errorData);
       }
     } catch (error) {
       console.error("Failed to fetch invoice:", error);
@@ -166,6 +169,12 @@ export default function InvoiceDetailPage({ params }: Props) {
   const overtimeEntries = invoice.overtimeEntries || [];
   const customExpenses = invoice.customExpenseEntries || [];
 
+  // Calculate regular rate dynamically from Work Days unit price (10% since a day is 10 hours)
+  const workDaysItem = invoice.items.find((item) => item.description === "Work Days");
+  const regularRate = workDaysItem && Number(workDaysItem.unitPrice) > 0
+    ? Number(workDaysItem.unitPrice) * 0.1
+    : 0; // No default
+
   // Combine all items into one array
   type CombinedItem = {
     id: string;
@@ -188,7 +197,8 @@ export default function InvoiceDetailPage({ params }: Props) {
         type: "item" as const,
       })),
     ...overtimeEntries.map((ot) => {
-      const rate = ot.rateType === "1.5x" ? 78.75 : 105;
+      const multiplier = ot.rateType === "1.5x" ? 1.5 : 2;
+      const hourlyRate = regularRate * multiplier;
       const hours = Number(ot.hours);
       return {
         id: ot.id,
@@ -196,8 +206,8 @@ export default function InvoiceDetailPage({ params }: Props) {
           ot.date,
         ).toLocaleDateString("en-GB")}`,
         quantity: hours,
-        unitPrice: rate,
-        cost: hours * rate,
+        unitPrice: hourlyRate,
+        cost: hours * hourlyRate,
         type: "overtime" as const,
       };
     }),
