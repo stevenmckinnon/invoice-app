@@ -534,7 +534,7 @@ export default function Home() {
           {/* Bottom Bar */}
           <div className="mt-12 flex flex-col items-center justify-between gap-4 border-t pt-8 md:flex-row">
             <p className="text-muted-foreground text-sm">
-              © {new Date().getFullYear()} Caley. All rights reserved.
+              © {new Date().getFullYear()} Caley, made in Scotland 🏴󠁧󠁢󠁳󠁣󠁴󠁿
             </p>
             <Link
               href="https://stevemckinnon.co.uk"
