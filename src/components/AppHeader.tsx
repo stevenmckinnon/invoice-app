@@ -9,7 +9,7 @@ import { usePathname } from "next/navigation";
 import { useTheme } from "next-themes";
 
 import CaleyLogo from "@/components/CaleyLogo";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -169,6 +169,10 @@ export const AppHeader = () => {
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" className="h-9 gap-2 px-2">
                   <Avatar className="h-7 w-7">
+                    <AvatarImage
+                      src={session.user.image || undefined}
+                      alt="Profile photo"
+                    />
                     <AvatarFallback className="text-foreground text-xs">
                       {(
                         session.user.name?.[0] ||
@@ -184,13 +188,28 @@ export const AppHeader = () => {
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-56">
                 <DropdownMenuLabel>
-                  <div className="flex flex-col space-y-1">
-                    <p className="text-sm font-medium">
-                      {session.user.name || "User"}
-                    </p>
-                    <p className="text-muted-foreground text-xs">
-                      {session.user.email}
-                    </p>
+                  <div className="flex items-center gap-2">
+                    <Avatar className="size-7">
+                      <AvatarImage
+                        src={session.user.image || undefined}
+                        alt="Profile photo"
+                      />
+                      <AvatarFallback className="text-foreground text-xs">
+                        {(
+                          session.user.name?.[0] ||
+                          session.user.email?.[0] ||
+                          "U"
+                        ).toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="flex flex-col space-y-1">
+                      <p className="text-sm font-medium">
+                        {session.user.name || "User"}
+                      </p>
+                      <p className="text-muted-foreground text-xs">
+                        {session.user.email}
+                      </p>
+                    </div>
                   </div>
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />

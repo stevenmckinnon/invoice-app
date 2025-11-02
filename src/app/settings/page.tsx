@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { format } from "date-fns";
 import {
   AlertTriangle,
+  Camera,
   Key,
   Loader2,
   Monitor,
@@ -26,6 +27,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -81,6 +83,10 @@ const SettingsPage = () => {
     password: "",
     confirmation: "",
   });
+
+  // Photo Upload State
+  const [uploadingPhoto, setUploadingPhoto] = useState(false);
+  const [deletingPhoto, setDeletingPhoto] = useState(false);
 
   useEffect(() => {
     fetchSessions();
@@ -233,6 +239,63 @@ const SettingsPage = () => {
     });
   };
 
+  const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploadingPhoto(true);
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+
+      const response = await fetch("/api/profile/photo", {
+        method: "POST",
+        body: formData,
+      });
+
+      if (response.ok) {
+        toast.success("Profile photo updated");
+        // Reload the page to get updated session data
+        window.location.reload();
+      } else {
+        const error = await response.json();
+        toast.error("Failed to upload photo", {
+          description: error.error,
+        });
+      }
+    } catch (error) {
+      console.error("Error uploading photo:", error);
+      toast.error("Failed to upload photo");
+    } finally {
+      setUploadingPhoto(false);
+    }
+  };
+
+  const handlePhotoDelete = async () => {
+    setDeletingPhoto(true);
+    try {
+      const response = await fetch("/api/profile/photo", {
+        method: "DELETE",
+      });
+
+      if (response.ok) {
+        toast.success("Profile photo removed");
+        // Reload the page to get updated session data
+        window.location.reload();
+      } else {
+        const error = await response.json();
+        toast.error("Failed to delete photo", {
+          description: error.error,
+        });
+      }
+    } catch (error) {
+      console.error("Error deleting photo:", error);
+      toast.error("Failed to delete photo");
+    } finally {
+      setDeletingPhoto(false);
+    }
+  };
+
   const currentSessionToken = session?.session?.token;
 
   if (!session?.user) {
@@ -315,6 +378,63 @@ const SettingsPage = () => {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
+          {/* Profile Photo */}
+          <div>
+            <Label>Profile Photo</Label>
+            <div className="mt-3 flex items-center gap-4">
+              <Avatar className="h-20 w-20">
+                <AvatarImage src={session.user.image || undefined} alt="Profile photo" />
+                <AvatarFallback className="text-xl">
+                  {(session.user.name || session.user.email || "U")[0].toUpperCase()}
+                </AvatarFallback>
+              </Avatar>
+              <div className="space-y-2">
+                <div className="flex gap-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    disabled={uploadingPhoto}
+                    className="relative"
+                  >
+                    <Camera className="mr-2 h-4 w-4" />
+                    {uploadingPhoto ? "Uploading..." : "Upload Photo"}
+                    <input
+                      type="file"
+                      accept="image/jpeg,image/jpg,image/png,image/webp"
+                      onChange={handlePhotoUpload}
+                      disabled={uploadingPhoto}
+                      className="absolute inset-0 cursor-pointer opacity-0"
+                    />
+                  </Button>
+                  {session.user.image && (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      disabled={deletingPhoto || uploadingPhoto}
+                      onClick={handlePhotoDelete}
+                    >
+                      {deletingPhoto ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          Removing...
+                        </>
+                      ) : (
+                        <>
+                          <Trash2 className="mr-2 h-4 w-4" />
+                          Remove
+                        </>
+                      )}
+                    </Button>
+                  )}
+                </div>
+                <p className="text-muted-foreground text-xs">
+                  JPG, PNG or WebP. Max 512KB. Will be optimized to 128x128px.
+                </p>
+              </div>
+            </div>
+          </div>
           <div>
             <Label>Email Address</Label>
             <Input
