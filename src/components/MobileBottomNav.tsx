@@ -1,6 +1,6 @@
 "use client";
 
-import { Home, FileText, PlusCircle, Users } from "lucide-react";
+import { Home, FileText, PlusCircle, Users, Settings } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -28,17 +28,17 @@ const navItems: NavItem[] = [
     isActive: (pathname) => pathname.startsWith("/clients"),
   },
   {
-    href: "/invoices/new",
-    label: "New",
-    icon: PlusCircle,
-    isActive: (pathname) => pathname === "/invoices/new",
-  },
-  {
     href: "/invoices",
     label: "Invoices",
     icon: FileText,
     isActive: (pathname) =>
       pathname.startsWith("/invoices") && pathname !== "/invoices/new",
+  },
+  {
+    href: "/settings",
+    label: "Settings",
+    icon: Settings,
+    isActive: (pathname) => pathname.startsWith("/settings"),
   },
 ];
 

@@ -137,16 +137,6 @@ export const AppHeader = () => {
             >
               Invoices
             </Link>
-            <Link
-              href="/invoices/new"
-              className={`hover:text-foreground/80 transition-colors ${
-                pathname === "/invoices/new"
-                  ? "text-foreground font-semibold"
-                  : "text-foreground/60"
-              }`}
-            >
-              New Invoice
-            </Link>
           </nav>
         )}
 

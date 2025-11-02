@@ -234,6 +234,46 @@ const SettingsPage = () => {
   };
 
   const handleThemeToggle = (theme: "light" | "dark") => {
+    // Inject animation styles for theme transitions
+    const styleId = `theme-transition-${Date.now()}`;
+    const style = document.createElement("style");
+    style.id = styleId;
+
+    // Circle blur animation from theme toggle button
+    const css = `
+      @supports (view-transition-name: root) {
+        ::view-transition-old(root) { 
+          animation: none;
+        }
+        ::view-transition-new(root) {
+          animation: circle-blur-expand 0.5s ease-out;
+          transform-origin: center center;
+          filter: blur(0);
+        }
+        @keyframes circle-blur-expand {
+          from {
+            clip-path: circle(0% at 50% 50%);
+            filter: blur(4px);
+          }
+          to {
+            clip-path: circle(150% at 50% 50%);
+            filter: blur(0);
+          }
+        }
+      }
+    `;
+
+    style.textContent = css;
+    document.head.appendChild(style);
+
+    // Clean up animation styles after transition
+    setTimeout(() => {
+      const styleEl = document.getElementById(styleId);
+      if (styleEl) {
+        styleEl.remove();
+      }
+    }, 3000);
+
     startTransition(() => {
       setTheme(theme);
     });
@@ -383,9 +423,14 @@ const SettingsPage = () => {
             <Label>Profile Photo</Label>
             <div className="mt-3 flex items-center gap-4">
               <Avatar className="h-20 w-20">
-                <AvatarImage src={session.user.image || undefined} alt="Profile photo" />
+                <AvatarImage
+                  src={session.user.image || undefined}
+                  alt="Profile photo"
+                />
                 <AvatarFallback className="text-xl">
-                  {(session.user.name || session.user.email || "U")[0].toUpperCase()}
+                  {(session.user.name ||
+                    session.user.email ||
+                    "U")[0].toUpperCase()}
                 </AvatarFallback>
               </Avatar>
               <div className="space-y-2">
@@ -503,7 +548,7 @@ const SettingsPage = () => {
                 return (
                   <div
                     key={sess.id}
-                    className="flex items-center justify-between rounded-lg border p-3"
+                    className="flex items-center justify-between gap-4 rounded-lg border p-3"
                   >
                     <div className="flex-1">
                       <div className="flex items-center gap-2">
