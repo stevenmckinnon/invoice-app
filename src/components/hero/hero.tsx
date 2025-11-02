@@ -59,7 +59,7 @@ const Hero = () => {
           </p>
 
           {/* App Demo Dashboard */}
-          <div className="mx-auto mt-16 w-full max-w-6xl">
+          <div className="mx-auto mt-16 w-full max-w-7xl">
             <DemoDashboard />
           </div>
         </div>
