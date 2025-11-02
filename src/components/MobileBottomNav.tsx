@@ -59,7 +59,7 @@ export const MobileBottomNav = () => {
       {/* Bottom Navigation */}
       <nav className="fixed right-0 bottom-0 left-0 z-50 flex justify-center md:hidden">
         {/* Glassy Navigation Container */}
-        <div className="relative mb-4 rounded-4xl border border-black/10 bg-white/13 shadow-lg backdrop-blur-md backdrop-saturate-[185%] dark:border-white/10 dark:bg-black/20">
+        <div className="relative mb-4 rounded-4xl border border-black/10 bg-white/13 backdrop-blur-md backdrop-saturate-[185%] dark:border-white/10 dark:bg-black/20">
           {/* Navigation Items */}
           <div className="relative flex items-center justify-center gap-1 p-3">
             {navItems.map((item) => {
@@ -71,7 +71,7 @@ export const MobileBottomNav = () => {
                   key={item.href}
                   href={item.href}
                   className={cn(
-                    "relative flex w-[85px] flex-col items-center justify-center gap-1 rounded-3xl px-3 py-2 transition-all duration-300 ease-out",
+                    "relative flex w-[85px] flex-col items-center justify-center gap-1 rounded-3xl px-3 py-2 shadow-none transition-all duration-300 ease-out",
                     "hover:scale-105 active:scale-95",
                     isActive
                       ? "text-accent-foreground"
@@ -80,7 +80,7 @@ export const MobileBottomNav = () => {
                 >
                   {/* Active Background Pill */}
                   {isActive && (
-                    <div className="bg-accent animate-in fade-in zoom-in-95 absolute inset-0 rounded-3xl shadow-md duration-200" />
+                    <div className="bg-accent animate-in fade-in zoom-in-95 absolute inset-0 rounded-3xl duration-200" />
                   )}
 
                   {/* Icon */}
