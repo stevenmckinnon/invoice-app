@@ -1,6 +1,7 @@
 "use client";
 
-import { Home, FileText, PlusCircle, Users, Settings } from "lucide-react";
+import { FileText, Home, Settings, Users } from "lucide-react";
+import { motion } from "motion/react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -57,7 +58,12 @@ export const MobileBottomNav = () => {
       <div className="h-20 md:hidden" />
 
       {/* Bottom Navigation */}
-      <nav className="fixed right-0 bottom-0 left-0 z-50 flex justify-center md:hidden">
+      <motion.nav
+        initial={{ opacity: 0, y: 100 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        className="fixed right-0 bottom-0 left-0 z-50 flex justify-center md:hidden"
+      >
         {/* Glassy Navigation Container */}
         <div className="relative mb-4 rounded-4xl border border-black/10 bg-white/13 backdrop-blur-md backdrop-saturate-[185%] dark:border-white/10 dark:bg-black/20">
           {/* Navigation Items */}
@@ -107,7 +113,7 @@ export const MobileBottomNav = () => {
             })}
           </div>
         </div>
-      </nav>
+      </motion.nav>
     </>
   );
 };
