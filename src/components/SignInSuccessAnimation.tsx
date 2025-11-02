@@ -1,9 +1,8 @@
 "use client";
 import { useEffect, useState } from "react";
 
-import { CheckCircle2 } from "lucide-react";
-
 import CaleyLogo from "@/components/CaleyLogo";
+import { useSession } from "@/lib/auth-client";
 
 interface SignInSuccessAnimationProps {
   onComplete: () => void;
@@ -13,6 +12,8 @@ export function SignInSuccessAnimation({
   onComplete,
 }: SignInSuccessAnimationProps) {
   const [isVisible, setIsVisible] = useState(false);
+  const { data: session } = useSession();
+  const userName = session?.user?.name?.split(" ")?.[0];
 
   useEffect(() => {
     // Trigger animation
@@ -44,16 +45,6 @@ export function SignInSuccessAnimation({
           >
             <CaleyLogo className="h-32 w-32" />
           </div>
-          <div
-            className={`absolute top-0 right-0 flex h-8 w-8 items-center justify-center rounded-full transition-all duration-500 ${
-              isVisible ? "scale-100 opacity-100" : "scale-0 opacity-0"
-            }`}
-            style={{
-              transitionDelay: isVisible ? "400ms" : "0ms",
-            }}
-          >
-            <CheckCircle2 className="h-8 w-8 text-green-500" />
-          </div>
         </div>
 
         {/* Success message */}
@@ -65,7 +56,7 @@ export function SignInSuccessAnimation({
             transitionDelay: isVisible ? "600ms" : "0ms",
           }}
         >
-          <h2 className="text-2xl font-bold">Welcome back!</h2>
+          <h2 className="text-2xl font-bold">Welcome back, {userName}!</h2>
           <p className="text-muted-foreground mt-2 text-sm">
             Taking you to your dashboard...
           </p>
