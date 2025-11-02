@@ -98,13 +98,13 @@ export default function SignUpPage() {
 
   return (
     <div className="grid h-screen w-full grid-cols-1 overflow-hidden md:grid-cols-2">
-      <div className="relative col-span-1 hidden items-center justify-center overflow-hidden p-6 md:flex">
+      <div className="relative col-span-1 hidden items-center justify-center overflow-hidden md:flex">
         <div className="dither-retro relative h-full w-full">
           <Image
             src="/signup.jpg"
             alt="Skye, Scotland, UK"
             fill
-            className="rounded-lg object-cover object-bottom"
+            className="object-cover object-bottom"
           />
         </div>
       </div>

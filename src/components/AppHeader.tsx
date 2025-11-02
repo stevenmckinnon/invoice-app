@@ -86,13 +86,13 @@ export const AppHeader = () => {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, ease: "easeOut" }}
       className={cn(
-        "bg-background/95 supports-[backdrop-filter]:bg-background/60 border-border/50 fixed top-0 right-0 left-0 z-50 mx-auto flex w-full max-w-5xl justify-center px-4 py-2 backdrop-blur transition-transform duration-300 ease-in-out md:top-5 md:w-auto md:rounded-4xl md:border",
+        "fixed top-0 right-0 left-0 z-50 mx-auto flex w-full max-w-6xl justify-center transition-transform duration-300 ease-in-out md:top-5 md:w-auto",
         isVisible
           ? "translate-y-0"
           : "-translate-y-full md:-translate-y-[calc(100%+20px)]",
       )}
     >
-      <div className="flex w-full items-center justify-between">
+      <div className="bg-background/95 supports-[backdrop-filter]:bg-background/60 border-border/50 flex w-full items-center justify-between px-4 py-2 backdrop-blur md:mx-4 md:rounded-4xl md:border">
         {/* Logo */}
         <Link
           href={session?.user ? "/dashboard" : "/"}
@@ -153,13 +153,15 @@ export const AppHeader = () => {
         {/* Right Section */}
         <div className="flex items-center gap-2">
           {/* Theme Toggle */}
-          <ThemeToggleButton
-            size="icon"
-            theme={theme as "light" | "dark"}
-            onClick={handleThemeToggle}
-            variant="circle-blur"
-            start="top-right"
-          />
+          {!session?.user && (
+            <ThemeToggleButton
+              size="icon"
+              theme={theme as "light" | "dark"}
+              onClick={handleThemeToggle}
+              variant="circle-blur"
+              start="top-right"
+            />
+          )}
 
           {/* User Menu or Auth Buttons */}
           {session ? (

@@ -7,9 +7,13 @@ import {
   Key,
   Loader2,
   Monitor,
+  MoonIcon,
+  Settings,
   Shield,
+  SunIcon,
   Trash2,
 } from "lucide-react";
+import { useTheme } from "next-themes";
 import { toast } from "sonner";
 
 import {
@@ -40,9 +44,9 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useThemeTransition } from "@/components/ui/shadcn-io/theme-toggle-button";
+import { Switch } from "@/components/ui/switch";
 import { changePassword, signOut, useSession } from "@/lib/auth-client";
-
-
 
 interface Session {
   id: string;
@@ -54,6 +58,8 @@ interface Session {
 }
 
 const SettingsPage = () => {
+  const { startTransition } = useThemeTransition();
+  const { theme, setTheme } = useTheme();
   const { data: session } = useSession();
   const [sessions, setSessions] = useState<Session[]>([]);
   const [loadingSessions, setLoadingSessions] = useState(true);
@@ -221,6 +227,12 @@ const SettingsPage = () => {
     return "Unknown Browser";
   };
 
+  const handleThemeToggle = (theme: "light" | "dark") => {
+    startTransition(() => {
+      setTheme(theme);
+    });
+  };
+
   const currentSessionToken = session?.session?.token;
 
   if (!session?.user) {
@@ -232,13 +244,64 @@ const SettingsPage = () => {
   }
 
   return (
-    <div className="mx-auto w-full max-w-4xl space-y-6 p-6 pb-28 md:pb-8">
+    <div className="mx-auto w-full max-w-6xl space-y-6 p-6 pb-28 md:pb-8">
       <div className="mb-6">
         <h1 className="text-3xl font-bold">Account Settings</h1>
         <p className="text-muted-foreground mt-2">
           Manage your account security and preferences
         </p>
       </div>
+
+      {/* General Preferences */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Settings className="h-5 w-5" />
+            General Preferences
+          </CardTitle>
+          <CardDescription>Manage your preferences</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center justify-between">
+            <div className="space-y-0.5">
+              <Label htmlFor="theme">Theme</Label>
+              <p className="text-muted-foreground text-sm">
+                Change the theme of the app
+              </p>
+            </div>
+            <div
+              className="group inline-flex items-center gap-2"
+              data-state={theme === "dark" ? "checked" : "unchecked"}
+            >
+              <span
+                id="theme-light"
+                className="group-data-[state=checked]:text-muted-foreground/70 cursor-pointer text-left text-sm font-medium"
+                aria-controls="theme"
+                onClick={() => handleThemeToggle("light")}
+              >
+                <SunIcon className="size-4" aria-hidden="true" />
+              </span>
+              <Switch
+                id="theme"
+                checked={theme === "dark"}
+                onCheckedChange={(checked) =>
+                  handleThemeToggle(checked ? "dark" : "light")
+                }
+                aria-labelledby="theme-dark theme-light"
+                aria-label="Toggle between dark and light mode"
+              />
+              <span
+                id="theme-dark"
+                className="group-data-[state=unchecked]:text-muted-foreground/70 cursor-pointer text-right text-sm font-medium"
+                aria-controls="theme"
+                onClick={() => handleThemeToggle("dark")}
+              >
+                <MoonIcon className="size-4" aria-hidden="true" />
+              </span>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Account Information */}
       <Card>

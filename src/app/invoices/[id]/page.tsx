@@ -29,8 +29,6 @@ import {
 } from "@/components/ui/table";
 import { Prisma } from "@/generated/prisma";
 
-
-
 type InvoiceWithRelations = Prisma.InvoiceGetPayload<{
   include: {
     items: true;
@@ -170,10 +168,13 @@ export default function InvoiceDetailPage({ params }: Props) {
   const customExpenses = invoice.customExpenseEntries || [];
 
   // Calculate regular rate dynamically from Work Days unit price (10% since a day is 10 hours)
-  const workDaysItem = invoice.items.find((item) => item.description === "Work Days");
-  const regularRate = workDaysItem && Number(workDaysItem.unitPrice) > 0
-    ? Number(workDaysItem.unitPrice) * 0.1
-    : 0; // No default
+  const workDaysItem = invoice.items.find(
+    (item) => item.description === "Work Days",
+  );
+  const regularRate =
+    workDaysItem && Number(workDaysItem.unitPrice) > 0
+      ? Number(workDaysItem.unitPrice) * 0.1
+      : 0; // No default
 
   // Combine all items into one array
   type CombinedItem = {
@@ -220,6 +221,20 @@ export default function InvoiceDetailPage({ params }: Props) {
       type: "expense" as const,
     })),
   ];
+
+  const downloadInvoicePdf = async () => {
+    const response = await fetch(`/api/invoices/${invoice.id}/pdf`);
+    const blob = await response.blob();
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    const invoiceDate = new Date(invoice.invoiceDate).toISOString().slice(0, 10).replace(/-/g, "");
+    a.download = `${invoiceDate} ${invoice.showName} ${invoice.fullName} ${invoice.invoiceNumber}.pdf`;
+    document.body.appendChild(a);
+    a.click();
+    window.URL.revokeObjectURL(url);
+    document.body.removeChild(a);
+  };
 
   return (
     <div className="mx-auto w-full max-w-6xl p-6 pb-28 md:pb-8">
@@ -287,10 +302,8 @@ export default function InvoiceDetailPage({ params }: Props) {
               invoiceId={invoice.id}
               invoiceNumber={invoice.invoiceNumber}
             />
-            <Button asChild variant="outline">
-              <Link href={`/api/invoices/${invoice.id}/pdf`} target="_blank">
-                Download PDF
-              </Link>
+            <Button variant="outline" onClick={downloadInvoicePdf}>
+              Download PDF
             </Button>
             <DeleteInvoiceButton
               invoiceId={invoice.id}
