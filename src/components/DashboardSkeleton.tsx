@@ -1,9 +1,16 @@
+import { motion } from "motion/react";
+
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 
 export const DashboardSkeleton = () => {
   return (
-    <div className="mx-auto grid w-full max-w-6xl grid-cols-1 gap-6 p-6 pb-8">
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.5 }}
+      className="mx-auto grid w-full max-w-6xl grid-cols-1 gap-6 p-6 pb-8"
+    >
       {/* Header Skeleton */}
       <div className="flex items-center justify-between">
         <div className="space-y-2">
@@ -72,6 +79,6 @@ export const DashboardSkeleton = () => {
           </div>
         </CardContent>
       </Card>
-    </div>
+    </motion.div>
   );
 };
