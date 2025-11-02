@@ -18,9 +18,9 @@ const Hero = () => {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.5, ease: "easeOut" }}
-        className="relative z-10 mx-auto flex max-w-4xl items-center justify-center px-6 pt-24 pb-12 md:px-12 md:pt-36"
+        className="relative z-10 mx-auto flex flex-col items-center justify-center px-6 pt-24 pb-12 md:px-12 md:pt-36"
       >
-        <div className="text-center">
+        <div className="mx-auto w-full max-w-4xl text-center">
           <div className="bg-primary/10 dark:bg-primary/20 mb-6 inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium">
             <span className="relative flex h-2 w-2">
               <span className="bg-primary absolute inline-flex h-full w-full animate-ping rounded-full opacity-75"></span>
@@ -57,11 +57,11 @@ const Hero = () => {
           <p className="text-muted-foreground mt-6 text-sm">
             No credit card required • Free forever • Cancel anytime
           </p>
+        </div>
 
-          {/* App Demo Dashboard */}
-          <div className="mx-auto mt-16 w-full max-w-7xl">
-            <DemoDashboard />
-          </div>
+        {/* App Demo Dashboard */}
+        <div className="mx-auto mt-16 w-full max-w-5xl">
+          <DemoDashboard />
         </div>
       </motion.div>
     </section>
