@@ -44,7 +44,6 @@ import {
 } from "@/components/ui/tooltip";
 import { useSession } from "@/lib/auth-client";
 
-
 // Helper to format date without timezone shift
 const formatDate = (dateStr: Date | string) => {
   const date = typeof dateStr === "string" ? new Date(dateStr) : dateStr;
@@ -307,10 +306,10 @@ export default function Home() {
       </div>
 
       {/* Revenue Stats */}
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
         <Card>
           <CardHeader className="pb-3">
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between gap-2">
               <CardTitle className="text-muted-foreground text-sm font-medium">
                 Total Revenue
               </CardTitle>
@@ -319,7 +318,7 @@ export default function Home() {
               </div>
             </div>
           </CardHeader>
-          <CardContent>
+          <CardContent className="mt-auto">
             <div className="text-2xl font-bold">
               <AnimatedCounter
                 value={totalRevenue}
@@ -354,7 +353,7 @@ export default function Home() {
 
         <Card>
           <CardHeader className="pb-3">
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between gap-2">
               <CardTitle className="text-muted-foreground text-sm font-medium">
                 Paid
               </CardTitle>
@@ -363,7 +362,7 @@ export default function Home() {
               </div>
             </div>
           </CardHeader>
-          <CardContent>
+          <CardContent className="mt-auto">
             <div className="text-2xl font-bold text-green-600">
               <AnimatedCounter
                 value={paidRevenue}
@@ -382,7 +381,7 @@ export default function Home() {
 
         <Card>
           <CardHeader className="pb-3">
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between gap-2">
               <CardTitle className="text-muted-foreground text-sm font-medium">
                 Outstanding
               </CardTitle>
@@ -391,7 +390,7 @@ export default function Home() {
               </div>
             </div>
           </CardHeader>
-          <CardContent>
+          <CardContent className="mt-auto">
             <div className="text-2xl font-bold text-orange-600">
               <AnimatedCounter
                 value={outstandingRevenue}
@@ -409,7 +408,7 @@ export default function Home() {
 
         <Card>
           <CardHeader className="pb-3">
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between gap-2">
               <CardTitle className="text-muted-foreground text-sm font-medium">
                 Average Invoice
               </CardTitle>
@@ -418,7 +417,7 @@ export default function Home() {
               </div>
             </div>
           </CardHeader>
-          <CardContent>
+          <CardContent className="mt-auto">
             <div className="text-2xl font-bold">
               <AnimatedCounter
                 value={averageInvoice}
