@@ -36,7 +36,10 @@
   --sidebar-accent-foreground: oklch(0.6723 0.1606 244.9955);
   --sidebar-border: oklch(0.9271 0.0101 238.5177);
   --sidebar-ring: oklch(0.6818 0.1584 243.354);
-  --font-sans: Open Sans, sans-serif;
+  --font-sans:
+    var(--font-raleway), ui-sans-serif, system-ui, -apple-system, Segoe UI,
+    Roboto, Noto Sans, Ubuntu, Cantarell, Helvetica Neue, Arial,
+    "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
   --font-serif: Georgia, serif;
   --font-mono: Menlo, monospace;
   --radius: 1.3rem;
@@ -101,7 +104,10 @@
   --sidebar-accent-foreground: oklch(0.6692 0.1607 245.011);
   --sidebar-border: oklch(0.3795 0.022 240.5943);
   --sidebar-ring: oklch(0.6818 0.1584 243.354);
-  --font-sans: Open Sans, sans-serif;
+  --font-sans:
+    var(--font-raleway), ui-sans-serif, system-ui, -apple-system, Segoe UI,
+    Roboto, Noto Sans, Ubuntu, Cantarell, Helvetica Neue, Arial,
+    "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
   --font-serif: Georgia, serif;
   --font-mono: Menlo, monospace;
   --radius: 1.3rem;
@@ -191,6 +197,14 @@
   body {
     @apply bg-background text-foreground;
   }
+}
+
+/* Font utilities */
+.font-oswald {
+  font-family: var(--font-oswald), var(--font-sans);
+}
+.font-raleway {
+  font-family: var(--font-raleway), var(--font-sans);
 }
 
 button {

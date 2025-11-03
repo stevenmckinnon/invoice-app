@@ -29,7 +29,7 @@ const Hero = () => {
             Beta release!
           </div>
 
-          <h1 className="mb-6 text-5xl font-bold tracking-tight sm:text-6xl md:text-7xl">
+          <h1 className="font-oswald mb-6 text-5xl font-bold tracking-tight sm:text-6xl md:text-7xl">
             Professional Invoicing with{" "}
             <span className="text-primary">Caley</span>
           </h1>

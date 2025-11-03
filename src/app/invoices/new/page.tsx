@@ -351,7 +351,7 @@ export default function NewInvoicePage() {
         onSubmit={form.handleSubmit(onSubmit)}
         className="mx-auto grid w-full max-w-6xl gap-6 p-6 pb-28 md:pb-8"
       >
-        <h1 className="text-2xl font-semibold">New Invoice</h1>
+        <h1 className="font-oswald text-3xl font-bold">New Invoice</h1>
 
         {profileIncomplete && (
           <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 dark:border-amber-800 dark:bg-amber-950">
@@ -880,7 +880,9 @@ export default function NewInvoicePage() {
                           type="number"
                           step="0.01"
                           readOnly
-                          value={(item.cost ?? item.quantity * item.unitPrice) || 0}
+                          value={
+                            (item.cost ?? item.quantity * item.unitPrice) || 0
+                          }
                           onChange={(e) =>
                             updateItem(idx, "cost", e.target.value)
                           }

@@ -1,5 +1,5 @@
 import { Analytics } from "@vercel/analytics/next";
-import { Roboto, Roboto_Mono } from "next/font/google";
+import { Oswald, Raleway, Roboto_Mono } from "next/font/google";
 
 import { ConditionalLayout } from "@/components/ConditionalLayout";
 import { Providers } from "@/components/Providers";
@@ -7,13 +7,19 @@ import { Toaster } from "@/components/ui/sonner";
 
 import type { Metadata, Viewport } from "next";
 
-
 import "./globals.css";
 
-const robotoSans = Roboto({
-  variable: "--font-roboto-sans",
+const oswald = Oswald({
+  variable: "--font-oswald",
   subsets: ["latin"],
-  weight: ["400", "500", "700"],
+  weight: "400",
+  display: "swap",
+});
+
+const raleway = Raleway({
+  variable: "--font-raleway",
+  subsets: ["latin"],
+  display: "swap",
 });
 
 const robotoMono = Roboto_Mono({
@@ -116,10 +122,12 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
-      <body
-        className={`${robotoSans.variable} ${robotoMono.variable} antialiased`}
-      >
+    <html
+      lang="en"
+      suppressHydrationWarning
+      className={`${oswald.variable} ${raleway.variable}`}
+    >
+      <body className={`${robotoMono.variable} font-sans antialiased`}>
         <Analytics />
         <Providers>
           <ConditionalLayout>{children}</ConditionalLayout>

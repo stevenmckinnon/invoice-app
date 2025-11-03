@@ -221,7 +221,7 @@ export default function ProfilePage() {
   return (
     <div className="mx-auto grid w-full max-w-6xl grid-cols-1 gap-6 p-6 pb-28 md:pb-8">
       <div className="mb-6">
-        <h1 className="text-3xl font-bold">Profile Settings</h1>
+        <h1 className="font-oswald text-3xl font-bold">Profile Settings</h1>
         <p className="text-muted-foreground mt-2">
           Manage your personal information that appears on invoices
         </p>

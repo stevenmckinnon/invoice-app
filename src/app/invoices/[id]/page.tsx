@@ -228,7 +228,10 @@ export default function InvoiceDetailPage({ params }: Props) {
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    const invoiceDate = new Date(invoice.invoiceDate).toISOString().slice(0, 10).replace(/-/g, "");
+    const invoiceDate = new Date(invoice.invoiceDate)
+      .toISOString()
+      .slice(0, 10)
+      .replace(/-/g, "");
     a.download = `${invoiceDate} ${invoice.showName} ${invoice.fullName} ${invoice.invoiceNumber}.pdf`;
     document.body.appendChild(a);
     a.click();
@@ -244,7 +247,7 @@ export default function InvoiceDetailPage({ params }: Props) {
       <div className="grid gap-4">
         <div className="flex flex-col items-start justify-between gap-2 md:flex-row">
           <div className="space-y-2">
-            <h1 className="text-2xl font-semibold">
+            <h1 className="font-oswald text-3xl font-bold">
               Invoice {invoice.invoiceNumber}
             </h1>
             <div className="text-muted-foreground text-sm">

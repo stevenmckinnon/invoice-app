@@ -1,4 +1,3 @@
- 
 "use client";
 import { useEffect, useMemo, useState } from "react";
 
@@ -104,10 +103,8 @@ export default function EditInvoicePage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-   
   // @ts-ignore - React Hook Form type inference issues with complex nested schemas
   const form = useForm<FormValues>({
-     
     // @ts-ignore
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -310,7 +307,7 @@ export default function EditInvoicePage() {
               <span className="hidden md:block">Back</span>
             </Link>
           </Button>
-          <h1 className="text-2xl font-semibold">Edit Invoice</h1>
+          <h1 className="font-oswald text-3xl font-bold">Edit Invoice</h1>
         </div>
 
         <Card>

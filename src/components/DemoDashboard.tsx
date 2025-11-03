@@ -175,7 +175,9 @@ export const DemoDashboard = () => {
       <div className="zoom bg-background grid w-full grid-cols-1 gap-6 rounded-lg border p-12 pb-8 shadow-lg">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold">Invoice Dashboard</h1>
+            <h1 className="font-oswald text-3xl font-bold">
+              Invoice Dashboard
+            </h1>
             <p className="text-muted-foreground mt-1 text-left text-sm">
               Create and manage your invoices
             </p>

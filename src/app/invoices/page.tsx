@@ -123,7 +123,7 @@ export default function AllInvoicesPage() {
     <div className="mx-auto grid w-full max-w-6xl grid-cols-1 gap-6 p-6 pb-28 md:pb-8">
       <div className="flex flex-col justify-between gap-4 md:flex-row md:items-center">
         <div>
-          <h1 className="text-3xl font-bold">All Invoices</h1>
+          <h1 className="font-oswald text-3xl font-bold">All Invoices</h1>
           <p className="text-muted-foreground mt-1 text-sm">
             {filteredInvoices.length} invoice
             {filteredInvoices.length !== 1 ? "s" : ""} • Total: £

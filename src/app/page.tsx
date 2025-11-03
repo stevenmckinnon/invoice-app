@@ -43,7 +43,7 @@ export default function Home() {
             <h2 className="text-primary mb-3 text-sm font-semibold tracking-wider uppercase">
               Why Choose Us
             </h2>
-            <h3 className="mb-4 text-4xl font-bold md:text-5xl">
+            <h3 className="font-oswald mb-4 text-4xl font-bold md:text-5xl">
               Leading Invoicing Solution for Freelancers
             </h3>
             <p className="text-muted-foreground mx-auto max-w-2xl text-lg">
@@ -108,7 +108,7 @@ export default function Home() {
             <h2 className="text-primary mb-3 text-sm font-semibold tracking-wider uppercase">
               Our Features
             </h2>
-            <h3 className="mb-4 text-4xl font-bold md:text-5xl">
+            <h3 className="font-oswald mb-4 text-4xl font-bold md:text-5xl">
               Everything You Need in One Place
             </h3>
             <p className="text-muted-foreground mx-auto max-w-2xl text-center text-lg">
@@ -220,7 +220,7 @@ export default function Home() {
       <section className="bg-background px-4 py-20">
         <SectionReveal className="mx-auto max-w-3xl">
           <div className="mb-12 text-center">
-            <h2 className="mb-4 text-4xl font-bold md:text-5xl">
+            <h2 className="font-oswald mb-4 text-4xl font-bold md:text-5xl">
               Frequently Asked Questions
             </h2>
             <p className="text-muted-foreground text-lg">
@@ -309,7 +309,7 @@ export default function Home() {
       <section className="bg-muted/30 px-4 py-20">
         <SectionReveal className="mx-auto max-w-6xl">
           <div className="mb-16 text-center">
-            <h2 className="mb-4 text-4xl font-bold md:text-5xl">
+            <h2 className="font-oswald mb-4 text-4xl font-bold md:text-5xl">
               Loved by Freelancers
             </h2>
             <p className="text-muted-foreground text-lg">
@@ -411,7 +411,7 @@ export default function Home() {
       {/* CTA Section */}
       <section className="bg-background px-4 py-24 text-center">
         <SectionReveal className="mx-auto max-w-3xl">
-          <h2 className="mb-6 text-4xl font-bold md:text-5xl">
+          <h2 className="font-oswald mb-6 text-4xl font-bold md:text-5xl">
             Ready to Simplify Your Invoicing?
           </h2>
           <p className="text-muted-foreground mx-auto mb-10 max-w-2xl text-lg md:text-xl">
@@ -445,7 +445,7 @@ export default function Home() {
             <div className="col-span-3 space-y-4 md:col-span-1">
               <div className="flex items-center gap-2">
                 <CaleyLogo className="h-8 w-8" />
-                <span className="text-xl font-bold">Caley</span>
+                <span className="font-oswald text-xl font-bold">Caley</span>
               </div>
               <p className="text-muted-foreground text-sm">
                 Professional invoice management built for freelancers and
