@@ -74,20 +74,24 @@ export default function EditClientPage({
             const clients = await res.json();
             const client = clients.find((c: any) => c.id === resolvedParams.id);
 
-          if (client) {
-            form.reset({
-              name: client.name || "",
-              addressLine1: client.addressLine1 || "",
-              addressLine2: client.addressLine2 || "",
-              city: client.city || "",
-              state: client.state || "",
-              postalCode: client.postalCode || "",
-              country: client.country || "",
-              attentionTo: client.attentionTo || "",
-              dayRate: client.dayRate ? String(client.dayRate) : "",
-              perDiemWork: client.perDiemWork ? String(client.perDiemWork) : "",
-              perDiemTravel: client.perDiemTravel ? String(client.perDiemTravel) : "",
-            });
+            if (client) {
+              form.reset({
+                name: client.name || "",
+                addressLine1: client.addressLine1 || "",
+                addressLine2: client.addressLine2 || "",
+                city: client.city || "",
+                state: client.state || "",
+                postalCode: client.postalCode || "",
+                country: client.country || "",
+                attentionTo: client.attentionTo || "",
+                dayRate: client.dayRate ? String(client.dayRate) : "",
+                perDiemWork: client.perDiemWork
+                  ? String(client.perDiemWork)
+                  : "",
+                perDiemTravel: client.perDiemTravel
+                  ? String(client.perDiemTravel)
+                  : "",
+              });
             } else {
               alert("Client not found");
               router.push("/clients");
@@ -151,7 +155,7 @@ export default function EditClientPage({
 
   return (
     <div className="mx-auto w-full max-w-4xl space-y-6 p-6 pb-28 md:pb-8">
-      <h1 className="text-2xl font-semibold">Edit Client</h1>
+      <h1 className="font-oswald text-3xl font-bold">Edit Client</h1>
 
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
@@ -286,39 +290,16 @@ export default function EditClientPage({
               <CardTitle>Rate Information</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-            <FormField
-              control={form.control}
-              name="dayRate"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Day Rate (£/day)</FormLabel>
-                  <FormControl>
-                    <Input 
-                      type="number" 
-                      step="0.01" 
-                      value={field.value || ""}
-                      onChange={field.onChange}
-                      onBlur={field.onBlur}
-                      name={field.name}
-                      ref={field.ref}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <div className="grid grid-cols-2 gap-4">
               <FormField
                 control={form.control}
-                name="perDiemWork"
+                name="dayRate"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Per Diem Work (£/day)</FormLabel>
+                    <FormLabel>Day Rate (£/day)</FormLabel>
                     <FormControl>
-                      <Input 
-                        type="number" 
-                        step="0.01" 
+                      <Input
+                        type="number"
+                        step="0.01"
                         value={field.value || ""}
                         onChange={field.onChange}
                         onBlur={field.onBlur}
@@ -331,28 +312,51 @@ export default function EditClientPage({
                 )}
               />
 
-              <FormField
-                control={form.control}
-                name="perDiemTravel"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Per Diem Travel (£/day)</FormLabel>
-                    <FormControl>
-                      <Input 
-                        type="number" 
-                        step="0.01" 
-                        value={field.value || ""}
-                        onChange={field.onChange}
-                        onBlur={field.onBlur}
-                        name={field.name}
-                        ref={field.ref}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
+              <div className="grid grid-cols-2 gap-4">
+                <FormField
+                  control={form.control}
+                  name="perDiemWork"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Per Diem Work (£/day)</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="number"
+                          step="0.01"
+                          value={field.value || ""}
+                          onChange={field.onChange}
+                          onBlur={field.onBlur}
+                          name={field.name}
+                          ref={field.ref}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="perDiemTravel"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Per Diem Travel (£/day)</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="number"
+                          step="0.01"
+                          value={field.value || ""}
+                          onChange={field.onChange}
+                          onBlur={field.onBlur}
+                          name={field.name}
+                          ref={field.ref}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
             </CardContent>
           </Card>
 
@@ -373,4 +377,3 @@ export default function EditClientPage({
     </div>
   );
 }
-
