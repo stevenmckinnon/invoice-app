@@ -122,15 +122,15 @@ export default function AllInvoicesPage() {
   return (
     <div className="mx-auto grid w-full max-w-6xl grid-cols-1 gap-6 p-6 pb-28 md:pb-8">
       <div className="flex flex-col justify-between gap-4 md:flex-row md:items-center">
-        <div>
-          <h1 className="font-oswald text-3xl font-bold">All Invoices</h1>
-          <p className="text-muted-foreground mt-1 text-sm">
+        <div className="space-y-1">
+          <h1 className="font-oswald text-4xl font-bold tracking-tight">All Invoices</h1>
+          <p className="text-muted-foreground text-sm font-medium">
             {filteredInvoices.length} invoice
             {filteredInvoices.length !== 1 ? "s" : ""} • Total: £
             {totalRevenue.toFixed(2)}
           </p>
         </div>
-        <Button asChild size="lg">
+        <Button asChild size="lg" className="shadow-md hover:shadow-lg transition-shadow">
           <Link href="/invoices/new">
             <PlusIcon className="h-5 w-5" />
             Create Invoice
@@ -140,15 +140,15 @@ export default function AllInvoicesPage() {
 
       {/* Filters */}
       <Card>
-        <CardContent>
+        <CardContent className="pt-6">
           <div className="flex flex-col gap-4 md:flex-row">
             <div className="relative flex-1">
-              <SearchIcon className="text-muted-foreground absolute top-2.5 left-2 h-4 w-4" />
+              <SearchIcon className="text-muted-foreground absolute top-3 left-3 h-4 w-4" />
               <Input
                 placeholder="Search by invoice number, show name, or client..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-8"
+                className="pl-10"
               />
             </div>
             <Select value={statusFilter} onValueChange={setStatusFilter}>
@@ -170,7 +170,7 @@ export default function AllInvoicesPage() {
       {/* Invoices Table */}
       <Card>
         <CardHeader>
-          <CardTitle>
+          <CardTitle className="text-xl">
             {statusFilter === "all"
               ? "All Invoices"
               : `${
@@ -224,14 +224,14 @@ export default function AllInvoicesPage() {
               </TableBody>
             </Table>
           ) : paginatedInvoices.length === 0 ? (
-            <div className="py-12 text-center">
-              <p className="text-muted-foreground text-sm">
+            <div className="py-16 text-center">
+              <p className="text-muted-foreground text-sm font-medium">
                 {searchQuery || statusFilter !== "all"
                   ? "No invoices match your filters"
                   : "No invoices yet"}
               </p>
               {!searchQuery && statusFilter === "all" && (
-                <Button asChild className="mt-4">
+                <Button asChild className="mt-6 shadow-md hover:shadow-lg transition-shadow">
                   <Link href="/invoices/new">
                     <PlusIcon className="h-4 w-4" />
                     Create Invoice

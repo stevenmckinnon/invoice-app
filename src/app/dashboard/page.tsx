@@ -291,13 +291,13 @@ export default function Home() {
   return (
     <div className="mx-auto grid w-full max-w-6xl grid-cols-1 gap-6 p-6 pb-28 md:pb-8">
       <div className="flex items-center justify-between">
-        <div>
-          <h1 className="font-oswald text-3xl font-bold">Invoice Dashboard</h1>
-          <p className="text-muted-foreground mt-1 text-sm">
+        <div className="space-y-1">
+          <h1 className="font-oswald text-4xl font-bold tracking-tight">Invoice Dashboard</h1>
+          <p className="text-muted-foreground text-sm font-medium">
             Create and manage your invoices
           </p>
         </div>
-        <Button asChild size="lg">
+        <Button asChild size="lg" className="shadow-md hover:shadow-lg transition-shadow">
           <Link href="/invoices/new">
             <PlusIcon className="h-5 w-5" />
             Create Invoice
@@ -307,19 +307,19 @@ export default function Home() {
 
       {/* Revenue Stats */}
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-        <Card>
-          <CardHeader className="pb-3">
-            <div className="flex items-center justify-between gap-2">
-              <CardTitle className="text-muted-foreground text-sm font-medium">
+        <Card className="group hover:shadow-lg transition-all duration-300">
+          <CardHeader className="pb-4">
+            <div className="flex items-center justify-between gap-3">
+              <CardTitle className="text-muted-foreground text-xs font-semibold uppercase tracking-wider">
                 Total Revenue
               </CardTitle>
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-500/10">
-                <DollarSign className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500/20 to-blue-600/10 group-hover:from-blue-500/30 group-hover:to-blue-600/20 transition-all duration-300">
+                <DollarSign className="h-5 w-5 text-blue-600 dark:text-blue-400" />
               </div>
             </div>
           </CardHeader>
           <CardContent className="mt-auto">
-            <div className="text-2xl font-bold">
+            <div className="text-3xl font-bold tracking-tight">
               <AnimatedCounter
                 value={totalRevenue}
                 prefix="£"
@@ -327,15 +327,15 @@ export default function Home() {
                 decimals={2}
               />
             </div>
-            <div className="mt-2 flex items-center gap-1">
+            <div className="mt-3 flex items-center gap-1.5">
               {monthlyChange >= 0 ? (
-                <TrendingUp className="h-4 w-4 text-green-600" />
+                <TrendingUp className="h-4 w-4 text-green-600 dark:text-green-500" />
               ) : (
-                <TrendingDown className="h-4 w-4 text-red-600" />
+                <TrendingDown className="h-4 w-4 text-red-600 dark:text-red-500" />
               )}
               <p
-                className={`text-xs font-medium ${
-                  monthlyChange >= 0 ? "text-green-600" : "text-red-600"
+                className={`text-xs font-semibold ${
+                  monthlyChange >= 0 ? "text-green-600 dark:text-green-500" : "text-red-600 dark:text-red-500"
                 }`}
               >
                 {monthlyChange >= 0 ? "+" : ""}
@@ -346,24 +346,24 @@ export default function Home() {
                   decimals={1}
                 />
               </p>
-              <p className="text-muted-foreground text-xs">vs last month</p>
+              <p className="text-muted-foreground text-xs font-medium">vs last month</p>
             </div>
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader className="pb-3">
-            <div className="flex items-center justify-between gap-2">
-              <CardTitle className="text-muted-foreground text-sm font-medium">
+        <Card className="group hover:shadow-lg transition-all duration-300">
+          <CardHeader className="pb-4">
+            <div className="flex items-center justify-between gap-3">
+              <CardTitle className="text-muted-foreground text-xs font-semibold uppercase tracking-wider">
                 Paid
               </CardTitle>
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-green-500/10">
-                <CreditCard className="h-4 w-4 text-green-600 dark:text-green-400" />
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-green-500/20 to-green-600/10 group-hover:from-green-500/30 group-hover:to-green-600/20 transition-all duration-300">
+                <CreditCard className="h-5 w-5 text-green-600 dark:text-green-400" />
               </div>
             </div>
           </CardHeader>
           <CardContent className="mt-auto">
-            <div className="text-2xl font-bold text-green-600">
+            <div className="text-3xl font-bold tracking-tight text-green-600 dark:text-green-500">
               <AnimatedCounter
                 value={paidRevenue}
                 prefix="£"
@@ -372,26 +372,26 @@ export default function Home() {
                 delay={100}
               />
             </div>
-            <p className="text-muted-foreground mt-2 text-xs">
+            <p className="text-muted-foreground mt-3 text-xs font-medium">
               {invoices.filter((inv) => inv.status === "paid").length} paid
               invoices
             </p>
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader className="pb-3">
-            <div className="flex items-center justify-between gap-2">
-              <CardTitle className="text-muted-foreground text-sm font-medium">
+        <Card className="group hover:shadow-lg transition-all duration-300">
+          <CardHeader className="pb-4">
+            <div className="flex items-center justify-between gap-3">
+              <CardTitle className="text-muted-foreground text-xs font-semibold uppercase tracking-wider">
                 Outstanding
               </CardTitle>
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-orange-500/10">
-                <Clock className="h-4 w-4 text-orange-600 dark:text-orange-400" />
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-orange-500/20 to-orange-600/10 group-hover:from-orange-500/30 group-hover:to-orange-600/20 transition-all duration-300">
+                <Clock className="h-5 w-5 text-orange-600 dark:text-orange-400" />
               </div>
             </div>
           </CardHeader>
           <CardContent className="mt-auto">
-            <div className="text-2xl font-bold text-orange-600">
+            <div className="text-3xl font-bold tracking-tight text-orange-600 dark:text-orange-500">
               <AnimatedCounter
                 value={outstandingRevenue}
                 prefix="£"
@@ -400,25 +400,25 @@ export default function Home() {
                 delay={200}
               />
             </div>
-            <p className="text-muted-foreground mt-2 text-xs">
+            <p className="text-muted-foreground mt-3 text-xs font-medium">
               {invoices.filter((inv) => inv.status !== "paid").length} unpaid
             </p>
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader className="pb-3">
-            <div className="flex items-center justify-between gap-2">
-              <CardTitle className="text-muted-foreground text-sm font-medium">
+        <Card className="group hover:shadow-lg transition-all duration-300">
+          <CardHeader className="pb-4">
+            <div className="flex items-center justify-between gap-3">
+              <CardTitle className="text-muted-foreground text-xs font-semibold uppercase tracking-wider">
                 Average Invoice
               </CardTitle>
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-purple-500/10">
-                <FileTextIcon className="h-4 w-4 text-purple-600 dark:text-purple-400" />
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-purple-500/20 to-purple-600/10 group-hover:from-purple-500/30 group-hover:to-purple-600/20 transition-all duration-300">
+                <FileTextIcon className="h-5 w-5 text-purple-600 dark:text-purple-400" />
               </div>
             </div>
           </CardHeader>
           <CardContent className="mt-auto">
-            <div className="text-2xl font-bold">
+            <div className="text-3xl font-bold tracking-tight">
               <AnimatedCounter
                 value={averageInvoice}
                 prefix="£"
@@ -427,7 +427,7 @@ export default function Home() {
                 delay={300}
               />
             </div>
-            <p className="text-muted-foreground mt-2 text-xs">per invoice</p>
+            <p className="text-muted-foreground mt-3 text-xs font-medium">per invoice</p>
           </CardContent>
         </Card>
       </div>
@@ -437,21 +437,21 @@ export default function Home() {
         {/* Status Breakdown */}
         <Card>
           <CardHeader>
-            <CardTitle>Invoice Status</CardTitle>
-            <p className="text-muted-foreground text-sm">Breakdown by status</p>
+            <CardTitle className="text-xl">Invoice Status</CardTitle>
+            <p className="text-muted-foreground text-sm font-medium">Breakdown by status</p>
           </CardHeader>
           <CardContent>
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <div className="h-3 w-3 rounded-full bg-gray-500" />
-                  <span className="text-sm font-medium">Draft</span>
+            <div className="space-y-4">
+              <div className="flex items-center justify-between rounded-lg border border-border/50 bg-muted/20 p-3 transition-colors hover:bg-muted/30">
+                <div className="flex items-center gap-3">
+                  <div className="h-3 w-3 rounded-full bg-gray-500 shadow-sm" />
+                  <span className="text-sm font-semibold">Draft</span>
                 </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-muted-foreground text-sm">
+                <div className="flex items-center gap-3">
+                  <span className="text-muted-foreground text-sm font-medium">
                     {statusCounts.draft}
                   </span>
-                  <span className="text-sm font-medium">
+                  <span className="text-sm font-bold">
                     {invoices.length > 0
                       ? ((statusCounts.draft / invoices.length) * 100).toFixed(
                           0,
@@ -461,16 +461,16 @@ export default function Home() {
                   </span>
                 </div>
               </div>
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <div className="h-3 w-3 rounded-full bg-blue-500" />
-                  <span className="text-sm font-medium">Sent</span>
+              <div className="flex items-center justify-between rounded-lg border border-border/50 bg-muted/20 p-3 transition-colors hover:bg-muted/30">
+                <div className="flex items-center gap-3">
+                  <div className="h-3 w-3 rounded-full bg-blue-500 shadow-sm" />
+                  <span className="text-sm font-semibold">Sent</span>
                 </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-muted-foreground text-sm">
+                <div className="flex items-center gap-3">
+                  <span className="text-muted-foreground text-sm font-medium">
                     {statusCounts.sent}
                   </span>
-                  <span className="text-sm font-medium">
+                  <span className="text-sm font-bold">
                     {invoices.length > 0
                       ? ((statusCounts.sent / invoices.length) * 100).toFixed(0)
                       : 0}
@@ -478,16 +478,16 @@ export default function Home() {
                   </span>
                 </div>
               </div>
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <div className="h-3 w-3 rounded-full bg-green-500" />
-                  <span className="text-sm font-medium">Paid</span>
+              <div className="flex items-center justify-between rounded-lg border border-border/50 bg-muted/20 p-3 transition-colors hover:bg-muted/30">
+                <div className="flex items-center gap-3">
+                  <div className="h-3 w-3 rounded-full bg-green-500 shadow-sm" />
+                  <span className="text-sm font-semibold">Paid</span>
                 </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-muted-foreground text-sm">
+                <div className="flex items-center gap-3">
+                  <span className="text-muted-foreground text-sm font-medium">
                     {statusCounts.paid}
                   </span>
-                  <span className="text-sm font-medium">
+                  <span className="text-sm font-bold">
                     {invoices.length > 0
                       ? ((statusCounts.paid / invoices.length) * 100).toFixed(0)
                       : 0}
@@ -495,16 +495,16 @@ export default function Home() {
                   </span>
                 </div>
               </div>
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <div className="h-3 w-3 rounded-full bg-red-500" />
-                  <span className="text-sm font-medium">Overdue</span>
+              <div className="flex items-center justify-between rounded-lg border border-border/50 bg-muted/20 p-3 transition-colors hover:bg-muted/30">
+                <div className="flex items-center gap-3">
+                  <div className="h-3 w-3 rounded-full bg-red-500 shadow-sm" />
+                  <span className="text-sm font-semibold">Overdue</span>
                 </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-muted-foreground text-sm">
+                <div className="flex items-center gap-3">
+                  <span className="text-muted-foreground text-sm font-medium">
                     {statusCounts.overdue}
                   </span>
-                  <span className="text-sm font-medium">
+                  <span className="text-sm font-bold">
                     {invoices.length > 0
                       ? (
                           (statusCounts.overdue / invoices.length) *
@@ -522,28 +522,28 @@ export default function Home() {
         {/* Top Shows */}
         <Card>
           <CardHeader>
-            <CardTitle>Top Shows by Revenue</CardTitle>
-            <p className="text-muted-foreground text-sm">
+            <CardTitle className="text-xl">Top Shows by Revenue</CardTitle>
+            <p className="text-muted-foreground text-sm font-medium">
               Your highest earning projects
             </p>
           </CardHeader>
           <CardContent>
             {topShows.length > 0 ? (
-              <div className="space-y-3">
+              <div className="space-y-2">
                 {topShows.map((item, index) => (
                   <div
                     key={item.show}
-                    className="flex items-center justify-between"
+                    className="flex items-center justify-between rounded-lg border border-border/50 bg-muted/20 p-3 transition-colors hover:bg-muted/30"
                   >
                     <div className="flex items-center gap-3">
-                      <div className="bg-primary/10 flex h-6 w-6 items-center justify-center rounded-full text-xs font-bold">
+                      <div className="bg-primary/20 flex h-7 w-7 items-center justify-center rounded-full text-xs font-bold text-primary shadow-sm">
                         {index + 1}
                       </div>
-                      <span className="max-w-[200px] truncate text-sm font-medium">
+                      <span className="max-w-[200px] truncate text-sm font-semibold">
                         {item.show}
                       </span>
                     </div>
-                    <span className="text-sm font-bold">
+                    <span className="text-sm font-bold tracking-tight">
                       <AnimatedCounter
                         value={item.revenue}
                         prefix="£"
@@ -556,7 +556,7 @@ export default function Home() {
                 ))}
               </div>
             ) : (
-              <p className="text-muted-foreground py-8 text-center text-sm">
+              <p className="text-muted-foreground py-8 text-center text-sm font-medium">
                 No shows yet. Create your first invoice to see stats.
               </p>
             )}
@@ -569,8 +569,8 @@ export default function Home() {
         <CardHeader>
           <div className="flex items-center justify-between">
             <div>
-              <CardTitle>This Month</CardTitle>
-              <p className="text-muted-foreground text-sm">
+              <CardTitle className="text-xl">This Month</CardTitle>
+              <p className="text-muted-foreground text-sm font-medium">
                 {new Date().toLocaleDateString("en-GB", {
                   month: "long",
                   year: "numeric",
@@ -669,8 +669,8 @@ export default function Home() {
       {/* Revenue Trend Chart */}
       <Card>
         <CardHeader>
-          <CardTitle>Revenue Trend</CardTitle>
-          <p className="text-muted-foreground text-sm">
+          <CardTitle className="text-xl">Revenue Trend</CardTitle>
+          <p className="text-muted-foreground text-sm font-medium">
             Last 6 months performance
           </p>
         </CardHeader>
@@ -764,8 +764,8 @@ export default function Home() {
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         <Card>
           <CardHeader>
-            <CardTitle>Year-to-Date Performance</CardTitle>
-            <p className="text-muted-foreground text-sm">
+            <CardTitle className="text-xl">Year-to-Date Performance</CardTitle>
+            <p className="text-muted-foreground text-sm font-medium">
               {currentYear} vs {currentYear - 1}
             </p>
           </CardHeader>
@@ -852,8 +852,8 @@ export default function Home() {
 
         <Card>
           <CardHeader>
-            <CardTitle>Quick Stats</CardTitle>
-            <p className="text-muted-foreground text-sm">
+            <CardTitle className="text-xl">Quick Stats</CardTitle>
+            <p className="text-muted-foreground text-sm font-medium">
               Key metrics at a glance
             </p>
           </CardHeader>
@@ -918,12 +918,12 @@ export default function Home() {
         <CardHeader>
           <div className="flex items-center justify-between">
             <div>
-              <CardTitle>Recent Invoices</CardTitle>
-              <p className="text-muted-foreground mt-1 text-sm">
+              <CardTitle className="text-xl">Recent Invoices</CardTitle>
+              <p className="text-muted-foreground mt-1 text-sm font-medium">
                 Your latest 5 invoices
               </p>
             </div>
-            <Button asChild variant="outline" size="sm">
+            <Button asChild variant="outline" size="sm" className="shadow-sm hover:shadow-md transition-shadow">
               <Link href="/invoices">View All</Link>
             </Button>
           </div>

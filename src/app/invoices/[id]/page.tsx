@@ -241,26 +241,26 @@ export default function InvoiceDetailPage({ params }: Props) {
 
   return (
     <div className="mx-auto w-full max-w-6xl p-6 pb-28 md:pb-8">
-      <Button onClick={() => router.back()} className="mb-4" variant="outline">
+      <Button onClick={() => router.back()} className="mb-6 shadow-sm hover:shadow-md transition-shadow" variant="outline">
         <ArrowLeftIcon /> Back
       </Button>
-      <div className="grid gap-4">
-        <div className="flex flex-col items-start justify-between gap-2 md:flex-row">
-          <div className="space-y-2">
-            <h1 className="font-oswald text-3xl font-bold">
+      <div className="grid gap-6">
+        <div className="flex flex-col items-start justify-between gap-4 md:flex-row">
+          <div className="space-y-3">
+            <h1 className="font-oswald text-4xl font-bold tracking-tight">
               Invoice {invoice.invoiceNumber}
             </h1>
-            <div className="text-muted-foreground text-sm">
+            <div className="text-muted-foreground text-sm font-medium">
               Show: {invoice.showName}
             </div>
             <div className="flex items-center gap-3">
-              <span className="text-sm font-medium">Status:</span>
+              <span className="text-sm font-semibold">Status:</span>
               <Select
                 value={invoice.status}
                 onValueChange={handleStatusChange}
                 disabled={updatingStatus}
               >
-                <SelectTrigger className="h-8 w-[140px]">
+                <SelectTrigger className="h-9 w-[140px]">
                   <SelectValue>
                     <span className="capitalize">{invoice.status}</span>
                   </SelectValue>
@@ -268,25 +268,25 @@ export default function InvoiceDetailPage({ params }: Props) {
                 <SelectContent>
                   <SelectItem value="draft">
                     <div className="flex items-center gap-2">
-                      <div className="h-2.5 w-2.5 rounded-full bg-gray-500" />
+                      <div className="h-2.5 w-2.5 rounded-full bg-gray-500 shadow-sm" />
                       <span>Draft</span>
                     </div>
                   </SelectItem>
                   <SelectItem value="sent">
                     <div className="flex items-center gap-2">
-                      <div className="h-2.5 w-2.5 rounded-full bg-blue-500" />
+                      <div className="h-2.5 w-2.5 rounded-full bg-blue-500 shadow-sm" />
                       <span>Sent</span>
                     </div>
                   </SelectItem>
                   <SelectItem value="paid">
                     <div className="flex items-center gap-2">
-                      <div className="h-2.5 w-2.5 rounded-full bg-green-500" />
+                      <div className="h-2.5 w-2.5 rounded-full bg-green-500 shadow-sm" />
                       <span>Paid</span>
                     </div>
                   </SelectItem>
                   <SelectItem value="overdue">
                     <div className="flex items-center gap-2">
-                      <div className="h-2.5 w-2.5 rounded-full bg-red-500" />
+                      <div className="h-2.5 w-2.5 rounded-full bg-red-500 shadow-sm" />
                       <span>Overdue</span>
                     </div>
                   </SelectItem>
@@ -294,8 +294,8 @@ export default function InvoiceDetailPage({ params }: Props) {
               </Select>
             </div>
           </div>
-          <div className="mt-4 flex flex-wrap gap-2">
-            <Button asChild variant="secondary">
+          <div className="flex flex-wrap gap-2">
+            <Button asChild variant="secondary" className="shadow-sm hover:shadow-md transition-shadow">
               <Link href={`/invoices/${invoice.id}/edit`}>
                 <PencilIcon className="h-4 w-4" /> Edit
               </Link>
@@ -305,7 +305,7 @@ export default function InvoiceDetailPage({ params }: Props) {
               invoiceId={invoice.id}
               invoiceNumber={invoice.invoiceNumber}
             />
-            <Button variant="outline" onClick={downloadInvoicePdf}>
+            <Button variant="outline" onClick={downloadInvoicePdf} className="shadow-sm hover:shadow-md transition-shadow">
               Download PDF
             </Button>
             <DeleteInvoiceButton
@@ -315,8 +315,9 @@ export default function InvoiceDetailPage({ params }: Props) {
             />
           </div>
         </div>
-        <div className="mt-4 max-w-[calc(100dvw-3rem)]">
-          <Table>
+        <Card>
+          <CardContent className="pt-6">
+            <Table>
             <TableHeader>
               <TableRow>
                 <TableHead>Description</TableHead>
@@ -345,16 +346,17 @@ export default function InvoiceDetailPage({ params }: Props) {
             </TableBody>
             <TableFooter>
               <TableRow>
-                <TableCell colSpan={4} className="text-right font-semibold">
+                <TableCell colSpan={4} className="text-right font-semibold text-base">
                   Total
                 </TableCell>
-                <TableCell className="text-right font-semibold">
+                <TableCell className="text-right font-semibold text-base">
                   £{Number(invoice.totalAmount).toFixed(2)}
                 </TableCell>
               </TableRow>
             </TableFooter>
           </Table>
-        </div>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );

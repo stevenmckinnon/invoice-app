@@ -107,11 +107,11 @@ export default function ClientsPage() {
   return (
     <div className="mx-auto w-full max-w-6xl space-y-6 p-6 pb-28 md:pb-8">
       <div className="flex items-center justify-between">
-        <div>
-          <h1 className="font-oswald text-3xl font-bold">Clients</h1>
-          <p className="text-muted-foreground">Manage your client database</p>
+        <div className="space-y-1">
+          <h1 className="font-oswald text-4xl font-bold tracking-tight">Clients</h1>
+          <p className="text-muted-foreground text-sm font-medium">Manage your client database</p>
         </div>
-        <Button onClick={() => setShowCreateDialog(true)}>
+        <Button onClick={() => setShowCreateDialog(true)} className="shadow-md hover:shadow-lg transition-shadow">
           <Plus className="mr-2 h-4 w-4" />
           Add Client
         </Button>
@@ -119,8 +119,8 @@ export default function ClientsPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle>All Clients</CardTitle>
-          <CardDescription>
+          <CardTitle className="text-xl">All Clients</CardTitle>
+          <CardDescription className="font-medium">
             A list of all your clients with their details and rates
           </CardDescription>
         </CardHeader>
@@ -172,10 +172,10 @@ export default function ClientsPage() {
               </Table>
             </div>
           ) : clients.length === 0 ? (
-            <div className="py-12 text-center">
-              <p className="text-muted-foreground">No clients found.</p>
+            <div className="py-16 text-center">
+              <p className="text-muted-foreground text-sm font-medium">No clients found.</p>
               <Button
-                className="mt-4"
+                className="mt-6 shadow-md hover:shadow-lg transition-shadow"
                 variant="outline"
                 onClick={() => setShowCreateDialog(true)}
               >

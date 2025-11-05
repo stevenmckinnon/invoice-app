@@ -351,7 +351,10 @@ export default function NewInvoicePage() {
         onSubmit={form.handleSubmit(onSubmit)}
         className="mx-auto grid w-full max-w-6xl gap-6 p-6 pb-28 md:pb-8"
       >
-        <h1 className="font-oswald text-3xl font-bold">New Invoice</h1>
+        <div className="space-y-1">
+          <h1 className="font-oswald text-4xl font-bold tracking-tight">New Invoice</h1>
+          <p className="text-muted-foreground text-sm font-medium">Create a new invoice for your client</p>
+        </div>
 
         {profileIncomplete && (
           <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 dark:border-amber-800 dark:bg-amber-950">
@@ -396,7 +399,7 @@ export default function NewInvoicePage() {
 
         <Card>
           <CardHeader>
-            <CardTitle>Details</CardTitle>
+            <CardTitle className="text-xl">Details</CardTitle>
           </CardHeader>
           <CardContent className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <div className="md:col-span-2">
@@ -829,7 +832,7 @@ export default function NewInvoicePage() {
 
         <Card className="w-full max-w-[calc(100dvw-3rem)]">
           <CardHeader>
-            <CardTitle>Line Items</CardTitle>
+            <CardTitle className="text-xl">Line Items</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="overflow-x-auto">
@@ -916,7 +919,7 @@ export default function NewInvoicePage() {
 
         <Card>
           <CardHeader>
-            <CardTitle>Summary</CardTitle>
+            <CardTitle className="text-xl">Summary</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="grid grid-cols-2 gap-4 text-sm md:grid-cols-4">
@@ -959,7 +962,7 @@ export default function NewInvoicePage() {
                 )}
               />
               <div className="flex items-end justify-end">
-                <Button type="submit" disabled={isSubmitting}>
+                <Button type="submit" disabled={isSubmitting} className="shadow-md hover:shadow-lg transition-shadow" size="lg">
                   {isSubmitting ? "Creating..." : "Create Invoice"}
                 </Button>
               </div>
