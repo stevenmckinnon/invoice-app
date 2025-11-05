@@ -106,12 +106,19 @@ export default function ClientsPage() {
 
   return (
     <div className="mx-auto w-full max-w-6xl space-y-6 p-6 pb-28 md:pb-8">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col justify-between gap-4 md:flex-row md:items-center">
         <div className="space-y-1">
-          <h1 className="font-oswald text-4xl font-bold tracking-tight">Clients</h1>
-          <p className="text-muted-foreground text-sm font-medium">Manage your client database</p>
+          <h1 className="font-oswald text-4xl font-bold tracking-tight">
+            Clients
+          </h1>
+          <p className="text-muted-foreground text-sm font-medium">
+            Manage your client database
+          </p>
         </div>
-        <Button onClick={() => setShowCreateDialog(true)} className="shadow-md hover:shadow-lg transition-shadow">
+        <Button
+          onClick={() => setShowCreateDialog(true)}
+          className="shadow-md transition-shadow hover:shadow-lg"
+        >
           <Plus className="mr-2 h-4 w-4" />
           Add Client
         </Button>
@@ -173,9 +180,11 @@ export default function ClientsPage() {
             </div>
           ) : clients.length === 0 ? (
             <div className="py-16 text-center">
-              <p className="text-muted-foreground text-sm font-medium">No clients found.</p>
+              <p className="text-muted-foreground text-sm font-medium">
+                No clients found.
+              </p>
               <Button
-                className="mt-6 shadow-md hover:shadow-lg transition-shadow"
+                className="mt-6 shadow-md transition-shadow hover:shadow-lg"
                 variant="outline"
                 onClick={() => setShowCreateDialog(true)}
               >

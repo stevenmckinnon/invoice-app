@@ -290,14 +290,20 @@ export default function Home() {
 
   return (
     <div className="mx-auto grid w-full max-w-6xl grid-cols-1 gap-6 p-6 pb-28 md:pb-8">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col justify-between gap-4 md:flex-row md:items-center">
         <div className="space-y-1">
-          <h1 className="font-oswald text-4xl font-bold tracking-tight">Invoice Dashboard</h1>
+          <h1 className="font-oswald text-4xl font-bold tracking-tight">
+            Invoice Dashboard
+          </h1>
           <p className="text-muted-foreground text-sm font-medium">
             Create and manage your invoices
           </p>
         </div>
-        <Button asChild size="lg" className="shadow-md hover:shadow-lg transition-shadow">
+        <Button
+          asChild
+          size="lg"
+          className="shadow-md transition-shadow hover:shadow-lg"
+        >
           <Link href="/invoices/new">
             <PlusIcon className="h-5 w-5" />
             Create Invoice
@@ -306,14 +312,14 @@ export default function Home() {
       </div>
 
       {/* Revenue Stats */}
-      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-        <Card className="group hover:shadow-lg transition-all duration-300">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <Card className="group transition-all duration-300 hover:shadow-lg">
           <CardHeader className="pb-4">
             <div className="flex items-center justify-between gap-3">
-              <CardTitle className="text-muted-foreground text-xs font-semibold uppercase tracking-wider">
+              <CardTitle className="text-muted-foreground text-xs font-semibold tracking-wider uppercase">
                 Total Revenue
               </CardTitle>
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500/20 to-blue-600/10 group-hover:from-blue-500/30 group-hover:to-blue-600/20 transition-all duration-300">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500/20 to-blue-600/10 transition-all duration-300 group-hover:from-blue-500/30 group-hover:to-blue-600/20">
                 <DollarSign className="h-5 w-5 text-blue-600 dark:text-blue-400" />
               </div>
             </div>
@@ -335,7 +341,9 @@ export default function Home() {
               )}
               <p
                 className={`text-xs font-semibold ${
-                  monthlyChange >= 0 ? "text-green-600 dark:text-green-500" : "text-red-600 dark:text-red-500"
+                  monthlyChange >= 0
+                    ? "text-green-600 dark:text-green-500"
+                    : "text-red-600 dark:text-red-500"
                 }`}
               >
                 {monthlyChange >= 0 ? "+" : ""}
@@ -346,18 +354,20 @@ export default function Home() {
                   decimals={1}
                 />
               </p>
-              <p className="text-muted-foreground text-xs font-medium">vs last month</p>
+              <p className="text-muted-foreground text-xs font-medium">
+                vs last month
+              </p>
             </div>
           </CardContent>
         </Card>
 
-        <Card className="group hover:shadow-lg transition-all duration-300">
+        <Card className="group transition-all duration-300 hover:shadow-lg">
           <CardHeader className="pb-4">
             <div className="flex items-center justify-between gap-3">
-              <CardTitle className="text-muted-foreground text-xs font-semibold uppercase tracking-wider">
+              <CardTitle className="text-muted-foreground text-xs font-semibold tracking-wider uppercase">
                 Paid
               </CardTitle>
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-green-500/20 to-green-600/10 group-hover:from-green-500/30 group-hover:to-green-600/20 transition-all duration-300">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-green-500/20 to-green-600/10 transition-all duration-300 group-hover:from-green-500/30 group-hover:to-green-600/20">
                 <CreditCard className="h-5 w-5 text-green-600 dark:text-green-400" />
               </div>
             </div>
@@ -379,13 +389,13 @@ export default function Home() {
           </CardContent>
         </Card>
 
-        <Card className="group hover:shadow-lg transition-all duration-300">
+        <Card className="group transition-all duration-300 hover:shadow-lg">
           <CardHeader className="pb-4">
             <div className="flex items-center justify-between gap-3">
-              <CardTitle className="text-muted-foreground text-xs font-semibold uppercase tracking-wider">
+              <CardTitle className="text-muted-foreground text-xs font-semibold tracking-wider uppercase">
                 Outstanding
               </CardTitle>
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-orange-500/20 to-orange-600/10 group-hover:from-orange-500/30 group-hover:to-orange-600/20 transition-all duration-300">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-orange-500/20 to-orange-600/10 transition-all duration-300 group-hover:from-orange-500/30 group-hover:to-orange-600/20">
                 <Clock className="h-5 w-5 text-orange-600 dark:text-orange-400" />
               </div>
             </div>
@@ -406,13 +416,13 @@ export default function Home() {
           </CardContent>
         </Card>
 
-        <Card className="group hover:shadow-lg transition-all duration-300">
+        <Card className="group transition-all duration-300 hover:shadow-lg">
           <CardHeader className="pb-4">
             <div className="flex items-center justify-between gap-3">
-              <CardTitle className="text-muted-foreground text-xs font-semibold uppercase tracking-wider">
+              <CardTitle className="text-muted-foreground text-xs font-semibold tracking-wider uppercase">
                 Average Invoice
               </CardTitle>
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-purple-500/20 to-purple-600/10 group-hover:from-purple-500/30 group-hover:to-purple-600/20 transition-all duration-300">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-purple-500/20 to-purple-600/10 transition-all duration-300 group-hover:from-purple-500/30 group-hover:to-purple-600/20">
                 <FileTextIcon className="h-5 w-5 text-purple-600 dark:text-purple-400" />
               </div>
             </div>
@@ -427,7 +437,9 @@ export default function Home() {
                 delay={300}
               />
             </div>
-            <p className="text-muted-foreground mt-3 text-xs font-medium">per invoice</p>
+            <p className="text-muted-foreground mt-3 text-xs font-medium">
+              per invoice
+            </p>
           </CardContent>
         </Card>
       </div>
@@ -438,11 +450,13 @@ export default function Home() {
         <Card>
           <CardHeader>
             <CardTitle className="text-xl">Invoice Status</CardTitle>
-            <p className="text-muted-foreground text-sm font-medium">Breakdown by status</p>
+            <p className="text-muted-foreground text-sm font-medium">
+              Breakdown by status
+            </p>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              <div className="flex items-center justify-between rounded-lg border border-border/50 bg-muted/20 p-3 transition-colors hover:bg-muted/30">
+              <div className="border-border/50 bg-muted/20 hover:bg-muted/30 flex items-center justify-between rounded-lg border p-3 transition-colors">
                 <div className="flex items-center gap-3">
                   <div className="h-3 w-3 rounded-full bg-gray-500 shadow-sm" />
                   <span className="text-sm font-semibold">Draft</span>
@@ -461,7 +475,7 @@ export default function Home() {
                   </span>
                 </div>
               </div>
-              <div className="flex items-center justify-between rounded-lg border border-border/50 bg-muted/20 p-3 transition-colors hover:bg-muted/30">
+              <div className="border-border/50 bg-muted/20 hover:bg-muted/30 flex items-center justify-between rounded-lg border p-3 transition-colors">
                 <div className="flex items-center gap-3">
                   <div className="h-3 w-3 rounded-full bg-blue-500 shadow-sm" />
                   <span className="text-sm font-semibold">Sent</span>
@@ -478,7 +492,7 @@ export default function Home() {
                   </span>
                 </div>
               </div>
-              <div className="flex items-center justify-between rounded-lg border border-border/50 bg-muted/20 p-3 transition-colors hover:bg-muted/30">
+              <div className="border-border/50 bg-muted/20 hover:bg-muted/30 flex items-center justify-between rounded-lg border p-3 transition-colors">
                 <div className="flex items-center gap-3">
                   <div className="h-3 w-3 rounded-full bg-green-500 shadow-sm" />
                   <span className="text-sm font-semibold">Paid</span>
@@ -495,7 +509,7 @@ export default function Home() {
                   </span>
                 </div>
               </div>
-              <div className="flex items-center justify-between rounded-lg border border-border/50 bg-muted/20 p-3 transition-colors hover:bg-muted/30">
+              <div className="border-border/50 bg-muted/20 hover:bg-muted/30 flex items-center justify-between rounded-lg border p-3 transition-colors">
                 <div className="flex items-center gap-3">
                   <div className="h-3 w-3 rounded-full bg-red-500 shadow-sm" />
                   <span className="text-sm font-semibold">Overdue</span>
@@ -533,10 +547,10 @@ export default function Home() {
                 {topShows.map((item, index) => (
                   <div
                     key={item.show}
-                    className="flex items-center justify-between rounded-lg border border-border/50 bg-muted/20 p-3 transition-colors hover:bg-muted/30"
+                    className="border-border/50 bg-muted/20 hover:bg-muted/30 flex items-center justify-between rounded-lg border p-3 transition-colors"
                   >
                     <div className="flex items-center gap-3">
-                      <div className="bg-primary/20 flex h-7 w-7 items-center justify-center rounded-full text-xs font-bold text-primary shadow-sm">
+                      <div className="bg-primary/20 text-primary flex h-7 w-7 items-center justify-center rounded-full text-xs font-bold shadow-sm">
                         {index + 1}
                       </div>
                       <span className="max-w-[200px] truncate text-sm font-semibold">
@@ -923,7 +937,12 @@ export default function Home() {
                 Your latest 5 invoices
               </p>
             </div>
-            <Button asChild variant="outline" size="sm" className="shadow-sm hover:shadow-md transition-shadow">
+            <Button
+              asChild
+              variant="outline"
+              size="sm"
+              className="shadow-sm transition-shadow hover:shadow-md"
+            >
               <Link href="/invoices">View All</Link>
             </Button>
           </div>

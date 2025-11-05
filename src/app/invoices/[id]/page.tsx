@@ -240,20 +240,24 @@ export default function InvoiceDetailPage({ params }: Props) {
   };
 
   return (
-    <div className="mx-auto w-full max-w-6xl p-6 pb-28 md:pb-8">
-      <Button onClick={() => router.back()} className="mb-6 shadow-sm hover:shadow-md transition-shadow" variant="outline">
+    <div className="mx-auto w-full max-w-6xl overflow-x-hidden p-6 pb-28 md:px-6 md:pb-8">
+      <Button
+        onClick={() => router.back()}
+        className="mb-6 shadow-sm transition-shadow hover:shadow-md"
+        variant="outline"
+      >
         <ArrowLeftIcon /> Back
       </Button>
       <div className="grid gap-6">
         <div className="flex flex-col items-start justify-between gap-4 md:flex-row">
-          <div className="space-y-3">
-            <h1 className="font-oswald text-4xl font-bold tracking-tight">
+          <div className="min-w-0 flex-1 space-y-3">
+            <h1 className="font-oswald text-3xl font-bold tracking-tight break-words md:text-4xl">
               Invoice {invoice.invoiceNumber}
             </h1>
-            <div className="text-muted-foreground text-sm font-medium">
+            <div className="text-muted-foreground text-sm font-medium break-words">
               Show: {invoice.showName}
             </div>
-            <div className="flex items-center gap-3">
+            <div className="flex flex-wrap items-center gap-3">
               <span className="text-sm font-semibold">Status:</span>
               <Select
                 value={invoice.status}
@@ -294,8 +298,12 @@ export default function InvoiceDetailPage({ params }: Props) {
               </Select>
             </div>
           </div>
-          <div className="flex flex-wrap gap-2">
-            <Button asChild variant="secondary" className="shadow-sm hover:shadow-md transition-shadow">
+          <div className="flex w-full flex-wrap gap-2 md:w-auto">
+            <Button
+              asChild
+              variant="secondary"
+              className="shadow-sm transition-shadow hover:shadow-md"
+            >
               <Link href={`/invoices/${invoice.id}/edit`}>
                 <PencilIcon className="h-4 w-4" /> Edit
               </Link>
@@ -305,7 +313,11 @@ export default function InvoiceDetailPage({ params }: Props) {
               invoiceId={invoice.id}
               invoiceNumber={invoice.invoiceNumber}
             />
-            <Button variant="outline" onClick={downloadInvoicePdf} className="shadow-sm hover:shadow-md transition-shadow">
+            <Button
+              variant="outline"
+              onClick={downloadInvoicePdf}
+              className="shadow-sm transition-shadow hover:shadow-md"
+            >
               Download PDF
             </Button>
             <DeleteInvoiceButton
@@ -315,46 +327,55 @@ export default function InvoiceDetailPage({ params }: Props) {
             />
           </div>
         </div>
-        <Card>
-          <CardContent className="pt-6">
-            <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Description</TableHead>
-                <TableHead>Type</TableHead>
-                <TableHead className="text-right">Qty</TableHead>
-                <TableHead className="text-right">Unit Price</TableHead>
-                <TableHead className="text-right">Cost</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {allItems.map((item) => (
-                <TableRow key={item.id}>
-                  <TableCell>{item.description}</TableCell>
-                  <TableCell className="text-muted-foreground capitalize">
-                    {item.type}
-                  </TableCell>
-                  <TableCell className="text-right">{item.quantity}</TableCell>
-                  <TableCell className="text-right">
-                    £{item.unitPrice.toFixed(2)}
-                  </TableCell>
-                  <TableCell className="text-right font-medium">
-                    £{item.cost.toFixed(2)}
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-            <TableFooter>
-              <TableRow>
-                <TableCell colSpan={4} className="text-right font-semibold text-base">
-                  Total
-                </TableCell>
-                <TableCell className="text-right font-semibold text-base">
-                  £{Number(invoice.totalAmount).toFixed(2)}
-                </TableCell>
-              </TableRow>
-            </TableFooter>
-          </Table>
+        <Card className="overflow-hidden">
+          <CardContent className="overflow-x-auto pt-6">
+            <div className="min-w-full">
+              <Table className="w-full min-w-[600px]">
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Description</TableHead>
+                    <TableHead>Type</TableHead>
+                    <TableHead className="text-right">Qty</TableHead>
+                    <TableHead className="text-right">Unit Price</TableHead>
+                    <TableHead className="text-right">Cost</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {allItems.map((item) => (
+                    <TableRow key={item.id}>
+                      <TableCell className="min-w-[200px]">
+                        {item.description}
+                      </TableCell>
+                      <TableCell className="text-muted-foreground capitalize">
+                        {item.type}
+                      </TableCell>
+                      <TableCell className="text-right">
+                        {item.quantity}
+                      </TableCell>
+                      <TableCell className="text-right">
+                        £{item.unitPrice.toFixed(2)}
+                      </TableCell>
+                      <TableCell className="text-right font-medium">
+                        £{item.cost.toFixed(2)}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+                <TableFooter>
+                  <TableRow>
+                    <TableCell
+                      colSpan={4}
+                      className="text-right text-base font-semibold"
+                    >
+                      Total
+                    </TableCell>
+                    <TableCell className="text-right text-base font-semibold">
+                      £{Number(invoice.totalAmount).toFixed(2)}
+                    </TableCell>
+                  </TableRow>
+                </TableFooter>
+              </Table>
+            </div>
           </CardContent>
         </Card>
       </div>
