@@ -497,32 +497,6 @@ button {
     box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
   }
 
-  /* Normalize iOS date input appearance */
-  input[type="date"],
-  input[type="time"],
-  input[type="datetime-local"] {
-    -webkit-appearance: none;
-    appearance: none;
-    min-height: 2.5rem; /* Match h-10 */
-    max-height: 2.5rem;
-    padding: 0.5rem 1rem !important; /* Match px-4 py-2, override iOS defaults */
-    font-size: 0.875rem !important; /* Match text-sm, override iOS defaults */
-    line-height: 1.25rem;
-    box-sizing: border-box;
-  }
-
-  /* iOS date picker icon styling */
-  input[type="date"]::-webkit-calendar-picker-indicator,
-  input[type="time"]::-webkit-calendar-picker-indicator,
-  input[type="datetime-local"]::-webkit-calendar-picker-indicator {
-    opacity: 1;
-    cursor: pointer;
-    padding: 0;
-    margin-left: 0.5rem;
-    width: 1.25rem;
-    height: 1.25rem;
-  }
-
   /* iOS-style list items */
   [class*="TableRow"] {
     transition: background-color 0.15s ease-out;
@@ -545,4 +519,30 @@ button {
       padding-top: max(3rem, calc(3rem + env(safe-area-inset-top))) !important;
     }
   }
+}
+
+/* Normalize iOS date input appearance */
+input[type="date"],
+input[type="time"],
+input[type="datetime-local"] {
+  -webkit-appearance: none;
+  appearance: none;
+  min-height: 2.5rem; /* Match h-10 */
+  max-height: 2.5rem;
+  padding: 0.5rem 1rem !important; /* Match px-4 py-2, override iOS defaults */
+  font-size: 0.875rem !important; /* Match text-sm, override iOS defaults */
+  line-height: 1.25rem;
+  box-sizing: border-box;
+}
+
+/* iOS date picker icon styling */
+input[type="date"]::-webkit-calendar-picker-indicator,
+input[type="time"]::-webkit-calendar-picker-indicator,
+input[type="datetime-local"]::-webkit-calendar-picker-indicator {
+  opacity: 1;
+  cursor: pointer;
+  padding: 0;
+  margin-left: 0.5rem;
+  width: 1.25rem;
+  height: 1.25rem;
 }
