@@ -80,12 +80,14 @@ export const MobileBottomNav = () => {
           damping: 30,
         }}
         className="fixed right-0 bottom-0 left-0 z-50 flex w-full justify-center md:hidden"
-        style={{
-          paddingBottom: "env(safe-area-inset-bottom)",
-        }}
       >
         {/* iOS-style Navigation Container with enhanced blur */}
-        <div className="relative mb-2 border-t border-black/10 bg-white/80 backdrop-blur-xl backdrop-saturate-150 dark:border-white/10 dark:bg-black/60">
+        <div 
+          className="relative w-full border-t border-black/10 bg-white/80 backdrop-blur-xl backdrop-saturate-150 dark:border-white/10 dark:bg-black/60"
+          style={{
+            paddingBottom: "env(safe-area-inset-bottom)",
+          }}
+        >
           {/* Navigation Items */}
           <div className="relative flex w-full items-center justify-center gap-0.5 px-2 py-3">
             {navItems.map((item) => {
