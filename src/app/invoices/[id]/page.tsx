@@ -225,7 +225,7 @@ export default function InvoiceDetailPage({ params }: Props) {
   ];
 
   return (
-    <div className="mx-auto w-full max-w-6xl overflow-x-hidden p-6 pb-10 md:px-6 md:pb-8">
+    <div className="mx-auto w-full max-w-6xl overflow-x-hidden p-6 py-10 md:px-6 md:pb-8">
       <Button
         onClick={() => router.back()}
         className="mb-6 shadow-sm transition-shadow hover:shadow-md"

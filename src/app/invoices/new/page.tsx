@@ -349,7 +349,7 @@ export default function NewInvoicePage() {
       <form
         // @ts-expect-error - React Hook Form type inference issues
         onSubmit={form.handleSubmit(onSubmit)}
-        className="mx-auto grid w-full max-w-6xl gap-6 p-6 pb-10 md:pb-8"
+        className="mx-auto grid w-full max-w-6xl gap-6 p-6 py-10 md:pb-8"
       >
         <div className="space-y-1">
           <h1 className="font-oswald text-4xl font-bold tracking-tight">New Invoice</h1>

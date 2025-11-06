@@ -161,7 +161,7 @@ export default function ProfilePage() {
 
   if (loading) {
     return (
-      <div className="mx-auto w-full max-w-6xl p-6 pb-10 md:pb-8">
+      <div className="mx-auto w-full max-w-6xl p-6 py-10 md:pb-8">
         <div className="mb-6 space-y-2">
           <Skeleton className="h-9 w-64" />
           <Skeleton className="h-4 w-96" />
@@ -219,7 +219,7 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="mx-auto grid w-full max-w-6xl grid-cols-1 gap-6 p-6 pb-10 md:pb-8">
+    <div className="mx-auto grid w-full max-w-6xl grid-cols-1 gap-6 p-6 py-10 md:pb-8">
       <div className="mb-6">
         <h1 className="font-oswald text-3xl font-bold">Profile Settings</h1>
         <p className="text-muted-foreground mt-2">
