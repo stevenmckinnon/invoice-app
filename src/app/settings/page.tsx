@@ -347,7 +347,7 @@ const SettingsPage = () => {
   }
 
   return (
-    <div className="mx-auto w-full max-w-6xl space-y-6 p-6 pb-28 md:pb-8">
+    <div className="mx-auto w-full max-w-6xl space-y-6 p-6 pb-10 md:pb-8">
       <div className="mb-6">
         <h1 className="font-oswald text-3xl font-bold">Account Settings</h1>
         <p className="text-muted-foreground mt-2">

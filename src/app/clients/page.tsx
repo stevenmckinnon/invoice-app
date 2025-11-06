@@ -105,7 +105,7 @@ export default function ClientsPage() {
   };
 
   return (
-    <div className="mx-auto w-full max-w-6xl space-y-6 p-6 pb-28 md:pb-8">
+    <div className="mx-auto w-full max-w-6xl space-y-6 p-6 pb-10 md:pb-8">
       <div className="flex flex-col justify-between gap-4 md:flex-row md:items-center">
         <div className="space-y-1">
           <h1 className="font-oswald text-4xl font-bold tracking-tight">

@@ -137,7 +137,7 @@ export default function EditClientPage({
 
   if (loading) {
     return (
-      <div className="mx-auto w-full max-w-4xl space-y-6 p-6 pb-28 md:pb-8">
+      <div className="mx-auto w-full max-w-4xl space-y-6 p-6 pb-10 md:pb-8">
         <Skeleton className="h-10 w-64" />
         <Card>
           <CardHeader>
@@ -154,7 +154,7 @@ export default function EditClientPage({
   }
 
   return (
-    <div className="mx-auto w-full max-w-4xl space-y-6 p-6 pb-28 md:pb-8">
+    <div className="mx-auto w-full max-w-4xl space-y-6 p-6 pb-10 md:pb-8">
       <h1 className="font-oswald text-3xl font-bold">Edit Client</h1>
 
       <Form {...form}>
