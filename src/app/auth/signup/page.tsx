@@ -101,8 +101,8 @@ export default function SignUpPage() {
       <div className="relative col-span-1 hidden items-center justify-center overflow-hidden md:flex">
         <div className="dither-retro relative h-full w-full">
           <Image
-            src="/signup.jpg"
-            alt="Skye, Scotland, UK"
+            src="/sign-up.png"
+            alt="Sign up to Caley"
             fill
             className="object-cover object-bottom"
           />

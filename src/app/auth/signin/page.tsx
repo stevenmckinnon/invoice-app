@@ -148,8 +148,8 @@ const SignInForm = () => {
           <div className="relative col-span-1 hidden items-center justify-center overflow-hidden md:flex">
             <div className="dither-retro relative h-full w-full">
               <Image
-                src="/signin.jpg"
-                alt="Glenfinnan Viaduct, A830 Road, Glenfinnan, Scotland, UK"
+                src="/sign-in.png"
+                alt="Sign in to Caley"
                 fill
                 className="object-cover object-bottom"
               />
