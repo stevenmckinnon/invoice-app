@@ -1,4 +1,3 @@
- 
 import { headers } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
@@ -204,6 +203,7 @@ export const GET = async () => {
       totalAmount: true,
       status: true,
       createdAt: true,
+      fullName: true,
     },
   });
   return NextResponse.json(items);

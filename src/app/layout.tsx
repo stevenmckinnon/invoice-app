@@ -114,6 +114,7 @@ export const viewport: Viewport = {
     { media: "(prefers-color-scheme: light)", color: "#ffffff" },
     { media: "(prefers-color-scheme: dark)", color: "#000000" },
   ],
+  viewportFit: "cover", // Enable safe area insets for notched devices
 };
 
 export default function RootLayout({

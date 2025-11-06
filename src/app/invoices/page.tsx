@@ -52,6 +52,7 @@ type Invoice = {
   invoiceNumber: string;
   invoiceDate: Date;
   showName: string;
+  fullName: string;
   clientName: string | null;
   totalAmount: number;
   status: string;
@@ -123,14 +124,20 @@ export default function AllInvoicesPage() {
     <div className="mx-auto grid w-full max-w-6xl grid-cols-1 gap-6 p-6 pb-28 md:pb-8">
       <div className="flex flex-col justify-between gap-4 md:flex-row md:items-center">
         <div className="space-y-1">
-          <h1 className="font-oswald text-4xl font-bold tracking-tight">All Invoices</h1>
+          <h1 className="font-oswald text-4xl font-bold tracking-tight">
+            All Invoices
+          </h1>
           <p className="text-muted-foreground text-sm font-medium">
             {filteredInvoices.length} invoice
             {filteredInvoices.length !== 1 ? "s" : ""} • Total: £
             {totalRevenue.toFixed(2)}
           </p>
         </div>
-        <Button asChild size="lg" className="shadow-md hover:shadow-lg transition-shadow">
+        <Button
+          asChild
+          size="lg"
+          className="shadow-md transition-shadow hover:shadow-lg"
+        >
           <Link href="/invoices/new">
             <PlusIcon className="h-5 w-5" />
             Create Invoice
@@ -140,7 +147,7 @@ export default function AllInvoicesPage() {
 
       {/* Filters */}
       <Card>
-        <CardContent className="pt-6">
+        <CardContent>
           <div className="flex flex-col gap-4 md:flex-row">
             <div className="relative flex-1">
               <SearchIcon className="text-muted-foreground absolute top-3 left-3 h-4 w-4" />
@@ -231,7 +238,10 @@ export default function AllInvoicesPage() {
                   : "No invoices yet"}
               </p>
               {!searchQuery && statusFilter === "all" && (
-                <Button asChild className="mt-6 shadow-md hover:shadow-lg transition-shadow">
+                <Button
+                  asChild
+                  className="mt-6 shadow-md transition-shadow hover:shadow-lg"
+                >
                   <Link href="/invoices/new">
                     <PlusIcon className="h-4 w-4" />
                     Create Invoice
@@ -287,6 +297,9 @@ export default function AllInvoicesPage() {
                             invoiceNumber={invoice.invoiceNumber}
                             size="sm"
                             variant="outline"
+                            invoiceDate={invoice.invoiceDate}
+                            showName={invoice.showName}
+                            fullName={invoice.fullName}
                           />
                         </div>
                       </TableCell>

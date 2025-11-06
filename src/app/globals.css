@@ -50,23 +50,20 @@
   --shadow-opacity: 0.1;
   --shadow-color: rgba(29, 161, 242, 0.15);
   --shadow-2xs: 0px 1px 2px 0px rgba(0, 0, 0, 0.03);
-  --shadow-xs: 0px 1px 3px 0px rgba(0, 0, 0, 0.05), 0px 1px 2px -1px rgba(0, 0, 0, 0.05);
+  --shadow-xs:
+    0px 1px 3px 0px rgba(0, 0, 0, 0.05), 0px 1px 2px -1px rgba(0, 0, 0, 0.05);
   --shadow-sm:
-    0px 2px 4px -1px rgba(0, 0, 0, 0.06),
-    0px 4px 6px -1px rgba(0, 0, 0, 0.04);
+    0px 2px 4px -1px rgba(0, 0, 0, 0.06), 0px 4px 6px -1px rgba(0, 0, 0, 0.04);
   --shadow:
-    0px 4px 6px -1px rgba(0, 0, 0, 0.06),
-    0px 2px 4px -2px rgba(0, 0, 0, 0.04);
+    0px 4px 6px -1px rgba(0, 0, 0, 0.06), 0px 2px 4px -2px rgba(0, 0, 0, 0.04);
   --shadow-md:
-    0px 10px 15px -3px rgba(0, 0, 0, 0.08),
-    0px 4px 6px -4px rgba(0, 0, 0, 0.04);
+    0px 10px 15px -3px rgba(0, 0, 0, 0.08), 0px 4px 6px -4px rgba(0, 0, 0, 0.04);
   --shadow-lg:
-    0px 15px 25px -5px rgba(0, 0, 0, 0.1),
-    0px 8px 10px -6px rgba(0, 0, 0, 0.04);
+    0px 15px 25px -5px rgba(0, 0, 0, 0.1), 0px 8px 10px -6px rgba(0, 0, 0, 0.04);
   --shadow-xl:
     0px 20px 30px -5px rgba(0, 0, 0, 0.12),
     0px 10px 15px -8px rgba(0, 0, 0, 0.06);
-  --shadow-2xl: 
+  --shadow-2xl:
     0px 25px 50px -12px rgba(0, 0, 0, 0.15),
     0px 12px 20px -10px rgba(0, 0, 0, 0.08);
   --tracking-normal: 0em;
@@ -120,23 +117,20 @@
   --shadow-opacity: 0.15;
   --shadow-color: rgba(29, 161, 242, 0.25);
   --shadow-2xs: 0px 1px 2px 0px rgba(0, 0, 0, 0.15);
-  --shadow-xs: 0px 1px 3px 0px rgba(0, 0, 0, 0.2), 0px 1px 2px -1px rgba(0, 0, 0, 0.2);
+  --shadow-xs:
+    0px 1px 3px 0px rgba(0, 0, 0, 0.2), 0px 1px 2px -1px rgba(0, 0, 0, 0.2);
   --shadow-sm:
-    0px 2px 4px -1px rgba(0, 0, 0, 0.25),
-    0px 4px 6px -1px rgba(0, 0, 0, 0.15);
+    0px 2px 4px -1px rgba(0, 0, 0, 0.25), 0px 4px 6px -1px rgba(0, 0, 0, 0.15);
   --shadow:
-    0px 4px 6px -1px rgba(0, 0, 0, 0.25),
-    0px 2px 4px -2px rgba(0, 0, 0, 0.15);
+    0px 4px 6px -1px rgba(0, 0, 0, 0.25), 0px 2px 4px -2px rgba(0, 0, 0, 0.15);
   --shadow-md:
-    0px 10px 15px -3px rgba(0, 0, 0, 0.3),
-    0px 4px 6px -4px rgba(0, 0, 0, 0.2);
+    0px 10px 15px -3px rgba(0, 0, 0, 0.3), 0px 4px 6px -4px rgba(0, 0, 0, 0.2);
   --shadow-lg:
-    0px 15px 25px -5px rgba(0, 0, 0, 0.35),
-    0px 8px 10px -6px rgba(0, 0, 0, 0.2);
+    0px 15px 25px -5px rgba(0, 0, 0, 0.35), 0px 8px 10px -6px rgba(0, 0, 0, 0.2);
   --shadow-xl:
     0px 20px 30px -5px rgba(0, 0, 0, 0.4),
     0px 10px 15px -8px rgba(0, 0, 0, 0.25);
-  --shadow-2xl: 
+  --shadow-2xl:
     0px 25px 50px -12px rgba(0, 0, 0, 0.5),
     0px 12px 20px -10px rgba(0, 0, 0, 0.3);
 }
@@ -200,6 +194,32 @@
   }
   body {
     @apply bg-background text-foreground;
+    /* iOS safe area insets */
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
+  }
+
+  /* iOS-style smooth scrolling */
+  html {
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
+  }
+
+  /* iOS-style tap highlight */
+  * {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* iOS-style button press effect */
+  button:active,
+  a:active {
+    opacity: 0.7;
+    transform: scale(0.98);
+    transition:
+      opacity 0.1s,
+      transform 0.1s;
   }
 }
 
@@ -440,5 +460,68 @@ button {
 
   .zoom .text-xs {
     font-size: 0.625rem;
+  }
+}
+
+/* iOS-style enhancements */
+@media (max-width: 767px) {
+  /* iOS-style card shadows */
+  .card,
+  [class*="Card"] {
+    box-shadow:
+      0 1px 3px rgba(0, 0, 0, 0.1),
+      0 1px 2px rgba(0, 0, 0, 0.06);
+  }
+
+  /* iOS-style button press animations */
+  button,
+  [role="button"],
+  a[href] {
+    transition:
+      transform 0.1s ease-out,
+      opacity 0.1s ease-out;
+  }
+
+  button:active,
+  [role="button"]:active,
+  a[href]:active {
+    transform: scale(0.97);
+    opacity: 0.8;
+  }
+
+  /* iOS-style input focus */
+  input:focus,
+  textarea:focus,
+  select:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  }
+
+  /* iOS-style list items */
+  [class*="TableRow"] {
+    transition: background-color 0.15s ease-out;
+  }
+
+  [class*="TableRow"]:active {
+    background-color: rgba(0, 0, 0, 0.05);
+  }
+
+  .dark [class*="TableRow"]:active {
+    background-color: rgba(255, 255, 255, 0.05);
+  }
+}
+
+/* iOS-style safe area support */
+@supports (padding: max(0px)) {
+  body {
+    padding-left: max(12px, env(safe-area-inset-left));
+    padding-right: max(12px, env(safe-area-inset-right));
+  }
+
+  /* Mobile-only safe area top padding */
+  @media (max-width: 767px) {
+    .mobile-safe-area-top {
+      padding-top: max(3rem, calc(3rem + env(safe-area-inset-top))) !important;
+    }
   }
 }

@@ -1,11 +1,12 @@
 "use client";
 
-import { FileText, Home, Settings, Users } from "lucide-react";
+import { FileText, Home, Plus, Settings, Users } from "lucide-react";
 import { motion } from "motion/react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 import { useSession } from "@/lib/auth-client";
+import { hapticLight } from "@/lib/haptics";
 import { cn } from "@/lib/utils";
 
 interface NavItem {
@@ -23,17 +24,23 @@ const navItems: NavItem[] = [
     isActive: (pathname) => pathname === "/dashboard",
   },
   {
-    href: "/clients",
-    label: "Clients",
-    icon: Users,
-    isActive: (pathname) => pathname.startsWith("/clients"),
-  },
-  {
     href: "/invoices",
     label: "Invoices",
     icon: FileText,
     isActive: (pathname) =>
       pathname.startsWith("/invoices") && pathname !== "/invoices/new",
+  },
+  {
+    href: "/invoices/new",
+    label: "New Invoice",
+    icon: Plus,
+    isActive: (pathname) => pathname === "/invoices/new",
+  },
+  {
+    href: "/clients",
+    label: "Clients",
+    icon: Users,
+    isActive: (pathname) => pathname.startsWith("/clients"),
   },
   {
     href: "/settings",
@@ -55,19 +62,32 @@ export const MobileBottomNav = () => {
   return (
     <>
       {/* Spacer to prevent content from being hidden behind nav */}
-      <div className="h-20 md:hidden" />
+      <div
+        className="h-20 md:hidden"
+        style={{
+          paddingBottom: "env(safe-area-inset-bottom)",
+        }}
+      />
 
       {/* Bottom Navigation */}
       <motion.nav
         initial={{ opacity: 0, y: 100 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        className="fixed right-0 bottom-0 left-0 z-50 flex justify-center md:hidden"
+        transition={{
+          duration: 0.5,
+          type: "spring",
+          stiffness: 300,
+          damping: 30,
+        }}
+        className="fixed right-0 bottom-0 left-0 z-50 flex w-full justify-center md:hidden"
+        style={{
+          paddingBottom: "env(safe-area-inset-bottom)",
+        }}
       >
-        {/* Glassy Navigation Container */}
-        <div className="relative mb-4 rounded-4xl border border-black/10 bg-white/13 backdrop-blur-md backdrop-saturate-[185%] dark:border-white/10 dark:bg-black/20">
+        {/* iOS-style Navigation Container with enhanced blur */}
+        <div className="relative mb-2 border-t border-black/10 bg-white/80 backdrop-blur-xl backdrop-saturate-150 dark:border-white/10 dark:bg-black/60">
           {/* Navigation Items */}
-          <div className="relative flex items-center justify-center gap-1 p-3">
+          <div className="relative flex w-full items-center justify-center gap-0.5 px-2 py-3">
             {navItems.map((item) => {
               const Icon = item.icon;
               const isActive = item.isActive(pathname);
@@ -76,25 +96,32 @@ export const MobileBottomNav = () => {
                 <Link
                   key={item.href}
                   href={item.href}
+                  onClick={() => hapticLight()}
                   className={cn(
-                    "relative flex w-[85px] flex-col items-center justify-center gap-1 rounded-3xl px-3 py-2 shadow-none transition-all duration-300 ease-out",
-                    "hover:scale-105 active:scale-95",
-                    isActive
-                      ? "text-accent-foreground"
-                      : "text-foreground hover:text-foreground",
+                    "relative flex w-[85px] flex-1 flex-col items-center justify-center gap-1 rounded-2xl px-2 py-2 transition-all duration-200 ease-out",
+                    "active:scale-95 active:opacity-70",
+                    isActive ? "text-primary" : "text-foreground/60",
                   )}
                 >
-                  {/* Active Background Pill */}
+                  {/* Active Background Indicator */}
                   {isActive && (
-                    <div className="bg-accent animate-in fade-in zoom-in-95 absolute inset-0 rounded-3xl duration-200" />
+                    <motion.div
+                      layoutId="activeTab"
+                      className="bg-primary/10 absolute inset-0 rounded-2xl"
+                      transition={{
+                        type: "spring",
+                        stiffness: 300,
+                        damping: 30,
+                      }}
+                    />
                   )}
 
                   {/* Icon */}
-                  <div className="relative">
+                  <div className="relative z-10">
                     <Icon
                       className={cn(
-                        "h-5 w-5 transition-all duration-300",
-                        isActive && "drop-shadow-sm",
+                        "h-5 w-5 transition-all duration-200",
+                        isActive && "scale-110",
                       )}
                     />
                   </div>
@@ -102,8 +129,8 @@ export const MobileBottomNav = () => {
                   {/* Label */}
                   <span
                     className={cn(
-                      "relative text-xs font-medium transition-all duration-300",
-                      isActive ? "opacity-100" : "opacity-70",
+                      "relative z-10 text-[10px] font-medium transition-all duration-200",
+                      isActive ? "opacity-100" : "opacity-60",
                     )}
                   >
                     {item.label}

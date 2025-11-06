@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -79,10 +80,18 @@ export const PdfPreviewDialog = ({
           {showText && "View PDF"}
         </Button>
       </DialogTrigger>
-      <DialogContent className="h-[90dvh] max-h-[90dvh] w-[90dvw] !max-w-[90dvw]">
-        <DialogHeader>
+      <DialogContent
+        className="h-[90dvh] max-h-[90dvh] w-[90dvw] !max-w-[90dvw]"
+        aria-labelledby="pdf-preview-dialog"
+      >
+        <DialogHeader id="pdf-preview-dialog">
           <div className="flex items-center justify-between pt-4">
-            <DialogTitle>Invoice {invoiceNumber}</DialogTitle>
+            <div>
+              <DialogTitle>Invoice {invoiceNumber}</DialogTitle>
+              <DialogDescription className="sr-only">
+                Preview and download invoice PDF
+              </DialogDescription>
+            </div>
             <Select
               value={template}
               onValueChange={(value) => setTemplate(value as PdfTemplate)}
