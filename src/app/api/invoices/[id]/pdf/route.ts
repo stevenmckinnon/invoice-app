@@ -1,16 +1,22 @@
 import { NextRequest } from "next/server";
 
 import { PrismaClient } from "@/generated/prisma";
-import { generateInvoicePdf, type InvoicePdfInput } from "@/lib/pdf";
+import {
+  generateInvoicePdf,
+  type InvoicePdfInput,
+  type PdfTemplate,
+} from "@/lib/pdf";
 import { parseDate } from "@/lib/utils";
 
 const prisma = new PrismaClient();
 
 export const GET = async (
-  _req: NextRequest,
+  req: NextRequest,
   context: { params: Promise<{ id: string }> },
 ) => {
   const { id } = await context.params;
+  const { searchParams } = new URL(req.url);
+  const template = (searchParams.get("template") || "classic") as PdfTemplate;
   const invoice = await prisma.invoice.findUnique({
     where: { id },
     include: {
@@ -75,8 +81,8 @@ export const GET = async (
     notes: invoice.notes || undefined,
   };
 
-  // Generate PDF on-demand
-  const pdfBytes = await generateInvoicePdf(pdfInput);
+  // Generate PDF on-demand with selected template
+  const pdfBytes = await generateInvoicePdf(pdfInput, template);
 
   return new Response(Buffer.from(pdfBytes), {
     headers: {

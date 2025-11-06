@@ -44,6 +44,9 @@ export default function InvoiceDetailPage({ params }: Props) {
   const [invoice, setInvoice] = useState<InvoiceWithRelations | null>(null);
   const [loading, setLoading] = useState(true);
   const [updatingStatus, setUpdatingStatus] = useState(false);
+  const [downloadTemplate, setDownloadTemplate] = useState<
+    "classic" | "modern" | "minimal"
+  >("classic");
 
   const fetchInvoice = useCallback(async () => {
     try {
@@ -113,7 +116,6 @@ export default function InvoiceDetailPage({ params }: Props) {
             <div className="flex gap-2">
               <Skeleton className="h-10 w-24" />
               <Skeleton className="h-10 w-32" />
-              <Skeleton className="h-10 w-36" />
               <Skeleton className="h-10 w-24" />
             </div>
           </div>
@@ -222,23 +224,6 @@ export default function InvoiceDetailPage({ params }: Props) {
     })),
   ];
 
-  const downloadInvoicePdf = async () => {
-    const response = await fetch(`/api/invoices/${invoice.id}/pdf`);
-    const blob = await response.blob();
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    const invoiceDate = new Date(invoice.invoiceDate)
-      .toISOString()
-      .slice(0, 10)
-      .replace(/-/g, "");
-    a.download = `${invoiceDate} ${invoice.showName} ${invoice.fullName} ${invoice.invoiceNumber}.pdf`;
-    document.body.appendChild(a);
-    a.click();
-    window.URL.revokeObjectURL(url);
-    document.body.removeChild(a);
-  };
-
   return (
     <div className="mx-auto w-full max-w-6xl overflow-x-hidden p-6 pb-28 md:px-6 md:pb-8">
       <Button
@@ -312,14 +297,11 @@ export default function InvoiceDetailPage({ params }: Props) {
               variant="outline"
               invoiceId={invoice.id}
               invoiceNumber={invoice.invoiceNumber}
+              invoiceDate={invoice.invoiceDate}
+              showName={invoice.showName}
+              fullName={invoice.fullName}
             />
-            <Button
-              variant="outline"
-              onClick={downloadInvoicePdf}
-              className="shadow-sm transition-shadow hover:shadow-md"
-            >
-              Download PDF
-            </Button>
+
             <DeleteInvoiceButton
               invoiceId={invoice.id}
               invoiceNumber={invoice.invoiceNumber}
