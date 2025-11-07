@@ -1,10 +1,9 @@
 "use client";
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 
 import { ArrowLeftIcon, PencilIcon } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { toast } from "sonner";
 
 import { DeleteInvoiceButton } from "@/components/DeleteInvoiceButton";
 import { PdfPreviewDialog } from "@/components/PdfPreviewDialog";
@@ -27,79 +26,31 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Prisma } from "@/generated/prisma";
-
-type InvoiceWithRelations = Prisma.InvoiceGetPayload<{
-  include: {
-    items: true;
-    overtimeEntries: true;
-    customExpenseEntries: true;
-  };
-}>;
+import {
+  useInvoice,
+  useUpdateInvoiceStatus,
+} from "@/hooks/use-invoices";
 
 type Props = { params: Promise<{ id: string }> };
 
 export default function InvoiceDetailPage({ params }: Props) {
   const router = useRouter();
-  const [invoice, setInvoice] = useState<InvoiceWithRelations | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [updatingStatus, setUpdatingStatus] = useState(false);
-  const [downloadTemplate, setDownloadTemplate] = useState<
-    "classic" | "modern" | "minimal"
-  >("classic");
+  const updateInvoiceStatusMutation = useUpdateInvoiceStatus();
+  const [invoiceId, setInvoiceId] = useState<string | undefined>(undefined);
+  const { data: invoice, isLoading: loading, error } = useInvoice(invoiceId);
 
-  const fetchInvoice = useCallback(async () => {
-    try {
-      const { id } = await params;
-      const response = await fetch(`/api/invoices/${id}`);
-      if (response.ok) {
-        const data = await response.json();
-        setInvoice(data);
-      } else {
-        const errorData = await response.json().catch(() => ({}));
-        console.error("Failed to fetch invoice:", response.status, errorData);
-      }
-    } catch (error) {
-      console.error("Failed to fetch invoice:", error);
-    } finally {
-      setLoading(false);
-    }
-  }, [params]);
-
+  // Extract invoice ID from params
   useEffect(() => {
-    fetchInvoice();
-  }, [fetchInvoice]);
+    params.then((p) => setInvoiceId(p.id));
+  }, [params]);
 
   const handleStatusChange = async (newStatus: string) => {
     if (!invoice) return;
 
-    setUpdatingStatus(true);
-    try {
-      const response = await fetch(`/api/invoices/${invoice.id}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ status: newStatus }),
-      });
-
-      if (response.ok) {
-        toast.success("Status updated", {
-          description: `Invoice status changed to ${newStatus}`,
-        });
-        // Refresh invoice data
-        await fetchInvoice();
-      } else {
-        toast.error("Failed to update status", {
-          description: "Please try again later.",
-        });
-      }
-    } catch (error) {
-      console.error("Failed to update status:", error);
-      toast.error("Failed to update status", {
-        description: "An unexpected error occurred.",
-      });
-    } finally {
-      setUpdatingStatus(false);
-    }
+    updateInvoiceStatusMutation.mutate({
+      id: invoice.id,
+      status: newStatus as "draft" | "sent" | "paid" | "overdue",
+    });
   };
 
   if (loading) {
@@ -148,14 +99,15 @@ export default function InvoiceDetailPage({ params }: Props) {
     );
   }
 
-  if (!invoice) {
+  if (error || !invoice) {
     return (
       <div className="mx-auto flex min-h-[calc(100dvh-10rem)] max-w-6xl items-center justify-center py-8">
         <div className="space-y-4 text-center">
           <p className="text-2xl font-semibold">Invoice not found</p>
           <p className="text-muted-foreground">
-            The invoice you&apos;re looking for doesn&apos;t exist or you
-            don&apos;t have permission to view it.
+            {error instanceof Error
+              ? error.message
+              : "The invoice you're looking for doesn't exist or you don't have permission to view it."}
           </p>
           <Button asChild>
             <Link href="/invoices">Back to Invoices</Link>
@@ -247,7 +199,7 @@ export default function InvoiceDetailPage({ params }: Props) {
               <Select
                 value={invoice.status}
                 onValueChange={handleStatusChange}
-                disabled={updatingStatus}
+                disabled={updateInvoiceStatusMutation.isPending}
               >
                 <SelectTrigger className="h-9 w-[140px]">
                   <SelectValue>
@@ -297,7 +249,11 @@ export default function InvoiceDetailPage({ params }: Props) {
               variant="outline"
               invoiceId={invoice.id}
               invoiceNumber={invoice.invoiceNumber}
-              invoiceDate={invoice.invoiceDate}
+              invoiceDate={
+                typeof invoice.invoiceDate === "string"
+                  ? new Date(invoice.invoiceDate)
+                  : invoice.invoiceDate
+              }
               showName={invoice.showName}
               fullName={invoice.fullName}
             />
@@ -305,7 +261,7 @@ export default function InvoiceDetailPage({ params }: Props) {
             <DeleteInvoiceButton
               invoiceId={invoice.id}
               invoiceNumber={invoice.invoiceNumber}
-              onDeleted={() => router.push("/")}
+              onDeleted={() => router.push("/invoices")}
             />
           </div>
         </div>

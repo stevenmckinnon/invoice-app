@@ -38,6 +38,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { useCreateInvoice } from "@/hooks/use-invoices";
 
 const itemSchema = z.object({
   description: z.string().min(1, "Description is required"),
@@ -99,8 +100,8 @@ type FormValues = z.infer<typeof formSchema>;
 
 export default function NewInvoicePage() {
   const router = useRouter();
+  const createInvoiceMutation = useCreateInvoice();
   const [profileIncomplete, setProfileIncomplete] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedClientId, setSelectedClientId] = useState<string | null>(null);
   const [showCreateClientDialog, setShowCreateClientDialog] = useState(false);
 
@@ -318,30 +319,23 @@ export default function NewInvoicePage() {
   };
 
   const onSubmit = async (values: FormValues) => {
-    setIsSubmitting(true);
-    try {
-      const res = await fetch("/api/invoices", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          ...values,
-          clientId: selectedClientId,
-        }),
-      });
-
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({ error: "Request failed" }));
-        alert(err.error ?? "Failed to create invoice");
-        setIsSubmitting(false);
-        return;
-      }
-
-      const data = await res.json();
-      router.push(`/invoices/${data.id}`);
-    } catch {
-      alert("Failed to create invoice");
-      setIsSubmitting(false);
-    }
+    // Convert Date objects to ISO strings for the API
+    const payload = {
+      ...values,
+      overtimeEntries: values.overtimeEntries.map((entry) => ({
+        ...entry,
+        date: entry.date instanceof Date 
+          ? entry.date.toISOString() 
+          : entry.date,
+      })),
+      clientId: selectedClientId || undefined,
+    };
+    
+    createInvoiceMutation.mutate(payload, {
+      onSuccess: (data) => {
+        router.push(`/invoices/${data.id}`);
+      },
+    });
   };
 
   return (
@@ -962,8 +956,8 @@ export default function NewInvoicePage() {
                 )}
               />
               <div className="flex items-end justify-end">
-                <Button type="submit" disabled={isSubmitting} className="shadow-md hover:shadow-lg transition-shadow" size="lg">
-                  {isSubmitting ? "Creating..." : "Create Invoice"}
+                <Button type="submit" disabled={createInvoiceMutation.isPending} className="shadow-md hover:shadow-lg transition-shadow" size="lg">
+                  {createInvoiceMutation.isPending ? "Creating..." : "Create Invoice"}
                 </Button>
               </div>
             </div>

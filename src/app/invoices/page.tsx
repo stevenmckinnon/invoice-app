@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 import {
   PlusIcon,
@@ -36,6 +36,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { useInvoices } from "@/hooks/use-invoices";
 
 // Helper to format date without timezone shift
 const formatDate = (dateStr: Date | string) => {
@@ -47,43 +48,13 @@ const formatDate = (dateStr: Date | string) => {
   });
 };
 
-type Invoice = {
-  id: string;
-  invoiceNumber: string;
-  invoiceDate: Date;
-  showName: string;
-  fullName: string;
-  clientName: string | null;
-  totalAmount: number;
-  status: string;
-};
-
 const ITEMS_PER_PAGE = 10;
 
 export default function AllInvoicesPage() {
-  const [invoices, setInvoices] = useState<Invoice[]>([]);
+  const { data: invoices = [], isLoading } = useInvoices();
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [currentPage, setCurrentPage] = useState(1);
-  const [isLoading, setIsLoading] = useState(true);
-
-  const fetchInvoices = async () => {
-    try {
-      const res = await fetch("/api/invoices");
-      if (res.ok) {
-        const data = await res.json();
-        setInvoices(data);
-      }
-    } catch (error) {
-      console.error("Failed to fetch invoices:", error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchInvoices();
-  }, []);
 
   // Filter and search
   const filteredInvoices = invoices
@@ -111,9 +82,15 @@ export default function AllInvoicesPage() {
   const paginatedInvoices = filteredInvoices.slice(startIndex, endIndex);
 
   // Reset to page 1 when filters change
-  useEffect(() => {
+  const handleSearchChange = (value: string) => {
+    setSearchQuery(value);
     setCurrentPage(1);
-  }, [searchQuery, statusFilter]);
+  };
+
+  const handleStatusFilterChange = (value: string) => {
+    setStatusFilter(value);
+    setCurrentPage(1);
+  };
 
   const totalRevenue = filteredInvoices.reduce(
     (sum, inv) => sum + Number(inv.totalAmount),
@@ -154,11 +131,11 @@ export default function AllInvoicesPage() {
               <Input
                 placeholder="Search by invoice number, show name, or client..."
                 value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+                onChange={(e) => handleSearchChange(e.target.value)}
                 className="pl-10"
               />
             </div>
-            <Select value={statusFilter} onValueChange={setStatusFilter}>
+            <Select value={statusFilter} onValueChange={handleStatusFilterChange}>
               <SelectTrigger className="w-full md:w-[180px]">
                 <SelectValue placeholder="Filter by status" />
               </SelectTrigger>
@@ -297,7 +274,11 @@ export default function AllInvoicesPage() {
                             invoiceNumber={invoice.invoiceNumber}
                             size="sm"
                             variant="outline"
-                            invoiceDate={invoice.invoiceDate}
+                            invoiceDate={
+                              typeof invoice.invoiceDate === "string"
+                                ? new Date(invoice.invoiceDate)
+                                : invoice.invoiceDate
+                            }
                             showName={invoice.showName}
                             fullName={invoice.fullName}
                           />

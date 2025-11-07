@@ -82,10 +82,11 @@ export const MobileBottomNav = () => {
         className="fixed right-0 bottom-0 left-0 z-50 flex w-full justify-center md:hidden"
       >
         {/* iOS-style Navigation Container with enhanced blur */}
-        <div 
+        <div
           className="relative w-full border-t border-black/10 bg-white/80 backdrop-blur-xl backdrop-saturate-150 dark:border-white/10 dark:bg-black/60"
           style={{
-            paddingBottom: "calc(env(safe-area-inset-bottom) / 2)",
+            padding:
+              "0 calc(env(safe-area-inset-bottom) / 4) calc(env(safe-area-inset-bottom) / 2)",
           }}
         >
           {/* Navigation Items */}

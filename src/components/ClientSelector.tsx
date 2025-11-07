@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 import { Check, ChevronsUpDown, Plus } from "lucide-react";
 
@@ -18,6 +18,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import { useClients } from "@/hooks/use-clients";
 import { cn } from "@/lib/utils";
 
 export interface Client {
@@ -49,26 +50,7 @@ export const ClientSelector = ({
   onCreateNew,
 }: ClientSelectorProps) => {
   const [open, setOpen] = useState(false);
-  const [clients, setClients] = useState<Client[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const fetchClients = async () => {
-      try {
-        const res = await fetch("/api/clients");
-        if (res.ok) {
-          const data = await res.json();
-          setClients(data);
-        }
-      } catch (error) {
-        console.error("Failed to fetch clients:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchClients();
-  }, []);
+  const { data: clients = [] } = useClients();
 
   const selectedClient = clients.find((c) => c.id === value);
 
@@ -81,15 +63,11 @@ export const ClientSelector = ({
           aria-expanded={open}
           className="w-full justify-between"
         >
-          {value ? (
-            selectedClient ? (
-              selectedClient.name
-            ) : (
-              "Select client..."
-            )
-          ) : (
-            "Select client or create new..."
-          )}
+          {value
+            ? selectedClient
+              ? selectedClient.name
+              : "Select client..."
+            : "Select client or create new..."}
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
@@ -157,4 +135,3 @@ export const ClientSelector = ({
     </Popover>
   );
 };
-

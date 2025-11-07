@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 
 import { Pencil, Plus, Trash2 } from "lucide-react";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
@@ -25,13 +25,18 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import {
+  useClients,
+  useCreateClient,
+  useDeleteClient,
+} from "@/hooks/use-clients";
 
 export default function ClientsPage() {
   const router = useRouter();
-  const [clients, setClients] = useState<Client[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { data: clients = [], isLoading: loading, error } = useClients();
+  const deleteClientMutation = useDeleteClient();
+  const createClientMutation = useCreateClient();
   const [showCreateDialog, setShowCreateDialog] = useState(false);
-  const [deletingId, setDeletingId] = useState<string | null>(null);
   const prefersReducedMotion = useReducedMotion();
 
   // Motion variants and per-row transition
@@ -57,51 +62,18 @@ export default function ClientsPage() {
           delay: 0.04 + index * 0.06,
         } as const);
 
-  useEffect(() => {
-    fetchClients();
-  }, []);
-
-  const fetchClients = async () => {
-    try {
-      const res = await fetch("/api/clients");
-      if (res.ok) {
-        const data = await res.json();
-        setClients(data);
-      }
-    } catch (error) {
-      console.error("Failed to fetch clients:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const handleDelete = async (id: string) => {
     if (!confirm("Are you sure you want to delete this client?")) {
       return;
     }
 
-    setDeletingId(id);
-    try {
-      const res = await fetch(`/api/clients/${id}`, {
-        method: "DELETE",
-      });
-
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({ error: "Request failed" }));
-        alert(err.error ?? "Failed to delete client");
-        return;
-      }
-
-      setClients(clients.filter((c) => c.id !== id));
-    } catch {
-      alert("Failed to delete client");
-    } finally {
-      setDeletingId(null);
-    }
+    deleteClientMutation.mutate(id);
   };
 
   const handleClientCreated = (client: Client) => {
-    setClients([client, ...clients]);
+    // The mutation will automatically invalidate and refetch clients
+    // But we can optimistically update the UI if needed
+    setShowCreateDialog(false);
   };
 
   return (
@@ -274,7 +246,7 @@ export default function ClientsPage() {
                               }
                               className="hover:bg-muted inline-flex h-8 w-8 items-center justify-center rounded-md"
                               onClick={() => handleDelete(client.id)}
-                              disabled={deletingId === client.id}
+                              disabled={deleteClientMutation.isPending}
                               aria-label="Delete client"
                             >
                               <Trash2 className="text-destructive h-4 w-4" />

@@ -2,7 +2,6 @@
 import { useState } from "react";
 
 import { TrashIcon } from "lucide-react";
-import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -14,6 +13,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { useDeleteInvoice } from "@/hooks/use-invoices";
 
 
 interface DeleteInvoiceButtonProps {
@@ -30,39 +30,18 @@ export const DeleteInvoiceButton = ({
   size = "default",
 }: DeleteInvoiceButtonProps) => {
   const [open, setOpen] = useState(false);
-  const [isDeleting, setIsDeleting] = useState(false);
+  const deleteInvoiceMutation = useDeleteInvoice();
 
-  const handleDelete = async () => {
-    setIsDeleting(true);
-    try {
-      const res = await fetch(`/api/invoices/${invoiceId}`, {
-        method: "DELETE",
-      });
-
-      if (!res.ok) {
-        const error = await res.json().catch(() => ({}));
-        throw new Error(error.error || "Failed to delete invoice");
-      }
-
-      setOpen(false);
-      toast.success("Invoice deleted successfully", {
-        description: invoiceNumber
-          ? `Invoice #${invoiceNumber} has been deleted.`
-          : "The invoice has been removed.",
-      });
-
-      // Call the callback to refetch invoices
-      if (onDeleted) {
-        onDeleted();
-      }
-    } catch (error) {
-      console.error("Delete error:", error);
-      toast.error("Failed to delete invoice", {
-        description:
-          error instanceof Error ? error.message : "Please try again later.",
-      });
-      setIsDeleting(false);
-    }
+  const handleDelete = () => {
+    deleteInvoiceMutation.mutate(invoiceId, {
+      onSuccess: () => {
+        setOpen(false);
+        // Call the callback if provided
+        if (onDeleted) {
+          onDeleted();
+        }
+      },
+    });
   };
 
   return (
@@ -88,9 +67,9 @@ export const DeleteInvoiceButton = ({
           <Button
             variant="destructive"
             onClick={handleDelete}
-            disabled={isDeleting}
+            disabled={deleteInvoiceMutation.isPending}
           >
-            {isDeleting ? "Deleting..." : "Delete"}
+            {deleteInvoiceMutation.isPending ? "Deleting..." : "Delete"}
           </Button>
         </DialogFooter>
       </DialogContent>

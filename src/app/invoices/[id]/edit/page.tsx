@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ArrowLeftIcon } from "lucide-react";
 import Link from "next/link";
-import { useRouter, useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
@@ -37,6 +37,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { useUpdateInvoice } from "@/hooks/use-invoices";
 
 const itemSchema = z.object({
   description: z.string().min(1, "Description is required"),
@@ -100,8 +101,8 @@ export default function EditInvoicePage() {
   const router = useRouter();
   const params = useParams();
   const invoiceId = params.id as string;
+  const updateInvoiceMutation = useUpdateInvoice();
   const [isLoading, setIsLoading] = useState(true);
-  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // @ts-ignore - React Hook Form type inference issues with complex nested schemas
   const form = useForm<FormValues>({
@@ -262,27 +263,28 @@ export default function EditInvoicePage() {
   };
 
   const onSubmit = async (values: FormValues) => {
-    setIsSubmitting(true);
-    try {
-      const res = await fetch(`/api/invoices/${invoiceId}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(values),
-      });
-
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({ error: "Request failed" }));
-        alert(err.error ?? "Failed to update invoice");
-        setIsSubmitting(false);
-        return;
-      }
-
-      const data = await res.json();
-      router.push(`/invoices/${data.id}`);
-    } catch {
-      alert("Failed to update invoice");
-      setIsSubmitting(false);
-    }
+    // Convert Date objects to ISO strings for the API
+    const payload = {
+      ...values,
+      overtimeEntries: values.overtimeEntries.map((entry) => ({
+        ...entry,
+        date: entry.date instanceof Date 
+          ? entry.date.toISOString() 
+          : entry.date,
+      })),
+    };
+    
+    updateInvoiceMutation.mutate(
+      {
+        id: invoiceId,
+        data: payload,
+      },
+      {
+        onSuccess: (data) => {
+          router.push(`/invoices/${data.id}`);
+        },
+      },
+    );
   };
 
   if (isLoading) {
@@ -302,7 +304,7 @@ export default function EditInvoicePage() {
       >
         <div className="flex items-center gap-4">
           <Button asChild variant="outline" size="sm">
-            <Link href="/">
+            <Link href="/invoices">
               <ArrowLeftIcon className="h-4 w-4" />
               <span className="hidden md:block">Back</span>
             </Link>
@@ -780,10 +782,10 @@ export default function EditInvoicePage() {
               />
               <div className="flex items-end justify-end gap-2">
                 <Button type="button" variant="outline" asChild>
-                  <Link href="/">Cancel</Link>
+                  <Link href="/invoices">Cancel</Link>
                 </Button>
-                <Button type="submit" disabled={isSubmitting}>
-                  {isSubmitting ? "Updating..." : "Update Invoice"}
+                <Button type="submit" disabled={updateInvoiceMutation.isPending}>
+                  {updateInvoiceMutation.isPending ? "Updating..." : "Update Invoice"}
                 </Button>
               </div>
             </div>

@@ -42,6 +42,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { useInvoices } from "@/hooks/use-invoices";
 import { useSession } from "@/lib/auth-client";
 
 // Helper to format date without timezone shift
@@ -60,22 +61,10 @@ const formatDate = (dateStr: Date | string) => {
   });
 };
 
-type Invoice = {
-  id: string;
-  invoiceNumber: string;
-  invoiceDate: Date;
-  showName: string;
-  clientName: string | null;
-  totalAmount: number;
-  status: string;
-  createdAt: Date;
-};
-
 export default function Home() {
   const { data: session, isPending } = useSession();
   const router = useRouter();
-  const [invoices, setInvoices] = useState<Invoice[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const { data: invoices = [], isLoading, error } = useInvoices();
   const [chartColors, setChartColors] = useState({
     primary: "#3b82f6",
     muted: "#9ca3af",
@@ -127,24 +116,8 @@ export default function Home() {
     return () => observer.disconnect();
   }, []);
 
-  const fetchInvoices = async () => {
-    try {
-      const res = await fetch("/api/invoices");
-      if (res.ok) {
-        const data = await res.json();
-        setInvoices(data);
-      }
-    } catch (error) {
-      console.error("Failed to fetch invoices:", error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
   useEffect(() => {
-    if (session) {
-      fetchInvoices();
-    } else if (!isPending) {
+    if (!session && !isPending) {
       // Redirect to sign in if not authenticated
       router.push("/auth/signin");
     }
@@ -153,6 +126,21 @@ export default function Home() {
   // Show loading while fetching data
   if (isPending || isLoading) {
     return <DashboardSkeleton />;
+  }
+
+  // Show error state if fetch failed
+  if (error) {
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <Card>
+          <CardContent className="pt-6">
+            <p className="text-destructive">
+              Failed to load invoices. Please try again.
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+    );
   }
 
   const sortedInvoices = invoices

@@ -1,7 +1,5 @@
 "use client";
 
-import { useState } from "react";
-
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -23,6 +21,8 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { useCreateClient } from "@/hooks/use-clients";
+
 import { type Client } from "./ClientSelector";
 
 const clientSchema = z.object({
@@ -50,7 +50,7 @@ export const CreateClientDialog = ({
   onOpenChange,
   onClientCreated,
 }: CreateClientDialogProps) => {
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const createClientMutation = useCreateClient();
 
   const form = useForm<z.infer<typeof clientSchema>>({
     resolver: zodResolver(clientSchema),
@@ -70,30 +70,20 @@ export const CreateClientDialog = ({
   });
 
   const onSubmit = async (values: z.infer<typeof clientSchema>) => {
-    setIsSubmitting(true);
-    try {
-      const res = await fetch("/api/clients", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(values),
-      });
-
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({ error: "Request failed" }));
-        alert(err.error ?? "Failed to create client");
-        setIsSubmitting(false);
-        return;
-      }
-
-      const client = await res.json();
-      onClientCreated(client);
-      form.reset();
-      onOpenChange(false);
-    } catch {
-      alert("Failed to create client");
-    } finally {
-      setIsSubmitting(false);
-    }
+    // Convert string fields to appropriate types for dayRate, perDiemWork, perDiemTravel
+    const payload = {
+      ...values,
+      dayRate: values.dayRate ? Number(values.dayRate) : undefined,
+      perDiemWork: values.perDiemWork ? Number(values.perDiemWork) : undefined,
+      perDiemTravel: values.perDiemTravel ? Number(values.perDiemTravel) : undefined,
+    };
+    createClientMutation.mutate(payload, {
+      onSuccess: (client) => {
+        onClientCreated(client);
+        form.reset();
+        onOpenChange(false);
+      },
+    });
   };
 
   return (
@@ -308,8 +298,8 @@ export const CreateClientDialog = ({
               >
                 Cancel
               </Button>
-              <Button type="submit" disabled={isSubmitting}>
-                {isSubmitting ? "Creating..." : "Create Client"}
+              <Button type="submit" disabled={createClientMutation.isPending}>
+                {createClientMutation.isPending ? "Creating..." : "Create Client"}
               </Button>
             </div>
           </form>
