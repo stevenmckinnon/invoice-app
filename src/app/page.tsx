@@ -377,7 +377,7 @@ export default function Home() {
             </SectionReveal>
 
             <SectionReveal delay={0.1}>
-              <Card className="border-2">
+              <Card className="h-full border-2">
                 <CardHeader>
                   <div className="mb-4 flex items-start gap-1">
                     {[...Array(5)].map((_, i) => (
