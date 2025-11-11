@@ -92,24 +92,25 @@ export const MobileBottomNav = () => {
           }}
         >
           {/* Navigation Items */}
-          <div className="relative flex w-full items-center justify-center gap-0.5 px-2 py-3">
+          <div className="relative flex w-full items-center justify-between gap-0.5 px-2 py-3">
             {navItems.map((item) => {
               const Icon = item.icon;
               const isActive = item.isActive(pathname);
 
               if (item.href === "/invoices/new") {
                 return (
-                  <Button
-                    key={item.href}
-                    className="-mt-2"
-                    asChild
-                    onClick={() => hapticLight()}
-                  >
-                    <Link href="/invoices/new" onClick={() => hapticLight()}>
-                      <Plus className="size-6" />
-                      <span className="sr-only">Create Invoice</span>
-                    </Link>
-                  </Button>
+                  <div key={item.href} className="flex w-[75px] justify-center">
+                    <Button
+                      className="size-14 rounded-full"
+                      asChild
+                      onClick={() => hapticLight()}
+                    >
+                      <Link href="/invoices/new" onClick={() => hapticLight()}>
+                        <Plus className="size-6" />
+                        <span className="sr-only">Create Invoice</span>
+                      </Link>
+                    </Button>
+                  </div>
                 );
               }
 
@@ -119,7 +120,7 @@ export const MobileBottomNav = () => {
                   href={item.href}
                   onClick={() => hapticLight()}
                   className={cn(
-                    "relative flex w-[85px] flex-1 flex-col items-center justify-center gap-1 rounded-2xl px-2 py-2 transition-all duration-200 ease-out",
+                    "relative flex w-[75px] flex-col items-center justify-center gap-1 rounded-2xl px-2 py-2 transition-all duration-200 ease-out",
                     "active:scale-95 active:opacity-70",
                     isActive ? "text-primary" : "text-foreground/60",
                   )}
