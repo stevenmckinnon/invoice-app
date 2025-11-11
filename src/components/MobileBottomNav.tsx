@@ -97,30 +97,13 @@ export const MobileBottomNav = () => {
               const Icon = item.icon;
               const isActive = item.isActive(pathname);
 
-              if (item.href === "/invoices/new") {
-                return (
-                  <div key={item.href} className="flex w-[75px] justify-center">
-                    <Button
-                      className="size-14 rounded-full"
-                      asChild
-                      onClick={() => hapticLight()}
-                    >
-                      <Link href="/invoices/new" onClick={() => hapticLight()}>
-                        <Plus className="size-6" />
-                        <span className="sr-only">Create Invoice</span>
-                      </Link>
-                    </Button>
-                  </div>
-                );
-              }
-
               return (
                 <Link
                   key={item.href}
                   href={item.href}
                   onClick={() => hapticLight()}
                   className={cn(
-                    "relative flex w-[75px] flex-col items-center justify-center gap-1 rounded-2xl px-2 py-2 transition-all duration-200 ease-out",
+                    "relative flex w-[85px] flex-col items-center justify-center gap-1 rounded-2xl px-2 py-2 transition-all duration-200 ease-out",
                     "active:scale-95 active:opacity-70",
                     isActive ? "text-primary" : "text-foreground/60",
                   )}
