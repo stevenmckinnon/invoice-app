@@ -30,7 +30,7 @@ import {
 const SCROLL_THRESHOLD = 200;
 
 export const AppHeader = () => {
-  const { data: session } = useSession();
+  const { data: session, isPending } = useSession();
   const { theme, setTheme } = useTheme();
   const pathname = usePathname();
   const { startTransition } = useThemeTransition();
@@ -148,7 +148,7 @@ export const AppHeader = () => {
         {/* Right Section */}
         <div className="flex items-center gap-2">
           {/* Theme Toggle */}
-          {!session?.user && (
+          {!isPending && !session?.user && (
             <ThemeToggleButton
               size="icon"
               theme={theme as "light" | "dark"}
@@ -159,32 +159,12 @@ export const AppHeader = () => {
           )}
 
           {/* User Menu or Auth Buttons */}
-          {session ? (
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="h-9 gap-2 px-2">
-                  <Avatar className="h-7 w-7">
-                    <AvatarImage
-                      src={session.user.image || undefined}
-                      alt="Profile photo"
-                    />
-                    <AvatarFallback className="text-foreground text-xs">
-                      {(
-                        session.user.name?.[0] ||
-                        session.user.email?.[0] ||
-                        "U"
-                      ).toUpperCase()}
-                    </AvatarFallback>
-                  </Avatar>
-                  <span className="hidden text-sm sm:inline-block">
-                    {session.user.name?.split(" ")[0] || session.user.email}
-                  </span>
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-56">
-                <DropdownMenuLabel>
-                  <div className="flex items-center gap-2">
-                    <Avatar className="size-7">
+          {!isPending &&
+            (session ? (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" className="h-9 gap-2 px-2">
+                    <Avatar className="h-7 w-7">
                       <AvatarImage
                         src={session.user.image || undefined}
                         alt="Profile photo"
@@ -197,44 +177,65 @@ export const AppHeader = () => {
                         ).toUpperCase()}
                       </AvatarFallback>
                     </Avatar>
-                    <div className="flex flex-col space-y-1">
-                      <p className="text-sm font-medium">
-                        {session.user.name || "User"}
-                      </p>
-                      <p className="text-muted-foreground text-xs">
-                        {session.user.email}
-                      </p>
+                    <span className="hidden text-sm sm:inline-block">
+                      {session.user.name?.split(" ")[0] || session.user.email}
+                    </span>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56">
+                  <DropdownMenuLabel>
+                    <div className="flex items-center gap-2">
+                      <Avatar className="size-7">
+                        <AvatarImage
+                          src={session.user.image || undefined}
+                          alt="Profile photo"
+                        />
+                        <AvatarFallback className="text-foreground text-xs">
+                          {(
+                            session.user.name?.[0] ||
+                            session.user.email?.[0] ||
+                            "U"
+                          ).toUpperCase()}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="flex flex-col space-y-1">
+                        <p className="text-sm font-medium">
+                          {session.user.name || "User"}
+                        </p>
+                        <p className="text-muted-foreground text-xs">
+                          {session.user.email}
+                        </p>
+                      </div>
                     </div>
-                  </div>
-                </DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem asChild>
-                  <Link href="/profile" className="cursor-pointer">
-                    <User className="mr-2 h-4 w-4" />
-                    Profile Settings
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link href="/settings" className="cursor-pointer">
-                    <Settings className="mr-2 h-4 w-4" />
-                    Account Settings
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem
-                  onClick={handleSignOut}
-                  className="cursor-pointer text-red-600 dark:text-red-400"
-                >
-                  <LogOut className="mr-2 h-4 w-4" />
-                  Sign Out
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          ) : (
-            <Button asChild variant="outline">
-              <Link href="/auth/signin">Sign In</Link>
-            </Button>
-          )}
+                  </DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem asChild>
+                    <Link href="/profile" className="cursor-pointer">
+                      <User className="mr-2 h-4 w-4" />
+                      Profile Settings
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link href="/settings" className="cursor-pointer">
+                      <Settings className="mr-2 h-4 w-4" />
+                      Account Settings
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem
+                    onClick={handleSignOut}
+                    className="cursor-pointer text-red-600 dark:text-red-400"
+                  >
+                    <LogOut className="mr-2 h-4 w-4" />
+                    Sign Out
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ) : (
+              <Button asChild variant="outline">
+                <Link href="/auth/signin">Sign In</Link>
+              </Button>
+            ))}
         </div>
       </div>
     </motion.header>
