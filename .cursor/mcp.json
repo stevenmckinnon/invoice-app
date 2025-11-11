@@ -16,6 +16,10 @@
     },
     "registries": {
       "@react-bits": "https://reactbits.dev/r/{name}.json"
+    },
+    "dev3000": {
+      "type": "http",
+      "url": "http://localhost:3684/mcp"
     }
   }
 }

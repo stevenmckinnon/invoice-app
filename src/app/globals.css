@@ -432,7 +432,7 @@ button {
 
   /* Ensure the glass frame accommodates the scaled content */
   .glossy-frame {
-    height: 624px;
+    height: 638px;
   }
 
   /* Make demo dashboard mobile-friendly */
