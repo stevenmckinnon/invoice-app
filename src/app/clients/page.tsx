@@ -90,6 +90,7 @@ export default function ClientsPage() {
         <Button
           onClick={() => setShowCreateDialog(true)}
           className="shadow-md transition-shadow hover:shadow-lg"
+          size="lg"
         >
           <Plus className="mr-2 h-4 w-4" />
           Add Client
