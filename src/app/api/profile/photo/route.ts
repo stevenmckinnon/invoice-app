@@ -2,10 +2,9 @@ import { headers } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
 import sharp from "sharp";
 
-import { PrismaClient } from "@/generated/prisma";
 import { auth } from "@/lib/auth";
+import { prisma } from "@/lib/db";
 
-const prisma = new PrismaClient();
 const MAX_FILE_SIZE = 512 * 1024; // 512KB for base64 storage (smaller to stay under DB limits)
 const ACCEPTED_FILE_TYPES = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
 

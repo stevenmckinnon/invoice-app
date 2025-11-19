@@ -1,11 +1,9 @@
 import { headers } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
 
-import { PrismaClient } from "@/generated/prisma";
 import { auth } from "@/lib/auth";
+import { prisma } from "@/lib/db";
 import { parseDate } from "@/lib/utils";
-
-const prisma = new PrismaClient();
 
 export const GET = async () => {
   try {

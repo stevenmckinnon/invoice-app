@@ -1,14 +1,12 @@
 import { NextRequest } from "next/server";
 
-import { PrismaClient } from "@/generated/prisma";
 import {
   generateInvoicePdf,
   type InvoicePdfInput,
   type PdfTemplate,
 } from "@/lib/pdf";
 import { parseDate } from "@/lib/utils";
-
-const prisma = new PrismaClient();
+import { prisma } from "@/lib/db";
 
 export const GET = async (
   req: NextRequest,

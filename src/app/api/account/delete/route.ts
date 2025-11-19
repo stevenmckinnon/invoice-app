@@ -1,10 +1,8 @@
 import { headers } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
 
-import { PrismaClient } from "@/generated/prisma";
 import { auth } from "@/lib/auth";
-
-const prisma = new PrismaClient();
+import { prisma } from "@/lib/db";
 
 export const POST = async (req: NextRequest) => {
   try {

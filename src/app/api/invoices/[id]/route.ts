@@ -3,12 +3,10 @@ import { headers } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
-import { PrismaClient } from "@/generated/prisma";
 import { auth } from "@/lib/auth";
+import { prisma } from "@/lib/db";
 import { calculateInvoiceTotals, type InvoicePdfInput } from "@/lib/pdf";
 import { parseDate } from "@/lib/utils";
-
-const prisma = new PrismaClient();
 
 const lineItemSchema = z.object({
   description: z.string().min(1),

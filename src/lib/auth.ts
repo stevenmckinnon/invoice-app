@@ -2,14 +2,12 @@ import { betterAuth } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
 import { Resend } from "resend";
 
-import { PrismaClient } from "@/generated/prisma";
+import { prisma } from "@/lib/db";
 
 import {
   getPasswordResetEmailHtml,
   getPasswordResetEmailText,
 } from "./email-templates";
-
-const prisma = new PrismaClient();
 
 // Initialize Resend
 const resend = process.env.RESEND_API_KEY

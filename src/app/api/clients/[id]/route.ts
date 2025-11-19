@@ -2,10 +2,8 @@ import { headers } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
-import { PrismaClient } from "@/generated/prisma";
 import { auth } from "@/lib/auth";
-
-const prisma = new PrismaClient();
+import { prisma } from "@/lib/db";
 
 const clientInputSchema = z.object({
   name: z.string().min(1),
