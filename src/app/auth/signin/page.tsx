@@ -75,7 +75,7 @@ const SignInForm = () => {
           <div className="bg-muted relative hidden flex-col p-12 text-white lg:flex dark:border-r">
             <div className="absolute inset-0 overflow-hidden bg-zinc-900">
               <BackgroundPattern />
-              <div className="absolute inset-0 bg-gradient-to-tr from-zinc-900/90 via-zinc-900/50 to-zinc-900/20" />
+              <div className="absolute inset-0 bg-linear-to-tr from-zinc-900/90 via-zinc-900/50 to-zinc-900/20" />
             </div>
 
             <Link href="/">

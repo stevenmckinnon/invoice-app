@@ -14,9 +14,9 @@ const clientInputSchema = z.object({
   postalCode: z.string().optional(),
   country: z.string().optional(),
   attentionTo: z.string().optional(),
-  dayRate: z.string().optional(),
-  perDiemWork: z.string().optional(),
-  perDiemTravel: z.string().optional(),
+  dayRate: z.union([z.string(), z.number()]).optional(),
+  perDiemWork: z.union([z.string(), z.number()]).optional(),
+  perDiemTravel: z.union([z.string(), z.number()]).optional(),
 });
 
 export const POST = async (req: NextRequest) => {

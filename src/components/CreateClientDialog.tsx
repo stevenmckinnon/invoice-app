@@ -34,9 +34,9 @@ const clientSchema = z.object({
   postalCode: z.string().optional(),
   country: z.string().optional(),
   attentionTo: z.string().optional(),
-  dayRate: z.string().optional(),
-  perDiemWork: z.string().optional(),
-  perDiemTravel: z.string().optional(),
+  dayRate: z.union([z.string(), z.number()]).optional(),
+  perDiemWork: z.union([z.string(), z.number()]).optional(),
+  perDiemTravel: z.union([z.string(), z.number()]).optional(),
 });
 
 interface CreateClientDialogProps {
@@ -63,9 +63,9 @@ export const CreateClientDialog = ({
       postalCode: "",
       country: "",
       attentionTo: "",
-      dayRate: "",
-      perDiemWork: "",
-      perDiemTravel: "",
+      dayRate: 0,
+      perDiemWork: 0,
+      perDiemTravel: 0,
     },
   });
 
@@ -75,7 +75,9 @@ export const CreateClientDialog = ({
       ...values,
       dayRate: values.dayRate ? Number(values.dayRate) : undefined,
       perDiemWork: values.perDiemWork ? Number(values.perDiemWork) : undefined,
-      perDiemTravel: values.perDiemTravel ? Number(values.perDiemTravel) : undefined,
+      perDiemTravel: values.perDiemTravel
+        ? Number(values.perDiemTravel)
+        : undefined,
     };
     createClientMutation.mutate(payload, {
       onSuccess: (client) => {
@@ -226,9 +228,9 @@ export const CreateClientDialog = ({
                 <FormItem>
                   <FormLabel>Day Rate (£/day)</FormLabel>
                   <FormControl>
-                    <Input 
-                      type="number" 
-                      step="0.01" 
+                    <Input
+                      type="number"
+                      step="0.01"
                       value={field.value || ""}
                       onChange={field.onChange}
                       onBlur={field.onBlur}
@@ -249,9 +251,9 @@ export const CreateClientDialog = ({
                   <FormItem>
                     <FormLabel>Per Diem Work (£/day)</FormLabel>
                     <FormControl>
-                      <Input 
-                        type="number" 
-                        step="0.01" 
+                      <Input
+                        type="number"
+                        step="0.01"
                         value={field.value || ""}
                         onChange={field.onChange}
                         onBlur={field.onBlur}
@@ -271,9 +273,9 @@ export const CreateClientDialog = ({
                   <FormItem>
                     <FormLabel>Per Diem Travel (£/day)</FormLabel>
                     <FormControl>
-                      <Input 
-                        type="number" 
-                        step="0.01" 
+                      <Input
+                        type="number"
+                        step="0.01"
                         value={field.value || ""}
                         onChange={field.onChange}
                         onBlur={field.onBlur}
@@ -299,7 +301,9 @@ export const CreateClientDialog = ({
                 Cancel
               </Button>
               <Button type="submit" disabled={createClientMutation.isPending}>
-                {createClientMutation.isPending ? "Creating..." : "Create Client"}
+                {createClientMutation.isPending
+                  ? "Creating..."
+                  : "Create Client"}
               </Button>
             </div>
           </form>
@@ -308,4 +312,3 @@ export const CreateClientDialog = ({
     </Dialog>
   );
 };
-

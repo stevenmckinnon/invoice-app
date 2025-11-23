@@ -99,7 +99,7 @@ export default function SignUpPage() {
       <div className="bg-muted relative hidden flex-col p-12 text-white lg:flex dark:border-r">
         <div className="absolute inset-0 overflow-hidden bg-zinc-900">
           <BackgroundPattern />
-          <div className="absolute inset-0 bg-gradient-to-bl from-zinc-900/90 via-zinc-900/50 to-zinc-900/20" />
+          <div className="absolute inset-0 bg-linear-to-bl from-zinc-900/90 via-zinc-900/50 to-zinc-900/20" />
         </div>
 
         <Link href="/">
@@ -134,7 +134,7 @@ export default function SignUpPage() {
         >
           <div className="flex flex-col space-y-2 text-center">
             <div className="mb-4 flex justify-center lg:hidden">
-              <Link href="/">
+                <Link href="/">
                 <CaleyLogo className="h-12 w-12" />
               </Link>
             </div>
