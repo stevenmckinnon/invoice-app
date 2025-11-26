@@ -1,15 +1,15 @@
 "use client";
 
+import { useEffect, useState } from "react";
+
 import { FileText, Home, Plus, Settings, Users } from "lucide-react";
-import { motion } from "motion/react";
+import { AnimatePresence, LayoutGroup, motion } from "motion/react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 import { useSession } from "@/lib/auth-client";
 import { hapticLight } from "@/lib/haptics";
 import { cn } from "@/lib/utils";
-
-import { Button } from "./ui/button";
 
 interface NavItem {
   href: string;
@@ -29,14 +29,7 @@ const navItems: NavItem[] = [
     href: "/invoices",
     label: "Invoices",
     icon: FileText,
-    isActive: (pathname) =>
-      pathname.startsWith("/invoices") && pathname !== "/invoices/new",
-  },
-  {
-    href: "/invoices/new",
-    label: "New Invoice",
-    icon: Plus,
-    isActive: (pathname) => pathname === "/invoices/new",
+    isActive: (pathname) => pathname.startsWith("/invoices"),
   },
   {
     href: "/clients",
@@ -55,6 +48,26 @@ const navItems: NavItem[] = [
 export const MobileBottomNav = () => {
   const pathname = usePathname();
   const { data: session } = useSession();
+  const [isVisible, setIsVisible] = useState(true);
+  const [lastScrollY, setLastScrollY] = useState(0);
+
+  useEffect(() => {
+    const controlNavbar = () => {
+      const currentScrollY = window.scrollY;
+
+      if (currentScrollY < 100) {
+        setIsVisible(true);
+      } else if (currentScrollY > lastScrollY) {
+        setIsVisible(false);
+      } else {
+        setIsVisible(true);
+      }
+      setLastScrollY(currentScrollY);
+    };
+
+    window.addEventListener("scroll", controlNavbar);
+    return () => window.removeEventListener("scroll", controlNavbar);
+  }, [lastScrollY]);
 
   // Don't show bottom nav if user is not logged in
   if (!session?.user) {
@@ -64,88 +77,106 @@ export const MobileBottomNav = () => {
   return (
     <>
       {/* Spacer to prevent content from being hidden behind nav */}
-      <div
-        className="h-20 md:hidden"
-        style={{
-          paddingBottom: "env(safe-area-inset-bottom)",
-        }}
-      />
+      <div className="h-24 md:hidden" />
 
-      {/* Bottom Navigation */}
-      <motion.nav
-        initial={{ opacity: 0, y: 100 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{
-          duration: 0.5,
-          type: "spring",
-          stiffness: 300,
-          damping: 30,
-        }}
-        className="fixed right-0 bottom-0 left-0 z-50 flex w-full justify-center md:hidden"
-      >
-        {/* iOS-style Navigation Container with enhanced blur */}
-        <div
-          className="relative w-full border-t border-black/10 bg-white/80 backdrop-blur-xl backdrop-saturate-150 dark:border-white/10 dark:bg-black/60"
-          style={{
-            padding:
-              "0 calc(env(safe-area-inset-bottom) / 4) calc(env(safe-area-inset-bottom) / 2)",
-          }}
-        >
-          {/* Navigation Items */}
-          <div className="relative flex w-full items-center justify-between gap-0.5 px-2 py-3">
-            {navItems.map((item) => {
-              const Icon = item.icon;
-              const isActive = item.isActive(pathname);
-
-              return (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  onClick={() => hapticLight()}
-                  className={cn(
-                    "relative flex w-[85px] flex-col items-center justify-center gap-1 rounded-2xl px-2 py-2 transition-all duration-200 ease-out",
-                    "active:scale-95 active:opacity-70",
-                    isActive ? "text-primary" : "text-foreground/60",
-                  )}
+      <div className="pointer-events-none fixed right-0 bottom-6 left-0 z-50 flex justify-center md:hidden">
+        <AnimatePresence mode="wait">
+          {isVisible && (
+            <motion.nav
+              initial={{ y: 100, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              exit={{ y: 100, opacity: 0 }}
+              transition={{
+                type: "spring",
+                stiffness: 300,
+                damping: 30,
+              }}
+              className="pointer-events-auto flex items-center gap-2 rounded-full border border-white/10 bg-black/90 p-2 shadow-lg backdrop-blur-xl"
+            >
+              <LayoutGroup>
+                <motion.ul
+                  layout
+                  className="m-0 flex list-none items-center gap-2 p-0"
                 >
-                  {/* Active Background Indicator */}
-                  {isActive && (
-                    <motion.div
-                      layoutId="activeTab"
-                      className="bg-primary/10 absolute inset-0 rounded-2xl"
-                      transition={{
-                        type: "spring",
-                        stiffness: 300,
-                        damping: 30,
-                      }}
-                    />
-                  )}
+                  {navItems.map((item) => {
+                    const isActive = item.isActive(pathname);
+                    const Icon = item.icon;
 
-                  {/* Icon */}
-                  <div className="relative z-10">
-                    <Icon
-                      className={cn(
-                        "h-5 w-5 transition-all duration-200",
-                        isActive && "scale-110",
-                      )}
-                    />
-                  </div>
+                    return (
+                      <motion.li
+                        key={item.href}
+                        layout
+                        className="relative z-10"
+                        transition={{
+                          type: "spring",
+                          stiffness: 500,
+                          damping: 30,
+                        }}
+                      >
+                        <Link
+                          href={item.href}
+                          onClick={() => hapticLight()}
+                          className={cn(
+                            "relative flex items-center gap-2 rounded-full px-4 py-3 transition-colors duration-200",
+                            !isActive &&
+                              "text-white/60 hover:bg-white/10 hover:text-white",
+                            isActive && "text-black"
+                          )}
+                        >
+                          {isActive && (
+                            <motion.div
+                              layoutId="nav-pill"
+                              className="absolute inset-0 rounded-full bg-white"
+                              transition={{
+                                type: "spring",
+                                stiffness: 500,
+                                damping: 30,
+                              }}
+                            />
+                          )}
 
-                  {/* Label */}
-                  <span
-                    className={cn(
-                      "relative z-10 text-[10px] font-medium transition-all duration-200",
-                      isActive ? "opacity-100" : "opacity-60",
-                    )}
-                  >
-                    {item.label}
-                  </span>
-                </Link>
-              );
-            })}
-          </div>
-        </div>
-      </motion.nav>
+                          <div className="relative z-10 flex items-center gap-2">
+                            <Icon className="h-5 w-5" />
+                            <AnimatePresence mode="popLayout" initial={false}>
+                              {isActive && (
+                                <motion.span
+                                  initial={{
+                                    width: 0,
+                                    opacity: 0,
+                                    filter: "blur(4px)",
+                                  }}
+                                  animate={{
+                                    width: "auto",
+                                    opacity: 1,
+                                    filter: "blur(0px)",
+                                  }}
+                                  exit={{
+                                    width: 0,
+                                    opacity: 0,
+                                    filter: "blur(4px)",
+                                  }}
+                                  transition={{
+                                    type: "spring",
+                                    stiffness: 500,
+                                    damping: 30,
+                                  }}
+                                  className="overflow-hidden whitespace-nowrap text-sm font-medium"
+                                >
+                                  {item.label}
+                                </motion.span>
+                              )}
+                            </AnimatePresence>
+                          </div>
+                        </Link>
+                      </motion.li>
+                    );
+                  })}
+                </motion.ul>
+              </LayoutGroup>
+            </motion.nav>
+          )}
+        </AnimatePresence>
+      </div>
     </>
   );
 };

@@ -107,7 +107,7 @@ const Hero = () => {
             stiffness: 80,
           }}
           style={{ perspective: "1000px" }}
-          className="mx-auto mt-20 w-full max-w-5xl"
+          className="mx-auto mt-20 w-full max-w-3xl"
         >
           <div className="relative">
             <div className="bg-primary/20 absolute -inset-1 rounded-3xl opacity-50 blur-xl transition-opacity duration-500 group-hover:opacity-100" />
