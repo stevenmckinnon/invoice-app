@@ -117,10 +117,10 @@ export const MobileBottomNav = () => {
                           href={item.href}
                           onClick={() => hapticLight()}
                           className={cn(
-                            "relative flex items-center gap-2 rounded-full px-4 py-3 transition-colors duration-200",
+                            "relative flex items-center gap-2 rounded-full px-6 py-2 transition-colors duration-200",
                             !isActive &&
                               "text-white/60 hover:bg-white/10 hover:text-white",
-                            isActive && "text-black"
+                            isActive && "text-black",
                           )}
                         >
                           {isActive && (
@@ -135,37 +135,18 @@ export const MobileBottomNav = () => {
                             />
                           )}
 
-                          <div className="relative z-10 flex items-center gap-2">
+                          <div className="relative z-10 flex flex-col items-center gap-1">
                             <Icon className="h-5 w-5" />
-                            <AnimatePresence mode="popLayout" initial={false}>
-                              {isActive && (
-                                <motion.span
-                                  initial={{
-                                    width: 0,
-                                    opacity: 0,
-                                    filter: "blur(4px)",
-                                  }}
-                                  animate={{
-                                    width: "auto",
-                                    opacity: 1,
-                                    filter: "blur(0px)",
-                                  }}
-                                  exit={{
-                                    width: 0,
-                                    opacity: 0,
-                                    filter: "blur(4px)",
-                                  }}
-                                  transition={{
-                                    type: "spring",
-                                    stiffness: 500,
-                                    damping: 30,
-                                  }}
-                                  className="overflow-hidden whitespace-nowrap text-sm font-medium"
-                                >
-                                  {item.label}
-                                </motion.span>
-                              )}
-                            </AnimatePresence>
+                            <motion.span
+                              transition={{
+                                type: "spring",
+                                stiffness: 500,
+                                damping: 30,
+                              }}
+                              className="overflow-hidden text-xs font-medium whitespace-nowrap"
+                            >
+                              {item.label}
+                            </motion.span>
                           </div>
                         </Link>
                       </motion.li>
