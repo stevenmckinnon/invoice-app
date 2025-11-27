@@ -126,6 +126,7 @@ export const metadata: Metadata = {
     capable: true,
     statusBarStyle: "black-translucent",
     title: "Caley",
+    startupImage: ["/splash.png"],
   },
   other: {
     "apple-mobile-web-app-title": "Caley",
