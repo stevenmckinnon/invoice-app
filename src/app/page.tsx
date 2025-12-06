@@ -342,8 +342,8 @@ export default function Home() {
       </section>
 
       {/* Footer */}
-      <footer className="border-border/40 bg-background overflow-hidden border-t pt-24 pb-8">
-        <div className="mx-auto max-w-7xl px-6">
+      <footer className="border-border/40 bg-background overflow-hidden border-t px-3 py-8 md:px-6">
+        <div className="bg-accent mx-auto max-w-7xl rounded-3xl p-6 md:p-12">
           <div className="mb-24 flex flex-col justify-between gap-12 md:flex-row">
             <div className="max-w-sm">
               <div className="mb-6 flex items-center gap-2">
