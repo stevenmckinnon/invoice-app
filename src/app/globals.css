@@ -545,6 +545,11 @@ button {
   }
 }
 
+/* Prevent iOS Safari auto-zoom on input focus (triggered when font-size < 16px) */
+input, textarea, select {
+  font-size: 16px;
+}
+
 /* Normalize iOS date input appearance */
 input[type="date"],
 input[type="time"],
