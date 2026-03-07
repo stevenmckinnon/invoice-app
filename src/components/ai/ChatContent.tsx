@@ -221,7 +221,7 @@ export const ChatContent = ({
       className={cn(
         "flex flex-col",
         variant === "page"
-          ? "h-[calc(100dvh-3rem-env(safe-area-inset-top))] overflow-hidden pt-4 md:h-[calc(100dvh-6rem)] md:pt-0"
+          ? "fixed inset-0 z-50 bg-background overflow-hidden pt-[env(safe-area-inset-top)] md:static md:inset-auto md:z-auto md:bg-transparent md:pt-0 md:h-[calc(100dvh-6rem)]"
           : "min-h-0 flex-1",
       )}
     >
