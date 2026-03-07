@@ -96,7 +96,7 @@ export const MobileBottomNav = () => {
               <LayoutGroup>
                 <motion.ul
                   layout
-                  className="m-0 flex list-none items-center gap-2 p-0"
+                  className="m-0 flex list-none items-center gap-1 p-0"
                 >
                   {navItems.slice(0, 2).map((item) => {
                     const isActive = item.isActive(pathname);
@@ -117,7 +117,7 @@ export const MobileBottomNav = () => {
                           href={item.href}
                           onClick={() => hapticLight()}
                           className={cn(
-                            "relative flex items-center gap-2 rounded-full px-4 py-2 transition-colors duration-200",
+                            "relative flex items-center gap-2 rounded-full px-5 py-2 transition-colors duration-200",
                             !isActive &&
                               "text-black/50 hover:bg-black/10 hover:text-black dark:text-white/60 dark:hover:bg-white/10 dark:hover:text-white",
                             isActive && "text-white dark:text-black",
@@ -159,15 +159,17 @@ export const MobileBottomNav = () => {
                       href="/chat"
                       onClick={() => hapticLight()}
                       className={cn(
-                        "relative flex flex-col items-center gap-1 overflow-hidden rounded-full px-3 py-2",
-                        pathname === "/chat" ? "text-white dark:text-black" : "text-black/50 dark:text-white",
+                        "relative flex flex-col items-center gap-1 overflow-hidden rounded-full px-4 py-2",
+                        pathname === "/chat"
+                          ? "text-white dark:text-black"
+                          : "text-black/50 dark:text-white",
                       )}
                       aria-label="Open AI assistant"
                     >
                       {pathname === "/chat" && (
                         <motion.div
                           layoutId="nav-pill"
-                          className="absolute inset-0 rounded-full bg-white"
+                          className="absolute inset-0 rounded-full bg-black dark:bg-white"
                           transition={{
                             type: "spring",
                             stiffness: 500,
@@ -201,7 +203,7 @@ export const MobileBottomNav = () => {
                           href={item.href}
                           onClick={() => hapticLight()}
                           className={cn(
-                            "relative flex items-center gap-2 rounded-full px-4 py-2 transition-colors duration-200",
+                            "relative flex items-center gap-2 rounded-full px-5 py-2 transition-colors duration-200",
                             !isActive &&
                               "text-black/50 hover:bg-black/10 hover:text-black dark:text-white/60 dark:hover:bg-white/10 dark:hover:text-white",
                             isActive && "text-white dark:text-black",

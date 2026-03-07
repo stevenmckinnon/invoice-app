@@ -221,7 +221,7 @@ export const ChatContent = ({
       className={cn(
         "flex flex-col",
         variant === "page"
-          ? "fixed inset-0 z-50 bg-background overflow-hidden pt-[env(safe-area-inset-top)] md:static md:inset-auto md:z-auto md:bg-transparent md:pt-0 md:h-[calc(100dvh-6rem)]"
+          ? "bg-background fixed inset-0 z-50 overflow-hidden pt-[env(safe-area-inset-top)] md:static md:inset-auto md:z-auto md:h-[calc(100dvh-6rem)] md:bg-transparent md:pt-0"
           : "min-h-0 flex-1",
       )}
     >
@@ -314,7 +314,7 @@ export const ChatContent = ({
       </Conversation>
 
       {/* Input */}
-      <div className="shrink-0 border-t p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
+      <div className="shrink-0 border-t p-3">
         <PromptInput onSubmit={handleSubmit}>
           <PromptInputTextarea
             placeholder="Ask anything about your invoices…"
