@@ -1,7 +1,5 @@
 "use client";
 
-import { useState } from "react";
-
 import { usePathname } from "next/navigation";
 
 import { AiChat } from "@/components/ai/AiChat";
@@ -14,9 +12,7 @@ interface ConditionalLayoutProps {
 
 export const ConditionalLayout = ({ children }: ConditionalLayoutProps) => {
   const pathname = usePathname();
-  const [chatOpen, setChatOpen] = useState(false);
 
-  // Define auth routes where we want to hide the header
   const authRoutes = [
     "/auth/signin",
     "/auth/signup",
@@ -25,11 +21,10 @@ export const ConditionalLayout = ({ children }: ConditionalLayoutProps) => {
   ];
 
   const isLandingPage = pathname === "/";
-
   const isAuthRoute = authRoutes.some((route) => pathname.startsWith(route));
+  const isChatPage = pathname === "/chat";
 
   if (isAuthRoute) {
-    // Auth pages: no header, full viewport height
     return (
       <main className="h-[100dvh] w-full overflow-hidden">{children}</main>
     );
@@ -44,15 +39,14 @@ export const ConditionalLayout = ({ children }: ConditionalLayoutProps) => {
     );
   }
 
-  // Regular pages: show header, mobile nav, and AI chat
   return (
     <>
       <AppHeader />
       <main className="mx-auto pt-12 md:pt-24">
         {children}
       </main>
-      <MobileBottomNav onOpenChat={() => setChatOpen(true)} />
-      <AiChat open={chatOpen} onOpenChange={setChatOpen} />
+      {!isChatPage && <MobileBottomNav />}
+      <AiChat />
     </>
   );
 };

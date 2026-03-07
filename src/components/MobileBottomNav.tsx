@@ -45,11 +45,7 @@ const navItems: NavItem[] = [
   },
 ];
 
-export const MobileBottomNav = ({
-  onOpenChat,
-}: {
-  onOpenChat?: () => void;
-}) => {
+export const MobileBottomNav = () => {
   const pathname = usePathname();
   const { data: session } = useSession();
   const [isVisible, setIsVisible] = useState(true);
@@ -159,19 +155,31 @@ export const MobileBottomNav = ({
 
                   {/* AI chat — centre button */}
                   <motion.li key="ai-chat" layout className="relative z-10">
-                    <button
-                      onClick={() => {
-                        hapticLight();
-                        onOpenChat?.();
-                      }}
-                      className="relative flex flex-col items-center gap-1 overflow-hidden rounded-full px-3 py-2 text-white"
+                    <Link
+                      href="/chat"
+                      onClick={() => hapticLight()}
+                      className={cn(
+                        "relative flex flex-col items-center gap-1 overflow-hidden rounded-full px-3 py-2",
+                        pathname === "/chat" ? "text-black" : "text-white",
+                      )}
                       aria-label="Open AI assistant"
                     >
+                      {pathname === "/chat" && (
+                        <motion.div
+                          layoutId="nav-pill"
+                          className="absolute inset-0 rounded-full bg-white"
+                          transition={{
+                            type: "spring",
+                            stiffness: 500,
+                            damping: 30,
+                          }}
+                        />
+                      )}
                       <Sparkles className="relative z-10 h-5 w-5" />
                       <span className="relative z-10 overflow-hidden text-xs font-medium whitespace-nowrap">
                         Ask AI
                       </span>
-                    </button>
+                    </Link>
                   </motion.li>
 
                   {navItems.slice(2).map((item) => {
