@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport, isTextUIPart, type UIMessage } from "ai";
@@ -23,6 +23,7 @@ import {
   PromptInputSubmit,
   PromptInputTextarea,
 } from "@/components/ai-elements/prompt-input";
+import { Shimmer } from "@/components/ai-elements/shimmer";
 import { Suggestion, Suggestions } from "@/components/ai-elements/suggestion";
 import { Button } from "@/components/ui/button";
 import {
@@ -73,12 +74,29 @@ interface AiChatProps {
   onOpenChange?: (open: boolean) => void;
 }
 
+const THINKING_MESSAGES = [
+  "Thinking…",
+  "Crunching numbers…",
+  "Consulting the spreadsheets…",
+  "Doing the math…",
+  "Checking your invoices…",
+  "Counting beans…",
+  "Summoning insight…",
+  "Reading the ledger…",
+  "Calculating…",
+  "On it…",
+];
+
 export const AiChat = ({ open: controlledOpen, onOpenChange }: AiChatProps) => {
   const [internalOpen, setInternalOpen] = useState(false);
   const open = controlledOpen ?? internalOpen;
   const setOpen = onOpenChange ?? setInternalOpen;
   const [draftInvoiceId, setDraftInvoiceId] = useState<string | null>(null);
   const [mounted, setMounted] = useState(false);
+  const [thinkingIndex, setThinkingIndex] = useState(0);
+  const thinkingIntervalRef = useRef<ReturnType<typeof setInterval> | null>(
+    null,
+  );
 
   const { messages, sendMessage, setMessages, status, stop } = useChat({
     transport,
@@ -98,6 +116,30 @@ export const AiChat = ({ open: controlledOpen, onOpenChange }: AiChatProps) => {
     setMounted(true);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Cycle through thinking messages while generating
+  const isThinking = status === "streaming" || status === "submitted";
+  useEffect(() => {
+    if (isThinking) {
+      setThinkingIndex(Math.floor(Math.random() * THINKING_MESSAGES.length));
+      thinkingIntervalRef.current = setInterval(() => {
+        setThinkingIndex(() =>
+          Math.floor(Math.random() * THINKING_MESSAGES.length),
+        );
+      }, 2000);
+    } else {
+      if (thinkingIntervalRef.current) {
+        clearInterval(thinkingIntervalRef.current);
+        thinkingIntervalRef.current = null;
+      }
+    }
+    return () => {
+      if (thinkingIntervalRef.current) {
+        clearInterval(thinkingIntervalRef.current);
+        thinkingIntervalRef.current = null;
+      }
+    };
+  }, [isThinking]);
 
   // Persist messages to localStorage on every change
   useEffect(() => {
@@ -253,9 +295,9 @@ export const AiChat = ({ open: controlledOpen, onOpenChange }: AiChatProps) => {
                   </div>
                   <Message from="assistant">
                     <MessageContent>
-                      <span className="text-muted-foreground animate-pulse text-sm">
-                        Thinking…
-                      </span>
+                      <Shimmer className="text-muted-foreground text-sm">
+                        {THINKING_MESSAGES[thinkingIndex]}
+                      </Shimmer>
                     </MessageContent>
                   </Message>
                 </div>
