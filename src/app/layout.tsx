@@ -169,7 +169,6 @@ export const viewport: Viewport = {
     { media: "(prefers-color-scheme: dark)", color: "#000000" },
   ],
   viewportFit: "cover", // Enable safe area insets for notched devices
-  interactiveWidget: "resizes-content", // Prevent virtual keyboard from repositioning fixed elements on iOS
 };
 
 export default function RootLayout({
