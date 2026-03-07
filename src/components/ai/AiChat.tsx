@@ -97,6 +97,7 @@ export const AiChat = ({ open: controlledOpen, onOpenChange }: AiChatProps) => {
   const thinkingIntervalRef = useRef<ReturnType<typeof setInterval> | null>(
     null,
   );
+  const [sheetStyle, setSheetStyle] = useState<React.CSSProperties>({});
 
   const { messages, sendMessage, setMessages, status, stop } = useChat({
     transport,
@@ -157,6 +158,32 @@ export const AiChat = ({ open: controlledOpen, onOpenChange }: AiChatProps) => {
     if (id) setDraftInvoiceId(id);
   }, [messages]);
 
+  // Track visual viewport to handle iOS Safari keyboard repositioning.
+  // When the keyboard opens, iOS shifts the visual viewport rather than
+  // resizing it, causing fixed elements to jump. We manually size the sheet
+  // to exactly match the visible area above the keyboard.
+  useEffect(() => {
+    if (!open) {
+      setSheetStyle({});
+      return;
+    }
+    const vv = window.visualViewport;
+    if (!vv) return;
+    const update = () => {
+      setSheetStyle({
+        height: `${vv.height}px`,
+        top: `${vv.offsetTop}px`,
+      });
+    };
+    update();
+    vv.addEventListener("resize", update);
+    vv.addEventListener("scroll", update);
+    return () => {
+      vv.removeEventListener("resize", update);
+      vv.removeEventListener("scroll", update);
+    };
+  }, [open]);
+
   const handleSubmit = ({ text }: { text: string; files: unknown[] }) => {
     if (!text.trim()) return;
     sendMessage({ text });
@@ -201,6 +228,7 @@ export const AiChat = ({ open: controlledOpen, onOpenChange }: AiChatProps) => {
         <SheetContent
           side="right"
           className="flex w-full flex-col gap-0 p-0 pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)] sm:max-w-[480px]"
+          style={sheetStyle}
         >
           {/* Header */}
           <SheetHeader className="border-b px-6 py-4">
