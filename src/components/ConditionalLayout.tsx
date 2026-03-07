@@ -2,6 +2,7 @@
 
 import { usePathname } from "next/navigation";
 
+import { AiChat } from "@/components/ai/AiChat";
 import { AppHeader } from "@/components/AppHeader";
 import { MobileBottomNav } from "@/components/MobileBottomNav";
 
@@ -40,7 +41,7 @@ export const ConditionalLayout = ({ children }: ConditionalLayoutProps) => {
     );
   }
 
-  // Regular pages: show header and mobile nav
+  // Regular pages: show header, mobile nav, and AI chat
   return (
     <>
       <AppHeader />
@@ -48,6 +49,7 @@ export const ConditionalLayout = ({ children }: ConditionalLayoutProps) => {
         {children}
       </main>
       <MobileBottomNav />
+      <AiChat />
     </>
   );
 };

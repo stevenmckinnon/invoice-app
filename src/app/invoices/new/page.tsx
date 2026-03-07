@@ -136,11 +136,11 @@ export default function NewInvoicePage() {
       dateOfBirth: "",
       currency: "GBP",
       items: [
-        { description: "Travel Days", quantity: 1, unitPrice: 0 },
-        { description: "Work Days", quantity: 1, unitPrice: 0 },
-        { description: "Dark days", quantity: 1, unitPrice: 0 },
-        { description: "Per Diems Travel Days", quantity: 1, unitPrice: 0 },
-        { description: "Per Diems Work Days", quantity: 1, unitPrice: 0 },
+        { description: "Travel Days", quantity: 0, unitPrice: 0 },
+        { description: "Work Days", quantity: 0, unitPrice: 0 },
+        { description: "Dark days", quantity: 0, unitPrice: 0 },
+        { description: "Per Diems Travel Days", quantity: 0, unitPrice: 0 },
+        { description: "Per Diems Work Days", quantity: 0, unitPrice: 0 },
       ],
       overtimeEntries: [],
       customExpenseEntries: [],
@@ -324,13 +324,12 @@ export default function NewInvoicePage() {
       ...values,
       overtimeEntries: values.overtimeEntries.map((entry) => ({
         ...entry,
-        date: entry.date instanceof Date 
-          ? entry.date.toISOString() 
-          : entry.date,
+        date:
+          entry.date instanceof Date ? entry.date.toISOString() : entry.date,
       })),
       clientId: selectedClientId || undefined,
     };
-    
+
     createInvoiceMutation.mutate(payload, {
       onSuccess: (data) => {
         router.push(`/invoices/${data.id}`);
@@ -346,8 +345,12 @@ export default function NewInvoicePage() {
         className="mx-auto grid w-full max-w-6xl gap-6 p-6 py-10 md:pb-8"
       >
         <div className="space-y-1">
-          <h1 className="font-oswald text-4xl font-bold tracking-tight">New Invoice</h1>
-          <p className="text-muted-foreground text-sm font-medium">Create a new invoice for your client</p>
+          <h1 className="font-oswald text-4xl font-bold tracking-tight">
+            New Invoice
+          </h1>
+          <p className="text-muted-foreground text-sm font-medium">
+            Create a new invoice for your client
+          </p>
         </div>
 
         {profileIncomplete && (
@@ -956,8 +959,15 @@ export default function NewInvoicePage() {
                 )}
               />
               <div className="flex items-end justify-end">
-                <Button type="submit" disabled={createInvoiceMutation.isPending} className="shadow-md hover:shadow-lg transition-shadow" size="lg">
-                  {createInvoiceMutation.isPending ? "Creating..." : "Create Invoice"}
+                <Button
+                  type="submit"
+                  disabled={createInvoiceMutation.isPending}
+                  className="shadow-md transition-shadow hover:shadow-lg"
+                  size="lg"
+                >
+                  {createInvoiceMutation.isPending
+                    ? "Creating..."
+                    : "Create Invoice"}
                 </Button>
               </div>
             </div>

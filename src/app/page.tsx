@@ -1,4 +1,6 @@
 import {
+  Bot,
+  Check,
   Clock,
   DollarSign,
   ExternalLink,
@@ -46,7 +48,7 @@ export default function Home() {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
+          <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-4">
             {[
               {
                 icon: Zap,
@@ -65,6 +67,12 @@ export default function Home() {
                 title: "Work From Anywhere",
                 description:
                   "Access your invoices from any device. Cloud-based and always in sync across all your devices.",
+              },
+              {
+                icon: Bot,
+                title: "AI Assistant",
+                description:
+                  "Create invoices, check your revenue, and manage billing with a simple chat — no manual work required.",
               },
             ].map((feature, i) => (
               <SectionReveal
@@ -194,6 +202,121 @@ export default function Home() {
         </SectionReveal>
       </section>
 
+      {/* AI Assistant Section */}
+      <section className="relative overflow-hidden py-32">
+        <div className="bg-primary/5 absolute inset-0 -z-10" />
+        <div className="bg-primary/10 absolute top-1/2 left-1/2 -z-10 h-[700px] w-[700px] -translate-x-1/2 -translate-y-1/2 rounded-full blur-[120px]" />
+
+        <SectionReveal className="mx-auto max-w-7xl px-6">
+          <div className="grid grid-cols-1 items-center gap-16 lg:grid-cols-2">
+            {/* Text */}
+            <div>
+              <div className="text-primary bg-primary/10 mb-6 inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-sm font-medium">
+                <Bot className="h-4 w-4" />
+                AI-Powered
+              </div>
+              <h3 className="font-oswald mb-6 text-4xl font-bold tracking-tight sm:text-5xl">
+                Meet Your Invoicing
+                <br />
+                Co-pilot
+              </h3>
+              <p className="text-muted-foreground mb-8 text-lg leading-relaxed">
+                Just describe what you need in plain English. Caley&apos;s
+                built-in AI assistant handles the heavy lifting so you can focus
+                on the work that matters.
+              </p>
+              <ul className="space-y-4">
+                {[
+                  "Create full invoices from a single sentence",
+                  "Ask about revenue, outstanding invoices, and top clients",
+                  "Update drafts — add overtime, expenses, and notes",
+                  "Powered by Claude, Anthropic's state-of-the-art AI",
+                ].map((item) => (
+                  <li key={item} className="flex items-start gap-3">
+                    <div className="bg-primary/10 text-primary mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full">
+                      <Check className="h-3 w-3" />
+                    </div>
+                    <span className="text-muted-foreground">{item}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            {/* Chat mockup */}
+            <div className="border-border/50 bg-background relative overflow-hidden rounded-3xl border shadow-2xl">
+              {/* Header */}
+              <div className="border-border/50 flex items-center gap-3 border-b px-6 py-4">
+                <div className="bg-primary/10 flex h-8 w-8 items-center justify-center rounded-full">
+                  <Bot className="text-primary h-4 w-4" />
+                </div>
+                <div>
+                  <p className="text-sm font-semibold">Caley Assistant</p>
+                  <p className="text-muted-foreground text-xs">
+                    Powered by Claude
+                  </p>
+                </div>
+              </div>
+
+              {/* Messages */}
+              <div className="space-y-4 p-6">
+                <div className="flex justify-end">
+                  <div className="bg-primary text-primary-foreground max-w-[80%] rounded-2xl rounded-br-sm px-4 py-2.5 text-sm">
+                    Create an invoice for Acme Corp, 5 days work
+                  </div>
+                </div>
+
+                <div className="flex gap-3">
+                  <div className="bg-primary/10 flex h-7 w-7 shrink-0 items-center justify-center rounded-full">
+                    <Bot className="text-primary h-3.5 w-3.5" />
+                  </div>
+                  <div className="bg-muted/50 max-w-[80%] rounded-2xl rounded-bl-sm px-4 py-2.5 text-sm">
+                    <p>
+                      Done! I&apos;ve drafted an invoice for{" "}
+                      <strong>Acme Corp</strong> — 5 days at your day rate. Want
+                      to add overtime or expenses?
+                    </p>
+                    <div className="border-border/50 mt-3 rounded-xl border p-3">
+                      <div className="flex items-center justify-between text-xs">
+                        <span className="text-muted-foreground">
+                          INV-2025-042 · Draft
+                        </span>
+                        <span className="font-semibold">£2,500.00</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex justify-end">
+                  <div className="bg-primary text-primary-foreground max-w-[80%] rounded-2xl rounded-br-sm px-4 py-2.5 text-sm">
+                    Add 3 hours overtime
+                  </div>
+                </div>
+
+                <div className="flex gap-3">
+                  <div className="bg-primary/10 flex h-7 w-7 shrink-0 items-center justify-center rounded-full">
+                    <Bot className="text-primary h-3.5 w-3.5" />
+                  </div>
+                  <div className="bg-muted/50 max-w-[80%] rounded-2xl rounded-bl-sm px-4 py-2.5 text-sm">
+                    Added 3 overtime hours at 1.5× rate (+£187.50). New total:{" "}
+                    <strong>£2,687.50</strong>
+                  </div>
+                </div>
+              </div>
+
+              {/* Input */}
+              <div className="border-border/50 flex items-center gap-3 border-t px-4 py-3">
+                <div className="bg-muted/50 text-muted-foreground flex-1 rounded-xl px-4 py-2 text-sm">
+                  Ask me anything about your invoices...
+                </div>
+                <div className="bg-primary text-primary-foreground flex h-8 w-8 items-center justify-center rounded-xl text-sm font-bold">
+                  ↑
+                </div>
+              </div>
+            </div>
+          </div>
+        </SectionReveal>
+      </section>
+
       {/* Testimonials Section */}
       <section className="py-24">
         <SectionReveal className="mx-auto max-w-7xl px-6">
@@ -273,6 +396,10 @@ export default function Home() {
 
           <Accordion type="single" collapsible className="w-full">
             {[
+              {
+                q: "What can the AI assistant do?",
+                a: "Caley's built-in AI assistant lets you create invoices, update drafts, and query your billing data using plain English. Just type something like 'Create an invoice for Acme Corp for 5 days work' or 'How much revenue did I earn this month?' — the assistant handles the rest, powered by Claude from Anthropic.",
+              },
               {
                 q: "How do I get started with creating invoices?",
                 a: "Simply sign up for a free account, complete your profile with your personal and banking details, and you're ready to create your first invoice. The system will auto-fill your information for all future invoices.",
