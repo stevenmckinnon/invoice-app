@@ -68,8 +68,15 @@ const findDraftInvoiceId = (messages: UIMessage[]): string | null => {
   return latest;
 };
 
-export const AiChat = () => {
-  const [open, setOpen] = useState(false);
+interface AiChatProps {
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+}
+
+export const AiChat = ({ open: controlledOpen, onOpenChange }: AiChatProps) => {
+  const [internalOpen, setInternalOpen] = useState(false);
+  const open = controlledOpen ?? internalOpen;
+  const setOpen = onOpenChange ?? setInternalOpen;
   const [draftInvoiceId, setDraftInvoiceId] = useState<string | null>(null);
   const [mounted, setMounted] = useState(false);
 
@@ -139,7 +146,7 @@ export const AiChat = () => {
       {/* Floating action button */}
       <Button
         onClick={() => setOpen(true)}
-        className="fixed right-4 bottom-20 z-40 size-14 overflow-hidden rounded-full shadow-lg md:right-6 md:bottom-6"
+        className="fixed right-6 bottom-6 z-40 hidden size-14 overflow-hidden rounded-full shadow-lg md:flex"
         size="icon"
         aria-label="Open AI assistant"
       >
@@ -151,7 +158,7 @@ export const AiChat = () => {
       <Sheet open={open} onOpenChange={setOpen}>
         <SheetContent
           side="right"
-          className="flex w-full flex-col gap-0 p-0 sm:max-w-[480px]"
+          className="flex w-full flex-col gap-0 p-0 pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)] sm:max-w-[480px]"
         >
           {/* Header */}
           <SheetHeader className="border-b px-6 py-4">

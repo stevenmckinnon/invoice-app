@@ -1,5 +1,7 @@
 "use client";
 
+import { useState } from "react";
+
 import { usePathname } from "next/navigation";
 
 import { AiChat } from "@/components/ai/AiChat";
@@ -12,6 +14,7 @@ interface ConditionalLayoutProps {
 
 export const ConditionalLayout = ({ children }: ConditionalLayoutProps) => {
   const pathname = usePathname();
+  const [chatOpen, setChatOpen] = useState(false);
 
   // Define auth routes where we want to hide the header
   const authRoutes = [
@@ -48,8 +51,8 @@ export const ConditionalLayout = ({ children }: ConditionalLayoutProps) => {
       <main className="mx-auto pt-12 md:pt-24">
         {children}
       </main>
-      <MobileBottomNav />
-      <AiChat />
+      <MobileBottomNav onOpenChat={() => setChatOpen(true)} />
+      <AiChat open={chatOpen} onOpenChange={setChatOpen} />
     </>
   );
 };

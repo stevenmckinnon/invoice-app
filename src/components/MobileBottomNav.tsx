@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 
-import { FileText, Home, Plus, Settings, Users } from "lucide-react";
+import { FileText, Home, Settings, Sparkles, Users } from "lucide-react";
 import { AnimatePresence, LayoutGroup, motion } from "motion/react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -45,7 +45,7 @@ const navItems: NavItem[] = [
   },
 ];
 
-export const MobileBottomNav = () => {
+export const MobileBottomNav = ({ onOpenChat }: { onOpenChat?: () => void }) => {
   const pathname = usePathname();
   const { data: session } = useSession();
   const [isVisible, setIsVisible] = useState(true);
@@ -98,7 +98,77 @@ export const MobileBottomNav = () => {
                   layout
                   className="m-0 flex list-none items-center gap-2 p-0"
                 >
-                  {navItems.map((item) => {
+                  {navItems.slice(0, 2).map((item) => {
+                    const isActive = item.isActive(pathname);
+                    const Icon = item.icon;
+
+                    return (
+                      <motion.li
+                        key={item.href}
+                        layout
+                        className="relative z-10"
+                        transition={{
+                          type: "spring",
+                          stiffness: 500,
+                          damping: 30,
+                        }}
+                      >
+                        <Link
+                          href={item.href}
+                          onClick={() => hapticLight()}
+                          className={cn(
+                            "relative flex items-center gap-2 rounded-full px-6 py-2 transition-colors duration-200",
+                            !isActive &&
+                              "text-white/60 hover:bg-white/10 hover:text-white",
+                            isActive && "text-black",
+                          )}
+                        >
+                          {isActive && (
+                            <motion.div
+                              layoutId="nav-pill"
+                              className="absolute inset-0 rounded-full bg-white"
+                              transition={{
+                                type: "spring",
+                                stiffness: 500,
+                                damping: 30,
+                              }}
+                            />
+                          )}
+
+                          <div className="relative z-10 flex flex-col items-center gap-1">
+                            <Icon className="h-5 w-5" />
+                            <motion.span
+                              transition={{
+                                type: "spring",
+                                stiffness: 500,
+                                damping: 30,
+                              }}
+                              className="overflow-hidden text-xs font-medium whitespace-nowrap"
+                            >
+                              {item.label}
+                            </motion.span>
+                          </div>
+                        </Link>
+                      </motion.li>
+                    );
+                  })}
+
+                  {/* AI chat — centre button */}
+                  <motion.li key="ai-chat" layout className="relative z-10">
+                    <button
+                      onClick={() => { hapticLight(); onOpenChat?.(); }}
+                      className="bg-primary relative flex flex-col items-center gap-1 overflow-hidden rounded-full px-5 py-2 text-white"
+                      aria-label="Open AI assistant"
+                    >
+                      <span className="shimmer-overlay" />
+                      <Sparkles className="relative z-10 h-5 w-5" />
+                      <span className="relative z-10 overflow-hidden text-xs font-medium whitespace-nowrap">
+                        Ask AI
+                      </span>
+                    </button>
+                  </motion.li>
+
+                  {navItems.slice(2).map((item) => {
                     const isActive = item.isActive(pathname);
                     const Icon = item.icon;
 
