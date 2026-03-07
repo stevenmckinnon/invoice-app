@@ -128,7 +128,7 @@ export const POST = async (req: Request) => {
       )
       .join("\n") || "No invoices yet.";
 
-  const systemPrompt = `You are Caley AI, a friendly and efficient assistant built into the Caley invoice management app. You help freelancers manage invoices, track revenue, and create new invoices through natural conversation.
+  const systemPrompt = `You are Caley Assistant, a friendly and efficient assistant built into the Caley invoice management app. You help freelancers manage invoices, track revenue, and create new invoices through natural conversation.
 
 ## User Profile
 - Name: ${user?.fullName ?? user?.name ?? "Unknown"}
@@ -266,7 +266,9 @@ ${recentInvoices}
 
           // Always include the 5 standard line items (matching the manual new-invoice form defaults).
           // AI-provided items override defaults where descriptions match; extras are appended.
-          const dayRate = resolvedClient?.dayRate ? Number(resolvedClient.dayRate) : 0;
+          const dayRate = resolvedClient?.dayRate
+            ? Number(resolvedClient.dayRate)
+            : 0;
           const perDiemWorkRate = resolvedClient?.perDiemWork
             ? Number(resolvedClient.perDiemWork)
             : 0;
@@ -278,19 +280,32 @@ ${recentInvoices}
             { description: "Travel Days", unitPrice: dayRate },
             { description: "Work Days", unitPrice: dayRate },
             { description: "Dark days", unitPrice: dayRate },
-            { description: "Per Diems Travel Days", unitPrice: perDiemTravelRate },
+            {
+              description: "Per Diems Travel Days",
+              unitPrice: perDiemTravelRate,
+            },
             { description: "Per Diems Work Days", unitPrice: perDiemWorkRate },
           ];
 
           const aiItemMap = new Map(items.map((i) => [i.description, i]));
-          const defaultDescriptions = new Set(DEFAULT_LINE_ITEMS.map((d) => d.description));
+          const defaultDescriptions = new Set(
+            DEFAULT_LINE_ITEMS.map((d) => d.description),
+          );
 
           const mergedItems = [
             ...DEFAULT_LINE_ITEMS.map((def) => {
               const ai = aiItemMap.get(def.description);
               return ai
-                ? { description: ai.description, quantity: ai.quantity, unitPrice: ai.unitPrice }
-                : { description: def.description, quantity: 0, unitPrice: def.unitPrice };
+                ? {
+                    description: ai.description,
+                    quantity: ai.quantity,
+                    unitPrice: ai.unitPrice,
+                  }
+                : {
+                    description: def.description,
+                    quantity: 0,
+                    unitPrice: def.unitPrice,
+                  };
             }),
             ...items.filter((i) => !defaultDescriptions.has(i.description)),
           ];
@@ -515,11 +530,15 @@ ${recentInvoices}
               },
               {
                 description: "Work Days",
-                unitPrice: existingWorkDays ? Number(existingWorkDays.unitPrice) : 0,
+                unitPrice: existingWorkDays
+                  ? Number(existingWorkDays.unitPrice)
+                  : 0,
               },
               {
                 description: "Dark days",
-                unitPrice: existingWorkDays ? Number(existingWorkDays.unitPrice) : 0,
+                unitPrice: existingWorkDays
+                  ? Number(existingWorkDays.unitPrice)
+                  : 0,
               },
               {
                 description: "Per Diems Travel Days",
@@ -529,19 +548,31 @@ ${recentInvoices}
               },
               {
                 description: "Per Diems Work Days",
-                unitPrice: existingPerDiemWork ? Number(existingPerDiemWork.unitPrice) : 0,
+                unitPrice: existingPerDiemWork
+                  ? Number(existingPerDiemWork.unitPrice)
+                  : 0,
               },
             ];
 
             const aiItemMap = new Map(items.map((i) => [i.description, i]));
-            const defaultDescriptions = new Set(DEFAULT_LINE_ITEMS.map((d) => d.description));
+            const defaultDescriptions = new Set(
+              DEFAULT_LINE_ITEMS.map((d) => d.description),
+            );
 
             const mergedItems = [
               ...DEFAULT_LINE_ITEMS.map((def) => {
                 const ai = aiItemMap.get(def.description);
                 return ai
-                  ? { description: ai.description, quantity: ai.quantity, unitPrice: ai.unitPrice }
-                  : { description: def.description, quantity: 0, unitPrice: def.unitPrice };
+                  ? {
+                      description: ai.description,
+                      quantity: ai.quantity,
+                      unitPrice: ai.unitPrice,
+                    }
+                  : {
+                      description: def.description,
+                      quantity: 0,
+                      unitPrice: def.unitPrice,
+                    };
               }),
               ...items.filter((i) => !defaultDescriptions.has(i.description)),
             ];
