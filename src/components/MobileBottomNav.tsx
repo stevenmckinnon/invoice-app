@@ -45,7 +45,11 @@ const navItems: NavItem[] = [
   },
 ];
 
-export const MobileBottomNav = ({ onOpenChat }: { onOpenChat?: () => void }) => {
+export const MobileBottomNav = ({
+  onOpenChat,
+}: {
+  onOpenChat?: () => void;
+}) => {
   const pathname = usePathname();
   const { data: session } = useSession();
   const [isVisible, setIsVisible] = useState(true);
@@ -117,7 +121,7 @@ export const MobileBottomNav = ({ onOpenChat }: { onOpenChat?: () => void }) => 
                           href={item.href}
                           onClick={() => hapticLight()}
                           className={cn(
-                            "relative flex items-center gap-2 rounded-full px-6 py-2 transition-colors duration-200",
+                            "relative flex items-center gap-2 rounded-full px-4 py-2 transition-colors duration-200",
                             !isActive &&
                               "text-white/60 hover:bg-white/10 hover:text-white",
                             isActive && "text-black",
@@ -156,11 +160,13 @@ export const MobileBottomNav = ({ onOpenChat }: { onOpenChat?: () => void }) => 
                   {/* AI chat — centre button */}
                   <motion.li key="ai-chat" layout className="relative z-10">
                     <button
-                      onClick={() => { hapticLight(); onOpenChat?.(); }}
-                      className="bg-primary relative flex flex-col items-center gap-1 overflow-hidden rounded-full px-5 py-2 text-white"
+                      onClick={() => {
+                        hapticLight();
+                        onOpenChat?.();
+                      }}
+                      className="relative flex flex-col items-center gap-1 overflow-hidden rounded-full px-3 py-2 text-white"
                       aria-label="Open AI assistant"
                     >
-                      <span className="shimmer-overlay" />
                       <Sparkles className="relative z-10 h-5 w-5" />
                       <span className="relative z-10 overflow-hidden text-xs font-medium whitespace-nowrap">
                         Ask AI
@@ -187,7 +193,7 @@ export const MobileBottomNav = ({ onOpenChat }: { onOpenChat?: () => void }) => 
                           href={item.href}
                           onClick={() => hapticLight()}
                           className={cn(
-                            "relative flex items-center gap-2 rounded-full px-6 py-2 transition-colors duration-200",
+                            "relative flex items-center gap-2 rounded-full px-4 py-2 transition-colors duration-200",
                             !isActive &&
                               "text-white/60 hover:bg-white/10 hover:text-white",
                             isActive && "text-black",
