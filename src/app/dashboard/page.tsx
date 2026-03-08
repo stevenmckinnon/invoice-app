@@ -30,6 +30,13 @@ import { InvoiceStatusBadge } from "@/components/InvoiceStatusBadge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
   Table,
   TableBody,
   TableCell,
@@ -72,6 +79,9 @@ export default function Home() {
     cardBg: "#1f2937",
     border: "#374151",
   });
+
+  const currentYear = new Date().getFullYear();
+  const [selectedYear, setSelectedYear] = useState(currentYear);
 
   // Get theme colors from CSS variables
   useEffect(() => {
@@ -143,6 +153,22 @@ export default function Home() {
     );
   }
 
+  // Derive available years from invoice dates, always include currentYear
+  const availableYears =
+    invoices.length > 0
+      ? Array.from(
+          new Set([
+            currentYear,
+            ...invoices.map((inv) => new Date(inv.invoiceDate).getFullYear()),
+          ]),
+        ).sort((a, b) => b - a)
+      : [currentYear];
+
+  // Filter invoices to selected year
+  const yearInvoices = invoices.filter(
+    (inv) => new Date(inv.invoiceDate).getFullYear() === selectedYear,
+  );
+
   const sortedInvoices = invoices
     .sort(
       (a, b) =>
@@ -150,44 +176,45 @@ export default function Home() {
     )
     .slice(0, 5); // Show only latest 5 invoices
 
-  const totalRevenue = invoices.reduce(
+  const totalRevenue = yearInvoices.reduce(
     (sum, inv) => sum + Number(inv.totalAmount),
     0,
   );
 
-  const paidRevenue = invoices
+  const paidRevenue = yearInvoices
     .filter((inv) => inv.status === "paid")
     .reduce((sum, inv) => sum + Number(inv.totalAmount), 0);
 
-  const outstandingRevenue = invoices
+  const outstandingRevenue = yearInvoices
     .filter((inv) => inv.status !== "paid")
     .reduce((sum, inv) => sum + Number(inv.totalAmount), 0);
 
   // Calculate monthly revenue for trend
   const currentMonth = new Date().getMonth();
-  const currentYear = new Date().getFullYear();
 
-  const currentMonthRevenue = invoices
-    .filter((inv) => {
-      const invDate = new Date(inv.invoiceDate);
-      return (
-        invDate.getMonth() === currentMonth &&
-        invDate.getFullYear() === currentYear
-      );
-    })
-    .reduce((sum, inv) => sum + Number(inv.totalAmount), 0);
+  // "This Month" card: only meaningful when viewing current year
+  const isCurrentYear = selectedYear === currentYear;
 
-  const lastMonthRevenue = invoices
-    .filter((inv) => {
-      const invDate = new Date(inv.invoiceDate);
-      const lastMonth = currentMonth === 0 ? 11 : currentMonth - 1;
-      const lastMonthYear = currentMonth === 0 ? currentYear - 1 : currentYear;
-      return (
-        invDate.getMonth() === lastMonth &&
-        invDate.getFullYear() === lastMonthYear
-      );
-    })
-    .reduce((sum, inv) => sum + Number(inv.totalAmount), 0);
+  const currentMonthRevenue = isCurrentYear
+    ? yearInvoices
+        .filter((inv) => new Date(inv.invoiceDate).getMonth() === currentMonth)
+        .reduce((sum, inv) => sum + Number(inv.totalAmount), 0)
+    : 0;
+
+  const lastMonthRevenue = isCurrentYear
+    ? invoices
+        .filter((inv) => {
+          const invDate = new Date(inv.invoiceDate);
+          const lastMonth = currentMonth === 0 ? 11 : currentMonth - 1;
+          const lastMonthYear =
+            currentMonth === 0 ? currentYear - 1 : currentYear;
+          return (
+            invDate.getMonth() === lastMonth &&
+            invDate.getFullYear() === lastMonthYear
+          );
+        })
+        .reduce((sum, inv) => sum + Number(inv.totalAmount), 0)
+    : 0;
 
   const monthlyChange =
     lastMonthRevenue > 0
@@ -196,16 +223,43 @@ export default function Home() {
         ? 100
         : 0;
 
-  // Status breakdown
+  // Best month revenue for past years
+  const bestMonthRevenue = !isCurrentYear
+    ? Math.max(
+        0,
+        ...Array.from({ length: 12 }, (_, i) =>
+          yearInvoices
+            .filter((inv) => new Date(inv.invoiceDate).getMonth() === i)
+            .reduce((sum, inv) => sum + Number(inv.totalAmount), 0),
+        ),
+      )
+    : 0;
+
+  const bestMonthIndex = !isCurrentYear
+    ? Array.from({ length: 12 }, (_, i) =>
+        yearInvoices
+          .filter((inv) => new Date(inv.invoiceDate).getMonth() === i)
+          .reduce((sum, inv) => sum + Number(inv.totalAmount), 0),
+      ).indexOf(bestMonthRevenue)
+    : -1;
+
+  const bestMonthName =
+    bestMonthIndex >= 0
+      ? new Date(selectedYear, bestMonthIndex).toLocaleDateString("en-GB", {
+          month: "long",
+        })
+      : "";
+
+  // Status breakdown — scoped to selected year
   const statusCounts = {
-    draft: invoices.filter((inv) => inv.status === "draft").length,
-    sent: invoices.filter((inv) => inv.status === "sent").length,
-    paid: invoices.filter((inv) => inv.status === "paid").length,
-    overdue: invoices.filter((inv) => inv.status === "overdue").length,
+    draft: yearInvoices.filter((inv) => inv.status === "draft").length,
+    sent: yearInvoices.filter((inv) => inv.status === "sent").length,
+    paid: yearInvoices.filter((inv) => inv.status === "paid").length,
+    overdue: yearInvoices.filter((inv) => inv.status === "overdue").length,
   };
 
-  // Top shows by revenue
-  const showRevenue = invoices.reduce(
+  // Top shows by revenue — scoped to selected year
+  const showRevenue = yearInvoices.reduce(
     (acc, inv) => {
       const show = inv.showName || "Unknown";
       acc[show] = (acc[show] || 0) + Number(inv.totalAmount);
@@ -219,60 +273,45 @@ export default function Home() {
     .slice(0, 5)
     .map(([show, revenue]) => ({ show, revenue }));
 
-  // Average invoice value
+  // Average invoice value — scoped to selected year
   const averageInvoice =
-    invoices.length > 0 ? totalRevenue / invoices.length : 0;
+    yearInvoices.length > 0 ? totalRevenue / yearInvoices.length : 0;
 
-  // Revenue trend data (last 6 months)
-  const last6Months = Array.from({ length: 6 }, (_, i) => {
-    const date = new Date();
-    date.setMonth(date.getMonth() - (5 - i));
-    return {
-      month: date.toLocaleDateString("en-GB", { month: "short" }),
-      year: date.getFullYear(),
-      monthIndex: date.getMonth(),
-    };
-  });
+  // Revenue chart — all 12 months of selected year
+  const months = Array.from({ length: 12 }, (_, i) => ({
+    month: new Date(selectedYear, i).toLocaleDateString("en-GB", {
+      month: "short",
+    }),
+    monthIndex: i,
+  }));
 
-  const revenueData = last6Months.map((monthData) => {
-    const monthRevenue = invoices
-      .filter((inv) => {
-        const invDate = new Date(inv.invoiceDate);
-        return (
-          invDate.getMonth() === monthData.monthIndex &&
-          invDate.getFullYear() === monthData.year
-        );
-      })
+  const revenueData = months.map(({ month, monthIndex }) => {
+    const monthRevenue = yearInvoices
+      .filter((inv) => new Date(inv.invoiceDate).getMonth() === monthIndex)
       .reduce((sum, inv) => sum + Number(inv.totalAmount), 0);
 
     return {
-      month: monthData.month,
+      month,
       revenue: monthRevenue,
-      invoices: invoices.filter((inv) => {
-        const invDate = new Date(inv.invoiceDate);
-        return (
-          invDate.getMonth() === monthData.monthIndex &&
-          invDate.getFullYear() === monthData.year
-        );
-      }).length,
+      invoices: yearInvoices.filter(
+        (inv) => new Date(inv.invoiceDate).getMonth() === monthIndex,
+      ).length,
     };
   });
 
-  // Year-over-year comparison
-  const currentYearRevenue = invoices
-    .filter((inv) => new Date(inv.invoiceDate).getFullYear() === currentYear)
-    .reduce((sum, inv) => sum + Number(inv.totalAmount), 0);
+  // Year comparison — selectedYear vs selectedYear - 1
+  const selectedYearRevenue = totalRevenue;
 
-  const lastYearRevenue = invoices
+  const prevYearRevenue = invoices
     .filter(
-      (inv) => new Date(inv.invoiceDate).getFullYear() === currentYear - 1,
+      (inv) => new Date(inv.invoiceDate).getFullYear() === selectedYear - 1,
     )
     .reduce((sum, inv) => sum + Number(inv.totalAmount), 0);
 
   const yearlyChange =
-    lastYearRevenue > 0
-      ? ((currentYearRevenue - lastYearRevenue) / lastYearRevenue) * 100
-      : currentYearRevenue > 0
+    prevYearRevenue > 0
+      ? ((selectedYearRevenue - prevYearRevenue) / prevYearRevenue) * 100
+      : selectedYearRevenue > 0
         ? 100
         : 0;
 
@@ -287,16 +326,33 @@ export default function Home() {
             Create and manage your invoices
           </p>
         </div>
-        <Button
-          asChild
-          size="lg"
-          className="shadow-md transition-shadow hover:shadow-lg"
-        >
-          <Link href="/invoices/new">
-            <PlusIcon className="h-5 w-5" />
-            Create Invoice
-          </Link>
-        </Button>
+        <div className="flex items-center gap-3">
+          <Select
+            value={String(selectedYear)}
+            onValueChange={(val) => setSelectedYear(Number(val))}
+          >
+            <SelectTrigger className="w-[110px]">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {availableYears.map((year) => (
+                <SelectItem key={year} value={String(year)}>
+                  {year}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Button
+            asChild
+            size="lg"
+            className="shadow-md transition-shadow hover:shadow-lg"
+          >
+            <Link href="/invoices/new">
+              <PlusIcon className="h-5 w-5" />
+              Create Invoice
+            </Link>
+          </Button>
+        </div>
       </div>
 
       {/* Revenue Stats */}
@@ -371,7 +427,7 @@ export default function Home() {
               />
             </div>
             <p className="text-muted-foreground mt-3 text-xs font-medium">
-              {invoices.filter((inv) => inv.status === "paid").length} paid
+              {yearInvoices.filter((inv) => inv.status === "paid").length} paid
               invoices
             </p>
           </CardContent>
@@ -399,7 +455,8 @@ export default function Home() {
               />
             </div>
             <p className="text-muted-foreground mt-3 text-xs font-medium">
-              {invoices.filter((inv) => inv.status !== "paid").length} unpaid
+              {yearInvoices.filter((inv) => inv.status !== "paid").length}{" "}
+              unpaid
             </p>
           </CardContent>
         </Card>
@@ -454,10 +511,11 @@ export default function Home() {
                     {statusCounts.draft}
                   </span>
                   <span className="text-sm font-bold">
-                    {invoices.length > 0
-                      ? ((statusCounts.draft / invoices.length) * 100).toFixed(
-                          0,
-                        )
+                    {yearInvoices.length > 0
+                      ? (
+                          (statusCounts.draft / yearInvoices.length) *
+                          100
+                        ).toFixed(0)
                       : 0}
                     %
                   </span>
@@ -473,8 +531,11 @@ export default function Home() {
                     {statusCounts.sent}
                   </span>
                   <span className="text-sm font-bold">
-                    {invoices.length > 0
-                      ? ((statusCounts.sent / invoices.length) * 100).toFixed(0)
+                    {yearInvoices.length > 0
+                      ? (
+                          (statusCounts.sent / yearInvoices.length) *
+                          100
+                        ).toFixed(0)
                       : 0}
                     %
                   </span>
@@ -490,8 +551,11 @@ export default function Home() {
                     {statusCounts.paid}
                   </span>
                   <span className="text-sm font-bold">
-                    {invoices.length > 0
-                      ? ((statusCounts.paid / invoices.length) * 100).toFixed(0)
+                    {yearInvoices.length > 0
+                      ? (
+                          (statusCounts.paid / yearInvoices.length) *
+                          100
+                        ).toFixed(0)
                       : 0}
                     %
                   </span>
@@ -507,9 +571,9 @@ export default function Home() {
                     {statusCounts.overdue}
                   </span>
                   <span className="text-sm font-bold">
-                    {invoices.length > 0
+                    {yearInvoices.length > 0
                       ? (
-                          (statusCounts.overdue / invoices.length) *
+                          (statusCounts.overdue / yearInvoices.length) *
                           100
                         ).toFixed(0)
                       : 0}
@@ -571,13 +635,26 @@ export default function Home() {
         <CardHeader>
           <div className="flex items-center justify-between">
             <div>
-              <CardTitle className="text-xl">This Month</CardTitle>
-              <p className="text-muted-foreground text-sm font-medium">
-                {new Date().toLocaleDateString("en-GB", {
-                  month: "long",
-                  year: "numeric",
-                })}
-              </p>
+              {isCurrentYear ? (
+                <>
+                  <CardTitle className="text-xl">This Month</CardTitle>
+                  <p className="text-muted-foreground text-sm font-medium">
+                    {new Date().toLocaleDateString("en-GB", {
+                      month: "long",
+                      year: "numeric",
+                    })}
+                  </p>
+                </>
+              ) : (
+                <>
+                  <CardTitle className="text-xl">
+                    Best Month {selectedYear}
+                  </CardTitle>
+                  <p className="text-muted-foreground text-sm font-medium">
+                    {bestMonthName} {selectedYear}
+                  </p>
+                </>
+              )}
             </div>
             <Calendar className="text-muted-foreground h-8 w-8" />
           </div>
@@ -590,34 +667,36 @@ export default function Home() {
               </p>
               <p className="text-2xl font-bold">
                 <AnimatedCounter
-                  value={currentMonthRevenue}
+                  value={isCurrentYear ? currentMonthRevenue : bestMonthRevenue}
                   prefix="£"
                   duration={1200}
                   decimals={2}
                   delay={100}
                 />
               </p>
-              <div className="flex items-center gap-1">
-                {monthlyChange >= 0 ? (
-                  <TrendingUp className="h-3 w-3 text-green-600" />
-                ) : (
-                  <TrendingDown className="h-3 w-3 text-red-600" />
-                )}
-                <p
-                  className={`text-xs ${
-                    monthlyChange >= 0 ? "text-green-600" : "text-red-600"
-                  }`}
-                >
-                  {monthlyChange >= 0 ? "+" : ""}
-                  <AnimatedCounter
-                    value={Math.abs(monthlyChange)}
-                    suffix="% from last month"
-                    duration={1000}
-                    decimals={1}
-                    delay={100}
-                  />
-                </p>
-              </div>
+              {isCurrentYear && (
+                <div className="flex items-center gap-1">
+                  {monthlyChange >= 0 ? (
+                    <TrendingUp className="h-3 w-3 text-green-600" />
+                  ) : (
+                    <TrendingDown className="h-3 w-3 text-red-600" />
+                  )}
+                  <p
+                    className={`text-xs ${
+                      monthlyChange >= 0 ? "text-green-600" : "text-red-600"
+                    }`}
+                  >
+                    {monthlyChange >= 0 ? "+" : ""}
+                    <AnimatedCounter
+                      value={Math.abs(monthlyChange)}
+                      suffix="% from last month"
+                      duration={1000}
+                      decimals={1}
+                      delay={100}
+                    />
+                  </p>
+                </div>
+              )}
             </div>
             <div className="space-y-2">
               <p className="text-muted-foreground text-sm font-medium">
@@ -626,36 +705,51 @@ export default function Home() {
               <p className="text-2xl font-bold">
                 <AnimatedCounter
                   value={
-                    invoices.filter((inv) => {
-                      const invDate = new Date(inv.invoiceDate);
-                      return (
-                        invDate.getMonth() === currentMonth &&
-                        invDate.getFullYear() === currentYear
-                      );
-                    }).length
+                    isCurrentYear
+                      ? yearInvoices.filter(
+                          (inv) =>
+                            new Date(inv.invoiceDate).getMonth() ===
+                            currentMonth,
+                        ).length
+                      : bestMonthIndex >= 0
+                        ? yearInvoices.filter(
+                            (inv) =>
+                              new Date(inv.invoiceDate).getMonth() ===
+                              bestMonthIndex,
+                          ).length
+                        : 0
                   }
                   duration={1000}
                   decimals={0}
                   delay={200}
                 />
               </p>
-              <p className="text-muted-foreground text-xs">This month</p>
+              <p className="text-muted-foreground text-xs">
+                {isCurrentYear ? "This month" : `In ${bestMonthName}`}
+              </p>
             </div>
             <div className="space-y-2">
               <p className="text-muted-foreground text-sm font-medium">
-                Paid This Month
+                {isCurrentYear ? "Paid This Month" : "Paid That Month"}
               </p>
               <p className="text-2xl font-bold text-green-600">
                 <AnimatedCounter
                   value={
-                    invoices.filter((inv) => {
-                      const invDate = new Date(inv.invoiceDate);
-                      return (
-                        inv.status === "paid" &&
-                        invDate.getMonth() === currentMonth &&
-                        invDate.getFullYear() === currentYear
-                      );
-                    }).length
+                    isCurrentYear
+                      ? yearInvoices.filter(
+                          (inv) =>
+                            inv.status === "paid" &&
+                            new Date(inv.invoiceDate).getMonth() ===
+                              currentMonth,
+                        ).length
+                      : bestMonthIndex >= 0
+                        ? yearInvoices.filter(
+                            (inv) =>
+                              inv.status === "paid" &&
+                              new Date(inv.invoiceDate).getMonth() ===
+                                bestMonthIndex,
+                          ).length
+                        : 0
                   }
                   duration={1000}
                   decimals={0}
@@ -671,9 +765,9 @@ export default function Home() {
       {/* Revenue Trend Chart */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-xl">Revenue Trend</CardTitle>
+          <CardTitle className="text-xl">{selectedYear} Revenue</CardTitle>
           <p className="text-muted-foreground text-sm font-medium">
-            Last 6 months performance
+            Monthly breakdown
           </p>
         </CardHeader>
         <CardContent className="px-0 py-6 md:px-4">
@@ -766,19 +860,19 @@ export default function Home() {
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         <Card>
           <CardHeader>
-            <CardTitle className="text-xl">Year-to-Date Performance</CardTitle>
+            <CardTitle className="text-xl">Year Performance</CardTitle>
             <p className="text-muted-foreground text-sm font-medium">
-              {currentYear} vs {currentYear - 1}
+              {selectedYear} vs {selectedYear - 1}
             </p>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
               <div>
                 <div className="mb-2 flex items-center justify-between">
-                  <span className="text-sm font-medium">{currentYear}</span>
+                  <span className="text-sm font-medium">{selectedYear}</span>
                   <span className="text-sm font-bold">
                     <AnimatedCounter
-                      value={currentYearRevenue}
+                      value={selectedYearRevenue}
                       prefix="£"
                       duration={1200}
                       decimals={2}
@@ -792,8 +886,8 @@ export default function Home() {
                     style={{
                       width: `${Math.min(
                         100,
-                        (currentYearRevenue /
-                          Math.max(currentYearRevenue, lastYearRevenue, 1)) *
+                        (selectedYearRevenue /
+                          Math.max(selectedYearRevenue, prevYearRevenue, 1)) *
                           100,
                       )}%`,
                     }}
@@ -802,10 +896,12 @@ export default function Home() {
               </div>
               <div>
                 <div className="mb-2 flex items-center justify-between">
-                  <span className="text-sm font-medium">{currentYear - 1}</span>
+                  <span className="text-sm font-medium">
+                    {selectedYear - 1}
+                  </span>
                   <span className="text-sm font-bold">
                     <AnimatedCounter
-                      value={lastYearRevenue}
+                      value={prevYearRevenue}
                       prefix="£"
                       duration={1200}
                       decimals={2}
@@ -819,8 +915,8 @@ export default function Home() {
                     style={{
                       width: `${Math.min(
                         100,
-                        (lastYearRevenue /
-                          Math.max(currentYearRevenue, lastYearRevenue, 1)) *
+                        (prevYearRevenue /
+                          Math.max(selectedYearRevenue, prevYearRevenue, 1)) *
                           100,
                       )}%`,
                     }}
@@ -865,7 +961,7 @@ export default function Home() {
                 <span className="text-sm font-medium">Total Invoices</span>
                 <span className="text-2xl font-bold">
                   <AnimatedCounter
-                    value={invoices.length}
+                    value={yearInvoices.length}
                     duration={1000}
                     decimals={0}
                     delay={100}
@@ -877,8 +973,8 @@ export default function Home() {
                 <span className="text-2xl font-bold text-green-600">
                   <AnimatedCounter
                     value={
-                      invoices.length > 0
-                        ? (statusCounts.paid / invoices.length) * 100
+                      yearInvoices.length > 0
+                        ? (statusCounts.paid / yearInvoices.length) * 100
                         : 0
                     }
                     suffix="%"
@@ -900,10 +996,14 @@ export default function Home() {
                 </span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-sm font-medium">This Month</span>
+                <span className="text-sm font-medium">
+                  {isCurrentYear ? "This Month" : `Best Month`}
+                </span>
                 <span className="text-2xl font-bold">
                   <AnimatedCounter
-                    value={currentMonthRevenue}
+                    value={
+                      isCurrentYear ? currentMonthRevenue : bestMonthRevenue
+                    }
                     prefix="£"
                     duration={1200}
                     decimals={2}
