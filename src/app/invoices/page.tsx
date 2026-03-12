@@ -7,6 +7,7 @@ import {
   EyeIcon,
   ChevronLeft,
   ChevronRight,
+  FileTextIcon,
 } from "lucide-react";
 import Link from "next/link";
 
@@ -51,7 +52,7 @@ const formatDate = (dateStr: Date | string) => {
 const ITEMS_PER_PAGE = 10;
 
 export default function AllInvoicesPage() {
-  const { data: invoices = [], isLoading } = useInvoices();
+  const { data: invoices = [], isLoading, error } = useInvoices();
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [currentPage, setCurrentPage] = useState(1);
@@ -97,6 +98,20 @@ export default function AllInvoicesPage() {
     0,
   );
 
+  if (error) {
+    return (
+      <div className="mx-auto grid w-full max-w-6xl grid-cols-1 gap-6 p-6 py-10 md:pb-8">
+        <Card>
+          <CardContent className="pt-6">
+            <p className="text-destructive text-sm">
+              Failed to load invoices. Please try again.
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
   return (
     <div className="mx-auto grid w-full max-w-6xl grid-cols-1 gap-6 p-6 py-10 md:pb-8">
       <div className="flex flex-col justify-between gap-4 md:flex-row md:items-center">
@@ -124,7 +139,7 @@ export default function AllInvoicesPage() {
 
       {/* Filters */}
       <Card>
-        <CardContent>
+        <CardContent className="pt-0">
           <div className="flex flex-col gap-4 md:flex-row">
             <div className="relative flex-1">
               <SearchIcon className="text-muted-foreground absolute top-3 left-3 h-4 w-4" />
@@ -135,7 +150,10 @@ export default function AllInvoicesPage() {
                 className="pl-10"
               />
             </div>
-            <Select value={statusFilter} onValueChange={handleStatusFilterChange}>
+            <Select
+              value={statusFilter}
+              onValueChange={handleStatusFilterChange}
+            >
               <SelectTrigger className="w-full md:w-[180px]">
                 <SelectValue placeholder="Filter by status" />
               </SelectTrigger>
@@ -209,15 +227,21 @@ export default function AllInvoicesPage() {
             </Table>
           ) : paginatedInvoices.length === 0 ? (
             <div className="py-16 text-center">
-              <p className="text-muted-foreground text-sm font-medium">
+              <FileTextIcon className="text-muted-foreground mx-auto mb-4 h-12 w-12" />
+              <h3 className="mb-2 text-lg font-medium">
                 {searchQuery || statusFilter !== "all"
                   ? "No invoices match your filters"
                   : "No invoices yet"}
+              </h3>
+              <p className="text-muted-foreground mb-6 text-sm">
+                {searchQuery || statusFilter !== "all"
+                  ? "Try adjusting your search or filter"
+                  : "Get started by creating your first invoice"}
               </p>
               {!searchQuery && statusFilter === "all" && (
                 <Button
                   asChild
-                  className="mt-6 shadow-md transition-shadow hover:shadow-lg"
+                  className="shadow-md transition-shadow hover:shadow-lg"
                 >
                   <Link href="/invoices/new">
                     <PlusIcon className="h-4 w-4" />

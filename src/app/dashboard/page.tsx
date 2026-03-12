@@ -169,7 +169,7 @@ export default function Home() {
     (inv) => new Date(inv.invoiceDate).getFullYear() === selectedYear,
   );
 
-  const sortedInvoices = invoices
+  const sortedInvoices = [...invoices]
     .sort(
       (a, b) =>
         new Date(b.invoiceDate).getTime() - new Date(a.invoiceDate).getTime(),
@@ -771,7 +771,7 @@ export default function Home() {
           </p>
         </CardHeader>
         <CardContent className="px-0 py-6 md:px-4">
-          {invoices.length > 0 ? (
+          {yearInvoices.length > 0 ? (
             <div className="h-[320px] w-full">
               <ResponsiveContainer width="100%" height="100%">
                 <AreaChart
@@ -1036,11 +1036,7 @@ export default function Home() {
           </div>
         </CardHeader>
         <CardContent>
-          {isLoading ? (
-            <div className="py-12 text-center">
-              <p className="text-muted-foreground text-sm">Loading...</p>
-            </div>
-          ) : sortedInvoices.length === 0 ? (
+          {sortedInvoices.length === 0 ? (
             <div className="py-12 text-center">
               <FileTextIcon className="text-muted-foreground mx-auto mb-4 h-12 w-12" />
               <h3 className="mb-2 text-lg font-medium">No invoices yet</h3>

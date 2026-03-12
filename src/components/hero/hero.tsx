@@ -40,9 +40,9 @@ const Hero = () => {
           </motion.div>
 
           <h1 className="font-oswald from-foreground to-muted-foreground bg-gradient-to-b bg-clip-text text-5xl leading-tight font-bold tracking-tight text-transparent sm:text-6xl md:text-7xl lg:text-8xl">
-            Professional Invoicing <br />
+            Invoice faster. <br />
             <span className="text-primary relative inline-block">
-              with Caley
+              Get paid sooner.
               <motion.svg
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
@@ -92,7 +92,7 @@ const Hero = () => {
           </div>
 
           <p className="text-muted-foreground mt-8 text-sm font-medium">
-            No credit card required • Free forever • Cancel anytime
+            No credit card required • Free forever • No setup fees
           </p>
         </div>
 

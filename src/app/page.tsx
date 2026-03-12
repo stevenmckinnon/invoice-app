@@ -7,7 +7,6 @@ import {
   FileText,
   Globe,
   Shield,
-  Star,
   TrendingUp,
   Users,
   Zap,
@@ -24,7 +23,6 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
 
 export default function Home() {
   return (
@@ -153,7 +151,7 @@ export default function Home() {
             </div>
 
             {/* Overtime Tracking */}
-            <div className="group border-border/50 bg-background hover:border-primary/50 relative overflow-hidden rounded-3xl border p-8 transition-all md:col-span-2">
+            <div className="border-border/50 bg-background hover:border-primary/50 relative overflow-hidden rounded-3xl border p-8 transition-all md:col-span-2">
               <div className="mb-4 w-fit rounded-xl bg-purple-500/10 p-3 text-purple-600 dark:text-purple-400">
                 <Clock className="h-6 w-6" />
               </div>
@@ -164,7 +162,7 @@ export default function Home() {
             </div>
 
             {/* Revenue Analytics */}
-            <div className="group border-border/50 bg-background hover:border-primary/50 relative overflow-hidden rounded-3xl border p-8 transition-all md:col-span-2">
+            <div className="border-border/50 bg-background hover:border-primary/50 relative overflow-hidden rounded-3xl border p-8 transition-all md:col-span-2">
               <div className="mb-4 w-fit rounded-xl bg-orange-500/10 p-3 text-orange-600 dark:text-orange-400">
                 <TrendingUp className="h-6 w-6" />
               </div>
@@ -176,7 +174,7 @@ export default function Home() {
             </div>
 
             {/* Client Management */}
-            <div className="group border-border/50 bg-background hover:border-primary/50 relative overflow-hidden rounded-3xl border p-8 transition-all md:col-span-3">
+            <div className="border-border/50 bg-background hover:border-primary/50 relative overflow-hidden rounded-3xl border p-8 transition-all md:col-span-3">
               <div className="mb-4 w-fit rounded-xl bg-cyan-500/10 p-3 text-cyan-600 dark:text-cyan-400">
                 <Users className="h-6 w-6" />
               </div>
@@ -188,7 +186,7 @@ export default function Home() {
             </div>
 
             {/* Custom Expenses */}
-            <div className="group border-border/50 bg-background hover:border-primary/50 relative overflow-hidden rounded-3xl border p-8 transition-all md:col-span-3">
+            <div className="border-border/50 bg-background hover:border-primary/50 relative overflow-hidden rounded-3xl border p-8 transition-all md:col-span-3">
               <div className="mb-4 w-fit rounded-xl bg-emerald-500/10 p-3 text-emerald-600 dark:text-emerald-400">
                 <DollarSign className="h-6 w-6" />
               </div>
@@ -317,71 +315,6 @@ export default function Home() {
         </SectionReveal>
       </section>
 
-      {/* Testimonials Section */}
-      <section className="py-24">
-        <SectionReveal className="mx-auto max-w-7xl px-6">
-          <div className="mb-16 text-center">
-            <h2 className="text-primary mb-4 text-sm font-semibold tracking-widest uppercase">
-              Testimonials
-            </h2>
-            <h3 className="font-oswald mb-6 text-4xl font-bold tracking-tight sm:text-5xl">
-              Loved by Freelancers
-            </h3>
-          </div>
-
-          <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
-            {[
-              {
-                text: "This system completely changed how I manage my invoicing. The overtime tracking and expense management saves me hours every month.",
-                author: "Sarah Mitchell",
-                role: "Freelance Coordinator",
-              },
-              {
-                text: "Professional PDFs, easy expense tracking, and automatic calculations. Everything I need for billing my freelance work. Highly recommended!",
-                author: "Marcus Chen",
-                role: "Technical Specialist",
-              },
-              {
-                text: "Clean interface, powerful features, and it just works. The automatic profile pre-fill is a game-changer for creating invoices quickly.",
-                author: "Jessica Rodriguez",
-                role: "Audio Specialist",
-              },
-            ].map((testimonial, i) => (
-              <SectionReveal key={i} delay={i * 0.1}>
-                <Card className="bg-background border-border/50 hover:border-primary/50 h-full transition-all hover:shadow-lg">
-                  <CardHeader>
-                    <div className="mb-4 flex gap-1">
-                      {[...Array(5)].map((_, i) => (
-                        <Star
-                          key={i}
-                          className="fill-primary text-primary h-4 w-4"
-                        />
-                      ))}
-                    </div>
-                    <p className="text-muted-foreground text-lg leading-relaxed italic">
-                      &ldquo;{testimonial.text}&rdquo;
-                    </p>
-                  </CardHeader>
-                  <CardContent className="mt-auto pt-6">
-                    <div className="flex items-center gap-4">
-                      <div className="bg-primary/10 flex h-10 w-10 items-center justify-center rounded-full text-sm font-bold">
-                        {testimonial.author[0]}
-                      </div>
-                      <div>
-                        <p className="font-semibold">{testimonial.author}</p>
-                        <p className="text-muted-foreground text-sm">
-                          {testimonial.role}
-                        </p>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </SectionReveal>
-            ))}
-          </div>
-        </SectionReveal>
-      </section>
-
       {/* FAQ Section */}
       <section className="bg-muted/20 py-24" id="faq">
         <SectionReveal className="mx-auto max-w-4xl px-6">
@@ -414,7 +347,7 @@ export default function Home() {
               },
               {
                 q: "Is my financial data secure?",
-                a: "Absolutely. We use industry-standard encryption and secure authentication through NextAuth. Your banking details and invoice data are stored securely in our PostgreSQL database with regular backups.",
+                a: "Absolutely. We use industry-standard encryption and secure authentication. Your banking details and invoice data are stored securely in our PostgreSQL database with regular backups.",
               },
               {
                 q: "Can I customize my invoices?",
@@ -442,8 +375,8 @@ export default function Home() {
             Ready to Simplify Your Invoicing?
           </h2>
           <p className="text-muted-foreground mx-auto mb-12 max-w-2xl text-xl">
-            Join freelancers worldwide who trust Caley for their professional
-            invoice management.
+            Join freelancers who trust Caley for fast, professional invoice
+            management.
           </p>
           <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
             <Button
@@ -478,8 +411,7 @@ export default function Home() {
                 <span className="font-oswald text-2xl font-bold">Caley</span>
               </div>
               <p className="text-muted-foreground text-lg font-medium">
-                Experience professional invoicing without the gravity of admin
-                work.
+                Invoicing that works as hard as you do.
               </p>
             </div>
 

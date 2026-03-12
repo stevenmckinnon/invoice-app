@@ -6,7 +6,6 @@ import { Pencil, Plus, Trash2 } from "lucide-react";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { useRouter } from "next/navigation";
 
-import { type Client } from "@/components/ClientSelector";
 import { CreateClientDialog } from "@/components/CreateClientDialog";
 import { Button } from "@/components/ui/button";
 import {
@@ -33,7 +32,7 @@ import {
 
 export default function ClientsPage() {
   const router = useRouter();
-  const { data: clients = [], isLoading: loading, error } = useClients();
+  const { data: clients = [], isLoading: loading } = useClients();
   const deleteClientMutation = useDeleteClient();
   const createClientMutation = useCreateClient();
   const [showCreateDialog, setShowCreateDialog] = useState(false);
@@ -70,9 +69,7 @@ export default function ClientsPage() {
     deleteClientMutation.mutate(id);
   };
 
-  const handleClientCreated = (client: Client) => {
-    // The mutation will automatically invalidate and refetch clients
-    // But we can optimistically update the UI if needed
+  const handleClientCreated = () => {
     setShowCreateDialog(false);
   };
 
@@ -84,7 +81,7 @@ export default function ClientsPage() {
             Clients
           </h1>
           <p className="text-muted-foreground text-sm font-medium">
-            Manage your client database
+            Store client details to pre-fill invoices faster
           </p>
         </div>
         <Button
