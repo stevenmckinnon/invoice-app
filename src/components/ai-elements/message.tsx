@@ -56,7 +56,7 @@ export const MessageContent = ({
     className={cn(
       "is-user:dark flex w-fit max-w-full min-w-0 flex-col gap-2 overflow-hidden text-sm",
       "group-[.is-user]:bg-primary group-[.is-user]:text-primary-foreground group-[.is-user]:ml-auto group-[.is-user]:rounded-lg group-[.is-user]:px-4 group-[.is-user]:py-3",
-      "group-[.is-assistant]:bg-muted/50 group-[.is-assistant]:rounded-2xl group-[.is-assistant]:rounded-bl-sm group-[.is-assistant]:px-4 group-[.is-assistant]:py-2.5 group-[.is-assistant]:text-foreground",
+      "group-[.is-assistant]:bg-muted/50 group-[.is-assistant]:text-foreground group-[.is-assistant]:rounded-2xl group-[.is-assistant]:rounded-bl-sm group-[.is-assistant]:px-4 group-[.is-assistant]:py-2.5",
       className,
     )}
     {...props}
@@ -334,7 +334,9 @@ export const MessageResponse = memo(
       {...props}
     />
   ),
-  (prevProps, nextProps) => prevProps.children === nextProps.children,
+  (prevProps, nextProps) =>
+    prevProps.children === nextProps.children &&
+    nextProps.isAnimating === prevProps.isAnimating,
 );
 
 MessageResponse.displayName = "MessageResponse";

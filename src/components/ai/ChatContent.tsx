@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 
 import { useChat } from "@ai-sdk/react";
-import { DefaultChatTransport, isTextUIPart, type UIMessage } from "ai";
+import { DefaultChatTransport, isTextUIPart, type ToolUIPart, type UIMessage } from "ai";
 import { ArrowLeftIcon, BotIcon, ExternalLinkIcon } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -26,6 +26,13 @@ import {
 } from "@/components/ai-elements/prompt-input";
 import { Shimmer } from "@/components/ai-elements/shimmer";
 import { Suggestion, Suggestions } from "@/components/ai-elements/suggestion";
+import {
+  Tool,
+  ToolContent,
+  ToolHeader,
+  ToolInput,
+  ToolOutput,
+} from "@/components/ai-elements/tool";
 import { Button } from "@/components/ui/button";
 import { SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
@@ -278,11 +285,42 @@ export const ChatContent = ({
                     <BotIcon className="text-primary size-3.5" />
                   </div>
                   <Message from="assistant">
-                    <MessageContent>
-                      <MessageResponse>
-                        {getMessageText(message)}
-                      </MessageResponse>
-                    </MessageContent>
+                    {message.parts.map((part, i) => {
+                      if (part.type === "text") {
+                        if (!part.text) return null;
+                        return (
+                          <MessageContent key={i}>
+                            <MessageResponse>{part.text}</MessageResponse>
+                          </MessageContent>
+                        );
+                      }
+                      if (part.type.startsWith("tool-")) {
+                        const toolPart = part as ToolUIPart;
+                        const title =
+                          toolPart.type === "tool-createInvoiceDraft"
+                            ? "Create Invoice Draft"
+                            : toolPart.type === "tool-updateInvoiceDraft"
+                              ? "Update Invoice Draft"
+                              : undefined;
+                        return (
+                          <Tool key={i}>
+                            <ToolHeader
+                              type={toolPart.type}
+                              state={toolPart.state}
+                              title={title}
+                            />
+                            <ToolContent>
+                              <ToolInput input={toolPart.input} />
+                              <ToolOutput
+                                output={toolPart.output}
+                                errorText={toolPart.errorText}
+                              />
+                            </ToolContent>
+                          </Tool>
+                        );
+                      }
+                      return null;
+                    })}
                   </Message>
                 </div>
               ) : (
