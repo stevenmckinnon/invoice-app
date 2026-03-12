@@ -42,7 +42,7 @@ export const ConditionalLayout = ({ children }: ConditionalLayoutProps) => {
   return (
     <>
       <AppHeader />
-      <main className="mx-auto pt-12 md:pt-24">
+      <main className="mx-auto min-h-dvh pt-12 md:pt-24">
         {children}
       </main>
       {!isChatPage && <MobileBottomNav />}
