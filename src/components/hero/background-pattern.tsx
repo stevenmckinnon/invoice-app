@@ -1,10 +1,14 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import { useTheme } from "next-themes";
 
 import DotPattern from "@/components/ui/dot-pattern";
-import Particles from "@/components/ui/particles";
 import { cn } from "@/lib/utils";
+
+const Particles = dynamic(() => import("@/components/ui/particles"), {
+  ssr: false,
+});
 
 export const BackgroundPattern = () => {
   const { resolvedTheme } = useTheme();
