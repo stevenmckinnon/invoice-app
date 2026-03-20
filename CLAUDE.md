@@ -1,3 +1,5 @@
+@AGENTS.md
+
 # CLAUDE.md
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
@@ -24,9 +26,11 @@ After editing `prisma/schema.prisma`, run `pnpm prisma generate` to regenerate t
 ### Key Patterns
 
 **Authentication** — Uses `better-auth` (not NextAuth). The server instance is at `src/lib/auth.ts`; the client wrapper is at `src/lib/auth-client.ts`. In route handlers, get the session with:
+
 ```ts
 const session = await auth.api.getSession({ headers: await headers() });
 ```
+
 In client components, use `useSession()` from `@/lib/auth-client`. All data is user-scoped — every DB query filters by `userId: session.user.id`.
 
 **Database** — Prisma 7 with a `pg` connection pool via `@prisma/adapter-pg`. The singleton client is at `src/lib/db.ts`. The Prisma client is generated into `src/generated/prisma/` (not the default location) — always import from `@/generated/prisma/client`.
@@ -42,6 +46,7 @@ In client components, use `useSession()` from `@/lib/auth-client`. All data is u
 ### Data Model
 
 Core models in `prisma/schema.prisma`:
+
 - `User` — extended with profile fields (address, banking details like IBAN/SWIFT) used to pre-fill invoices
 - `Invoice` — belongs to `User`, optionally to a `Client`. Has `InvoiceLineItem[]`, `OvertimeEntry[]`, `CustomExpenseEntry[]` relations. Status: `draft | sent | paid | overdue`
 - `Client` — belongs to `User`, stores address and rate defaults (`dayRate`, `perDiemWork`, `perDiemTravel`)
@@ -51,6 +56,7 @@ Invoice totals (`subtotalLabor`, `subtotalPerDiem`, `subtotalTravel`, `totalAmou
 ### AI Chat (`src/components/ai/AiChat.tsx`)
 
 A floating action button + right drawer chat assistant powered by Claude. Uses **AI SDK v6** — note key API differences from v4:
+
 - `useChat` is from `@ai-sdk/react` (not `ai/react`), configured with `transport: new DefaultChatTransport({ api })`
 - `sendMessage({ text })` replaces `append()`
 - `streamText` uses `inputSchema` (not `parameters`) in `tool()`, and `stopWhen: stepCountIs(N)` (not `maxSteps`)

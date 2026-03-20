@@ -110,7 +110,7 @@ export default function InvoiceDetailPage({ params }: Props) {
               : "The invoice you're looking for doesn't exist or you don't have permission to view it."}
           </p>
           <Button asChild>
-            <Link href="/invoices">Back to Invoices</Link>
+            <Link href="/invoices" transitionTypes={["back"]}>Back to Invoices</Link>
           </Button>
         </div>
       </div>
@@ -241,7 +241,7 @@ export default function InvoiceDetailPage({ params }: Props) {
               variant="secondary"
               className="shadow-sm transition-shadow hover:shadow-md"
             >
-              <Link href={`/invoices/${invoice.id}/edit`}>
+              <Link href={`/invoices/${invoice.id}/edit`} transitionTypes={["forward"]}>
                 <PencilIcon className="h-4 w-4" /> Edit
               </Link>
             </Button>

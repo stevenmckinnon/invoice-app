@@ -1031,7 +1031,7 @@ export default function Home() {
               size="sm"
               className="shadow-sm transition-shadow hover:shadow-md"
             >
-              <Link href="/invoices">View All</Link>
+              <Link href="/invoices" transitionTypes={["forward"]}>View All</Link>
             </Button>
           </div>
         </CardHeader>
@@ -1082,7 +1082,7 @@ export default function Home() {
                       <Tooltip>
                         <TooltipTrigger asChild>
                           <Button asChild variant="outline" size="sm">
-                            <Link href={`/invoices/${invoice.id}`}>
+                            <Link href={`/invoices/${invoice.id}`} transitionTypes={["forward"]}>
                               <EyeIcon className="h-4 w-4" />
                             </Link>
                           </Button>

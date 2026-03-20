@@ -304,7 +304,7 @@ export default function EditInvoicePage() {
       >
         <div className="flex items-center gap-4">
           <Button asChild variant="outline" size="sm">
-            <Link href="/invoices">
+            <Link href="/invoices" transitionTypes={["back"]}>
               <ArrowLeftIcon className="h-4 w-4" />
               <span className="hidden md:block">Back</span>
             </Link>
@@ -782,7 +782,7 @@ export default function EditInvoicePage() {
               />
               <div className="flex items-end justify-end gap-2">
                 <Button type="button" variant="outline" asChild>
-                  <Link href="/invoices">Cancel</Link>
+                  <Link href="/invoices" transitionTypes={["back"]}>Cancel</Link>
                 </Button>
                 <Button type="submit" disabled={updateInvoiceMutation.isPending}>
                   {updateInvoiceMutation.isPending ? "Updating..." : "Update Invoice"}

@@ -1,5 +1,7 @@
 "use client";
 
+import { ViewTransition } from "react";
+
 import { usePathname } from "next/navigation";
 
 import { AiChat } from "@/components/ai/AiChat";
@@ -26,7 +28,9 @@ export const ConditionalLayout = ({ children }: ConditionalLayoutProps) => {
 
   if (isAuthRoute) {
     return (
-      <main className="h-[100dvh] w-full overflow-hidden">{children}</main>
+      <main className="h-[100dvh] w-full overflow-hidden">
+        <ViewTransition>{children}</ViewTransition>
+      </main>
     );
   }
 
@@ -34,7 +38,9 @@ export const ConditionalLayout = ({ children }: ConditionalLayoutProps) => {
     return (
       <>
         <AppHeader />
-        <main className="mx-auto">{children}</main>
+        <main className="mx-auto">
+          <ViewTransition>{children}</ViewTransition>
+        </main>
       </>
     );
   }
@@ -43,7 +49,7 @@ export const ConditionalLayout = ({ children }: ConditionalLayoutProps) => {
     <>
       <AppHeader />
       <main className="mx-auto min-h-dvh pt-12 md:pt-24">
-        {children}
+        <ViewTransition>{children}</ViewTransition>
       </main>
       {!isChatPage && <MobileBottomNav />}
       <AiChat />

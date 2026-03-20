@@ -181,6 +181,7 @@ export default function RootLayout({
       lang="en"
       suppressHydrationWarning
       className={`${oswald.variable} ${satoshi.variable}`}
+      data-scroll-behavior="smooth"
     >
       <body className={`${robotoMono.variable} font-sans antialiased`}>
         <Analytics />

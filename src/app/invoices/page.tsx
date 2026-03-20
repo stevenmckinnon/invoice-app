@@ -286,7 +286,7 @@ export default function AllInvoicesPage() {
                           <Tooltip>
                             <TooltipTrigger asChild>
                               <Button asChild variant="outline" size="sm">
-                                <Link href={`/invoices/${invoice.id}`}>
+                                <Link href={`/invoices/${invoice.id}`} transitionTypes={["forward"]}>
                                   <EyeIcon className="h-4 w-4" />
                                 </Link>
                               </Button>

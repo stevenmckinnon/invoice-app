@@ -235,6 +235,109 @@ button {
   cursor: pointer;
 }
 
+/* Page transitions via View Transitions API */
+@keyframes page-enter {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes page-exit {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+}
+
+@keyframes slide-in-from-right {
+  from {
+    opacity: 0;
+    transform: translateX(24px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes slide-out-to-left {
+  from {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateX(-24px);
+  }
+}
+
+@keyframes slide-in-from-left {
+  from {
+    opacity: 0;
+    transform: translateX(-24px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes slide-out-to-right {
+  from {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateX(24px);
+  }
+}
+
+/* Default: fade + subtle slide up */
+::view-transition-new(root) {
+  animation: page-enter 200ms ease-out;
+}
+
+::view-transition-old(root) {
+  animation: page-exit 200ms ease-in;
+}
+
+/* Forward navigation (e.g. list → detail): slide in from right */
+:root:active-view-transition-type(forward) {
+  &::view-transition-new(root) {
+    animation: slide-in-from-right 240ms ease-out;
+  }
+  &::view-transition-old(root) {
+    animation: slide-out-to-left 240ms ease-in;
+  }
+}
+
+/* Back navigation (e.g. detail → list): slide in from left */
+:root:active-view-transition-type(back) {
+  &::view-transition-new(root) {
+    animation: slide-in-from-left 240ms ease-out;
+  }
+  &::view-transition-old(root) {
+    animation: slide-out-to-right 240ms ease-in;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-new(root),
+  ::view-transition-old(root) {
+    animation: none;
+  }
+}
+
 /* Shimmering FAB for AI chat */
 @keyframes shimmer-slide {
   0% {
