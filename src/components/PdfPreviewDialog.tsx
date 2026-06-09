@@ -81,7 +81,7 @@ export const PdfPreviewDialog = ({
         </Button>
       </DialogTrigger>
       <DialogContent
-        className="h-[90dvh] max-h-[90dvh] w-[90dvw] !max-w-[90dvw]"
+        className="flex h-[90dvh] max-h-[90dvh] w-[90dvw] !max-w-[90dvw] flex-col"
         aria-labelledby="pdf-preview-dialog"
       >
         <DialogHeader id="pdf-preview-dialog">
@@ -107,7 +107,7 @@ export const PdfPreviewDialog = ({
             </Select>
           </div>
         </DialogHeader>
-        <div className="h-full flex-1 overflow-hidden">
+        <div className="min-h-0 flex-1 overflow-hidden">
           <iframe
             key={template}
             src={`/api/invoices/${invoiceId}/pdf?template=${template}`}

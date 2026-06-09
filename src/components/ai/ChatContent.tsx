@@ -104,6 +104,7 @@ export const ChatContent = ({
 
   const { messages, sendMessage, setMessages, status, stop } = useChat({
     transport,
+    experimental_throttle: 50,
   });
 
   useEffect(() => {
@@ -143,14 +144,16 @@ export const ChatContent = ({
     };
   }, [isThinking]);
 
+  // Persist only when idle — serializing on every stream chunk blocks the
+  // main thread and causes visible flicker
   useEffect(() => {
-    if (!mounted || messages.length === 0) return;
+    if (!mounted || isThinking || messages.length === 0) return;
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(messages));
     } catch {
       // Ignore storage errors
     }
-  }, [messages, mounted]);
+  }, [messages, isThinking, mounted]);
 
   useEffect(() => {
     const id = findDraftInvoiceId(messages);
