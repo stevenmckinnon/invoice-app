@@ -65,9 +65,9 @@ const Hero = () => {
           </h1>
 
           <p className="text-muted-foreground mx-auto mt-8 max-w-2xl text-lg leading-relaxed md:text-xl">
-            Streamline your billing with an intelligent invoicing system. Track
-            overtime, manage expenses, and generate professional PDFs in
-            seconds.
+            The craft-forward invoicing tool for independent professionals.
+            Track overtime, manage expenses, and generate professional PDFs in
+            seconds — not hours.
           </p>
 
           <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">

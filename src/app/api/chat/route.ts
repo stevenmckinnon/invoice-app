@@ -157,10 +157,12 @@ ${recentInvoices}
 - For revenue/stats questions, calculate from the data above. Today's date: ${new Date().toISOString().split("T")[0]}.
 - When correcting an existing draft, use updateInvoiceDraft with the invoice ID.
 - IMPORTANT — use the correct fields for each type of charge:
-  - Regular work days → use items[] with description "Work Days", quantity = number of days, unitPrice = client's day rate
+  - Every invoice has 5 standard line items: "Travel Days", "Work Days", "Dark days", "Per Diems Travel Days", "Per Diems Work Days". Use these exact descriptions in items[]. When a saved clientId is provided, their saved rates fill in automatically — if you don't know a rate for a standard item, pass unitPrice 0 and the client's saved rate will be used.
+  - Regular work days → items[] "Work Days", quantity = number of days, unitPrice = client's day rate
+  - Travel days → items[] "Travel Days" (day rate). Per diems → items[] "Per Diems Work Days" / "Per Diems Travel Days" (client's per diem rates), quantity = number of days
   - Overtime hours (1.5x or 2x rate) → use overtimeEntries[] (NOT items). The overtime hourly rate is derived automatically from the "Work Days" item (dayRate ÷ 10 hours). Always include a "Work Days" item whenever there are overtime entries, or overtime will show as £0 in the editor.
-  - Per diems and travel days → use customExpenseEntries[] with the appropriate per diem/travel rate from the client's saved rates
-  - Other fixed fees or expenses → use items[]`;
+  - Other fixed fees or expenses (e.g. kit rental, materials) → use customExpenseEntries[]
+- Always pass clientId when the invoice is for a saved client, so their address and rates are applied.`;
 
   const result = streamText({
     model: anthropic("claude-haiku-4-5"),
@@ -287,19 +289,24 @@ ${recentInvoices}
             { description: "Per Diems Work Days", unitPrice: perDiemWorkRate },
           ];
 
-          const aiItemMap = new Map(items.map((i) => [i.description, i]));
+          const normalizeDesc = (s: string) => s.trim().toLowerCase();
+          const aiItemMap = new Map(
+            items.map((i) => [normalizeDesc(i.description), i]),
+          );
           const defaultDescriptions = new Set(
-            DEFAULT_LINE_ITEMS.map((d) => d.description),
+            DEFAULT_LINE_ITEMS.map((d) => normalizeDesc(d.description)),
           );
 
           const mergedItems = [
             ...DEFAULT_LINE_ITEMS.map((def) => {
-              const ai = aiItemMap.get(def.description);
+              const ai = aiItemMap.get(normalizeDesc(def.description));
               return ai
                 ? {
-                    description: ai.description,
+                    description: def.description,
                     quantity: ai.quantity,
-                    unitPrice: ai.unitPrice,
+                    // The model often passes 0 when the user only gave a
+                    // quantity — the client's saved rate wins in that case
+                    unitPrice: ai.unitPrice > 0 ? ai.unitPrice : def.unitPrice,
                   }
                 : {
                     description: def.description,
@@ -307,7 +314,9 @@ ${recentInvoices}
                     unitPrice: def.unitPrice,
                   };
             }),
-            ...items.filter((i) => !defaultDescriptions.has(i.description)),
+            ...items.filter(
+              (i) => !defaultDescriptions.has(normalizeDesc(i.description)),
+            ),
           ];
 
           const lineItems = mergedItems.map((i) => ({
@@ -334,12 +343,20 @@ ${recentInvoices}
             return s + e.hours * regularRate * multiplier;
           }, 0);
 
-          const expenseItems = (customExpenseEntries ?? []).map((e) => ({
-            description: e.description,
-            quantity: e.quantity,
-            unitPrice: e.unitPrice,
-            cost: e.quantity * e.unitPrice,
-          }));
+          const expenseItems = (customExpenseEntries ?? []).map((e) => {
+            let unitPrice = e.unitPrice;
+            if (unitPrice <= 0 && /per diem/i.test(e.description)) {
+              unitPrice = /travel/i.test(e.description)
+                ? perDiemTravelRate
+                : perDiemWorkRate;
+            }
+            return {
+              description: e.description,
+              quantity: e.quantity,
+              unitPrice,
+              cost: e.quantity * unitPrice,
+            };
+          });
           const expensesTotal = expenseItems.reduce((s, e) => s + e.cost, 0);
 
           const itemsTotal = lineItems.reduce((s, i) => s + i.cost, 0);
@@ -554,19 +571,24 @@ ${recentInvoices}
               },
             ];
 
-            const aiItemMap = new Map(items.map((i) => [i.description, i]));
+            const normalizeDesc = (s: string) => s.trim().toLowerCase();
+            const aiItemMap = new Map(
+              items.map((i) => [normalizeDesc(i.description), i]),
+            );
             const defaultDescriptions = new Set(
-              DEFAULT_LINE_ITEMS.map((d) => d.description),
+              DEFAULT_LINE_ITEMS.map((d) => normalizeDesc(d.description)),
             );
 
             const mergedItems = [
               ...DEFAULT_LINE_ITEMS.map((def) => {
-                const ai = aiItemMap.get(def.description);
+                const ai = aiItemMap.get(normalizeDesc(def.description));
                 return ai
                   ? {
-                      description: ai.description,
+                      description: def.description,
                       quantity: ai.quantity,
-                      unitPrice: ai.unitPrice,
+                      // Keep the existing rate when the model passes 0
+                      unitPrice:
+                        ai.unitPrice > 0 ? ai.unitPrice : def.unitPrice,
                     }
                   : {
                       description: def.description,
@@ -574,7 +596,9 @@ ${recentInvoices}
                       unitPrice: def.unitPrice,
                     };
               }),
-              ...items.filter((i) => !defaultDescriptions.has(i.description)),
+              ...items.filter(
+                (i) => !defaultDescriptions.has(normalizeDesc(i.description)),
+              ),
             ];
 
             const lineItems = mergedItems.map((i) => ({
