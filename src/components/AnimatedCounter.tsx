@@ -79,7 +79,10 @@ export const AnimatedCounter: React.FC<AnimatedCounterProps> = ({
   return (
     <span className={className}>
       {prefix}
-      {count.toFixed(decimals)}
+      {count.toLocaleString("en-GB", {
+        minimumFractionDigits: decimals,
+        maximumFractionDigits: decimals,
+      })}
       {suffix}
     </span>
   );

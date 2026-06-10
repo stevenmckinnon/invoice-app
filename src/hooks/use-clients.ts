@@ -3,7 +3,7 @@ import { toast } from "sonner";
 
 import type { Client } from "@/components/ClientSelector";
 
-const fetchClients = async (): Promise<Client[]> => {
+export const fetchClients = async (): Promise<Client[]> => {
   const res = await fetch("/api/clients");
   if (!res.ok) {
     throw new Error("Failed to fetch clients");

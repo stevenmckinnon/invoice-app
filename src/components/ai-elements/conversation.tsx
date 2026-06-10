@@ -15,7 +15,12 @@ export type ConversationProps = ComponentProps<typeof StickToBottom>;
 
 export const Conversation = ({ className, ...props }: ConversationProps) => (
   <StickToBottom
-    className={cn("relative flex-1 overflow-y-hidden [&>div]:touch-pan-y", className)}
+    className={cn(
+      // overscroll-contain stops touch scrolls from chaining to the page
+      // behind the drawer on iPad
+      "relative flex-1 overflow-y-hidden [&>div]:touch-pan-y [&>div]:overscroll-contain",
+      className,
+    )}
     initial="smooth"
     resize="smooth"
     role="log"

@@ -1,12 +1,13 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { FileText, Home, Settings, Sparkles, Users } from "lucide-react";
 import { AnimatePresence, LayoutGroup, motion } from "motion/react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
+import { usePrefetchAppData } from "@/hooks/use-prefetch";
 import { useSession } from "@/lib/auth-client";
 import { hapticLight } from "@/lib/haptics";
 import { cn } from "@/lib/utils";
@@ -48,8 +49,16 @@ const navItems: NavItem[] = [
 export const MobileBottomNav = () => {
   const pathname = usePathname();
   const { data: session } = useSession();
+  const { prefetchInvoices, prefetchClients } = usePrefetchAppData();
   const [isVisible, setIsVisible] = useState(true);
-  const [lastScrollY, setLastScrollY] = useState(0);
+  const lastScrollYRef = useRef(0);
+
+  // Warm the data cache as soon as a nav item is touched, before navigation
+  const prefetchByHref: Record<string, () => void> = {
+    "/dashboard": prefetchInvoices,
+    "/invoices": prefetchInvoices,
+    "/clients": prefetchClients,
+  };
 
   useEffect(() => {
     const controlNavbar = () => {
@@ -57,17 +66,17 @@ export const MobileBottomNav = () => {
 
       if (currentScrollY < 100) {
         setIsVisible(true);
-      } else if (currentScrollY > lastScrollY) {
+      } else if (currentScrollY > lastScrollYRef.current) {
         setIsVisible(false);
       } else {
         setIsVisible(true);
       }
-      setLastScrollY(currentScrollY);
+      lastScrollYRef.current = currentScrollY;
     };
 
-    window.addEventListener("scroll", controlNavbar);
+    window.addEventListener("scroll", controlNavbar, { passive: true });
     return () => window.removeEventListener("scroll", controlNavbar);
-  }, [lastScrollY]);
+  }, []);
 
   // Don't show bottom nav if user is not logged in
   if (!session?.user) {
@@ -116,6 +125,7 @@ export const MobileBottomNav = () => {
                         <Link
                           href={item.href}
                           onClick={() => hapticLight()}
+                          onTouchStart={prefetchByHref[item.href]}
                           className={cn(
                             "relative flex items-center gap-2 rounded-full px-5 py-2 transition-colors duration-200",
                             !isActive &&
@@ -202,6 +212,7 @@ export const MobileBottomNav = () => {
                         <Link
                           href={item.href}
                           onClick={() => hapticLight()}
+                          onTouchStart={prefetchByHref[item.href]}
                           className={cn(
                             "relative flex items-center gap-2 rounded-full px-5 py-2 transition-colors duration-200",
                             !isActive &&

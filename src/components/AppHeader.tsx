@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { User, LogOut, Settings } from "lucide-react";
 import { motion } from "motion/react";
@@ -19,6 +19,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { usePrefetchAppData } from "@/hooks/use-prefetch";
 import { useSession, signOut } from "@/lib/auth-client";
 import { cn } from "@/lib/utils";
 
@@ -34,8 +35,9 @@ export const AppHeader = () => {
   const { theme, setTheme } = useTheme();
   const pathname = usePathname();
   const { startTransition } = useThemeTransition();
+  const { prefetchInvoices, prefetchClients } = usePrefetchAppData();
   const [isVisible, setIsVisible] = useState(true);
-  const [lastScrollY, setLastScrollY] = useState(0);
+  const lastScrollYRef = useRef(0);
 
   useEffect(() => {
     const controlHeader = () => {
@@ -44,10 +46,7 @@ export const AppHeader = () => {
       // Show header when scrolled to top
       if (currentScrollY < SCROLL_THRESHOLD) {
         setIsVisible(true);
-      } else if (
-        currentScrollY > lastScrollY &&
-        currentScrollY > SCROLL_THRESHOLD
-      ) {
+      } else if (currentScrollY > lastScrollYRef.current) {
         // Scrolling down - hide header
         setIsVisible(false);
       } else {
@@ -55,12 +54,12 @@ export const AppHeader = () => {
         setIsVisible(true);
       }
 
-      setLastScrollY(currentScrollY);
+      lastScrollYRef.current = currentScrollY;
     };
 
-    window.addEventListener("scroll", controlHeader);
+    window.addEventListener("scroll", controlHeader, { passive: true });
     return () => window.removeEventListener("scroll", controlHeader);
-  }, [lastScrollY]);
+  }, []);
 
   const handleSignOut = async () => {
     try {
@@ -114,6 +113,8 @@ export const AppHeader = () => {
           <nav className="hidden items-center gap-6 text-sm font-medium md:flex">
             <Link
               href="/dashboard"
+              onMouseEnter={prefetchInvoices}
+              onFocus={prefetchInvoices}
               className={`hover:text-foreground/80 transition-colors ${
                 pathname === "/dashboard"
                   ? "text-foreground font-semibold"
@@ -124,6 +125,8 @@ export const AppHeader = () => {
             </Link>
             <Link
               href="/clients"
+              onMouseEnter={prefetchClients}
+              onFocus={prefetchClients}
               className={`hover:text-foreground/80 transition-colors ${
                 pathname.startsWith("/clients")
                   ? "text-foreground font-semibold"
@@ -134,6 +137,8 @@ export const AppHeader = () => {
             </Link>
             <Link
               href="/invoices"
+              onMouseEnter={prefetchInvoices}
+              onFocus={prefetchInvoices}
               className={`hover:text-foreground/80 transition-colors ${
                 pathname.startsWith("/invoices") && pathname !== "/invoices/new"
                   ? "text-foreground font-semibold"

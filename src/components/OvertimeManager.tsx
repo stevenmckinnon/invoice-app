@@ -36,7 +36,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { parseDate } from "@/lib/utils";
+import { formatCurrency, parseDate } from "@/lib/utils";
 
 import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
 
@@ -51,6 +51,7 @@ interface OvertimeManagerProps {
   entries: OvertimeEntry[];
   onEntriesChange: (entries: OvertimeEntry[]) => void;
   regularRate: number;
+  currency?: string;
 }
 
 const RATE_MULTIPLIERS = {
@@ -75,6 +76,7 @@ export const OvertimeManager = ({
   entries,
   onEntriesChange,
   regularRate,
+  currency = "GBP",
 }: OvertimeManagerProps) => {
   // @ts-ignore - React Hook Form type inference issues
   const form = useForm<OvertimeFormValues>({
@@ -217,10 +219,10 @@ export const OvertimeManager = ({
                   </FormControl>
                   <SelectContent>
                     <SelectItem value="1.5x">
-                      1.5x (£{ratePrices["1.5x"].toFixed(2)}/hr)
+                      1.5x ({formatCurrency(ratePrices["1.5x"], currency)}/hr)
                     </SelectItem>
                     <SelectItem value="2x">
-                      2x (£{ratePrices["2x"].toFixed(2)}/hr)
+                      2x ({formatCurrency(ratePrices["2x"], currency)}/hr)
                     </SelectItem>
                   </SelectContent>
                 </Select>
@@ -273,10 +275,10 @@ export const OvertimeManager = ({
                           {entry.hours}h
                         </TableCell>
                         <TableCell className="text-sm font-medium">
-                          {entry.rateType} (£{hourlyRate.toFixed(2)}/hr)
+                          {entry.rateType} ({formatCurrency(hourlyRate, currency)}/hr)
                         </TableCell>
                         <TableCell className="text-sm font-medium">
-                          £{cost.toFixed(2)}
+                          {formatCurrency(cost, currency)}
                         </TableCell>
                         <TableCell>
                           <Tooltip>
@@ -301,7 +303,7 @@ export const OvertimeManager = ({
             </div>
 
             <div className="border-t pt-2 text-right text-lg font-semibold">
-              Overtime Total: £{getTotalCost().toFixed(2)}
+              Overtime Total: {formatCurrency(getTotalCost(), currency)}
             </div>
           </div>
         )}

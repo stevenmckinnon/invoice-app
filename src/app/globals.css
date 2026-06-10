@@ -362,6 +362,17 @@ button {
   }
 }
 
+/* While the AI chat streams, async commits inside the (portaled) drawer
+   trigger view transitions on every chunk; disable all view-transition
+   animations (incl. UA default fades on every snapshot group) so streaming
+   doesn't flash the page. Set by ChatContent. */
+:root[data-chat-streaming]::view-transition-group(*),
+:root[data-chat-streaming]::view-transition-image-pair(*),
+:root[data-chat-streaming]::view-transition-old(*),
+:root[data-chat-streaming]::view-transition-new(*) {
+  animation: none !important;
+}
+
 /* Shimmering FAB for AI chat */
 @keyframes shimmer-slide {
   0% {

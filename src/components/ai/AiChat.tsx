@@ -15,7 +15,12 @@ export const AiChat = () => {
     <>
       {/* Desktop floating action button — hidden on mobile (mobile uses /chat route) */}
       <Button
-        onClick={() => setOpen(true)}
+        onClick={() => {
+          // Suppress view-transition animations for the open commit itself —
+          // ChatContent's mount effect runs too late to catch it
+          document.documentElement.setAttribute("data-chat-streaming", "");
+          setOpen(true);
+        }}
         className="fixed right-6 bottom-6 z-40 hidden size-14 overflow-hidden rounded-full shadow-lg md:flex"
         size="icon"
         aria-label="Open AI assistant"

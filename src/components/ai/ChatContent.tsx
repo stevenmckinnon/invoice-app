@@ -3,7 +3,12 @@
 import { useEffect, useRef, useState } from "react";
 
 import { useChat } from "@ai-sdk/react";
-import { DefaultChatTransport, isTextUIPart, type ToolUIPart, type UIMessage } from "ai";
+import {
+  DefaultChatTransport,
+  isTextUIPart,
+  type ToolUIPart,
+  type UIMessage,
+} from "ai";
 import { ArrowLeftIcon, BotIcon, ExternalLinkIcon } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -122,6 +127,43 @@ export const ChatContent = ({
   }, []);
 
   const isThinking = status === "streaming" || status === "submitted";
+
+  // Suppress view-transition animations while streaming — async commits
+  // inside the portaled drawer mark the document root as affected, and the
+  // page-exit/enter + UA fade animations flash the whole viewport per chunk.
+  // The attribute lingers briefly past "ready" to cover trailing commits.
+  useEffect(() => {
+    const el = document.documentElement;
+    if (isThinking) {
+      el.setAttribute("data-chat-streaming", "");
+      return;
+    }
+    const timeout = setTimeout(
+      () => el.removeAttribute("data-chat-streaming"),
+      400,
+    );
+    return () => clearTimeout(timeout);
+  }, [isThinking]);
+
+  // Drawer open: restored history rendering markdown triggers the same
+  // async commits — suppress view-transition animations during mount too
+  useEffect(() => {
+    if (variant !== "drawer") return;
+    const el = document.documentElement;
+    el.setAttribute("data-chat-streaming", "");
+    const timeout = setTimeout(
+      () => el.removeAttribute("data-chat-streaming"),
+      600,
+    );
+    return () => clearTimeout(timeout);
+  }, [variant]);
+
+  // Always clear the attribute if the chat unmounts mid-stream
+  useEffect(() => {
+    return () =>
+      document.documentElement.removeAttribute("data-chat-streaming");
+  }, []);
+
   useEffect(() => {
     if (isThinking) {
       setThinkingIndex(Math.floor(Math.random() * THINKING_MESSAGES.length));
@@ -162,10 +204,14 @@ export const ChatContent = ({
 
   const handleSubmit = ({ text }: { text: string; files: unknown[] }) => {
     if (!text.trim()) return;
+    // Set synchronously: the first message commit lands before the
+    // isThinking effect has a chance to add the attribute
+    document.documentElement.setAttribute("data-chat-streaming", "");
     sendMessage({ text });
   };
 
   const handleSuggestion = (suggestion: string) => {
+    document.documentElement.setAttribute("data-chat-streaming", "");
     sendMessage({ text: suggestion });
   };
 
@@ -359,7 +405,9 @@ export const ChatContent = ({
         <PromptInput onSubmit={handleSubmit}>
           <PromptInputTextarea
             placeholder="Ask anything about your invoices…"
-            className="font-sans"
+            // 16px at every breakpoint — below 16px iOS/iPadOS Safari zooms
+            // the whole page when the input is focused
+            className="font-sans text-base md:text-base"
             disabled={isGenerating}
           />
           <PromptInputFooter>

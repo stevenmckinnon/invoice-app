@@ -71,6 +71,14 @@ export const auth = betterAuth({
       }
     },
   },
+  session: {
+    // Serve getSession from a signed cookie instead of hitting the DB on
+    // every request. Revocations can lag by up to maxAge.
+    cookieCache: {
+      enabled: true,
+      maxAge: 5 * 60,
+    },
+  },
   secret:
     process.env.BETTER_AUTH_SECRET ||
     process.env.NEXTAUTH_SECRET ||

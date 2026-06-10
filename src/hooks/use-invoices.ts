@@ -9,11 +9,12 @@ export type Invoice = {
   fullName: string;
   clientName: string | null;
   totalAmount: number;
+  currency: string;
   status: string;
   createdAt: Date | string;
 };
 
-const fetchInvoices = async (): Promise<Invoice[]> => {
+export const fetchInvoices = async (): Promise<Invoice[]> => {
   const res = await fetch("/api/invoices");
   if (!res.ok) {
     throw new Error("Failed to fetch invoices");

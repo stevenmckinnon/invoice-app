@@ -123,6 +123,9 @@ export const viewport: Viewport = {
   initialScale: 1,
   maximumScale: 5,
   userScalable: true,
+  // Shrink the layout viewport when the on-screen keyboard opens so
+  // bottom-pinned UI (chat input, drawer footer) stays visible on iPad/iOS
+  interactiveWidget: "resizes-content",
   themeColor: [
     { media: "(prefers-color-scheme: light)", color: "#ffffff" },
     { media: "(prefers-color-scheme: dark)", color: "#000000" },

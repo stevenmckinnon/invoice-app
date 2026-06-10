@@ -22,6 +22,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { formatCurrency } from "@/lib/utils";
 
 import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
 
@@ -36,6 +37,7 @@ export interface CustomExpenseEntry {
 interface CustomExpenseManagerProps {
   entries: CustomExpenseEntry[];
   onEntriesChange: (entries: CustomExpenseEntry[]) => void;
+  currency?: string;
 }
 
 const expenseFormSchema = z.object({
@@ -50,6 +52,7 @@ type ExpenseFormValues = z.infer<typeof expenseFormSchema>;
 export const CustomExpenseManager = ({
   entries,
   onEntriesChange,
+  currency = "GBP",
 }: CustomExpenseManagerProps) => {
   const form = useForm<ExpenseFormValues>({
     resolver: zodResolver(expenseFormSchema) as any,
@@ -237,12 +240,12 @@ export const CustomExpenseManager = ({
                       </TableCell>
                       <TableCell className="w-28">
                         <div className="text-sm font-medium">
-                          £{entry.unitPrice.toFixed(2)}
+                          {formatCurrency(entry.unitPrice, currency)}
                         </div>
                       </TableCell>
                       <TableCell className="w-24">
                         <div className="text-sm font-medium">
-                          £{entry.cost.toFixed(2)}
+                          {formatCurrency(entry.cost, currency)}
                         </div>
                       </TableCell>
                       <TableCell className="w-16">
@@ -268,7 +271,7 @@ export const CustomExpenseManager = ({
             </div>
 
             <div className="border-t pt-2 text-right text-lg font-semibold">
-              Expenses Total: £{getTotalCost().toFixed(2)}
+              Expenses Total: {formatCurrency(getTotalCost(), currency)}
             </div>
           </div>
         )}

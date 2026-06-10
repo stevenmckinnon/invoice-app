@@ -199,6 +199,7 @@ export const GET = async () => {
       showName: true,
       clientName: true,
       totalAmount: true,
+      currency: true,
       status: true,
       createdAt: true,
       fullName: true,
