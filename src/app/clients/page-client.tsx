@@ -2,11 +2,12 @@
 
 import { useMemo, useState } from "react";
 
-import { Pencil, Plus, Trash2 } from "lucide-react";
+import { Pencil, Plus, Trash2, Users } from "lucide-react";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import Link from "next/link";
 
 import { CreateClientDialog } from "@/components/CreateClientDialog";
+import { EmptyState } from "@/components/EmptyState";
 import { PageHeader } from "@/components/PageHeader";
 import {
   AlertDialog,
@@ -19,13 +20,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   Table,
@@ -99,24 +94,14 @@ export default function ClientsPage() {
         title="Clients"
         subtitle="Store client details to pre-fill invoices faster"
         actions={
-          <Button
-            onClick={() => setShowCreateDialog(true)}
-            className="shadow-md transition-shadow hover:shadow-lg"
-            size="lg"
-          >
-            <Plus className="mr-2 h-4 w-4" />
+          <Button onClick={() => setShowCreateDialog(true)}>
+            <Plus />
             Add Client
           </Button>
         }
       />
 
       <Card>
-        <CardHeader>
-          <CardTitle className="text-xl">All Clients</CardTitle>
-          <CardDescription className="font-medium">
-            A list of all your clients with their details and rates
-          </CardDescription>
-        </CardHeader>
         <CardContent>
           {loading ? (
             <div className="overflow-x-auto">
@@ -165,19 +150,17 @@ export default function ClientsPage() {
               </Table>
             </div>
           ) : clients.length === 0 ? (
-            <div className="py-16 text-center">
-              <p className="text-muted-foreground text-sm font-medium">
-                No clients found.
-              </p>
-              <Button
-                className="mt-6 shadow-md transition-shadow hover:shadow-lg"
-                variant="outline"
-                onClick={() => setShowCreateDialog(true)}
-              >
-                <Plus className="mr-2 h-4 w-4" />
-                Create Your First Client
-              </Button>
-            </div>
+            <EmptyState
+              icon={Users}
+              title="No clients yet"
+              description="Add a client to pre-fill their details on invoices."
+              action={
+                <Button onClick={() => setShowCreateDialog(true)}>
+                  <Plus />
+                  Add Client
+                </Button>
+              }
+            />
           ) : (
             <div className="overflow-x-auto">
               <Table>
@@ -301,7 +284,7 @@ export default function ClientsPage() {
                 handleConfirmDelete();
               }}
               disabled={deleteClientMutation.isPending}
-              className="bg-destructive text-white hover:bg-destructive/90"
+              className="bg-destructive hover:bg-destructive/90 text-white"
             >
               {deleteClientMutation.isPending ? "Deleting..." : "Delete"}
             </AlertDialogAction>

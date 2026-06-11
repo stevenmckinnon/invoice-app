@@ -91,7 +91,7 @@ export const AppHeader = () => {
           : "-translate-y-full md:-translate-y-[calc(100%+20px)]",
       )}
     >
-      <div 
+      <div
         className="bg-background/95 supports-[backdrop-filter]:bg-background/60 border-border/50 flex w-full items-center justify-between px-4 py-3 shadow-sm backdrop-blur-md md:mx-4 md:rounded-4xl md:border md:shadow-md"
         style={{
           paddingTop: "max(12px, env(safe-area-inset-top))",
@@ -153,7 +153,7 @@ export const AppHeader = () => {
         {/* Right Section */}
         <div className="flex items-center gap-2">
           {/* Theme Toggle */}
-          {!isPending && !session?.user && (
+          {!isPending && (
             <ThemeToggleButton
               size="icon"
               theme={theme as "light" | "dark"}

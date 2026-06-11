@@ -1,11 +1,12 @@
 "use client";
 import { useEffect, useState } from "react";
 
-import { ArrowLeftIcon, PencilIcon } from "lucide-react";
+import { PencilIcon } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
 import { DeleteInvoiceButton } from "@/components/DeleteInvoiceButton";
+import { PageHeader } from "@/components/PageHeader";
 import { PdfPreviewDialog } from "@/components/PdfPreviewDialog";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
@@ -26,11 +27,9 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import {
-  useInvoice,
-  useUpdateInvoiceStatus,
-} from "@/hooks/use-invoices";
-import { formatCurrency } from "@/lib/utils";
+import { useInvoice, useUpdateInvoiceStatus } from "@/hooks/use-invoices";
+import { INVOICE_STATUSES } from "@/lib/invoice-status";
+import { formatCurrency, formatDate } from "@/lib/utils";
 
 type Props = { params: Promise<{ id: string }> };
 
@@ -111,7 +110,9 @@ export default function InvoiceDetailPage({ params }: Props) {
               : "The invoice you're looking for doesn't exist or you don't have permission to view it."}
           </p>
           <Button asChild>
-            <Link href="/invoices" transitionTypes={["back"]}>Back to Invoices</Link>
+            <Link href="/invoices" transitionTypes={["back"]}>
+              Back to Invoices
+            </Link>
           </Button>
         </div>
       </div>
@@ -158,9 +159,7 @@ export default function InvoiceDetailPage({ params }: Props) {
       const hours = Number(ot.hours);
       return {
         id: ot.id,
-        description: `Overtime (${ot.rateType}) - ${new Date(
-          ot.date,
-        ).toLocaleDateString("en-GB")}`,
+        description: `Overtime (${ot.rateType}) - ${formatDate(ot.date)}`,
         quantity: hours,
         unitPrice: hourlyRate,
         cost: hours * hourlyRate,
@@ -179,93 +178,62 @@ export default function InvoiceDetailPage({ params }: Props) {
 
   return (
     <div className="mx-auto w-full max-w-6xl overflow-x-hidden p-6 py-10 md:px-6 md:pb-8">
-      <Button
-        onClick={() => router.back()}
-        className="mb-6 shadow-sm transition-shadow hover:shadow-md"
-        variant="outline"
-      >
-        <ArrowLeftIcon /> Back
-      </Button>
       <div className="grid gap-6">
-        <div className="flex flex-col items-start justify-between gap-4 md:flex-row">
-          <div className="min-w-0 flex-1 space-y-3">
-            <h1 className="font-oswald text-4xl font-bold tracking-tight break-words">
-              Invoice {invoice.invoiceNumber}
-            </h1>
-            <div className="text-muted-foreground text-sm font-medium break-words">
-              Show: {invoice.showName}
-            </div>
-            <div className="flex flex-wrap items-center gap-3">
-              <span className="text-sm font-semibold">Status:</span>
+        <PageHeader
+          title={`Invoice ${invoice.invoiceNumber}`}
+          subtitle={invoice.showName}
+          backHref="/invoices"
+          actions={
+            <>
               <Select
                 value={invoice.status}
                 onValueChange={handleStatusChange}
                 disabled={updateInvoiceStatusMutation.isPending}
               >
-                <SelectTrigger className="h-9 w-[140px]">
-                  <SelectValue>
-                    <span className="capitalize">{invoice.status}</span>
-                  </SelectValue>
+                <SelectTrigger className="h-9 w-[130px]">
+                  <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="draft">
-                    <div className="flex items-center gap-2">
-                      <div className="h-2.5 w-2.5 rounded-full bg-gray-500 shadow-sm" />
-                      <span>Draft</span>
-                    </div>
-                  </SelectItem>
-                  <SelectItem value="sent">
-                    <div className="flex items-center gap-2">
-                      <div className="h-2.5 w-2.5 rounded-full bg-blue-500 shadow-sm" />
-                      <span>Sent</span>
-                    </div>
-                  </SelectItem>
-                  <SelectItem value="paid">
-                    <div className="flex items-center gap-2">
-                      <div className="h-2.5 w-2.5 rounded-full bg-green-500 shadow-sm" />
-                      <span>Paid</span>
-                    </div>
-                  </SelectItem>
-                  <SelectItem value="overdue">
-                    <div className="flex items-center gap-2">
-                      <div className="h-2.5 w-2.5 rounded-full bg-red-500 shadow-sm" />
-                      <span>Overdue</span>
-                    </div>
-                  </SelectItem>
+                  {INVOICE_STATUSES.map(({ value, label, dotClass }) => (
+                    <SelectItem key={value} value={value}>
+                      <div className="flex items-center gap-2">
+                        <div
+                          className={`h-2.5 w-2.5 rounded-full ${dotClass}`}
+                        />
+                        <span>{label}</span>
+                      </div>
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
-            </div>
-          </div>
-          <div className="flex w-full flex-wrap gap-2 md:w-auto">
-            <Button
-              asChild
-              variant="secondary"
-              className="shadow-sm transition-shadow hover:shadow-md"
-            >
-              <Link href={`/invoices/${invoice.id}/edit`} transitionTypes={["forward"]}>
-                <PencilIcon className="h-4 w-4" /> Edit
-              </Link>
-            </Button>
-            <PdfPreviewDialog
-              variant="outline"
-              invoiceId={invoice.id}
-              invoiceNumber={invoice.invoiceNumber}
-              invoiceDate={
-                typeof invoice.invoiceDate === "string"
-                  ? new Date(invoice.invoiceDate)
-                  : invoice.invoiceDate
-              }
-              showName={invoice.showName}
-              fullName={invoice.fullName}
-            />
-
-            <DeleteInvoiceButton
-              invoiceId={invoice.id}
-              invoiceNumber={invoice.invoiceNumber}
-              onDeleted={() => router.push("/invoices")}
-            />
-          </div>
-        </div>
+              <Button asChild variant="outline">
+                <Link
+                  href={`/invoices/${invoice.id}/edit`}
+                  transitionTypes={["forward"]}
+                >
+                  <PencilIcon /> Edit
+                </Link>
+              </Button>
+              <PdfPreviewDialog
+                variant="outline"
+                invoiceId={invoice.id}
+                invoiceNumber={invoice.invoiceNumber}
+                invoiceDate={
+                  typeof invoice.invoiceDate === "string"
+                    ? new Date(invoice.invoiceDate)
+                    : invoice.invoiceDate
+                }
+                showName={invoice.showName}
+                fullName={invoice.fullName}
+              />
+              <DeleteInvoiceButton
+                invoiceId={invoice.id}
+                invoiceNumber={invoice.invoiceNumber}
+                onDeleted={() => router.push("/invoices")}
+              />
+            </>
+          }
+        />
         <Card className="overflow-hidden">
           <CardContent className="overflow-x-auto pt-6">
             <div className="min-w-full">
@@ -309,7 +277,10 @@ export default function InvoiceDetailPage({ params }: Props) {
                       Total
                     </TableCell>
                     <TableCell className="text-right text-base font-semibold">
-                      {formatCurrency(Number(invoice.totalAmount), invoice.currency)}
+                      {formatCurrency(
+                        Number(invoice.totalAmount),
+                        invoice.currency,
+                      )}
                     </TableCell>
                   </TableRow>
                 </TableFooter>

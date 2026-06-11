@@ -951,8 +951,6 @@ export default function NewInvoicePage() {
                 <Button
                   type="submit"
                   disabled={createInvoiceMutation.isPending}
-                  className="shadow-md transition-shadow hover:shadow-lg"
-                  size="lg"
                 >
                   {createInvoiceMutation.isPending
                     ? "Creating..."

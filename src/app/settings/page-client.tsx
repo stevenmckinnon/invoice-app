@@ -83,7 +83,6 @@ const SettingsPage = () => {
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
   const [deletingPhoto, setDeletingPhoto] = useState(false);
 
-
   const handlePasswordChange = async () => {
     if (passwordData.newPassword !== passwordData.confirmPassword) {
       toast.error("Passwords don't match", {
@@ -522,12 +521,11 @@ const SettingsPage = () => {
                         {sess.ipAddress || "Unknown IP"} • Signed in{" "}
                         {format(
                           new Date(sess.createdAt),
-                          "MMM d, yyyy 'at' h:mm a",
+                          "d MMM yyyy 'at' HH:mm",
                         )}
                       </p>
                       <p className="text-muted-foreground text-xs">
-                        Expires{" "}
-                        {format(new Date(sess.expiresAt), "MMM d, yyyy")}
+                        Expires {format(new Date(sess.expiresAt), "d MMM yyyy")}
                       </p>
                     </div>
                     {!isCurrentSession && (

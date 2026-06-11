@@ -11,11 +11,12 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 
+import { EmptyState } from "@/components/EmptyState";
 import { InvoiceStatusBadge } from "@/components/InvoiceStatusBadge";
 import { PageHeader } from "@/components/PageHeader";
 import { PdfPreviewDialog } from "@/components/PdfPreviewDialog";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -118,7 +119,7 @@ export default function AllInvoicesPage() {
   return (
     <div className="mx-auto grid w-full max-w-6xl grid-cols-1 gap-6 p-6 py-10 md:pb-8">
       <PageHeader
-        title="All Invoices"
+        title="Invoices"
         subtitle={
           <>
             {filteredInvoices.length} invoice
@@ -127,13 +128,9 @@ export default function AllInvoicesPage() {
           </>
         }
         actions={
-          <Button
-            asChild
-            size="lg"
-            className="shadow-md transition-shadow hover:shadow-lg"
-          >
+          <Button asChild>
             <Link href="/invoices/new">
-              <PlusIcon className="h-5 w-5" />
+              <PlusIcon />
               Create Invoice
             </Link>
           </Button>
@@ -174,15 +171,6 @@ export default function AllInvoicesPage() {
 
       {/* Invoices Table */}
       <Card>
-        <CardHeader>
-          <CardTitle className="text-xl">
-            {statusFilter === "all"
-              ? "All Invoices"
-              : `${
-                  statusFilter.charAt(0).toUpperCase() + statusFilter.slice(1)
-                } Invoices`}
-          </CardTitle>
-        </CardHeader>
         <CardContent>
           {isLoading ? (
             <Table>
@@ -192,8 +180,8 @@ export default function AllInvoicesPage() {
                   <TableHead>Show/Project</TableHead>
                   <TableHead>Client</TableHead>
                   <TableHead>Date</TableHead>
-                  <TableHead>Amount</TableHead>
                   <TableHead>Status</TableHead>
+                  <TableHead className="text-right">Amount</TableHead>
                   <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
@@ -213,10 +201,10 @@ export default function AllInvoicesPage() {
                       <Skeleton className="h-4 w-32" />
                     </TableCell>
                     <TableCell>
-                      <Skeleton className="h-4 w-20" />
+                      <Skeleton className="h-6 w-16 rounded-full" />
                     </TableCell>
                     <TableCell>
-                      <Skeleton className="h-6 w-16 rounded-full" />
+                      <Skeleton className="ml-auto h-4 w-20" />
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center gap-2">
@@ -229,30 +217,30 @@ export default function AllInvoicesPage() {
               </TableBody>
             </Table>
           ) : paginatedInvoices.length === 0 ? (
-            <div className="py-16 text-center">
-              <FileTextIcon className="text-muted-foreground mx-auto mb-4 h-12 w-12" />
-              <h3 className="mb-2 text-lg font-medium">
-                {searchQuery || statusFilter !== "all"
+            <EmptyState
+              icon={FileTextIcon}
+              title={
+                searchQuery || statusFilter !== "all"
                   ? "No invoices match your filters"
-                  : "No invoices yet"}
-              </h3>
-              <p className="text-muted-foreground mb-6 text-sm">
-                {searchQuery || statusFilter !== "all"
-                  ? "Try adjusting your search or filter"
-                  : "Get started by creating your first invoice"}
-              </p>
-              {!searchQuery && statusFilter === "all" && (
-                <Button
-                  asChild
-                  className="shadow-md transition-shadow hover:shadow-lg"
-                >
-                  <Link href="/invoices/new">
-                    <PlusIcon className="h-4 w-4" />
-                    Create Invoice
-                  </Link>
-                </Button>
-              )}
-            </div>
+                  : "No invoices yet"
+              }
+              description={
+                searchQuery || statusFilter !== "all"
+                  ? "Try adjusting your search or filter."
+                  : "Get started by creating your first invoice."
+              }
+              action={
+                !searchQuery &&
+                statusFilter === "all" && (
+                  <Button asChild>
+                    <Link href="/invoices/new">
+                      <PlusIcon />
+                      Create Invoice
+                    </Link>
+                  </Button>
+                )
+              }
+            />
           ) : (
             <>
               <Table>
@@ -262,8 +250,8 @@ export default function AllInvoicesPage() {
                     <TableHead>Show/Project</TableHead>
                     <TableHead>Client</TableHead>
                     <TableHead>Date</TableHead>
-                    <TableHead>Amount</TableHead>
                     <TableHead>Status</TableHead>
+                    <TableHead className="text-right">Amount</TableHead>
                     <TableHead className="text-right">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -279,20 +267,23 @@ export default function AllInvoicesPage() {
                         {formatDate(invoice.invoiceDate)}
                       </TableCell>
                       <TableCell>
+                        <InvoiceStatusBadge status={invoice.status} />
+                      </TableCell>
+                      <TableCell className="text-right font-medium">
                         {formatCurrency(
                           Number(invoice.totalAmount),
                           invoice.currency,
                         )}
-                      </TableCell>
-                      <TableCell>
-                        <InvoiceStatusBadge status={invoice.status} />
                       </TableCell>
                       <TableCell className="text-right">
                         <div className="flex items-center justify-end gap-2">
                           <Tooltip>
                             <TooltipTrigger asChild>
                               <Button asChild variant="outline" size="sm">
-                                <Link href={`/invoices/${invoice.id}`} transitionTypes={["forward"]}>
+                                <Link
+                                  href={`/invoices/${invoice.id}`}
+                                  transitionTypes={["forward"]}
+                                >
                                   <EyeIcon className="h-4 w-4" />
                                 </Link>
                               </Button>
