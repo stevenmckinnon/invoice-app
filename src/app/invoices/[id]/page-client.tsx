@@ -6,10 +6,11 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 
 import { DeleteInvoiceButton } from "@/components/DeleteInvoiceButton";
+import { InvoiceStatusBadge } from "@/components/InvoiceStatusBadge";
 import { PageHeader } from "@/components/PageHeader";
 import { PdfPreviewDialog } from "@/components/PdfPreviewDialog";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Select,
   SelectContent,
@@ -32,6 +33,62 @@ import { INVOICE_STATUSES } from "@/lib/invoice-status";
 import { formatCurrency, formatDate } from "@/lib/utils";
 
 type Props = { params: Promise<{ id: string }> };
+
+/** Renders a set of address lines, skipping any empty parts. */
+function AddressLines({ lines }: { lines: (string | null | undefined)[] }) {
+  const clean = lines
+    .map((l) => (typeof l === "string" ? l.trim() : l))
+    .filter((l): l is string => !!l);
+
+  if (clean.length === 0) {
+    return <p className="text-muted-foreground text-sm">—</p>;
+  }
+
+  return (
+    <div className="text-sm leading-relaxed">
+      {clean.map((line, i) => (
+        <p key={i}>{line}</p>
+      ))}
+    </div>
+  );
+}
+
+/** A labelled payment field, hidden entirely when there's no value. */
+function PaymentField({
+  label,
+  value,
+}: {
+  label: string;
+  value?: string | null;
+}) {
+  if (!value) return null;
+  return (
+    <div>
+      <dt className="text-muted-foreground text-xs font-semibold tracking-wider uppercase">
+        {label}
+      </dt>
+      <dd className="mt-0.5 text-sm font-medium break-words">{value}</dd>
+    </div>
+  );
+}
+
+/** A labelled summary stat used in the invoice meta band. */
+function MetaStat({
+  label,
+  children,
+}: {
+  label: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div>
+      <p className="text-muted-foreground text-xs font-semibold tracking-wider uppercase">
+        {label}
+      </p>
+      <div className="mt-1">{children}</div>
+    </div>
+  );
+}
 
 export default function InvoiceDetailPage({ params }: Props) {
   const router = useRouter();
@@ -234,8 +291,91 @@ export default function InvoiceDetailPage({ params }: Props) {
             </>
           }
         />
+        {/* Meta band */}
+        <Card>
+          <CardContent className="grid grid-cols-2 gap-4 pt-6 md:grid-cols-4">
+            <MetaStat label="Invoice">
+              <p className="text-sm font-semibold">{invoice.invoiceNumber}</p>
+            </MetaStat>
+            <MetaStat label="Issued">
+              <p className="text-sm font-medium" suppressHydrationWarning>
+                {formatDate(invoice.invoiceDate)}
+              </p>
+            </MetaStat>
+            <MetaStat label="Status">
+              <InvoiceStatusBadge status={invoice.status} />
+            </MetaStat>
+            <MetaStat label="Total">
+              <p className="text-lg font-bold tabular-nums">
+                {formatCurrency(Number(invoice.totalAmount), invoice.currency)}
+              </p>
+            </MetaStat>
+          </CardContent>
+        </Card>
+
+        {/* From / Bill To */}
+        <div className="grid gap-6 md:grid-cols-2">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">From</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-1">
+              <p className="font-medium">{invoice.fullName}</p>
+              {invoice.email && (
+                <p className="text-muted-foreground text-sm">{invoice.email}</p>
+              )}
+              <AddressLines
+                lines={[
+                  invoice.addressLine1,
+                  invoice.addressLine2,
+                  [invoice.city, invoice.state].filter(Boolean).join(", "),
+                  invoice.postalCode,
+                  invoice.country,
+                ]}
+              />
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">Bill To</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-1">
+              {invoice.clientName ? (
+                <>
+                  <p className="font-medium">{invoice.clientName}</p>
+                  {invoice.attentionTo && (
+                    <p className="text-muted-foreground text-sm">
+                      Attn: {invoice.attentionTo}
+                    </p>
+                  )}
+                  <AddressLines
+                    lines={[
+                      invoice.clientAddress1,
+                      invoice.clientAddress2,
+                      [invoice.clientCity, invoice.clientState]
+                        .filter(Boolean)
+                        .join(", "),
+                      invoice.clientPostalCode,
+                      invoice.clientCountry,
+                    ]}
+                  />
+                </>
+              ) : (
+                <p className="text-muted-foreground text-sm">
+                  No client on this invoice.
+                </p>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Line items */}
         <Card className="overflow-hidden">
-          <CardContent className="overflow-x-auto pt-6">
+          <CardHeader>
+            <CardTitle className="text-base">Line Items</CardTitle>
+          </CardHeader>
+          <CardContent className="overflow-x-auto">
             <div className="min-w-full">
               <Table className="w-full min-w-[600px]">
                 <TableHeader>
@@ -248,25 +388,36 @@ export default function InvoiceDetailPage({ params }: Props) {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {allItems.map((item) => (
-                    <TableRow key={item.id}>
-                      <TableCell className="min-w-[200px]">
-                        {item.description}
-                      </TableCell>
-                      <TableCell className="text-muted-foreground capitalize">
-                        {item.type}
-                      </TableCell>
-                      <TableCell className="text-right">
-                        {item.quantity}
-                      </TableCell>
-                      <TableCell className="text-right">
-                        {formatCurrency(item.unitPrice, invoice.currency)}
-                      </TableCell>
-                      <TableCell className="text-right font-medium">
-                        {formatCurrency(item.cost, invoice.currency)}
+                  {allItems.length === 0 ? (
+                    <TableRow>
+                      <TableCell
+                        colSpan={5}
+                        className="text-muted-foreground py-8 text-center text-sm"
+                      >
+                        No line items on this invoice yet.
                       </TableCell>
                     </TableRow>
-                  ))}
+                  ) : (
+                    allItems.map((item) => (
+                      <TableRow key={item.id}>
+                        <TableCell className="min-w-[200px]">
+                          {item.description}
+                        </TableCell>
+                        <TableCell className="text-muted-foreground capitalize">
+                          {item.type}
+                        </TableCell>
+                        <TableCell className="text-right">
+                          {item.quantity}
+                        </TableCell>
+                        <TableCell className="text-right">
+                          {formatCurrency(item.unitPrice, invoice.currency)}
+                        </TableCell>
+                        <TableCell className="text-right font-medium">
+                          {formatCurrency(item.cost, invoice.currency)}
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  )}
                 </TableBody>
                 <TableFooter>
                   <TableRow>
@@ -288,6 +439,36 @@ export default function InvoiceDetailPage({ params }: Props) {
             </div>
           </CardContent>
         </Card>
+
+        {/* Payment details */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">Payment Details</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <dl className="grid grid-cols-2 gap-4 sm:grid-cols-3">
+              <PaymentField label="IBAN" value={invoice.iban} />
+              <PaymentField label="SWIFT / BIC" value={invoice.swiftBic} />
+              <PaymentField label="Account No." value={invoice.accountNumber} />
+              <PaymentField label="Sort Code" value={invoice.sortCode} />
+              <PaymentField label="Bank Address" value={invoice.bankAddress} />
+            </dl>
+          </CardContent>
+        </Card>
+
+        {/* Notes */}
+        {invoice.notes && (
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">Notes</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-muted-foreground text-sm whitespace-pre-wrap">
+                {invoice.notes}
+              </p>
+            </CardContent>
+          </Card>
+        )}
       </div>
     </div>
   );

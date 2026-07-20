@@ -37,7 +37,7 @@ export default function Home() {
             <p className="text-primary mb-3 font-mono text-xs font-semibold tracking-widest uppercase">
               Why Choose Caley
             </p>
-            <h3 className="font-oswald mb-5 text-4xl font-bold tracking-tight sm:text-5xl">
+            <h3 className="font-heading mb-5 text-4xl font-bold tracking-tight sm:text-5xl">
               Built for the Modern Freelancer
             </h3>
             <p className="text-muted-foreground mx-auto max-w-2xl text-lg">
@@ -82,7 +82,7 @@ export default function Home() {
                   <div className="bg-muted text-foreground group-hover:bg-primary group-hover:text-primary-foreground mb-5 inline-flex h-12 w-12 items-center justify-center rounded-lg transition-colors duration-300">
                     <feature.icon className="h-6 w-6" />
                   </div>
-                  <h3 className="font-oswald mb-2 text-xl font-bold">
+                  <h3 className="font-heading mb-2 text-xl font-bold">
                     {feature.title}
                   </h3>
                   <p className="text-muted-foreground text-sm leading-relaxed">
@@ -102,7 +102,7 @@ export default function Home() {
       >
         <SectionReveal className="mx-auto max-w-7xl px-6">
           <div className="mb-16">
-            <h3 className="font-oswald mb-4 text-4xl font-bold tracking-tight sm:text-5xl">
+            <h3 className="font-heading mb-4 text-4xl font-bold tracking-tight sm:text-5xl">
               Engineer your cash flow.
             </h3>
             <p className="text-muted-foreground max-w-2xl text-lg">
@@ -123,7 +123,7 @@ export default function Home() {
                 <span className="mb-4 inline-block rounded border border-white/10 bg-white/10 px-3 py-1 font-mono text-xs font-semibold text-white/80">
                   01 / CORE FEATURE
                 </span>
-                <h3 className="font-oswald mb-3 text-3xl font-bold text-white">
+                <h3 className="font-heading mb-3 text-3xl font-bold text-white">
                   Professional PDFs
                 </h3>
                 <p className="text-neutral-400 leading-relaxed">
@@ -151,7 +151,7 @@ export default function Home() {
                   <div className="mb-4 flex items-start justify-between border-b border-neutral-100 pb-3">
                     <div className="h-10 w-10 rounded bg-neutral-950" />
                     <div className="text-right">
-                      <div className="font-oswald text-lg font-bold tracking-tight text-neutral-900 uppercase">
+                      <div className="font-heading text-lg font-bold tracking-tight text-neutral-900 uppercase">
                         Invoice
                       </div>
                       <div className="font-mono text-xs text-neutral-500">
@@ -178,7 +178,7 @@ export default function Home() {
               <div className="mb-3 w-fit rounded-xl bg-purple-500/10 p-3 text-purple-600 dark:text-purple-400">
                 <Clock className="h-5 w-5" />
               </div>
-              <h3 className="font-oswald mb-2 text-xl font-bold">
+              <h3 className="font-heading mb-2 text-xl font-bold">
                 Overtime Tracking
               </h3>
               <p className="text-muted-foreground text-sm leading-relaxed">
@@ -197,7 +197,7 @@ export default function Home() {
               <div className="mb-3 w-fit rounded-xl bg-orange-500/10 p-3 text-orange-600 dark:text-orange-400">
                 <TrendingUp className="h-5 w-5" />
               </div>
-              <h3 className="font-oswald mb-2 text-xl font-bold">
+              <h3 className="font-heading mb-2 text-xl font-bold">
                 Revenue Analytics
               </h3>
               <p className="text-muted-foreground mb-5 text-sm leading-relaxed">
@@ -221,7 +221,7 @@ export default function Home() {
               <div className="mb-3 w-fit rounded-xl bg-cyan-500/10 p-3 text-cyan-600 dark:text-cyan-400">
                 <Users className="h-5 w-5" />
               </div>
-              <h3 className="font-oswald mb-2 text-xl font-bold">
+              <h3 className="font-heading mb-2 text-xl font-bold">
                 Client Management
               </h3>
               <p className="text-muted-foreground text-sm">
@@ -235,7 +235,7 @@ export default function Home() {
               <div className="mb-3 w-fit rounded-xl bg-emerald-500/10 p-3 text-emerald-600 dark:text-emerald-400">
                 <DollarSign className="h-5 w-5" />
               </div>
-              <h3 className="font-oswald mb-2 text-xl font-bold">
+              <h3 className="font-heading mb-2 text-xl font-bold">
                 Custom Expenses
               </h3>
               <p className="text-muted-foreground text-sm">
@@ -260,7 +260,7 @@ export default function Home() {
                 <Bot className="h-4 w-4" />
                 AI-Powered
               </div>
-              <h3 className="font-oswald mb-6 text-4xl font-bold tracking-tight sm:text-5xl">
+              <h3 className="font-heading mb-6 text-4xl font-bold tracking-tight sm:text-5xl">
                 Meet Your Invoicing
                 <br />
                 Co-pilot
@@ -405,7 +405,7 @@ export default function Home() {
       <section className="bg-muted/20 py-24" id="faq">
         <SectionReveal className="mx-auto max-w-4xl px-6">
           <div className="mb-16 text-center">
-            <h2 className="font-oswald mb-4 text-4xl font-bold tracking-tight sm:text-5xl">
+            <h2 className="font-heading mb-4 text-4xl font-bold tracking-tight sm:text-5xl">
               Frequently Asked
             </h2>
             <p className="text-muted-foreground text-lg">
@@ -461,7 +461,7 @@ export default function Home() {
         <div className="absolute top-1/2 left-1/2 h-px w-[600px] -translate-x-1/2 -translate-y-1/2 rotate-12 border-t border-dashed border-white/10" />
 
         <SectionReveal className="mx-auto max-w-4xl px-6">
-          <h2 className="font-oswald mb-6 text-5xl font-bold tracking-tight sm:text-6xl md:text-7xl">
+          <h2 className="font-heading mb-6 text-5xl font-bold tracking-tight sm:text-6xl md:text-7xl">
             Stop Doing Admin.
           </h2>
           <p className="mx-auto mb-12 max-w-2xl text-xl text-neutral-400">
@@ -498,7 +498,7 @@ export default function Home() {
             <div className="max-w-sm">
               <div className="mb-6 flex items-center gap-2">
                 <CaleyLogo className="h-8 w-8" />
-                <span className="font-oswald text-2xl font-bold">Caley</span>
+                <span className="font-heading text-2xl font-bold">Caley</span>
               </div>
               <p className="text-muted-foreground text-lg font-medium">
                 Invoicing that works as hard as you do.

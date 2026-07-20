@@ -371,7 +371,7 @@ export default function Home() {
       />
 
       {/* Revenue Stats */}
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid grid-cols-2 gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-muted-foreground text-xs font-semibold tracking-wider uppercase">
@@ -379,7 +379,7 @@ export default function Home() {
             </CardTitle>
           </CardHeader>
           <CardContent className="mt-auto">
-            <div className="text-3xl font-bold tracking-tight">
+            <div className="text-xl font-bold tracking-tight tabular-nums sm:text-3xl">
               <AnimatedCounter
                 value={totalRevenue}
                 prefix={displaySymbol}
@@ -429,7 +429,7 @@ export default function Home() {
             </CardTitle>
           </CardHeader>
           <CardContent className="mt-auto">
-            <div className="text-3xl font-bold tracking-tight text-green-600 dark:text-green-500">
+            <div className="text-xl font-bold tracking-tight tabular-nums text-green-600 sm:text-3xl dark:text-green-500">
               <AnimatedCounter
                 value={paidRevenue}
                 prefix={displaySymbol}
@@ -452,7 +452,7 @@ export default function Home() {
             </CardTitle>
           </CardHeader>
           <CardContent className="mt-auto">
-            <div className="text-3xl font-bold tracking-tight text-orange-600 dark:text-orange-500">
+            <div className="text-xl font-bold tracking-tight tabular-nums text-orange-600 sm:text-3xl dark:text-orange-500">
               <AnimatedCounter
                 value={outstandingRevenue}
                 prefix={displaySymbol}
@@ -474,7 +474,7 @@ export default function Home() {
             </CardTitle>
           </CardHeader>
           <CardContent className="mt-auto">
-            <div className="text-3xl font-bold tracking-tight">
+            <div className="text-xl font-bold tracking-tight tabular-nums sm:text-3xl">
               <AnimatedCounter
                 value={averageInvoice}
                 prefix={displaySymbol}

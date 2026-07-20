@@ -257,7 +257,7 @@ ${recentInvoices}
             };
           }
 
-          const invoiceNumber = await generateNextInvoiceNumber();
+          const invoiceNumber = await generateNextInvoiceNumber(userId);
 
           let resolvedClient = null;
           if (clientId) {

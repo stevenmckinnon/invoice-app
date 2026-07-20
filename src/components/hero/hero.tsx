@@ -39,7 +39,7 @@ const Hero = () => {
             </div>
           </motion.div>
 
-          <h1 className="font-oswald from-foreground to-muted-foreground bg-gradient-to-b bg-clip-text text-5xl leading-tight font-bold tracking-tight text-transparent sm:text-6xl md:text-7xl lg:text-8xl">
+          <h1 className="font-heading from-foreground to-muted-foreground bg-gradient-to-b bg-clip-text text-5xl leading-tight font-bold tracking-tight text-transparent sm:text-6xl md:text-7xl lg:text-8xl">
             Invoice faster. <br />
             <span className="text-primary relative inline-block">
               Get paid sooner.

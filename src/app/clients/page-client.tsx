@@ -5,6 +5,7 @@ import { useMemo, useState } from "react";
 import { Pencil, Plus, Trash2, Users } from "lucide-react";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 import { CreateClientDialog } from "@/components/CreateClientDialog";
 import { EmptyState } from "@/components/EmptyState";
@@ -43,6 +44,7 @@ import {
 import { formatCurrency } from "@/lib/utils";
 
 export default function ClientsPage() {
+  const router = useRouter();
   const { data: clients = [], isLoading: loading } = useClients();
   const deleteClientMutation = useDeleteClient();
   const createClientMutation = useCreateClient();
@@ -104,51 +106,67 @@ export default function ClientsPage() {
       <Card>
         <CardContent>
           {loading ? (
-            <div className="overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Name</TableHead>
-                    <TableHead>City</TableHead>
-                    <TableHead>Country</TableHead>
-                    <TableHead>Day Rate</TableHead>
-                    <TableHead>Per Diem Work</TableHead>
-                    <TableHead>Per Diem Travel</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {[1, 2, 3, 4, 5].map((i) => (
-                    <TableRow key={i}>
-                      <TableCell>
-                        <Skeleton className="h-5 w-32" />
-                      </TableCell>
-                      <TableCell>
-                        <Skeleton className="h-5 w-20" />
-                      </TableCell>
-                      <TableCell>
-                        <Skeleton className="h-5 w-20" />
-                      </TableCell>
-                      <TableCell>
-                        <Skeleton className="h-5 w-16" />
-                      </TableCell>
-                      <TableCell>
-                        <Skeleton className="h-5 w-16" />
-                      </TableCell>
-                      <TableCell>
-                        <Skeleton className="h-5 w-16" />
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <div className="flex items-center justify-end gap-2">
-                          <Skeleton className="h-8 w-8" />
-                          <Skeleton className="h-8 w-8" />
-                        </div>
-                      </TableCell>
+            <>
+              {/* Desktop skeleton */}
+              <div className="hidden overflow-x-auto md:block">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Name</TableHead>
+                      <TableHead>City</TableHead>
+                      <TableHead>Country</TableHead>
+                      <TableHead>Day Rate</TableHead>
+                      <TableHead>Per Diem Work</TableHead>
+                      <TableHead>Per Diem Travel</TableHead>
+                      <TableHead className="text-right">Actions</TableHead>
                     </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
+                  </TableHeader>
+                  <TableBody>
+                    {[1, 2, 3, 4, 5].map((i) => (
+                      <TableRow key={i}>
+                        <TableCell>
+                          <Skeleton className="h-5 w-32" />
+                        </TableCell>
+                        <TableCell>
+                          <Skeleton className="h-5 w-20" />
+                        </TableCell>
+                        <TableCell>
+                          <Skeleton className="h-5 w-20" />
+                        </TableCell>
+                        <TableCell>
+                          <Skeleton className="h-5 w-16" />
+                        </TableCell>
+                        <TableCell>
+                          <Skeleton className="h-5 w-16" />
+                        </TableCell>
+                        <TableCell>
+                          <Skeleton className="h-5 w-16" />
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <div className="flex items-center justify-end gap-2">
+                            <Skeleton className="h-8 w-8" />
+                            <Skeleton className="h-8 w-8" />
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+              {/* Mobile skeleton */}
+              <div className="flex flex-col gap-3 md:hidden">
+                {[1, 2, 3, 4, 5].map((i) => (
+                  <div key={i} className="space-y-3 rounded-lg border p-4">
+                    <div className="flex items-center justify-between">
+                      <Skeleton className="h-5 w-32" />
+                      <Skeleton className="h-8 w-8" />
+                    </div>
+                    <Skeleton className="h-4 w-40" />
+                    <Skeleton className="h-3 w-48" />
+                  </div>
+                ))}
+              </div>
+            </>
           ) : clients.length === 0 ? (
             <EmptyState
               icon={Users}
@@ -162,94 +180,176 @@ export default function ClientsPage() {
               }
             />
           ) : (
-            <div className="overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Name</TableHead>
-                    <TableHead>City</TableHead>
-                    <TableHead>Country</TableHead>
-                    <TableHead>Day Rate</TableHead>
-                    <TableHead>Per Diem Work</TableHead>
-                    <TableHead>Per Diem Travel</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  <AnimatePresence initial={false}>
-                    {clients.map((client, idx) => (
-                      <motion.tr
-                        key={client.id}
-                        variants={rowVariants}
-                        initial="hidden"
-                        animate="show"
-                        exit="exit"
-                        transition={getRowTransition(idx)}
-                        className="hover:bg-muted/40 border-b transition-colors"
-                      >
-                        <TableCell className="font-medium">
-                          {client.name}
-                        </TableCell>
-                        <TableCell>{client.city || "-"}</TableCell>
-                        <TableCell>{client.country || "-"}</TableCell>
-                        <TableCell>
-                          {client.dayRate
-                            ? formatCurrency(Number(client.dayRate))
-                            : "-"}
-                        </TableCell>
-                        <TableCell>
-                          {client.perDiemWork
-                            ? formatCurrency(Number(client.perDiemWork))
-                            : "-"}
-                        </TableCell>
-                        <TableCell>
-                          {client.perDiemTravel
-                            ? formatCurrency(Number(client.perDiemTravel))
-                            : "-"}
-                        </TableCell>
-                        <TableCell className="text-right">
-                          <div className="flex items-center justify-end gap-2">
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <Button asChild variant="outline" size="sm">
-                                  <Link
-                                    href={`/clients/${client.id}/edit`}
-                                    transitionTypes={["forward"]}
-                                    aria-label="Edit client"
+            <>
+              {/* Desktop table — whole row opens the client */}
+              <div className="hidden overflow-x-auto md:block">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Name</TableHead>
+                      <TableHead>City</TableHead>
+                      <TableHead>Country</TableHead>
+                      <TableHead>Day Rate</TableHead>
+                      <TableHead>Per Diem Work</TableHead>
+                      <TableHead>Per Diem Travel</TableHead>
+                      <TableHead className="text-right">Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    <AnimatePresence initial={false}>
+                      {clients.map((client, idx) => (
+                        <motion.tr
+                          key={client.id}
+                          variants={rowVariants}
+                          initial="hidden"
+                          animate="show"
+                          exit="exit"
+                          transition={getRowTransition(idx)}
+                          onClick={() =>
+                            router.push(`/clients/${client.id}/edit`)
+                          }
+                          className="hover:bg-muted/40 cursor-pointer border-b transition-colors"
+                        >
+                          <TableCell className="font-medium">
+                            <Link
+                              href={`/clients/${client.id}/edit`}
+                              transitionTypes={["forward"]}
+                              onClick={(e) => e.stopPropagation()}
+                              className="focus-visible:ring-ring rounded-sm outline-none hover:underline focus-visible:ring-2"
+                            >
+                              {client.name}
+                            </Link>
+                          </TableCell>
+                          <TableCell>{client.city || "-"}</TableCell>
+                          <TableCell>{client.country || "-"}</TableCell>
+                          <TableCell>
+                            {client.dayRate
+                              ? formatCurrency(Number(client.dayRate))
+                              : "-"}
+                          </TableCell>
+                          <TableCell>
+                            {client.perDiemWork
+                              ? formatCurrency(Number(client.perDiemWork))
+                              : "-"}
+                          </TableCell>
+                          <TableCell>
+                            {client.perDiemTravel
+                              ? formatCurrency(Number(client.perDiemTravel))
+                              : "-"}
+                          </TableCell>
+                          <TableCell
+                            className="text-right"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            <div className="flex items-center justify-end gap-2">
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <Button asChild variant="outline" size="sm">
+                                    <Link
+                                      href={`/clients/${client.id}/edit`}
+                                      transitionTypes={["forward"]}
+                                      aria-label="Edit client"
+                                    >
+                                      <Pencil className="h-4 w-4" />
+                                    </Link>
+                                  </Button>
+                                </TooltipTrigger>
+                                <TooltipContent>Edit client</TooltipContent>
+                              </Tooltip>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() =>
+                                      setClientToDelete({
+                                        id: client.id,
+                                        name: client.name,
+                                      })
+                                    }
+                                    disabled={deleteClientMutation.isPending}
+                                    aria-label="Delete client"
                                   >
-                                    <Pencil className="h-4 w-4" />
-                                  </Link>
-                                </Button>
-                              </TooltipTrigger>
-                              <TooltipContent>Edit client</TooltipContent>
-                            </Tooltip>
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  onClick={() =>
-                                    setClientToDelete({
-                                      id: client.id,
-                                      name: client.name,
-                                    })
-                                  }
-                                  disabled={deleteClientMutation.isPending}
-                                  aria-label="Delete client"
-                                >
-                                  <Trash2 className="text-destructive h-4 w-4" />
-                                </Button>
-                              </TooltipTrigger>
-                              <TooltipContent>Delete client</TooltipContent>
-                            </Tooltip>
-                          </div>
-                        </TableCell>
-                      </motion.tr>
-                    ))}
-                  </AnimatePresence>
-                </TableBody>
-              </Table>
-            </div>
+                                    <Trash2 className="text-destructive h-4 w-4" />
+                                  </Button>
+                                </TooltipTrigger>
+                                <TooltipContent>Delete client</TooltipContent>
+                              </Tooltip>
+                            </div>
+                          </TableCell>
+                        </motion.tr>
+                      ))}
+                    </AnimatePresence>
+                  </TableBody>
+                </Table>
+              </div>
+
+              {/* Mobile cards */}
+              <div className="flex flex-col gap-3 md:hidden">
+                {clients.map((client) => (
+                  <div
+                    key={client.id}
+                    onClick={() => router.push(`/clients/${client.id}/edit`)}
+                    className="hover:bg-muted/40 flex cursor-pointer flex-col gap-2 rounded-lg border p-4 transition-colors"
+                  >
+                    <div className="flex items-center justify-between gap-2">
+                      <Link
+                        href={`/clients/${client.id}/edit`}
+                        transitionTypes={["forward"]}
+                        onClick={(e) => e.stopPropagation()}
+                        className="font-medium hover:underline"
+                      >
+                        {client.name}
+                      </Link>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setClientToDelete({
+                            id: client.id,
+                            name: client.name,
+                          });
+                        }}
+                        disabled={deleteClientMutation.isPending}
+                        aria-label="Delete client"
+                      >
+                        <Trash2 className="text-destructive h-4 w-4" />
+                      </Button>
+                    </div>
+                    <div className="text-muted-foreground text-sm">
+                      {[client.city, client.country]
+                        .filter(Boolean)
+                        .join(", ") || "—"}
+                    </div>
+                    <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs">
+                      <span>
+                        <span className="text-muted-foreground">Day </span>
+                        {client.dayRate
+                          ? formatCurrency(Number(client.dayRate))
+                          : "—"}
+                      </span>
+                      <span>
+                        <span className="text-muted-foreground">
+                          Per diem (work){" "}
+                        </span>
+                        {client.perDiemWork
+                          ? formatCurrency(Number(client.perDiemWork))
+                          : "—"}
+                      </span>
+                      <span>
+                        <span className="text-muted-foreground">
+                          Per diem (travel){" "}
+                        </span>
+                        {client.perDiemTravel
+                          ? formatCurrency(Number(client.perDiemTravel))
+                          : "—"}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </>
           )}
         </CardContent>
       </Card>

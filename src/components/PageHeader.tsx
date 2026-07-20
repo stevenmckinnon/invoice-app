@@ -33,7 +33,7 @@ export const PageHeader = ({
         </Button>
       )}
       <div className="space-y-1">
-        <h1 className="font-oswald text-4xl font-bold tracking-tight">
+        <h1 className="font-heading text-4xl font-bold tracking-tight">
           {title}
         </h1>
         {subtitle && (

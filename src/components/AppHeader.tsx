@@ -103,7 +103,7 @@ export const AppHeader = () => {
           className="flex items-center gap-2 transition-opacity hover:opacity-80"
         >
           <CaleyLogo className="h-8 w-8" />
-          <span className="font-oswald hidden text-xl font-bold sm:inline-block">
+          <span className="font-heading hidden text-xl font-bold sm:inline-block">
             Caley
           </span>
         </Link>

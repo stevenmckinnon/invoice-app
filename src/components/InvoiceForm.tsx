@@ -1,6 +1,7 @@
 "use client";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 
+import { ChevronDownIcon } from "lucide-react";
 import Link from "next/link";
 import { useWatch, type UseFormReturn } from "react-hook-form";
 import { z } from "zod";
@@ -11,6 +12,11 @@ import { OvertimeManager } from "@/components/OvertimeManager";
 import { PageHeader } from "@/components/PageHeader";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
 import {
   Form,
   FormControl,
@@ -167,7 +173,9 @@ const SectionHeading = ({ children }: { children: React.ReactNode }) => (
 
 /**
  * Shared invoice form used by both the new and edit invoice pages so the two
- * flows always expose the same fields, sections and totals behaviour.
+ * flows always expose the same fields, sections and totals behaviour. Personal
+ * and banking details are collapsed into an editable summary since they are
+ * pre-filled from the user's profile.
  */
 export function InvoiceForm({
   form,
@@ -192,6 +200,47 @@ export function InvoiceForm({
   });
   const invoiceCurrency =
     useWatch({ control: form.control, name: "currency" }) || "GBP";
+
+  // Your personal + banking details are pre-filled from the profile, so collapse
+  // them into an editable summary and keep the form focused on what changes per
+  // invoice. Auto-expand if any of those fields fail validation on submit.
+  const watchedFullName = useWatch({ control: form.control, name: "fullName" });
+  const watchedIban = useWatch({ control: form.control, name: "iban" });
+  const watchedAccountNumber = useWatch({
+    control: form.control,
+    name: "accountNumber",
+  });
+
+  const detailsSummaryName = watchedFullName?.trim() || "Add your details";
+  const detailsBankHint = watchedIban
+    ? `IBAN ···${watchedIban.replace(/\s/g, "").slice(-4)}`
+    : watchedAccountNumber
+      ? `Acct ···${watchedAccountNumber.slice(-4)}`
+      : null;
+
+  const [detailsOpen, setDetailsOpen] = useState(false);
+  const detailFieldNames = [
+    "fullName",
+    "email",
+    "addressLine1",
+    "addressLine2",
+    "city",
+    "state",
+    "postalCode",
+    "country",
+    "iban",
+    "swiftBic",
+    "accountNumber",
+    "sortCode",
+    "bankAddress",
+    "dateOfBirth",
+  ] as const;
+  // Force the section open when it holds a validation error so the message is
+  // visible — derived, so no effect/state-sync is needed.
+  const hasDetailError = detailFieldNames.some(
+    (name) => form.formState.errors[name],
+  );
+  const detailsSectionOpen = detailsOpen || hasDetailError;
 
   // Calculate regular rate dynamically from Work Days unit price (10% since a day is 10 hours)
   const regularRate = useMemo(() => {
@@ -238,7 +287,7 @@ export function InvoiceForm({
     <Form {...form}>
       <form
         onSubmit={form.handleSubmit(onSubmit)}
-        className="mx-auto grid w-full max-w-6xl gap-6 p-6 py-10 md:pb-8"
+        className="mx-auto grid w-full max-w-6xl gap-6 p-6 py-10 md:pb-24"
       >
         <PageHeader title={title} subtitle={subtitle} backHref="/invoices" />
 
@@ -330,210 +379,252 @@ export function InvoiceForm({
 
             <Separator className="my-4 md:col-span-2" />
 
-            <SectionHeading>Your Information</SectionHeading>
-
-            <FormField
-              control={form.control}
-              name="fullName"
-              render={({ field }) => (
-                <FormItem className="md:col-span-2">
-                  <FormLabel>Full Name</FormLabel>
-                  <FormControl>
-                    <Input {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="email"
-              render={({ field }) => (
-                <FormItem className="md:col-span-2">
-                  <FormLabel>Email</FormLabel>
-                  <FormControl>
-                    <Input type="email" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="addressLine1"
-              render={({ field }) => (
-                <FormItem className="md:col-span-2">
-                  <FormLabel>Address Line 1</FormLabel>
-                  <FormControl>
-                    <Input {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="addressLine2"
-              render={({ field }) => (
-                <FormItem className="md:col-span-2">
-                  <FormLabel>Address Line 2</FormLabel>
-                  <FormControl>
-                    <Input {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="city"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>City</FormLabel>
-                  <FormControl>
-                    <Input {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="state"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>State</FormLabel>
-                  <FormControl>
-                    <Input {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="postalCode"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Postal/Zip Code</FormLabel>
-                  <FormControl>
-                    <Input {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="country"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Country</FormLabel>
-                  <FormControl>
-                    <CountryPicker
-                      value={field.value}
-                      onChange={field.onChange}
+            <Collapsible
+              open={detailsSectionOpen}
+              onOpenChange={setDetailsOpen}
+              className="md:col-span-2"
+            >
+              <div className="flex flex-col gap-3 rounded-lg border p-4 sm:flex-row sm:items-center sm:justify-between">
+                <div className="min-w-0">
+                  <p className="text-muted-foreground text-xs font-semibold tracking-wider uppercase">
+                    Your Details & Banking
+                  </p>
+                  <p className="mt-1 truncate text-sm font-medium">
+                    {detailsSummaryName}
+                    {detailsBankHint ? (
+                      <span className="text-muted-foreground font-normal">
+                        {" · "}
+                        {detailsBankHint}
+                      </span>
+                    ) : null}
+                  </p>
+                </div>
+                <CollapsibleTrigger asChild>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="shrink-0"
+                  >
+                    <ChevronDownIcon
+                      className={cn(
+                        "h-4 w-4 transition-transform",
+                        detailsSectionOpen && "rotate-180",
+                      )}
                     />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+                    {detailsSectionOpen ? "Hide" : "Edit"}
+                  </Button>
+                </CollapsibleTrigger>
+              </div>
+              <CollapsibleContent className="mt-4">
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                  <SectionHeading>Your Information</SectionHeading>
 
-            <Separator className="my-4 md:col-span-2" />
+                  <FormField
+                    control={form.control}
+                    name="fullName"
+                    render={({ field }) => (
+                      <FormItem className="md:col-span-2">
+                        <FormLabel>Full Name</FormLabel>
+                        <FormControl>
+                          <Input {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
 
-            <SectionHeading>Banking Details</SectionHeading>
+                  <FormField
+                    control={form.control}
+                    name="email"
+                    render={({ field }) => (
+                      <FormItem className="md:col-span-2">
+                        <FormLabel>Email</FormLabel>
+                        <FormControl>
+                          <Input type="email" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
 
-            <FormField
-              control={form.control}
-              name="iban"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>IBAN</FormLabel>
-                  <FormControl>
-                    <Input {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+                  <FormField
+                    control={form.control}
+                    name="addressLine1"
+                    render={({ field }) => (
+                      <FormItem className="md:col-span-2">
+                        <FormLabel>Address Line 1</FormLabel>
+                        <FormControl>
+                          <Input {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
 
-            <FormField
-              control={form.control}
-              name="swiftBic"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>SWIFT/BIC</FormLabel>
-                  <FormControl>
-                    <Input {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+                  <FormField
+                    control={form.control}
+                    name="addressLine2"
+                    render={({ field }) => (
+                      <FormItem className="md:col-span-2">
+                        <FormLabel>Address Line 2</FormLabel>
+                        <FormControl>
+                          <Input {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
 
-            <FormField
-              control={form.control}
-              name="accountNumber"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Account Number</FormLabel>
-                  <FormControl>
-                    <Input {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+                  <FormField
+                    control={form.control}
+                    name="city"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>City</FormLabel>
+                        <FormControl>
+                          <Input {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
 
-            <FormField
-              control={form.control}
-              name="sortCode"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Sort Code</FormLabel>
-                  <FormControl>
-                    <Input {...field} placeholder="00-00-00" />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+                  <FormField
+                    control={form.control}
+                    name="state"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>State</FormLabel>
+                        <FormControl>
+                          <Input {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
 
-            <FormField
-              control={form.control}
-              name="bankAddress"
-              render={({ field }) => (
-                <FormItem className="md:col-span-2">
-                  <FormLabel>Bank Address</FormLabel>
-                  <FormControl>
-                    <Input {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+                  <FormField
+                    control={form.control}
+                    name="postalCode"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Postal/Zip Code</FormLabel>
+                        <FormControl>
+                          <Input {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
 
-            <FormField
-              control={form.control}
-              name="dateOfBirth"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Date of Birth</FormLabel>
-                  <FormControl>
-                    <Input type="date" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+                  <FormField
+                    control={form.control}
+                    name="country"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Country</FormLabel>
+                        <FormControl>
+                          <CountryPicker
+                            value={field.value}
+                            onChange={field.onChange}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <Separator className="my-4 md:col-span-2" />
+
+                  <SectionHeading>Banking Details</SectionHeading>
+
+                  <FormField
+                    control={form.control}
+                    name="iban"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>IBAN</FormLabel>
+                        <FormControl>
+                          <Input {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="swiftBic"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>SWIFT/BIC</FormLabel>
+                        <FormControl>
+                          <Input {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="accountNumber"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Account Number</FormLabel>
+                        <FormControl>
+                          <Input {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="sortCode"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Sort Code</FormLabel>
+                        <FormControl>
+                          <Input {...field} placeholder="00-00-00" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="bankAddress"
+                    render={({ field }) => (
+                      <FormItem className="md:col-span-2">
+                        <FormLabel>Bank Address</FormLabel>
+                        <FormControl>
+                          <Input {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="dateOfBirth"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Date of Birth</FormLabel>
+                        <FormControl>
+                          <Input type="date" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+              </CollapsibleContent>
+            </Collapsible>
 
             <Separator className="my-4 md:col-span-2" />
 

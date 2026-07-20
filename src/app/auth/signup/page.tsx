@@ -105,7 +105,7 @@ export default function SignUpPage() {
         <Link href="/">
           <div className="relative z-20 flex items-center gap-2 text-lg font-medium">
             <CaleyLogo className="h-8 w-8 fill-white text-white" />
-            <span className="font-oswald text-xl font-bold tracking-tight">
+            <span className="font-heading text-xl font-bold tracking-tight">
               Caley
             </span>
           </div>
@@ -113,7 +113,7 @@ export default function SignUpPage() {
 
         <div className="relative z-20 mt-auto max-w-md">
           <blockquote className="space-y-6">
-            <p className="font-oswald text-4xl leading-tight font-medium tracking-tight text-white drop-shadow-sm">
+            <p className="font-heading text-4xl leading-tight font-medium tracking-tight text-white drop-shadow-sm">
               &quot;Finally, an invoicing tool that understands the creative
               industry. Pure brilliance.&quot;
             </p>
@@ -138,7 +138,7 @@ export default function SignUpPage() {
                 <CaleyLogo className="h-12 w-12" />
               </Link>
             </div>
-            <h1 className="font-oswald text-3xl font-bold tracking-tight sm:text-4xl">
+            <h1 className="font-heading text-3xl font-bold tracking-tight sm:text-4xl">
               Create an account
             </h1>
             <p className="text-muted-foreground text-sm">

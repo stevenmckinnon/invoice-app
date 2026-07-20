@@ -1,6 +1,6 @@
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
-import { Oswald, Roboto_Mono } from "next/font/google";
+import { Roboto_Mono } from "next/font/google";
 import localFont from "next/font/local";
 
 import { ConditionalLayout } from "@/components/ConditionalLayout";
@@ -10,13 +10,7 @@ import { Toaster } from "@/components/ui/sonner";
 import type { Metadata, Viewport } from "next";
 
 import "./globals.css";
-
-const oswald = Oswald({
-  variable: "--font-oswald",
-  subsets: ["latin"],
-  weight: "400",
-  display: "swap",
-});
+// fonts: Satoshi (body + headings), Roboto Mono (code)
 
 const satoshi = localFont({
   src: [
@@ -142,7 +136,7 @@ export default function RootLayout({
     <html
       lang="en"
       suppressHydrationWarning
-      className={`${oswald.variable} ${satoshi.variable}`}
+      className={`${satoshi.variable}`}
       data-scroll-behavior="smooth"
     >
       <body className={`${robotoMono.variable} font-sans antialiased`}>

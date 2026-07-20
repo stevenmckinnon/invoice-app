@@ -20,6 +20,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Spinner } from "@/components/ui/spinner";
 
 type PdfTemplate = "classic" | "modern" | "minimal";
 
@@ -52,6 +53,7 @@ export const PdfPreviewDialog = ({
 }: PdfPreviewDialogProps) => {
   const [open, setOpen] = useState(false);
   const [template, setTemplate] = useState<PdfTemplate>("classic");
+  const [pdfLoading, setPdfLoading] = useState(true);
 
   const downloadInvoicePdf = async () => {
     const response = await fetch(
@@ -73,7 +75,13 @@ export const PdfPreviewDialog = ({
   };
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog
+      open={open}
+      onOpenChange={(next) => {
+        setOpen(next);
+        if (next) setPdfLoading(true);
+      }}
+    >
       <DialogTrigger asChild>
         <Button size={size} variant={variant}>
           <FileTextIcon className="h-4 w-4" />
@@ -94,7 +102,10 @@ export const PdfPreviewDialog = ({
             </div>
             <Select
               value={template}
-              onValueChange={(value) => setTemplate(value as PdfTemplate)}
+              onValueChange={(value) => {
+                setPdfLoading(true);
+                setTemplate(value as PdfTemplate);
+              }}
             >
               <SelectTrigger className="w-[165px]">
                 <SelectValue />
@@ -107,12 +118,19 @@ export const PdfPreviewDialog = ({
             </Select>
           </div>
         </DialogHeader>
-        <div className="min-h-0 flex-1 overflow-hidden">
+        <div className="bg-muted/30 relative min-h-0 flex-1 overflow-hidden rounded-md">
+          {pdfLoading && (
+            <div className="text-muted-foreground absolute inset-0 z-10 flex flex-col items-center justify-center gap-3">
+              <Spinner className="size-6" />
+              <p className="text-sm font-medium">Generating preview…</p>
+            </div>
+          )}
           <iframe
             key={template}
             src={`/api/invoices/${invoiceId}/pdf?template=${template}`}
             className="h-full w-full border-0"
             title={`Invoice ${invoiceNumber}`}
+            onLoad={() => setPdfLoading(false)}
           />
         </div>
         <DialogFooter>

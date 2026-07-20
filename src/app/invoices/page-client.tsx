@@ -4,12 +4,12 @@ import { useState } from "react";
 import {
   PlusIcon,
   SearchIcon,
-  EyeIcon,
   ChevronLeft,
   ChevronRight,
   FileTextIcon,
 } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 import { EmptyState } from "@/components/EmptyState";
 import { InvoiceStatusBadge } from "@/components/InvoiceStatusBadge";
@@ -34,17 +34,13 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
 import { useInvoices } from "@/hooks/use-invoices";
 import { formatCurrency, formatDate } from "@/lib/utils";
 
 const ITEMS_PER_PAGE = 10;
 
 export default function AllInvoicesPage() {
+  const router = useRouter();
   const { data: invoices = [], isLoading, error } = useInvoices();
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
@@ -173,49 +169,67 @@ export default function AllInvoicesPage() {
       <Card>
         <CardContent>
           {isLoading ? (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Invoice #</TableHead>
-                  <TableHead>Show/Project</TableHead>
-                  <TableHead>Client</TableHead>
-                  <TableHead>Date</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead className="text-right">Amount</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
+            <>
+              {/* Desktop skeleton */}
+              <div className="hidden md:block">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Invoice #</TableHead>
+                      <TableHead>Show/Project</TableHead>
+                      <TableHead>Client</TableHead>
+                      <TableHead>Date</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead className="text-right">Amount</TableHead>
+                      <TableHead className="text-right">PDF</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {[...Array(5)].map((_, i) => (
+                      <TableRow key={i}>
+                        <TableCell>
+                          <Skeleton className="h-4 w-24" />
+                        </TableCell>
+                        <TableCell>
+                          <Skeleton className="h-4 w-32" />
+                        </TableCell>
+                        <TableCell>
+                          <Skeleton className="h-4 w-28" />
+                        </TableCell>
+                        <TableCell>
+                          <Skeleton className="h-4 w-32" />
+                        </TableCell>
+                        <TableCell>
+                          <Skeleton className="h-6 w-16 rounded-full" />
+                        </TableCell>
+                        <TableCell>
+                          <Skeleton className="ml-auto h-4 w-20" />
+                        </TableCell>
+                        <TableCell>
+                          <Skeleton className="ml-auto h-8 w-8 rounded-md" />
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+              {/* Mobile skeleton */}
+              <div className="flex flex-col gap-3 md:hidden">
                 {[...Array(5)].map((_, i) => (
-                  <TableRow key={i}>
-                    <TableCell>
+                  <div key={i} className="space-y-3 rounded-lg border p-4">
+                    <div className="flex items-center justify-between">
                       <Skeleton className="h-4 w-24" />
-                    </TableCell>
-                    <TableCell>
-                      <Skeleton className="h-4 w-32" />
-                    </TableCell>
-                    <TableCell>
-                      <Skeleton className="h-4 w-28" />
-                    </TableCell>
-                    <TableCell>
-                      <Skeleton className="h-4 w-32" />
-                    </TableCell>
-                    <TableCell>
                       <Skeleton className="h-6 w-16 rounded-full" />
-                    </TableCell>
-                    <TableCell>
-                      <Skeleton className="ml-auto h-4 w-20" />
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-2">
-                        <Skeleton className="h-8 w-8 rounded-md" />
-                        <Skeleton className="h-8 w-8 rounded-md" />
-                      </div>
-                    </TableCell>
-                  </TableRow>
+                    </div>
+                    <Skeleton className="h-4 w-40" />
+                    <div className="flex items-center justify-between">
+                      <Skeleton className="h-3 w-20" />
+                      <Skeleton className="h-4 w-20" />
+                    </div>
+                  </div>
                 ))}
-              </TableBody>
-            </Table>
+              </div>
+            </>
           ) : paginatedInvoices.length === 0 ? (
             <EmptyState
               icon={FileTextIcon}
@@ -243,58 +257,61 @@ export default function AllInvoicesPage() {
             />
           ) : (
             <>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Invoice #</TableHead>
-                    <TableHead>Show/Project</TableHead>
-                    <TableHead>Client</TableHead>
-                    <TableHead>Date</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead className="text-right">Amount</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {paginatedInvoices.map((invoice) => (
-                    <TableRow key={invoice.id}>
-                      <TableCell className="font-medium">
-                        {invoice.invoiceNumber}
-                      </TableCell>
-                      <TableCell>{invoice.showName}</TableCell>
-                      <TableCell>{invoice.clientName || "—"}</TableCell>
-                      <TableCell suppressHydrationWarning>
-                        {formatDate(invoice.invoiceDate)}
-                      </TableCell>
-                      <TableCell>
-                        <InvoiceStatusBadge status={invoice.status} />
-                      </TableCell>
-                      <TableCell className="text-right font-medium">
-                        {formatCurrency(
-                          Number(invoice.totalAmount),
-                          invoice.currency,
-                        )}
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <div className="flex items-center justify-end gap-2">
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <Button asChild variant="outline" size="sm">
-                                <Link
-                                  href={`/invoices/${invoice.id}`}
-                                  transitionTypes={["forward"]}
-                                >
-                                  <EyeIcon className="h-4 w-4" />
-                                </Link>
-                              </Button>
-                            </TooltipTrigger>
-                            <TooltipContent>View invoice</TooltipContent>
-                          </Tooltip>
+              {/* Desktop table — whole row navigates to the invoice */}
+              <div className="hidden md:block">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Invoice #</TableHead>
+                      <TableHead>Show/Project</TableHead>
+                      <TableHead>Client</TableHead>
+                      <TableHead>Date</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead className="text-right">Amount</TableHead>
+                      <TableHead className="text-right">PDF</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {paginatedInvoices.map((invoice) => (
+                      <TableRow
+                        key={invoice.id}
+                        onClick={() => router.push(`/invoices/${invoice.id}`)}
+                        className="cursor-pointer"
+                      >
+                        <TableCell className="font-medium">
+                          <Link
+                            href={`/invoices/${invoice.id}`}
+                            transitionTypes={["forward"]}
+                            onClick={(e) => e.stopPropagation()}
+                            className="focus-visible:ring-ring rounded-sm outline-none hover:underline focus-visible:ring-2"
+                          >
+                            {invoice.invoiceNumber}
+                          </Link>
+                        </TableCell>
+                        <TableCell>{invoice.showName}</TableCell>
+                        <TableCell>{invoice.clientName || "—"}</TableCell>
+                        <TableCell suppressHydrationWarning>
+                          {formatDate(invoice.invoiceDate)}
+                        </TableCell>
+                        <TableCell>
+                          <InvoiceStatusBadge status={invoice.status} />
+                        </TableCell>
+                        <TableCell className="text-right font-medium">
+                          {formatCurrency(
+                            Number(invoice.totalAmount),
+                            invoice.currency,
+                          )}
+                        </TableCell>
+                        <TableCell
+                          className="text-right"
+                          onClick={(e) => e.stopPropagation()}
+                        >
                           <PdfPreviewDialog
                             invoiceId={invoice.id}
                             invoiceNumber={invoice.invoiceNumber}
                             size="sm"
                             variant="outline"
+                            showText={false}
                             invoiceDate={
                               typeof invoice.invoiceDate === "string"
                                 ? new Date(invoice.invoiceDate)
@@ -303,12 +320,49 @@ export default function AllInvoicesPage() {
                             showName={invoice.showName}
                             fullName={invoice.fullName}
                           />
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+
+              {/* Mobile cards */}
+              <div className="flex flex-col gap-3 md:hidden">
+                {paginatedInvoices.map((invoice) => (
+                  <Link
+                    key={invoice.id}
+                    href={`/invoices/${invoice.id}`}
+                    transitionTypes={["forward"]}
+                    className="hover:bg-muted/40 flex flex-col gap-2 rounded-lg border p-4 transition-colors"
+                  >
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="font-medium">
+                        {invoice.invoiceNumber}
+                      </span>
+                      <InvoiceStatusBadge status={invoice.status} />
+                    </div>
+                    <div className="text-muted-foreground text-sm">
+                      {invoice.showName}
+                      {invoice.clientName ? ` · ${invoice.clientName}` : ""}
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span
+                        className="text-muted-foreground text-xs"
+                        suppressHydrationWarning
+                      >
+                        {formatDate(invoice.invoiceDate)}
+                      </span>
+                      <span className="font-semibold tabular-nums">
+                        {formatCurrency(
+                          Number(invoice.totalAmount),
+                          invoice.currency,
+                        )}
+                      </span>
+                    </div>
+                  </Link>
+                ))}
+              </div>
 
               {/* Pagination */}
               {totalPages > 1 && (

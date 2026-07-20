@@ -81,7 +81,7 @@ const SignInForm = () => {
             <Link href="/">
               <div className="relative z-20 flex items-center gap-2 text-lg font-medium">
                 <CaleyLogo className="h-8 w-8 fill-white text-white" />
-                <span className="font-oswald text-xl font-bold tracking-tight">
+                <span className="font-heading text-xl font-bold tracking-tight">
                   Caley
                 </span>
               </div>
@@ -89,7 +89,7 @@ const SignInForm = () => {
 
             <div className="relative z-20 mt-auto max-w-md">
               <blockquote className="space-y-6">
-                <p className="font-oswald text-4xl leading-tight font-medium tracking-tight text-white drop-shadow-sm">
+                <p className="font-heading text-4xl leading-tight font-medium tracking-tight text-white drop-shadow-sm">
                   &quot;The most intuitive invoicing system I&apos;ve ever used.
                   It just gets out of the way and lets me work.&quot;
                 </p>
@@ -114,7 +114,7 @@ const SignInForm = () => {
                     <CaleyLogo className="h-12 w-12" />
                   </Link>
                 </div>
-                <h1 className="font-oswald text-3xl font-bold tracking-tight sm:text-4xl">
+                <h1 className="font-heading text-3xl font-bold tracking-tight sm:text-4xl">
                   Welcome back
                 </h1>
                 <p className="text-muted-foreground text-sm">
