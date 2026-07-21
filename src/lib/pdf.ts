@@ -1,5 +1,7 @@
 import { PDFDocument, StandardFonts, rgb, RGB } from "pdf-lib";
 
+import { deriveOvertimeHourlyRate, overtimeEntryCost } from "@/lib/overtime";
+
 // Helper to format date without timezone conversion
 const formatDateGB = (date: Date | string): string => {
   const d = typeof date === "string" ? new Date(date + "T00:00:00") : date;
@@ -78,18 +80,17 @@ export type InvoicePdfInput = {
 
 export const calculateInvoiceTotals = (input: InvoicePdfInput) => {
   const currency = input.currency || "GBP";
-  const regularRate = 52.5; // £52.50 per hour base rate
+  const regularRate = deriveOvertimeHourlyRate(input.items);
 
   const normalized = input.items.map((it) => ({
     ...it,
     cost: typeof it.cost === "number" ? it.cost : it.quantity * it.unitPrice,
   }));
 
-  const overtimeTotal = input.overtimeEntries.reduce((sum, entry) => {
-    const multiplier = entry.rateType === "1.5x" ? 1.5 : 2;
-    const hourlyRate = regularRate * multiplier;
-    return sum + entry.hours * hourlyRate;
-  }, 0);
+  const overtimeTotal = input.overtimeEntries.reduce(
+    (sum, entry) => sum + overtimeEntryCost(entry, regularRate),
+    0,
+  );
 
   const customExpensesTotal = input.customExpenseEntries.reduce(
     (sum, entry) => sum + entry.cost,
@@ -104,6 +105,7 @@ export const calculateInvoiceTotals = (input: InvoicePdfInput) => {
 
   return {
     currency,
+    regularRate,
     items: normalized,
     overtimeEntries: input.overtimeEntries,
     customExpenseEntries: input.customExpenseEntries,
@@ -228,7 +230,11 @@ const generateModernInvoicePdf = async (
   let billFromY = y;
 
   // Helper function to wrap text based on available width
-  const wrapText = (text: string, maxWidth: number, fontSize: number): string[] => {
+  const wrapText = (
+    text: string,
+    maxWidth: number,
+    fontSize: number,
+  ): string[] => {
     const words = text.split(/\s+/);
     const lines: string[] = [];
     let currentLine = "";
@@ -352,7 +358,11 @@ const generateModernInvoicePdf = async (
 
   if (input.clientName) {
     const clientNameFontSize = 11;
-    const wrappedClientName = wrapText(input.clientName, addressColumnWidth, clientNameFontSize);
+    const wrappedClientName = wrapText(
+      input.clientName,
+      addressColumnWidth,
+      clientNameFontSize,
+    );
     wrappedClientName.forEach((line) => {
       page.drawText(line, {
         x: billToX,
@@ -392,7 +402,11 @@ const generateModernInvoicePdf = async (
 
   const clientAddressFontSize = 9;
   clientAddressLines.forEach((line) => {
-    const wrappedLines = wrapText(line, addressColumnWidth, clientAddressFontSize);
+    const wrappedLines = wrapText(
+      line,
+      addressColumnWidth,
+      clientAddressFontSize,
+    );
     wrappedLines.forEach((wrappedLine) => {
       page.drawText(wrappedLine, {
         x: billToX,
@@ -526,7 +540,7 @@ const generateModernInvoicePdf = async (
 
   totals.overtimeEntries.forEach((entry) => {
     const multiplier = entry.rateType === "1.5x" ? 1.5 : 2;
-    const hourlyRate = 52.5 * multiplier;
+    const hourlyRate = totals.regularRate * multiplier;
     const cost = entry.hours * hourlyRate;
     const dateStr = formatDateGBShort(entry.date);
 
@@ -867,7 +881,11 @@ const generateMinimalInvoicePdf = async (
   let billFromY = y;
 
   // Helper function to wrap text
-  const wrapText = (text: string, maxWidth: number, fontSize: number): string[] => {
+  const wrapText = (
+    text: string,
+    maxWidth: number,
+    fontSize: number,
+  ): string[] => {
     const words = text.split(/\s+/);
     const lines: string[] = [];
     let currentLine = "";
@@ -987,7 +1005,11 @@ const generateMinimalInvoicePdf = async (
   billToY -= 15;
 
   if (input.clientName) {
-    const wrappedClientName = wrapText(input.clientName, addressColumnWidth, 10);
+    const wrappedClientName = wrapText(
+      input.clientName,
+      addressColumnWidth,
+      10,
+    );
     wrappedClientName.forEach((line) => {
       page.drawText(line, {
         x: billToX,
@@ -1178,7 +1200,7 @@ const generateMinimalInvoicePdf = async (
 
   totals.overtimeEntries.forEach((entry) => {
     const multiplier = entry.rateType === "1.5x" ? 1.5 : 2;
-    const hourlyRate = 52.5 * multiplier;
+    const hourlyRate = totals.regularRate * multiplier;
     const cost = entry.hours * hourlyRate;
     const dateStr = formatDateGBShort(entry.date);
 
@@ -1811,7 +1833,7 @@ export const generateInvoicePdf = async (
   // Draw overtime entries
   totals.overtimeEntries.forEach((entry) => {
     const multiplier = entry.rateType === "1.5x" ? 1.5 : 2;
-    const hourlyRate = 52.5 * multiplier;
+    const hourlyRate = totals.regularRate * multiplier;
     const cost = entry.hours * hourlyRate;
     const dateStr = formatDateGBShort(entry.date);
 

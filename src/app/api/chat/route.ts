@@ -1,9 +1,11 @@
 import { anthropic } from "@ai-sdk/anthropic";
 import {
   convertToModelMessages,
-  stepCountIs,
+  createUIMessageStreamResponse,
+  isStepCount,
   streamText,
   tool,
+  toUIMessageStream,
   type UIMessage,
 } from "ai";
 import { headers } from "next/headers";
@@ -12,6 +14,7 @@ import { z } from "zod";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { generateNextInvoiceNumber } from "@/lib/invoice-number";
+import { deriveOvertimeHourlyRate, overtimeEntryCost } from "@/lib/overtime";
 
 export const POST = async (req: Request) => {
   const session = await auth.api.getSession({ headers: await headers() });
@@ -166,9 +169,9 @@ ${recentInvoices}
 
   const result = streamText({
     model: anthropic("claude-haiku-4-5"),
-    system: systemPrompt,
+    instructions: systemPrompt,
     messages: await convertToModelMessages(messages),
-    stopWhen: stepCountIs(5),
+    stopWhen: isStepCount(5),
     tools: {
       createInvoiceDraft: tool({
         description:
@@ -326,22 +329,16 @@ ${recentInvoices}
             cost: i.quantity * i.unitPrice,
           }));
 
-          // Derive hourly rate from "Work Days" item (same logic as invoice editor: unitPrice * 0.1)
-          // Falls back to client's dayRate / 10, then 0
-          const workDaysItem = lineItems.find(
-            (i) => i.description === "Work Days",
-          );
+          // Falls back to the client's saved day rate when the draft has no
+          // priced "Work Days" item yet
           const regularRate =
-            workDaysItem && workDaysItem.unitPrice > 0
-              ? workDaysItem.unitPrice * 0.1
-              : resolvedClient?.dayRate
-                ? Number(resolvedClient.dayRate) / 10
-                : 0;
+            deriveOvertimeHourlyRate(lineItems) ||
+            (resolvedClient?.dayRate ? Number(resolvedClient.dayRate) / 10 : 0);
 
-          const overtimeTotal = (overtimeEntries ?? []).reduce((s, e) => {
-            const multiplier = e.rateType === "2x" ? 2 : 1.5;
-            return s + e.hours * regularRate * multiplier;
-          }, 0);
+          const overtimeTotal = (overtimeEntries ?? []).reduce(
+            (s, e) => s + overtimeEntryCost(e, regularRate),
+            0,
+          );
 
           const expenseItems = (customExpenseEntries ?? []).map((e) => {
             let unitPrice = e.unitPrice;
@@ -658,23 +655,23 @@ ${recentInvoices}
                 customExpenseEntries: true,
               },
             });
-            // Derive hourly rate from "Work Days" item — same logic as invoice editor
-            const workDaysItem = current!.items.find(
-              (i) => i.description === "Work Days",
+            const regularRate = deriveOvertimeHourlyRate(
+              current!.items.map((i) => ({
+                description: i.description,
+                unitPrice: Number(i.unitPrice),
+              })),
             );
-            const regularRate =
-              workDaysItem && Number(workDaysItem.unitPrice) > 0
-                ? Number(workDaysItem.unitPrice) * 0.1
-                : 0;
             const currentItemsTotal = current!.items.reduce(
               (s, i) => s + Number(i.cost),
               0,
             );
             const currentOvertimeTotal = current!.overtimeEntries.reduce(
-              (s, e) => {
-                const multiplier = e.rateType === "2x" ? 2 : 1.5;
-                return s + Number(e.hours) * regularRate * multiplier;
-              },
+              (s, e) =>
+                s +
+                overtimeEntryCost(
+                  { hours: Number(e.hours), rateType: e.rateType },
+                  regularRate,
+                ),
               0,
             );
             const currentExpensesTotal = current!.customExpenseEntries.reduce(
@@ -709,5 +706,7 @@ ${recentInvoices}
     },
   });
 
-  return result.toUIMessageStreamResponse();
+  return createUIMessageStreamResponse({
+    stream: toUIMessageStream({ stream: result.stream }),
+  });
 };

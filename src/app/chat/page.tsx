@@ -1,4 +1,4 @@
-import { ChatContent } from "@/components/ai/ChatContent";
+import { ChatPageView } from "@/components/ai/ChatPageView";
 
 import type { Metadata } from "next";
 
@@ -7,5 +7,5 @@ export const metadata: Metadata = {
 };
 
 export default function ChatPage() {
-  return <ChatContent variant="page" />;
+  return <ChatPageView />;
 }

@@ -1,18 +1,11 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 
-import { useChat } from "@ai-sdk/react";
-import {
-  DefaultChatTransport,
-  isTextUIPart,
-  type ToolUIPart,
-  type UIMessage,
-} from "ai";
-import { ArrowLeftIcon, BotIcon, ExternalLinkIcon } from "lucide-react";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { isTextUIPart, type ToolUIPart, type UIMessage } from "ai";
+import { BotIcon } from "lucide-react";
 
+import { useChatSession } from "@/components/ai/ChatProvider";
 import {
   Conversation,
   ConversationContent,
@@ -38,11 +31,7 @@ import {
   ToolInput,
   ToolOutput,
 } from "@/components/ai-elements/tool";
-import { Button } from "@/components/ui/button";
-import { SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
-
-const STORAGE_KEY = "caley-chat-session";
 
 const SUGGESTIONS = [
   "Create an invoice",
@@ -51,20 +40,18 @@ const SUGGESTIONS = [
   "Show me my top clients by revenue",
 ];
 
-const transport = new DefaultChatTransport({ api: "/api/chat" });
-
+// Cycled in order, not at random — a label that jumps around reads as jitter
 const THINKING_MESSAGES = [
   "Thinking…",
-  "Crunching numbers…",
-  "Consulting the spreadsheets…",
-  "Doing the math…",
   "Checking your invoices…",
-  "Counting beans…",
-  "Summoning insight…",
   "Reading the ledger…",
-  "Calculating…",
-  "On it…",
+  "Doing the maths…",
 ];
+
+const TOOL_TITLES: Record<string, string> = {
+  "tool-createInvoiceDraft": "Create invoice draft",
+  "tool-updateInvoiceDraft": "Update invoice draft",
+};
 
 const getMessageText = (message: UIMessage): string =>
   message.parts
@@ -72,256 +59,86 @@ const getMessageText = (message: UIMessage): string =>
     .map((p) => p.text)
     .join("");
 
-const findDraftInvoiceId = (messages: UIMessage[]): string | null => {
-  let latest: string | null = null;
-  for (const msg of messages) {
-    if (msg.role !== "assistant") continue;
-    for (const part of msg.parts) {
-      if (
-        part.type === "tool-createInvoiceDraft" &&
-        part.state === "output-available"
-      ) {
-        const output = part.output as Record<string, unknown>;
-        if (typeof output?.invoiceId === "string") latest = output.invoiceId;
-      }
-    }
-  }
-  return latest;
+/** Mounts fresh for each pending turn, so the cycle always starts at the top */
+const ThinkingIndicator = () => {
+  const [index, setIndex] = useState(0);
+
+  useEffect(() => {
+    const interval = setInterval(
+      () => setIndex((i) => (i + 1) % THINKING_MESSAGES.length),
+      2500,
+    );
+    return () => clearInterval(interval);
+  }, []);
+
+  return (
+    <Shimmer className="text-muted-foreground text-sm">
+      {THINKING_MESSAGES[index]}
+    </Shimmer>
+  );
 };
 
-interface ChatContentProps {
-  /** "drawer" = inside Sheet (desktop), "page" = standalone route */
-  variant?: "drawer" | "page";
-  onClose?: () => void;
-}
+const AssistantAvatar = () => (
+  <div className="bg-primary/10 mt-0.5 flex size-7 shrink-0 items-center justify-center rounded-full">
+    <BotIcon className="text-primary size-3.5" />
+  </div>
+);
 
-export const ChatContent = ({
-  variant = "drawer",
-  onClose,
-}: ChatContentProps) => {
-  const router = useRouter();
-  const [draftInvoiceId, setDraftInvoiceId] = useState<string | null>(null);
-  const [mounted, setMounted] = useState(false);
-  const [thinkingIndex, setThinkingIndex] = useState(0);
-  const thinkingIntervalRef = useRef<ReturnType<typeof setInterval> | null>(
-    null,
-  );
+/** Assistant turn: avatar in the gutter, message body beside it */
+const AssistantRow = ({ children }: { children: React.ReactNode }) => (
+  <div className="flex gap-3">
+    <AssistantAvatar />
+    <Message from="assistant" className="min-w-0 flex-1">
+      {children}
+    </Message>
+  </div>
+);
 
-  const { messages, sendMessage, setMessages, status, stop } = useChat({
-    transport,
-    experimental_throttle: 50,
-  });
+export const ChatContent = ({ className }: { className?: string }) => {
+  const {
+    messages,
+    sendMessage,
+    status,
+    stop,
+    mounted,
+    isGenerating,
+    clearChat,
+  } = useChatSession();
 
-  useEffect(() => {
-    try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if (raw) {
-        const parsed: UIMessage[] = JSON.parse(raw);
-        if (parsed.length > 0) setMessages(parsed);
-      }
-    } catch {
-      // Ignore malformed storage
-    }
-    setMounted(true);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  const isThinking = status === "streaming" || status === "submitted";
-
-  // Suppress view-transition animations while streaming — async commits
-  // inside the portaled drawer mark the document root as affected, and the
-  // page-exit/enter + UA fade animations flash the whole viewport per chunk.
-  // The attribute lingers briefly past "ready" to cover trailing commits.
-  useEffect(() => {
-    const el = document.documentElement;
-    if (isThinking) {
-      el.setAttribute("data-chat-streaming", "");
-      return;
-    }
-    const timeout = setTimeout(
-      () => el.removeAttribute("data-chat-streaming"),
-      400,
-    );
-    return () => clearTimeout(timeout);
-  }, [isThinking]);
-
-  // Drawer open: restored history rendering markdown triggers the same
-  // async commits — suppress view-transition animations during mount too
-  useEffect(() => {
-    if (variant !== "drawer") return;
-    const el = document.documentElement;
-    el.setAttribute("data-chat-streaming", "");
-    const timeout = setTimeout(
-      () => el.removeAttribute("data-chat-streaming"),
-      600,
-    );
-    return () => clearTimeout(timeout);
-  }, [variant]);
-
-  // Always clear the attribute if the chat unmounts mid-stream
-  useEffect(() => {
-    return () =>
-      document.documentElement.removeAttribute("data-chat-streaming");
-  }, []);
-
-  useEffect(() => {
-    if (isThinking) {
-      setThinkingIndex(Math.floor(Math.random() * THINKING_MESSAGES.length));
-      thinkingIntervalRef.current = setInterval(() => {
-        setThinkingIndex(() =>
-          Math.floor(Math.random() * THINKING_MESSAGES.length),
-        );
-      }, 2000);
-    } else {
-      if (thinkingIntervalRef.current) {
-        clearInterval(thinkingIntervalRef.current);
-        thinkingIntervalRef.current = null;
-      }
-    }
-    return () => {
-      if (thinkingIntervalRef.current) {
-        clearInterval(thinkingIntervalRef.current);
-        thinkingIntervalRef.current = null;
-      }
-    };
-  }, [isThinking]);
-
-  // Persist only when idle — serializing on every stream chunk blocks the
-  // main thread and causes visible flicker
-  useEffect(() => {
-    if (!mounted || isThinking || messages.length === 0) return;
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(messages));
-    } catch {
-      // Ignore storage errors
-    }
-  }, [messages, isThinking, mounted]);
-
-  useEffect(() => {
-    const id = findDraftInvoiceId(messages);
-    if (id) setDraftInvoiceId(id);
-  }, [messages]);
-
-  const handleSubmit = ({ text }: { text: string; files: unknown[] }) => {
+  const handleSubmit = ({ text }: { text: string }) => {
     if (!text.trim()) return;
-    // Set synchronously: the first message commit lands before the
-    // isThinking effect has a chance to add the attribute
-    document.documentElement.setAttribute("data-chat-streaming", "");
     sendMessage({ text });
   };
-
-  const handleSuggestion = (suggestion: string) => {
-    document.documentElement.setAttribute("data-chat-streaming", "");
-    sendMessage({ text: suggestion });
-  };
-
-  const clearChat = () => {
-    setMessages([]);
-    setDraftInvoiceId(null);
-    try {
-      localStorage.removeItem(STORAGE_KEY);
-    } catch {}
-  };
-
-  const isGenerating = status === "submitted" || status === "streaming";
 
   const visibleMessages = messages.filter(
     (m) => m.role === "user" || m.role === "assistant",
   );
 
-  const headerActions = (
-    <>
-      {draftInvoiceId && (
-        <Button asChild size="sm" variant="outline">
-          <Link href={`/invoices/${draftInvoiceId}/edit`} onClick={onClose}>
-            <ExternalLinkIcon className="size-3.5" />
-            Open draft
-          </Link>
-        </Button>
-      )}
-      {messages.length > 0 && (
-        <Button
-          size="sm"
-          variant="ghost"
-          onClick={clearChat}
-          className="text-muted-foreground text-xs"
-        >
-          Clear
-        </Button>
-      )}
-    </>
-  );
-
-  const titleContent = (
-    <div className="flex flex-1 items-center gap-3">
-      <div className="bg-primary/10 flex size-8 shrink-0 items-center justify-center rounded-full">
-        <BotIcon className="text-primary size-4" />
-      </div>
-      <div className="flex-1 text-left">
-        {variant === "drawer" ? (
-          <SheetTitle className="text-sm leading-none font-semibold">
-            Caley Assistant
-          </SheetTitle>
-        ) : (
-          <p className="text-sm leading-none font-semibold">Caley Assistant</p>
-        )}
-        <p className="text-muted-foreground mt-0.5 text-xs">
-          Powered by Claude
-        </p>
-      </div>
-    </div>
-  );
+  // The last assistant turn has produced nothing renderable yet — either no
+  // parts at all, or a tool call still running with no text alongside it
+  const lastMessage = visibleMessages.at(-1);
+  const awaitingFirstOutput =
+    isGenerating &&
+    (lastMessage?.role === "user" ||
+      (lastMessage?.role === "assistant" &&
+        !lastMessage.parts.some((p) => p.type === "text" && p.text)));
 
   return (
-    <div
-      className={cn(
-        "flex flex-col",
-        variant === "page"
-          ? "bg-background fixed inset-0 z-50 overflow-hidden pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)] md:static md:inset-auto md:z-auto md:h-[calc(100dvh-6rem)] md:bg-transparent md:pt-0 md:pb-0"
-          : "min-h-0 flex-1",
-      )}
-    >
-      {/* Header */}
-      {variant === "drawer" ? (
-        <SheetHeader className="border-b px-6 py-4">
-          <div className="flex items-center gap-3">
-            {titleContent}
-            <div className="mr-4 flex items-center gap-2">{headerActions}</div>
-          </div>
-        </SheetHeader>
-      ) : (
-        <div className="shrink-0 border-b px-4 py-4">
-          <div className="flex items-center gap-2">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => router.back()}
-              className="shrink-0"
-              aria-label="Go back"
-            >
-              <ArrowLeftIcon className="size-4" />
-            </Button>
-            {titleContent}
-            <div className="flex items-center gap-2">{headerActions}</div>
-          </div>
-        </div>
-      )}
-
-      {/* Messages — gated on mounted to avoid SSR/hydration mismatch with localStorage */}
+    <div className={cn("flex min-h-0 flex-1 flex-col", className)}>
       <Conversation className="flex-1">
         <ConversationContent>
           {mounted && visibleMessages.length === 0 ? (
             <div className="flex flex-col gap-4 pt-2">
               <p className="text-muted-foreground text-sm">
-                Hi! I can help you create invoices, check your revenue, and
-                answer questions about your account. What would you like to do?
+                I can create invoices, check your revenue, and answer questions
+                about your account. What do you need?
               </p>
               <Suggestions>
                 {SUGGESTIONS.map((s) => (
                   <Suggestion
                     key={s}
                     suggestion={s}
-                    onClick={handleSuggestion}
+                    onClick={(text) => sendMessage({ text })}
                   />
                 ))}
               </Suggestions>
@@ -329,49 +146,38 @@ export const ChatContent = ({
           ) : (
             visibleMessages.map((message) =>
               message.role === "assistant" ? (
-                <div key={message.id} className="flex gap-3">
-                  <div className="bg-primary/10 mt-0.5 flex size-7 shrink-0 items-center justify-center rounded-full">
-                    <BotIcon className="text-primary size-3.5" />
-                  </div>
-                  <Message from="assistant">
-                    {message.parts.map((part, i) => {
-                      if (part.type === "text") {
-                        if (!part.text) return null;
-                        return (
-                          <MessageContent key={i}>
-                            <MessageResponse>{part.text}</MessageResponse>
-                          </MessageContent>
-                        );
-                      }
-                      if (part.type.startsWith("tool-")) {
-                        const toolPart = part as ToolUIPart;
-                        const title =
-                          toolPart.type === "tool-createInvoiceDraft"
-                            ? "Create Invoice Draft"
-                            : toolPart.type === "tool-updateInvoiceDraft"
-                              ? "Update Invoice Draft"
-                              : undefined;
-                        return (
-                          <Tool key={i}>
-                            <ToolHeader
-                              type={toolPart.type}
-                              state={toolPart.state}
-                              title={title}
+                <AssistantRow key={message.id}>
+                  {message.parts.map((part, i) => {
+                    if (part.type === "text") {
+                      if (!part.text) return null;
+                      return (
+                        <MessageContent key={i}>
+                          <MessageResponse>{part.text}</MessageResponse>
+                        </MessageContent>
+                      );
+                    }
+                    if (part.type.startsWith("tool-")) {
+                      const toolPart = part as ToolUIPart;
+                      return (
+                        <Tool key={i}>
+                          <ToolHeader
+                            type={toolPart.type}
+                            state={toolPart.state}
+                            title={TOOL_TITLES[toolPart.type]}
+                          />
+                          <ToolContent>
+                            <ToolInput input={toolPart.input} />
+                            <ToolOutput
+                              output={toolPart.output}
+                              errorText={toolPart.errorText}
                             />
-                            <ToolContent>
-                              <ToolInput input={toolPart.input} />
-                              <ToolOutput
-                                output={toolPart.output}
-                                errorText={toolPart.errorText}
-                              />
-                            </ToolContent>
-                          </Tool>
-                        );
-                      }
-                      return null;
-                    })}
-                  </Message>
-                </div>
+                          </ToolContent>
+                        </Tool>
+                      );
+                    }
+                    return null;
+                  })}
+                </AssistantRow>
               ) : (
                 <Message key={message.id} from="user">
                   <MessageContent>
@@ -382,25 +188,17 @@ export const ChatContent = ({
             )
           )}
 
-          {isGenerating && visibleMessages.at(-1)?.role === "user" && (
-            <div className="flex gap-3">
-              <div className="bg-primary/10 mt-0.5 flex size-7 shrink-0 items-center justify-center rounded-full">
-                <BotIcon className="text-primary size-3.5" />
-              </div>
-              <Message from="assistant">
-                <MessageContent>
-                  <Shimmer className="text-muted-foreground text-sm">
-                    {THINKING_MESSAGES[thinkingIndex]}
-                  </Shimmer>
-                </MessageContent>
-              </Message>
-            </div>
+          {awaitingFirstOutput && (
+            <AssistantRow>
+              <MessageContent>
+                <ThinkingIndicator />
+              </MessageContent>
+            </AssistantRow>
           )}
         </ConversationContent>
         <ConversationScrollButton />
       </Conversation>
 
-      {/* Input */}
       <div className="shrink-0 border-t p-3">
         <PromptInput onSubmit={handleSubmit}>
           <PromptInputTextarea
@@ -408,12 +206,21 @@ export const ChatContent = ({
             // 16px at every breakpoint — below 16px iOS/iPadOS Safari zooms
             // the whole page when the input is focused
             className="font-sans text-base md:text-base"
-            disabled={isGenerating}
           />
           <PromptInputFooter>
-            <span className="text-muted-foreground hidden text-xs md:inline">
-              Shift+Enter for new line
-            </span>
+            {messages.length > 0 ? (
+              <button
+                type="button"
+                onClick={clearChat}
+                className="text-muted-foreground hover:text-foreground text-xs transition-colors"
+              >
+                Clear chat
+              </button>
+            ) : (
+              <span className="text-muted-foreground hidden text-xs md:inline">
+                Shift+Enter for new line
+              </span>
+            )}
             <PromptInputSubmit
               status={status}
               onStop={stop}

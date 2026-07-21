@@ -14,12 +14,51 @@ export type Invoice = {
   createdAt: Date | string;
 };
 
+// Prisma Decimal columns serialize to JSON as strings ("1732.5"), not numbers.
+// Coerce them here so the declared `number` types above are actually true and
+// `===`, Math.max, .toFixed() and sorting behave downstream.
+const toNumber = (value: unknown): number => Number(value ?? 0);
+
+const normalizeInvoice = (invoice: Invoice): Invoice => ({
+  ...invoice,
+  totalAmount: toNumber(invoice.totalAmount),
+});
+
+const normalizeInvoiceWithRelations = (
+  invoice: InvoiceWithRelations,
+): InvoiceWithRelations => ({
+  ...invoice,
+  regularRate: toNumber(invoice.regularRate),
+  overtimeRate: toNumber(invoice.overtimeRate),
+  perDiemRate: toNumber(invoice.perDiemRate),
+  travelDayRate: toNumber(invoice.travelDayRate),
+  subtotalLabor: toNumber(invoice.subtotalLabor),
+  subtotalPerDiem: toNumber(invoice.subtotalPerDiem),
+  subtotalTravel: toNumber(invoice.subtotalTravel),
+  totalAmount: toNumber(invoice.totalAmount),
+  items: invoice.items.map((item) => ({
+    ...item,
+    unitPrice: toNumber(item.unitPrice),
+    cost: toNumber(item.cost),
+  })),
+  overtimeEntries: invoice.overtimeEntries.map((entry) => ({
+    ...entry,
+    hours: toNumber(entry.hours),
+  })),
+  customExpenseEntries: invoice.customExpenseEntries.map((entry) => ({
+    ...entry,
+    unitPrice: toNumber(entry.unitPrice),
+    cost: toNumber(entry.cost),
+  })),
+});
+
 export const fetchInvoices = async (): Promise<Invoice[]> => {
   const res = await fetch("/api/invoices");
   if (!res.ok) {
     throw new Error("Failed to fetch invoices");
   }
-  return res.json();
+  const data: Invoice[] = await res.json();
+  return data.map(normalizeInvoice);
 };
 
 export const useInvoices = () => {
@@ -116,7 +155,7 @@ const fetchInvoice = async (id: string): Promise<InvoiceWithRelations> => {
     }
     throw new Error("Failed to fetch invoice");
   }
-  return res.json();
+  return normalizeInvoiceWithRelations(await res.json());
 };
 
 export const useInvoice = (id: string | undefined) => {

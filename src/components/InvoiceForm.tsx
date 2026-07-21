@@ -46,6 +46,7 @@ import {
 } from "@/components/ui/table";
 import { Textarea } from "@/components/ui/textarea";
 import { INVOICE_STATUSES } from "@/lib/invoice-status";
+import { deriveOvertimeHourlyRate, overtimeEntryCost } from "@/lib/overtime";
 import { cn, formatCurrency } from "@/lib/utils";
 
 const itemSchema = z.object({
@@ -242,14 +243,7 @@ export function InvoiceForm({
   );
   const detailsSectionOpen = detailsOpen || hasDetailError;
 
-  // Calculate regular rate dynamically from Work Days unit price (10% since a day is 10 hours)
-  const regularRate = useMemo(() => {
-    const workDaysItem = items.find((item) => item.description === "Work Days");
-    if (workDaysItem && workDaysItem.unitPrice > 0) {
-      return Number(workDaysItem.unitPrice) * 0.1;
-    }
-    return 0; // No default - user must set Work Days rate
-  }, [items]);
+  const regularRate = useMemo(() => deriveOvertimeHourlyRate(items), [items]);
 
   const totals = useMemo(() => {
     const itemsTotal = items.reduce(
@@ -257,11 +251,10 @@ export function InvoiceForm({
       0,
     );
 
-    const overtimeTotal = overtimeEntries.reduce((sum, entry) => {
-      const multiplier = entry.rateType === "1.5x" ? 1.5 : 2;
-      const hourlyRate = regularRate * multiplier;
-      return sum + entry.hours * hourlyRate;
-    }, 0);
+    const overtimeTotal = overtimeEntries.reduce(
+      (sum, entry) => sum + overtimeEntryCost(entry, regularRate),
+      0,
+    );
 
     const customExpensesTotal = customExpenseEntries.reduce(
       (sum, entry) => sum + entry.cost,

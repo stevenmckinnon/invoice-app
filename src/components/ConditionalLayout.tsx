@@ -5,6 +5,7 @@ import { ViewTransition } from "react";
 import { usePathname } from "next/navigation";
 
 import { AiChat } from "@/components/ai/AiChat";
+import { ChatProvider } from "@/components/ai/ChatProvider";
 import { AppHeader } from "@/components/AppHeader";
 import { MobileBottomNav } from "@/components/MobileBottomNav";
 
@@ -46,13 +47,16 @@ export const ConditionalLayout = ({ children }: ConditionalLayoutProps) => {
   }
 
   return (
-    <>
+    <ChatProvider>
       <AppHeader />
       <main className="mx-auto min-h-dvh pt-12 md:pt-24">
-        <ViewTransition>{children}</ViewTransition>
+        {/* update="none" keeps navigation enter/exit transitions but opts out
+            of animating in-place content changes — otherwise every streamed
+            chat chunk counts as an update and flashes the viewport */}
+        <ViewTransition update="none">{children}</ViewTransition>
       </main>
       {!isChatPage && <MobileBottomNav />}
       <AiChat />
-    </>
+    </ChatProvider>
   );
 };

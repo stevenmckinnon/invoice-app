@@ -53,19 +53,34 @@ Core models in `prisma/schema.prisma`:
 
 Invoice totals (`subtotalLabor`, `subtotalPerDiem`, `subtotalTravel`, `totalAmount`) are calculated via `calculateInvoiceTotals()` before saving — they are stored denormalized in the DB.
 
-### AI Chat (`src/components/ai/AiChat.tsx`)
+### AI Chat (`src/components/ai/`)
 
-A floating action button + right drawer chat assistant powered by Claude. Uses **AI SDK v6** — note key API differences from v4:
+A chat assistant powered by Claude, with two surfaces sharing one conversation:
 
-- `useChat` is from `@ai-sdk/react` (not `ai/react`), configured with `transport: new DefaultChatTransport({ api })`
+- `ChatProvider.tsx` — owns the single `useChat` instance, drawer open state, localStorage persistence, and derives `draftInvoiceId` from the message list. Mounted in `ConditionalLayout` above both surfaces, so the drawer and `/chat` are never two separate conversations.
+- `ChatContent.tsx` — the conversation + input. No layout of its own; takes a `className`.
+- `AiChat.tsx` — desktop FAB + right drawer. Widens to 860px on `lg` when a draft exists.
+- `ChatPageView.tsx` — the `/chat` route (mobile surface, linked from `MobileBottomNav`).
+- `DraftInvoicePreview.tsx` — live view of the draft being built, beside the conversation on `lg`, a collapsible panel below it. Refetches on the generating → idle edge.
+
+UI primitives live in `src/components/ai-elements/` (shadcn AI Elements). **These are forked** — several are ahead of upstream (`shimmer` pre-builds motion components, `conversation` adds download/markdown export, `code-block` adds a language selector). Do not re-run the AI Elements installer; it would clobber that work.
+
+Chat history persists in `localStorage` under `"caley-chat-session"` (debounced 500ms, so a refresh mid-stream keeps partial output).
+
+Uses **AI SDK v7** (`ai` 7.x, `@ai-sdk/react` 4.x, `@ai-sdk/anthropic` 4.x). v7 keeps deprecated v6 aliases that still typecheck — prefer the current names:
+
+- `instructions:` on `streamText`, not `system:` (deprecated)
+- `stopWhen: isStepCount(N)`, not `stepCountIs(N)` (aliased to the same function)
+- `createUIMessageStreamResponse({ stream: toUIMessageStream({ stream: result.stream }) })`, not `result.toUIMessageStreamResponse()` (deprecated, removed next major)
+- `useChat({ throttle })`, not `experimental_throttle` (deprecated)
+- `useChat` is from `@ai-sdk/react`, configured with `transport: new DefaultChatTransport({ api })`
 - `sendMessage({ text })` replaces `append()`
-- `streamText` uses `inputSchema` (not `parameters`) in `tool()`, and `stopWhen: stepCountIs(N)` (not `maxSteps`)
-- Response: `result.toUIMessageStreamResponse()` (not `toDataStreamResponse`)
+- `tool()` uses `inputSchema` (not `parameters`)
 - `UIMessage` has no `content` string — extract text via `.parts.filter(isTextUIPart)`
 - Tool parts use `part.type === "tool-{name}"` with `state`/`output` directly (no `toolInvocation` wrapper)
 - `convertToModelMessages(messages)` is async — must be awaited
 
-Chat history persists in `localStorage` under `"caley-chat-session"`. The API route at `src/app/api/chat/route.ts` loads user profile, clients, and invoice stats as system context, then provides two tools: `createInvoiceDraft` and `updateInvoiceDraft`.
+The API route at `src/app/api/chat/route.ts` loads user profile, clients, and invoice stats as instructions context, then provides two tools: `createInvoiceDraft` and `updateInvoiceDraft`.
 
 ### Environment Variables
 

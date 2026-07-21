@@ -30,6 +30,7 @@ import {
 } from "@/components/ui/table";
 import { useInvoice, useUpdateInvoiceStatus } from "@/hooks/use-invoices";
 import { INVOICE_STATUSES } from "@/lib/invoice-status";
+import { deriveOvertimeHourlyRate, overtimeMultiplier } from "@/lib/overtime";
 import { formatCurrency, formatDate } from "@/lib/utils";
 
 type Props = { params: Promise<{ id: string }> };
@@ -180,14 +181,7 @@ export default function InvoiceDetailPage({ params }: Props) {
   const overtimeEntries = invoice.overtimeEntries || [];
   const customExpenses = invoice.customExpenseEntries || [];
 
-  // Calculate regular rate dynamically from Work Days unit price (10% since a day is 10 hours)
-  const workDaysItem = invoice.items.find(
-    (item) => item.description === "Work Days",
-  );
-  const regularRate =
-    workDaysItem && Number(workDaysItem.unitPrice) > 0
-      ? Number(workDaysItem.unitPrice) * 0.1
-      : 0; // No default
+  const regularRate = deriveOvertimeHourlyRate(invoice.items);
 
   // Combine all items into one array
   type CombinedItem = {
@@ -211,8 +205,7 @@ export default function InvoiceDetailPage({ params }: Props) {
         type: "item" as const,
       })),
     ...overtimeEntries.map((ot) => {
-      const multiplier = ot.rateType === "1.5x" ? 1.5 : 2;
-      const hourlyRate = regularRate * multiplier;
+      const hourlyRate = regularRate * overtimeMultiplier(ot.rateType);
       const hours = Number(ot.hours);
       return {
         id: ot.id,
