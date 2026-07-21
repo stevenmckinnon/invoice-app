@@ -4,12 +4,8 @@ import {
   Clock,
   DollarSign,
   ExternalLink,
-  FileText,
-  Globe,
-  Shield,
   TrendingUp,
   Users,
-  Zap,
 } from "lucide-react";
 import Link from "next/link";
 
@@ -30,67 +26,105 @@ export default function Home() {
       {/* Hero Section */}
       <Hero />
 
-      {/* Why Choose Us Section */}
+      {/* Walkthrough — one real invoice, start to finish */}
       <section className="border-border/40 border-y py-24">
         <SectionReveal className="mx-auto max-w-7xl px-6">
-          <div className="mb-16 text-center">
-            <p className="text-primary mb-3 font-mono text-xs font-semibold tracking-widest uppercase">
-              Why Choose Caley
-            </p>
-            <h3 className="font-heading mb-5 text-4xl font-bold tracking-tight sm:text-5xl">
-              Built for the Modern Freelancer
-            </h3>
-            <p className="text-muted-foreground mx-auto max-w-2xl text-lg">
-              Stop wrestling with spreadsheets. Get a professional invoicing
-              system that works as hard as you do.
+          <div className="mb-16 max-w-2xl">
+            <h2 className="font-heading mb-4 text-4xl font-bold tracking-tight sm:text-5xl">
+              Built for how crew actually get paid.
+            </h2>
+            <p className="text-muted-foreground text-lg">
+              Here is the invoice a gaffer sends after a fortnight on a shoot,
+              and what it takes to make it in Caley.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
-            {[
-              {
-                icon: Zap,
-                title: "Frictionless Entry",
-                description:
-                  "No bloat. Create a professional invoice in seconds with intelligent auto-fill and smart calculations.",
-              },
-              {
-                icon: Shield,
-                title: "Secure & Reliable",
-                description:
-                  "Bank-grade security with automatic backups. Your data is always safe and accessible.",
-              },
-              {
-                icon: Globe,
-                title: "Work From Anywhere",
-                description:
-                  "Cloud-based and always in sync. Access your invoices from any device, anywhere in the world.",
-              },
-              {
-                icon: Bot,
-                title: "AI Co-pilot",
-                description:
-                  "Create invoices, check your revenue, and manage billing with a simple chat — no manual work required.",
-              },
-            ].map((feature, i) => (
-              <SectionReveal
-                key={feature.title}
-                delay={i * 0.1}
-                className="h-full"
-              >
-                <div className="group border-border/50 bg-background hover:border-primary/40 relative h-full overflow-hidden rounded-xl border p-6 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-md">
-                  <div className="bg-muted text-foreground group-hover:bg-primary group-hover:text-primary-foreground mb-5 inline-flex h-12 w-12 items-center justify-center rounded-lg transition-colors duration-300">
-                    <feature.icon className="h-6 w-6" />
+          <div className="grid grid-cols-1 items-start gap-12 lg:grid-cols-2 lg:gap-16">
+            {/* Steps */}
+            <ol className="space-y-8">
+              {[
+                {
+                  title: "Pick the show and the client",
+                  body: "Your address, banking details, and the client's rates are already on file. Nothing gets retyped.",
+                },
+                {
+                  title: "Log the days",
+                  body: "Six shoot days and two travel days. Work and travel per diems are held separately, so each day gets the right one.",
+                },
+                {
+                  title: "Add the overtime",
+                  body: "Three hours at 1.5× and one at 2×. Enter the hours and the date; Caley prices them.",
+                },
+                {
+                  title: "Send the PDF",
+                  body: "Numbered, branded, totalled, with your bank details on it. Download it or email it from the invoice page.",
+                },
+              ].map((step, i) => (
+                <li key={step.title} className="flex gap-5">
+                  <span className="border-border text-muted-foreground flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border font-mono text-xs">
+                    {i + 1}
+                  </span>
+                  <div>
+                    <h3 className="font-heading mb-1.5 text-lg font-bold">
+                      {step.title}
+                    </h3>
+                    <p className="text-muted-foreground text-sm leading-relaxed">
+                      {step.body}
+                    </p>
                   </div>
-                  <h3 className="font-heading mb-2 text-xl font-bold">
-                    {feature.title}
-                  </h3>
-                  <p className="text-muted-foreground text-sm leading-relaxed">
-                    {feature.description}
+                </li>
+              ))}
+            </ol>
+
+            {/* The resulting invoice */}
+            <div className="border-border/60 bg-background overflow-hidden rounded-xl border shadow-sm">
+              <div className="border-border/60 bg-muted/30 flex items-center justify-between border-b px-5 py-3.5">
+                <div>
+                  <p className="font-mono text-xs font-semibold">
+                    INV-2025-042
+                  </p>
+                  <p className="text-muted-foreground text-xs">
+                    The Crown Season 6 · Netflix Studios
                   </p>
                 </div>
-              </SectionReveal>
-            ))}
+                <span className="border-border bg-background rounded-md border px-2 py-0.5 font-mono text-xs">
+                  Net 30
+                </span>
+              </div>
+
+              <dl className="divide-border/60 divide-y">
+                {[
+                  ["Shoot days", "6 × £500.00", "£3,000.00"],
+                  ["Per diem, work", "6 × £45.00", "£270.00"],
+                  ["Per diem, travel", "2 × £30.00", "£60.00"],
+                  ["Overtime", "3h at 1.5×", "£236.25"],
+                  ["Overtime", "1h at 2×", "£105.00"],
+                  ["Expenses", "Train, parking", "£86.40"],
+                ].map(([label, detail, amount], i) => (
+                  <div
+                    key={`${label}-${i}`}
+                    className="flex items-baseline justify-between gap-4 px-5 py-3"
+                  >
+                    <div>
+                      <dt className="text-sm font-medium">{label}</dt>
+                      <dd className="text-muted-foreground font-mono text-xs">
+                        {detail}
+                      </dd>
+                    </div>
+                    <dd className="font-mono text-sm">{amount}</dd>
+                  </div>
+                ))}
+              </dl>
+
+              <div className="border-border/60 bg-muted/30 flex items-baseline justify-between border-t px-5 py-4">
+                <span className="font-heading text-sm font-bold tracking-wide uppercase">
+                  Total
+                </span>
+                <span className="text-primary font-mono text-lg font-bold">
+                  £3,757.65
+                </span>
+              </div>
+            </div>
           </div>
         </SectionReveal>
       </section>
@@ -102,34 +136,29 @@ export default function Home() {
       >
         <SectionReveal className="mx-auto max-w-7xl px-6">
           <div className="mb-16">
-            <h3 className="font-heading mb-4 text-4xl font-bold tracking-tight sm:text-5xl">
-              Engineer your cash flow.
-            </h3>
+            <h2 className="font-heading mb-4 text-4xl font-bold tracking-tight sm:text-5xl">
+              Everything a shoot throws at an invoice.
+            </h2>
             <p className="text-muted-foreground max-w-2xl text-lg">
-              A comprehensive toolkit disguised as a minimal interface.
-              Everything a specialised freelancer needs, nothing they
-              don&apos;t.
+              Day rates, overtime, per diems, expenses, and the PDF at the end
+              of it.
             </p>
           </div>
 
           {/* Bento Grid */}
           <div className="grid grid-cols-1 gap-5 md:grid-cols-6 lg:grid-rows-2">
             {/* Dark hero card — Professional PDFs */}
-            <div className="group relative col-span-1 overflow-hidden rounded-2xl bg-neutral-950 p-8 transition-all md:col-span-4 md:row-span-2 lg:p-12">
+            <div className="group relative col-span-1 overflow-hidden rounded-xl bg-neutral-950 p-8 transition-all md:col-span-4 md:row-span-2 lg:p-12">
               {/* Blue ambient glow */}
               <div className="pointer-events-none absolute top-0 right-[-10%] h-[120%] w-[80%] bg-gradient-to-l from-primary/25 to-transparent blur-3xl" />
 
               <div className="relative z-10 mb-8 max-w-sm">
-                <span className="mb-4 inline-block rounded border border-white/10 bg-white/10 px-3 py-1 font-mono text-xs font-semibold text-white/80">
-                  01 / CORE FEATURE
-                </span>
                 <h3 className="font-heading mb-3 text-3xl font-bold text-white">
                   Professional PDFs
                 </h3>
-                <p className="text-neutral-400 leading-relaxed">
-                  Your invoice is your brand&apos;s final touchpoint. Generate
-                  beautiful, branded PDF documents that demand respect — and
-                  prompt payment.
+                <p className="leading-relaxed text-neutral-400">
+                  The last thing a client sees is your invoice. Caley makes it a
+                  branded PDF worth paying on time.
                 </p>
                 <div className="mt-6 flex flex-wrap gap-2">
                   {["Custom Branding", "Instant Download", "Auto-calculation"].map(
@@ -174,73 +203,76 @@ export default function Home() {
             </div>
 
             {/* Overtime Tracking */}
-            <div className="border-border/50 bg-background hover:border-primary/40 relative overflow-hidden rounded-2xl border p-6 transition-all hover:-translate-y-1 md:col-span-2">
-              <div className="mb-3 w-fit rounded-xl bg-purple-500/10 p-3 text-purple-600 dark:text-purple-400">
+            <div className="border-border/50 bg-background hover:border-primary/40 relative overflow-hidden rounded-xl border p-6 transition-all hover:-translate-y-1 md:col-span-2">
+              <div className="bg-primary/10 text-primary mb-3 w-fit rounded-lg p-3">
                 <Clock className="h-5 w-5" />
               </div>
-              <h3 className="font-heading mb-2 text-xl font-bold">
-                Overtime Tracking
-              </h3>
+              <h3 className="font-heading mb-2 text-xl font-bold">Overtime</h3>
               <p className="text-muted-foreground text-sm leading-relaxed">
-                Track overtime with 1.5x and 2x rates automatically calculated.
+                Log the hours and the date. Caley applies the 1.5× or 2× rate
+                and adds it to the invoice.
               </p>
-              <div className="border-border/50 mt-5 flex items-center justify-between rounded-lg border bg-muted/30 p-3">
-                <span className="font-mono text-xs font-medium">Dev Work</span>
+              <div className="border-border/50 bg-muted/30 mt-5 flex items-center justify-between rounded-lg border p-3">
+                <span className="font-mono text-xs">3h at 1.5×</span>
                 <span className="text-primary font-mono text-xs font-bold">
-                  04:22:15
+                  £236.25
                 </span>
               </div>
             </div>
 
             {/* Revenue Analytics */}
-            <div className="border-border/50 bg-background hover:border-primary/40 relative overflow-hidden rounded-2xl border p-6 transition-all hover:-translate-y-1 md:col-span-2">
-              <div className="mb-3 w-fit rounded-xl bg-orange-500/10 p-3 text-orange-600 dark:text-orange-400">
+            <div className="border-border/50 bg-background hover:border-primary/40 relative overflow-hidden rounded-xl border p-6 transition-all hover:-translate-y-1 md:col-span-2">
+              <div className="bg-primary/10 text-primary mb-3 w-fit rounded-lg p-3">
                 <TrendingUp className="h-5 w-5" />
               </div>
               <h3 className="font-heading mb-2 text-xl font-bold">
-                Revenue Analytics
+                What you&apos;re owed
               </h3>
               <p className="text-muted-foreground mb-5 text-sm leading-relaxed">
-                Real-time insights into your earnings, outstanding, and paid
-                invoices.
+                Billed, paid, and outstanding across every show, on the
+                dashboard.
               </p>
-              {/* Mini bar chart */}
-              <div className="flex h-12 items-end gap-1.5 opacity-60">
-                {[40, 65, 45, 80, 55, 100, 75].map((h, i) => (
+              <dl className="divide-border/50 border-border/50 bg-muted/30 divide-y rounded-lg border">
+                {[
+                  ["Outstanding", "£4,120.00"],
+                  ["Paid this month", "£8,450.00"],
+                ].map(([label, amount]) => (
                   <div
-                    key={i}
-                    className={`flex-1 rounded-t ${i === 5 ? "bg-primary" : "bg-muted"}`}
-                    style={{ height: `${h}%` }}
-                  />
+                    key={label}
+                    className="flex items-center justify-between px-3 py-2"
+                  >
+                    <dt className="text-muted-foreground font-mono text-xs">
+                      {label}
+                    </dt>
+                    <dd className="font-mono text-xs font-medium">{amount}</dd>
+                  </div>
                 ))}
-              </div>
+              </dl>
             </div>
 
             {/* Client Management */}
-            <div className="border-border/50 bg-background hover:border-primary/40 relative overflow-hidden rounded-2xl border p-6 transition-all hover:-translate-y-1 md:col-span-3">
-              <div className="mb-3 w-fit rounded-xl bg-cyan-500/10 p-3 text-cyan-600 dark:text-cyan-400">
+            <div className="border-border/50 bg-background hover:border-primary/40 relative overflow-hidden rounded-xl border p-6 transition-all hover:-translate-y-1 md:col-span-3">
+              <div className="bg-primary/10 text-primary mb-3 w-fit rounded-lg p-3">
                 <Users className="h-5 w-5" />
               </div>
               <h3 className="font-heading mb-2 text-xl font-bold">
-                Client Management
+                Clients and rates
               </h3>
               <p className="text-muted-foreground text-sm">
-                Store client details, manage contacts, and handle multi-currency
-                billing effortlessly.
+                Save each production company with its own day rate and per
+                diems. Bill in GBP, USD, EUR, CAD, or AUD.
               </p>
             </div>
 
             {/* Custom Expenses */}
-            <div className="border-border/50 bg-background hover:border-primary/40 relative overflow-hidden rounded-2xl border p-6 transition-all hover:-translate-y-1 md:col-span-3">
-              <div className="mb-3 w-fit rounded-xl bg-emerald-500/10 p-3 text-emerald-600 dark:text-emerald-400">
+            <div className="border-border/50 bg-background hover:border-primary/40 relative overflow-hidden rounded-xl border p-6 transition-all hover:-translate-y-1 md:col-span-3">
+              <div className="bg-primary/10 text-primary mb-3 w-fit rounded-lg p-3">
                 <DollarSign className="h-5 w-5" />
               </div>
-              <h3 className="font-heading mb-2 text-xl font-bold">
-                Custom Expenses
-              </h3>
+              <h3 className="font-heading mb-2 text-xl font-bold">Expenses</h3>
               <p className="text-muted-foreground text-sm">
-                Easily add travel, equipment, meals, and other reimbursable
-                expenses to any invoice.
+                Add travel, kit hire, parking, and anything else you fronted, as
+                its own line on the invoice.
               </p>
             </div>
           </div>
@@ -250,7 +282,6 @@ export default function Home() {
       {/* AI Assistant Section */}
       <section className="relative overflow-hidden py-32">
         <div className="bg-primary/5 absolute inset-0 -z-10" />
-        <div className="bg-primary/10 absolute top-1/2 left-1/2 -z-10 h-[700px] w-[700px] -translate-x-1/2 -translate-y-1/2 rounded-full blur-[120px]" />
 
         <SectionReveal className="mx-auto max-w-7xl px-6">
           <div className="grid grid-cols-1 items-center gap-16 lg:grid-cols-2">
@@ -260,22 +291,19 @@ export default function Home() {
                 <Bot className="h-4 w-4" />
                 AI-Powered
               </div>
-              <h3 className="font-heading mb-6 text-4xl font-bold tracking-tight sm:text-5xl">
-                Meet Your Invoicing
-                <br />
-                Co-pilot
-              </h3>
+              <h2 className="font-heading mb-6 text-4xl font-bold tracking-tight sm:text-5xl">
+                Skip the forms.
+              </h2>
               <p className="text-muted-foreground mb-8 text-lg leading-relaxed">
-                Hate clicking through forms? Just tell Caley what you did.
-                Natural language turns simple text into structured,
-                mathematically perfect invoices — instantly.
+                Tell Caley what you did on the job. It drafts the invoice, runs
+                the maths, and hands it back for you to check.
               </p>
               <ul className="space-y-4">
                 {[
-                  "Create full invoices from a single sentence",
-                  "Ask about revenue, outstanding invoices, and top clients",
-                  "Update drafts — add overtime, expenses, and notes",
-                  "Powered by Claude, Anthropic's state-of-the-art AI",
+                  "Create a full invoice from a single sentence",
+                  "Ask what you're owed, who's late, and which client bills most",
+                  "Update a draft: add overtime, expenses, or notes",
+                  "Runs on Claude, from Anthropic",
                 ].map((item) => (
                   <li key={item} className="flex items-start gap-3">
                     <div className="bg-primary/10 text-primary mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full">
@@ -288,7 +316,7 @@ export default function Home() {
             </div>
 
             {/* Chat mockup */}
-            <div className="border-border/50 bg-background relative overflow-hidden rounded-2xl border shadow-2xl">
+            <div className="border-border/50 bg-background relative overflow-hidden rounded-xl border shadow-2xl">
               {/* Header */}
               <div className="border-border/50 flex items-center gap-3 border-b px-5 py-3.5">
                 <div className="bg-primary/10 flex h-8 w-8 items-center justify-center rounded-full">
@@ -311,8 +339,8 @@ export default function Home() {
                 >
                   <div className="flex justify-end">
                     <div className="bg-primary text-primary-foreground max-w-[80%] rounded-2xl rounded-br-sm px-4 py-2.5 text-sm">
-                      Create an invoice for Acme Corp — 5 days work + 3 hours
-                      overtime
+                      Invoice Netflix Studios for The Crown — 5 shoot days plus
+                      3 hours overtime
                     </div>
                   </div>
                 </div>
@@ -328,9 +356,9 @@ export default function Home() {
                     </div>
                     <div className="bg-muted/50 max-w-[85%] rounded-2xl rounded-bl-sm px-4 py-3 text-sm">
                       <p className="mb-3">
-                        Done. I&apos;ve drafted an invoice for{" "}
-                        <strong>Acme Corp</strong> — 5 days at your day rate
-                        plus 3 overtime hours at 1.5×.
+                        Drafted for <strong>Netflix Studios</strong>: 5 days at
+                        your day rate, plus 3 overtime hours at 1.5×. Have a
+                        look before you send it.
                       </p>
 
                       {/* Nested invoice card */}
@@ -346,7 +374,7 @@ export default function Home() {
                         <div className="bg-background space-y-2 p-3">
                           <div className="flex items-center justify-between text-xs">
                             <span className="text-muted-foreground">
-                              5 days labour
+                              5 shoot days
                             </span>
                             <span className="font-mono font-medium">
                               £2,500.00
@@ -357,14 +385,14 @@ export default function Home() {
                               3h overtime (1.5×)
                             </span>
                             <span className="font-mono font-medium">
-                              £187.50
+                              £236.25
                             </span>
                           </div>
                           <div className="border-border border-t pt-2">
                             <div className="flex items-center justify-between text-xs font-semibold">
                               <span>Total</span>
                               <span className="text-primary font-mono">
-                                £2,687.50
+                                £2,736.25
                               </span>
                             </div>
                           </div>
@@ -381,7 +409,7 @@ export default function Home() {
                 >
                   <div className="flex justify-end">
                     <div className="bg-primary text-primary-foreground max-w-[80%] rounded-2xl rounded-br-sm px-4 py-2.5 text-sm">
-                      Perfect. Add £200 for train travel expenses.
+                      Add £86.40 for the train and parking.
                     </div>
                   </div>
                 </div>
@@ -409,7 +437,7 @@ export default function Home() {
               Frequently Asked
             </h2>
             <p className="text-muted-foreground text-lg">
-              Everything you need to know about Caley
+              What people ask before signing up
             </p>
           </div>
 
@@ -417,27 +445,27 @@ export default function Home() {
             {[
               {
                 q: "What can the AI assistant do?",
-                a: "Caley's built-in AI assistant lets you create invoices, update drafts, and query your billing data using plain English. Just type something like 'Create an invoice for Acme Corp for 5 days work' or 'How much revenue did I earn this month?' — the assistant handles the rest, powered by Claude from Anthropic.",
+                a: "It creates invoices, updates drafts, and answers questions about your billing in plain English. Type something like 'Invoice Netflix Studios for 5 days on The Crown' or 'How much am I owed this month?' and it drafts a reply you can check and edit. It runs on Claude, from Anthropic.",
               },
               {
-                q: "How do I get started with creating invoices?",
-                a: "Simply sign up for a free account, complete your profile with your personal and banking details, and you're ready to create your first invoice. The system will auto-fill your information for all future invoices.",
+                q: "How do I get started?",
+                a: "Sign up, add your personal and banking details once, and create your first invoice. Caley fills those details in on every invoice after that.",
               },
               {
                 q: "Can I track overtime hours?",
-                a: "Yes! Our system includes built-in overtime tracking with 1.5x and 2x rate calculations. Simply add your overtime entries by date and the system automatically calculates the correct amounts based on your day rate.",
+                a: "Yes. Add overtime entries by date at either 1.5× or 2×, and Caley prices them and adds them to the invoice total.",
+              },
+              {
+                q: "What about per diems and expenses?",
+                a: "Work days and travel days carry separate per diem rates, set per client. You can also add one-off expenses — travel, kit hire, meals — as their own lines.",
               },
               {
                 q: "What currencies are supported?",
-                a: "We support GBP, USD, EUR, CAD, and AUD. You can set your preferred currency in your profile settings, and all invoices will use that currency by default.",
+                a: "GBP, USD, EUR, CAD, and AUD. Set your default in your profile and every new invoice uses it.",
               },
               {
                 q: "Is my financial data secure?",
-                a: "Absolutely. We use industry-standard encryption and secure authentication. Your banking details and invoice data are stored securely in our PostgreSQL database with regular backups.",
-              },
-              {
-                q: "Can I customise my invoices?",
-                a: "Yes! You can add custom line items, manage per diems for work and travel days, include custom expenses, and add notes to each invoice. The system automatically calculates totals and generates professional PDF exports.",
+                a: "Your data is encrypted in transit and at rest, sign-in is handled by a dedicated auth library rather than rolled by hand, and every query is scoped to your account — no one else can read your invoices or banking details.",
               },
             ].map((faq, i) => (
               <AccordionItem key={i} value={`item-${i}`} className="mb-4">
@@ -465,35 +493,24 @@ export default function Home() {
             Stop Doing Admin.
           </h2>
           <p className="mx-auto mb-12 max-w-2xl text-xl text-neutral-400">
-            Join freelancers who use Caley to send polished invoices in seconds
-            and spend more time on the work that matters.
+            Send your next invoice in under a minute. Free while Caley is in
+            beta.
           </p>
-          <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
+          <div className="flex justify-center">
             <Button
               asChild
               size="lg"
-              className="bg-primary hover:bg-primary/90 h-14 rounded-full px-10 text-lg shadow-xl transition-all hover:scale-105"
+              className="bg-primary hover:bg-primary/90 h-14 rounded-lg px-10 text-lg shadow-xl"
             >
-              <Link href="/auth/signup">Get Started Free</Link>
-            </Button>
-            <Button
-              asChild
-              variant="outline"
-              size="lg"
-              className="h-14 rounded-full border-white/20 bg-white/10 px-10 text-lg text-white backdrop-blur-sm hover:bg-white/20 hover:text-white"
-            >
-              <Link href="/auth/signin">Sign In</Link>
+              <Link href="/auth/signup">Create your first invoice</Link>
             </Button>
           </div>
-          <p className="mt-8 font-mono text-xs tracking-widest text-neutral-500 uppercase">
-            No credit card required · Free forever
-          </p>
         </SectionReveal>
       </section>
 
       {/* Footer */}
       <footer className="border-border/40 bg-background overflow-hidden border-t px-3 py-8 md:px-6">
-        <div className="bg-accent mx-auto max-w-7xl rounded-3xl p-6 md:p-12">
+        <div className="bg-accent mx-auto max-w-7xl rounded-xl p-6 md:p-12">
           <div className="mb-24 flex flex-col justify-between gap-12 md:flex-row">
             <div className="max-w-sm">
               <div className="mb-6 flex items-center gap-2">
@@ -501,7 +518,7 @@ export default function Home() {
                 <span className="font-heading text-2xl font-bold">Caley</span>
               </div>
               <p className="text-muted-foreground text-lg font-medium">
-                Invoicing that works as hard as you do.
+                Invoicing for people who bill by the day.
               </p>
             </div>
 

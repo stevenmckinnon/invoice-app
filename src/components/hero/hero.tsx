@@ -1,5 +1,5 @@
 "use client";
-import { ArrowRight, Sparkles } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { motion } from "motion/react";
 import Link from "next/link";
 
@@ -28,71 +28,45 @@ const Hero = () => {
             transition={{ delay: 0.1, duration: 0.5 }}
             className="mb-8 inline-flex"
           >
-            <div className="bg-background/50 border-border/50 hover:bg-muted/50 relative inline-flex items-center gap-2 rounded-full border px-4 py-1.5 text-sm font-medium shadow-sm backdrop-blur-md transition-colors">
-              <span className="flex h-2 w-2">
-                <span className="bg-primary absolute inline-flex h-2 w-2 animate-ping rounded-full opacity-75"></span>
-                <span className="bg-primary relative inline-flex h-2 w-2 rounded-full"></span>
-              </span>
-              <span className="text-muted-foreground flex items-center gap-1">
-                Beta Release! 🚀
-              </span>
+            <div className="bg-background/50 border-border/50 text-muted-foreground relative inline-flex items-center gap-2 rounded-lg border px-3 py-1.5 font-mono text-xs tracking-wide uppercase backdrop-blur-md">
+              <span className="bg-primary h-1.5 w-1.5 rounded-full" />
+              In beta
             </div>
           </motion.div>
 
-          <h1 className="font-heading from-foreground to-muted-foreground bg-gradient-to-b bg-clip-text text-5xl leading-tight font-bold tracking-tight text-transparent sm:text-6xl md:text-7xl lg:text-8xl">
-            Invoice faster. <br />
-            <span className="text-primary relative inline-block">
-              Get paid sooner.
-              <motion.svg
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.5, duration: 0.5 }}
-                className="text-primary/20 absolute -bottom-2 left-0 w-full"
-                viewBox="0 0 100 10"
-                preserveAspectRatio="none"
-              >
-                <motion.path
-                  d="M0 5 Q 50 10 100 5"
-                  stroke="currentColor"
-                  strokeWidth="8"
-                  fill="none"
-                  initial={{ pathLength: 0 }}
-                  animate={{ pathLength: 1 }}
-                  transition={{ delay: 0.5, duration: 0.8, ease: "easeOut" }}
-                />
-              </motion.svg>
-            </span>
+          <h1 className="font-heading text-5xl leading-[1.05] font-bold tracking-tight sm:text-6xl md:text-7xl">
+            Invoicing for <span className="text-primary">film and TV</span>{" "}
+            freelancers.
           </h1>
 
           <p className="text-muted-foreground mx-auto mt-8 max-w-2xl text-lg leading-relaxed md:text-xl">
-            The craft-forward invoicing tool for independent professionals.
-            Track overtime, manage expenses, and generate professional PDFs in
-            seconds — not hours.
+            Log day rates, overtime, and per diems for every show you work on,
+            then send a branded PDF in under a minute.
           </p>
 
           <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
             <Button
               asChild
               size="lg"
-              className="bg-primary hover:bg-primary/90 hover:shadow-primary/25 h-12 rounded-full px-8 text-base shadow-lg transition-all hover:scale-105"
+              className="bg-primary hover:bg-primary/90 h-12 rounded-lg px-8 text-base shadow-sm"
             >
               <Link href="/auth/signup">
-                Get Started Free
-                <Sparkles className="ml-2 h-4 w-4" />
+                Create your first invoice
+                <ArrowRight className="ml-2 h-4 w-4" />
               </Link>
             </Button>
             <Button
               asChild
               variant="outline"
               size="lg"
-              className="bg-background/50 hover:bg-muted h-12 rounded-full px-8 text-base backdrop-blur-sm transition-all hover:scale-105"
+              className="bg-background/50 hover:bg-muted h-12 rounded-lg px-8 text-base backdrop-blur-sm"
             >
               <Link href="/auth/signin">Sign In</Link>
             </Button>
           </div>
 
-          <p className="text-muted-foreground mt-8 text-sm font-medium">
-            No credit card required • Free forever • No setup fees
+          <p className="text-muted-foreground mt-8 text-sm">
+            Free while Caley is in beta. No card required.
           </p>
         </div>
 
