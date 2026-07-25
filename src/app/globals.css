@@ -4,7 +4,9 @@
 @custom-variant dark (&:is(.dark *));
 
 :root {
-  --background: oklch(1 0 0);
+  /* Warm cream canvas with pure-white cards floating on top: separation comes
+     from surface contrast and soft shadow rather than hairline borders. */
+  --background: oklch(0.9801 0.0089 83);
   --foreground: oklch(0.1884 0.0128 248.5103);
   --card: oklch(1 0 0);
   --card-foreground: oklch(0.1884 0.0128 248.5103);
@@ -14,102 +16,120 @@
   --primary-foreground: oklch(1 0 0);
   --secondary: oklch(0.1884 0.0128 248.5103);
   --secondary-foreground: oklch(1 0 0);
-  --muted: oklch(0.9222 0.0013 286.3737);
-  --muted-foreground: oklch(0.1884 0.0128 248.5103);
+  --muted: oklch(0.9418 0.0098 83);
+  --muted-foreground: oklch(0.5498 0.0138 250);
   --accent: oklch(0.9392 0.0166 250.8453);
   --accent-foreground: oklch(0.6723 0.1606 244.9955);
   --destructive: oklch(0.6188 0.2376 25.7658);
   --destructive-foreground: oklch(1 0 0);
-  --border: oklch(0.9317 0.0118 231.6594);
-  --input: oklch(0.4751 0.1027 238.4553);
+  --success: oklch(0.5921 0.1287 152.5);
+  --warning: oklch(0.6742 0.1533 58);
+  --border: oklch(0.9166 0.0102 83);
+  --input: oklch(0.8981 0.0113 83);
   --ring: oklch(0.6818 0.1584 243.354);
   --chart-1: oklch(0.6723 0.1606 244.9955);
   --chart-2: oklch(0.6907 0.1554 160.3454);
   --chart-3: oklch(0.8214 0.16 82.5337);
   --chart-4: oklch(0.7064 0.1822 151.7125);
   --chart-5: oklch(0.5919 0.2186 10.5826);
-  --sidebar: oklch(0.9784 0.0011 197.1387);
+  --sidebar: oklch(0.9801 0.0089 83);
   --sidebar-foreground: oklch(0.1884 0.0128 248.5103);
   --sidebar-primary: oklch(0.6723 0.1606 244.9955);
   --sidebar-primary-foreground: oklch(1 0 0);
   --sidebar-accent: oklch(0.9392 0.0166 250.8453);
   --sidebar-accent-foreground: oklch(0.6723 0.1606 244.9955);
-  --sidebar-border: oklch(0.9271 0.0101 238.5177);
+  --sidebar-border: oklch(0.9166 0.0102 83);
   --sidebar-ring: oklch(0.6818 0.1584 243.354);
   --font-sans:
     var(--font-satoshi), ui-sans-serif, system-ui, -apple-system, Segoe UI,
     Roboto, Noto Sans, Ubuntu, Cantarell, Helvetica Neue, Arial,
     "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
-  --font-serif: Georgia, serif;
-  --font-mono: Menlo, monospace;
-  --radius: 0.625rem;
+  --font-mono:
+    var(--font-jetbrains-mono), ui-monospace, SFMono-Regular, Menlo, monospace;
+  --radius: 0.875rem;
   --shadow-x: 0px;
   --shadow-y: 2px;
   --shadow-blur: 8px;
   --shadow-spread: 0px;
   --shadow-opacity: 0.1;
-  --shadow-color: rgba(29, 161, 242, 0.15);
-  --shadow-2xs: 0px 1px 2px 0px rgba(0, 0, 0, 0.03);
+  /* Shadows are tinted toward the canvas hue — neutral black shadows read as
+     grime against a warm background. */
+  --shadow-color: rgba(76, 62, 47, 0.12);
+  --shadow-2xs: 0px 1px 2px 0px rgba(76, 62, 47, 0.04);
   --shadow-xs:
-    0px 1px 3px 0px rgba(0, 0, 0, 0.05), 0px 1px 2px -1px rgba(0, 0, 0, 0.05);
+    0px 1px 3px 0px rgba(76, 62, 47, 0.05), 0px 1px 2px -1px rgba(76, 62, 47, 0.05);
   --shadow-sm:
-    0px 2px 4px -1px rgba(0, 0, 0, 0.06), 0px 4px 6px -1px rgba(0, 0, 0, 0.04);
+    0px 1px 2px 0px rgba(76, 62, 47, 0.04), 0px 4px 12px -2px rgba(76, 62, 47, 0.06);
   --shadow:
-    0px 4px 6px -1px rgba(0, 0, 0, 0.06), 0px 2px 4px -2px rgba(0, 0, 0, 0.04);
+    0px 2px 4px -1px rgba(76, 62, 47, 0.05), 0px 6px 16px -3px rgba(76, 62, 47, 0.07);
   --shadow-md:
-    0px 10px 15px -3px rgba(0, 0, 0, 0.08), 0px 4px 6px -4px rgba(0, 0, 0, 0.04);
+    0px 4px 8px -2px rgba(76, 62, 47, 0.06), 0px 12px 24px -6px rgba(76, 62, 47, 0.09);
   --shadow-lg:
-    0px 15px 25px -5px rgba(0, 0, 0, 0.1), 0px 8px 10px -6px rgba(0, 0, 0, 0.04);
+    0px 8px 16px -4px rgba(76, 62, 47, 0.07),
+    0px 20px 36px -10px rgba(76, 62, 47, 0.11);
   --shadow-xl:
-    0px 20px 30px -5px rgba(0, 0, 0, 0.12),
-    0px 10px 15px -8px rgba(0, 0, 0, 0.06);
+    0px 12px 24px -6px rgba(76, 62, 47, 0.09),
+    0px 28px 48px -14px rgba(76, 62, 47, 0.13);
   --shadow-2xl:
-    0px 25px 50px -12px rgba(0, 0, 0, 0.15),
-    0px 12px 20px -10px rgba(0, 0, 0, 0.08);
+    0px 20px 40px -10px rgba(76, 62, 47, 0.12),
+    0px 40px 72px -20px rgba(76, 62, 47, 0.16);
   --tracking-normal: 0em;
   --spacing: 0.25rem;
+
+  /* Full-bleed dark brand blocks (the bento hero card, the closing CTA).
+     Tinted to the canvas hue 83 for the same reason the shadows are: a
+     pure-neutral black reads as grime beside warm cream. Deliberately not
+     redeclared in `.dark` — these blocks are a brand constant, the one part
+     of the page that looks identical in both themes. */
+  --ink: oklch(0.145 0.008 83);
+  --ink-foreground: oklch(1 0 0);
+  --ink-muted: oklch(0.708 0.014 83);
 }
 
 .dark {
-  --background: oklch(0 0 0);
+  --background: oklch(0.169 0.0045 83);
   --foreground: oklch(0.9328 0.0025 228.7857);
-  --card: oklch(0.2097 0.008 274.5332);
+  --card: oklch(0.228 0.0055 83);
   --card-foreground: oklch(0.8853 0 0);
-  --popover: oklch(0 0 0);
+  --popover: oklch(0.228 0.0055 83);
   --popover-foreground: oklch(0.9328 0.0025 228.7857);
   --primary: oklch(0.6692 0.1607 245.011);
   --primary-foreground: oklch(1 0 0);
   --secondary: oklch(0.9622 0.0035 219.5331);
   --secondary-foreground: oklch(0.1884 0.0128 248.5103);
-  --muted: oklch(0.209 0 0);
+  /* Must stay clearly lighter than --card: this is the inset surface used for
+     tiles *inside* cards, and at equal lightness they disappear. */
+  --muted: oklch(0.28 0.0055 83);
   --muted-foreground: oklch(0.5637 0.0078 247.9662);
-  --accent: oklch(0.1928 0.0331 242.5459);
+  --accent: oklch(0.278 0.045 243);
   --accent-foreground: oklch(0.6692 0.1607 245.011);
   --destructive: oklch(0.6188 0.2376 25.7658);
   --destructive-foreground: oklch(1 0 0);
-  --border: oklch(0.2674 0.0047 248.0045);
-  --input: oklch(0.302 0.0288 244.8244);
+  --success: oklch(0.7226 0.1548 152.5);
+  --warning: oklch(0.7684 0.1533 62);
+  --border: oklch(0.312 0.006 83);
+  --input: oklch(0.33 0.006 83);
   --ring: oklch(0.6818 0.1584 243.354);
   --chart-1: oklch(0.6723 0.1606 244.9955);
   --chart-2: oklch(0.6907 0.1554 160.3454);
   --chart-3: oklch(0.8214 0.16 82.5337);
   --chart-4: oklch(0.7064 0.1822 151.7125);
   --chart-5: oklch(0.5919 0.2186 10.5826);
-  --sidebar: oklch(0.2097 0.008 274.5332);
+  --sidebar: oklch(0.228 0.0055 83);
   --sidebar-foreground: oklch(0.8853 0 0);
   --sidebar-primary: oklch(0.6818 0.1584 243.354);
   --sidebar-primary-foreground: oklch(1 0 0);
-  --sidebar-accent: oklch(0.1928 0.0331 242.5459);
+  --sidebar-accent: oklch(0.278 0.045 243);
   --sidebar-accent-foreground: oklch(0.6692 0.1607 245.011);
-  --sidebar-border: oklch(0.3795 0.022 240.5943);
+  --sidebar-border: oklch(0.312 0.006 83);
   --sidebar-ring: oklch(0.6818 0.1584 243.354);
   --font-sans:
     var(--font-satoshi), ui-sans-serif, system-ui, -apple-system, Segoe UI,
     Roboto, Noto Sans, Ubuntu, Cantarell, Helvetica Neue, Arial,
     "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
-  --font-serif: Georgia, serif;
-  --font-mono: Menlo, monospace;
-  --radius: 0.625rem;
+  --font-mono:
+    var(--font-jetbrains-mono), ui-monospace, SFMono-Regular, Menlo, monospace;
+  --radius: 0.875rem;
   --shadow-x: 0px;
   --shadow-y: 2px;
   --shadow-blur: 8px;
@@ -152,6 +172,8 @@
   --color-accent-foreground: var(--accent-foreground);
   --color-destructive: var(--destructive);
   --color-destructive-foreground: var(--destructive-foreground);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
@@ -169,9 +191,12 @@
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
 
+  --color-ink: var(--ink);
+  --color-ink-foreground: var(--ink-foreground);
+  --color-ink-muted: var(--ink-muted);
+
   --font-sans: var(--font-sans);
   --font-mono: var(--font-mono);
-  --font-serif: var(--font-serif);
 
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
@@ -212,54 +237,14 @@
     -webkit-tap-highlight-color: transparent;
   }
 
-  /* iOS-style button press effect */
-  button:active,
-  a:active {
-    opacity: 0.7;
-    transform: scale(0.98);
-    transition:
-      opacity 0.1s,
-      transform 0.1s;
-  }
-}
-
-/* Font utilities */
-/* Headings share the Satoshi family with body for a single, cohesive type
-   system — kept as a named seam so the display face can be reskinned in one
-   place. */
-.font-heading {
-  font-family: var(--font-satoshi), ui-sans-serif, system-ui, sans-serif;
-}
-.font-raleway {
-  font-family: var(--font-raleway), var(--font-sans);
+  /* Press feedback is owned by the components that need it (see Button's
+     `active:scale-[0.96]`). A global `button:active` rule here would need a
+     matching `transition` on the resting state to be symmetric, and any
+     component-level `transition-*` utility would then silently override it. */
 }
 
 button {
   cursor: pointer;
-}
-
-/* Landing page: sequential chat bubble animations */
-@keyframes chat-appear {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.chat-bubble {
-  opacity: 0;
-  animation: chat-appear 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .chat-bubble {
-    animation: none;
-    opacity: 1;
-  }
 }
 
 /* Page transitions via View Transitions API */
@@ -389,115 +374,6 @@ button {
   animation: shimmer-slide 2s ease-in-out infinite;
 }
 
-/* Dither Effect Classes */
-.dither-effect {
-  position: relative;
-  filter: contrast(1.2) saturate(0.8);
-}
-
-.dither-effect::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-image:
-    radial-gradient(
-      circle at 25% 25%,
-      rgba(255, 255, 255, 0.1) 1px,
-      transparent 1px
-    ),
-    radial-gradient(circle at 75% 75%, rgba(0, 0, 0, 0.1) 1px, transparent 1px);
-  background-size: 4px 4px;
-  background-position:
-    0 0,
-    2px 2px;
-  mix-blend-mode: overlay;
-  pointer-events: none;
-  z-index: 1;
-}
-
-.dither-effect::after {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-image:
-    linear-gradient(
-      45deg,
-      transparent 49%,
-      rgba(255, 255, 255, 0.05) 50%,
-      transparent 51%
-    ),
-    linear-gradient(
-      -45deg,
-      transparent 49%,
-      rgba(0, 0, 0, 0.05) 50%,
-      transparent 51%
-    );
-  background-size: 8px 8px;
-  mix-blend-mode: multiply;
-  pointer-events: none;
-  z-index: 2;
-}
-
-/* Alternative dither styles */
-.dither-retro {
-  filter: contrast(1.5) saturate(0.6) brightness(0.9);
-}
-
-.dither-retro::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-image:
-    repeating-linear-gradient(
-      0deg,
-      transparent,
-      transparent 2px,
-      rgba(255, 255, 255, 0.1) 2px,
-      rgba(255, 255, 255, 0.1) 4px
-    ),
-    repeating-linear-gradient(
-      90deg,
-      transparent,
-      transparent 2px,
-      rgba(0, 0, 0, 0.1) 2px,
-      rgba(0, 0, 0, 0.1) 4px
-    );
-  mix-blend-mode: overlay;
-  pointer-events: none;
-  z-index: 1;
-}
-
-.dither-subtle {
-  filter: contrast(1.1) saturate(0.9);
-}
-
-.dither-subtle::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-image: radial-gradient(
-    circle at 50% 50%,
-    rgba(255, 255, 255, 0.05) 1px,
-    transparent 1px
-  );
-  background-size: 6px 6px;
-  mix-blend-mode: soft-light;
-  pointer-events: none;
-  z-index: 1;
-}
-
 /* Glassy Frame Effect */
 .glossy-frame {
   position: relative;
@@ -590,7 +466,7 @@ button {
   }
 
   /* Make demo dashboard mobile-friendly */
-  .zoom .grid-cols-4 {
+  .zoom .grid-cols-3 {
     grid-template-columns: repeat(2, 1fr);
     gap: 0.75rem;
   }
@@ -617,68 +493,23 @@ button {
   }
 }
 
-/* iOS-style enhancements */
+/* Touch-specific row feedback. This block deliberately does NOT set a
+   transition on button/a: being unlayered, it outranked every Tailwind
+   `transition-*` utility and silently killed colour transitions below 768px. */
 @media (max-width: 767px) {
-  /* iOS-style card shadows */
-  .card,
-  [class*="Card"] {
-    box-shadow:
-      0 1px 3px rgba(0, 0, 0, 0.1),
-      0 1px 2px rgba(0, 0, 0, 0.06);
-  }
-
-  /* iOS-style button press animations */
-  button,
-  [role="button"],
-  a[href] {
-    transition:
-      transform 0.1s ease-out,
-      opacity 0.1s ease-out;
-  }
-
-  button:active,
-  [role="button"]:active,
-  a[href]:active {
-    transform: scale(0.97);
-    opacity: 0.8;
-  }
-
-  /* iOS-style input focus */
-  input:focus,
-  textarea:focus,
-  select:focus {
-    outline: none;
-    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-  }
-
-  /* iOS-style list items */
-  [class*="TableRow"] {
-    transition: background-color 0.15s ease-out;
-  }
-
-  [class*="TableRow"]:active {
+  [data-slot="table-row"]:active {
     background-color: rgba(0, 0, 0, 0.05);
   }
 
-  .dark [class*="TableRow"]:active {
+  .dark [data-slot="table-row"]:active {
     background-color: rgba(255, 255, 255, 0.05);
   }
 }
 
-/* iOS-style safe area support */
-@supports (padding: max(0px)) {
-  /* Mobile-only safe area top padding */
-  @media (max-width: 767px) {
-    .mobile-safe-area-top {
-      padding-top: max(3rem, calc(3rem + env(safe-area-inset-top))) !important;
-    }
-  }
-}
-
-/* Prevent iOS Safari auto-zoom on input focus (triggered when font-size < 16px) */
-input, textarea, select {
-  font-size: 16px;
-}
+/* Text inputs get their size from the Input/Textarea components, which use
+   `text-base md:text-sm` — 16px on mobile so iOS Safari doesn't zoom the page
+   on focus, 14px from `md` up. A global rule here would outrank those
+   utilities; the only raw <input>s in the app are file pickers. */
 
 /* Normalize iOS date input appearance */
 input[type="date"],
@@ -689,12 +520,20 @@ input[type="datetime-local"] {
   min-height: 2.5rem; /* Match h-10 */
   max-height: 2.5rem;
   padding: 0.5rem 1rem !important; /* Match px-4 py-2, override iOS defaults */
-  font-size: 0.875rem !important; /* Match text-sm, override iOS defaults */
+  font-size: 1rem; /* 16px floor: below this iOS zooms the page on focus */
   line-height: 1.25rem;
   box-sizing: border-box;
 }
 
 /* iOS date picker icon styling */
+@media (min-width: 768px) {
+  input[type="date"],
+  input[type="time"],
+  input[type="datetime-local"] {
+    font-size: 0.875rem;
+  }
+}
+
 input[type="date"]::-webkit-calendar-picker-indicator,
 input[type="time"]::-webkit-calendar-picker-indicator,
 input[type="datetime-local"]::-webkit-calendar-picker-indicator {

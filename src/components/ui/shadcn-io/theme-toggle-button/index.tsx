@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 
 import { Moon, Sun } from "lucide-react";
+import { AnimatePresence, motion } from "motion/react";
 
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -201,7 +202,7 @@ export const ThemeToggleButton = ({
         variant="ghost"
         size={size}
         className={cn(
-          "relative overflow-hidden transition-all",
+          "relative overflow-hidden",
           showLabel && "gap-2",
           className,
         )}
@@ -219,17 +220,32 @@ export const ThemeToggleButton = ({
       size={size}
       onClick={handleClick}
       className={cn(
-        "relative overflow-hidden transition-all",
+        "relative overflow-hidden",
         showLabel && "gap-2",
         className,
       )}
       aria-label={`Switch to ${theme === "light" ? "dark" : "light"} theme`}
     >
-      {theme === "light" ? (
-        <Sun className="h-[1.2rem] w-[1.2rem]" />
-      ) : (
-        <Moon className="h-[1.2rem] w-[1.2rem]" />
-      )}
+      {/* Cross-fade rather than a hard swap; initial={false} so the resting
+          icon doesn't animate in on page load */}
+      <span className="relative block size-[1.2rem]">
+        <AnimatePresence initial={false}>
+          <motion.span
+            key={theme}
+            initial={{ scale: 0.25, opacity: 0, filter: "blur(4px)" }}
+            animate={{ scale: 1, opacity: 1, filter: "blur(0px)" }}
+            exit={{ scale: 0.25, opacity: 0, filter: "blur(4px)" }}
+            transition={{ type: "spring", duration: 0.3, bounce: 0 }}
+            className="absolute inset-0 flex items-center justify-center"
+          >
+            {theme === "light" ? (
+              <Sun className="size-[1.2rem]" />
+            ) : (
+              <Moon className="size-[1.2rem]" />
+            )}
+          </motion.span>
+        </AnimatePresence>
+      </span>
       {showLabel && (
         <span className="text-sm">{theme === "light" ? "Light" : "Dark"}</span>
       )}

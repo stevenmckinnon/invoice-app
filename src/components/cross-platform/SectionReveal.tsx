@@ -2,7 +2,7 @@
 
 import * as React from "react";
 
-import { type MotionProps, motion } from "motion/react";
+import { type MotionProps, motion, useReducedMotion } from "motion/react";
 
 type SectionRevealProps = React.ComponentProps<"div"> & {
   delay?: number;
@@ -20,12 +20,20 @@ const SectionReveal: React.FC<SectionRevealProps> = ({
   once = true,
   ...rest
 }) => {
+  // Reveals are decorative: with reduced motion, show the content outright
+  // rather than sliding or staggering it in.
+  const reduceMotion = useReducedMotion();
+
   return (
     <motion.div
-      initial={{ opacity: 0, y }}
+      initial={reduceMotion ? false : { opacity: 0, y }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once, amount: 0.2 }}
-      transition={{ duration, ease: "easeOut", delay }}
+      transition={
+        reduceMotion
+          ? { duration: 0 }
+          : { duration, ease: "easeOut", delay }
+      }
       className={className}
       {...rest}
     >

@@ -104,7 +104,7 @@ export default function ClientsPage() {
       />
 
       <Card>
-        <CardContent>
+        <CardContent className="px-3 md:px-6">
           {loading ? (
             <>
               {/* Desktop skeleton */}
@@ -153,16 +153,16 @@ export default function ClientsPage() {
                   </TableBody>
                 </Table>
               </div>
-              {/* Mobile skeleton */}
-              <div className="flex flex-col gap-3 md:hidden">
+              {/* Mobile skeleton — mirrors the row shape below */}
+              <div className="flex flex-col gap-2 md:hidden">
                 {[1, 2, 3, 4, 5].map((i) => (
-                  <div key={i} className="space-y-3 rounded-lg border p-4">
-                    <div className="flex items-center justify-between">
-                      <Skeleton className="h-5 w-32" />
-                      <Skeleton className="h-8 w-8" />
+                  <div key={i} className="flex items-center gap-3 px-2 py-3">
+                    <Skeleton className="size-11 shrink-0 rounded-xl" />
+                    <div className="flex-1 space-y-2">
+                      <Skeleton className="h-4 w-36" />
+                      <Skeleton className="h-3 w-28" />
                     </div>
-                    <Skeleton className="h-4 w-40" />
-                    <Skeleton className="h-3 w-48" />
+                    <Skeleton className="h-8 w-16" />
                   </div>
                 ))}
               </div>
@@ -284,68 +284,63 @@ export default function ClientsPage() {
                 </Table>
               </div>
 
-              {/* Mobile cards */}
-              <div className="flex flex-col gap-3 md:hidden">
+              {/* Mobile rows */}
+              <div className="flex flex-col gap-2 md:hidden">
                 {clients.map((client) => (
                   <div
                     key={client.id}
                     onClick={() => router.push(`/clients/${client.id}/edit`)}
-                    className="hover:bg-muted/40 flex cursor-pointer flex-col gap-2 rounded-lg border p-4 transition-colors"
+                    className="hover:bg-muted/60 active:bg-muted -mx-2 flex cursor-pointer items-center gap-3 rounded-3xl px-2 py-3 transition-colors"
                   >
-                    <div className="flex items-center justify-between gap-2">
+                    {/* Clients carry no status, so the tile stays neutral */}
+                    <div
+                      className="bg-muted text-muted-foreground flex size-11 shrink-0 items-center justify-center rounded-xl text-sm font-bold"
+                      aria-hidden="true"
+                    >
+                      {client.name.charAt(0).toUpperCase()}
+                    </div>
+
+                    <div className="min-w-0 flex-1">
                       <Link
                         href={`/clients/${client.id}/edit`}
                         transitionTypes={["forward"]}
                         onClick={(e) => e.stopPropagation()}
-                        className="font-medium hover:underline"
+                        className="block truncate font-semibold hover:underline"
                       >
                         {client.name}
                       </Link>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setClientToDelete({
-                            id: client.id,
-                            name: client.name,
-                          });
-                        }}
-                        disabled={deleteClientMutation.isPending}
-                        aria-label="Delete client"
-                      >
-                        <Trash2 className="text-destructive h-4 w-4" />
-                      </Button>
+                      <p className="text-muted-foreground truncate text-sm">
+                        {/* Rate leads: it is fixed-width, so the location is
+                            what truncates on narrow screens, not the rate */}
+                        {[
+                          client.dayRate
+                            ? `${formatCurrency(Number(client.dayRate))}/day`
+                            : null,
+                          [client.city, client.country]
+                            .filter(Boolean)
+                            .join(", "),
+                        ]
+                          .filter(Boolean)
+                          .join(" · ") || "—"}
+                      </p>
                     </div>
-                    <div className="text-muted-foreground text-sm">
-                      {[client.city, client.country]
-                        .filter(Boolean)
-                        .join(", ") || "—"}
-                    </div>
-                    <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs">
-                      <span>
-                        <span className="text-muted-foreground">Day </span>
-                        {client.dayRate
-                          ? formatCurrency(Number(client.dayRate))
-                          : "—"}
-                      </span>
-                      <span>
-                        <span className="text-muted-foreground">
-                          Per diem (work){" "}
-                        </span>
-                        {client.perDiemWork
-                          ? formatCurrency(Number(client.perDiemWork))
-                          : "—"}
-                      </span>
-                      <span>
-                        <span className="text-muted-foreground">
-                          Per diem (travel){" "}
-                        </span>
-                        {client.perDiemTravel
-                          ? formatCurrency(Number(client.perDiemTravel))
-                          : "—"}
-                      </span>
-                    </div>
+
+                    <Button
+                      variant="ghost"
+                      size="icon-sm"
+                      className="text-muted-foreground hover:text-destructive shrink-0"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setClientToDelete({
+                          id: client.id,
+                          name: client.name,
+                        });
+                      }}
+                      disabled={deleteClientMutation.isPending}
+                      aria-label={`Delete ${client.name}`}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
                   </div>
                 ))}
               </div>

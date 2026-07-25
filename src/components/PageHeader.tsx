@@ -4,7 +4,9 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 
 interface PageHeaderProps {
-  title: string;
+  /** ReactNode rather than string so callers can wrap client-clock-dependent
+      text (the dashboard greeting) in suppressHydrationWarning */
+  title: React.ReactNode;
   subtitle?: React.ReactNode;
   /** Where the back button points; omit for top-level pages */
   backHref?: string;
@@ -22,7 +24,7 @@ export const PageHeader = ({
   backHref,
   actions,
 }: PageHeaderProps) => (
-  <div className="flex flex-col justify-between gap-4 md:flex-row md:items-center">
+  <div className="flex flex-col justify-between gap-4 md:flex-row md:items-end">
     <div className="flex items-center gap-4">
       {backHref && (
         <Button asChild variant="outline" size="sm">
@@ -32,12 +34,12 @@ export const PageHeader = ({
           </Link>
         </Button>
       )}
-      <div className="space-y-1">
-        <h1 className="font-heading text-4xl font-bold tracking-tight">
+      <div>
+        <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">
           {title}
         </h1>
         {subtitle && (
-          <p className="text-muted-foreground text-sm font-medium">
+          <p className="text-muted-foreground mt-1.5 text-sm font-medium">
             {subtitle}
           </p>
         )}

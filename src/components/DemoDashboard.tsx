@@ -1,169 +1,134 @@
 "use client";
-import {
-  Clock,
-  CreditCard,
-  DollarSign,
-  FileTextIcon,
-  PlusIcon,
-  TrendingDown,
-  TrendingUp,
-} from "lucide-react";
+import { PlusIcon, TrendingDown, TrendingUp } from "lucide-react";
 import { motion } from "motion/react";
 
 import { AnimatedCounter } from "@/components/AnimatedCounter";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { INVOICE_STATUSES } from "@/lib/invoice-status";
 
 type DemoInvoice = {
-  id: string;
   invoiceNumber: string;
   invoiceDate: Date;
   showName: string;
-  clientName: string | null;
   totalAmount: number;
   status: string;
-  createdAt: Date;
 };
 
-// Demo data
+// Dates are relative to today so the mockup always reads as a live account —
+// a hardcoded year would show a stale financial year and a flat trend.
+const monthsAgo = (months: number, day: number) => {
+  const d = new Date();
+  d.setDate(1);
+  d.setMonth(d.getMonth() - months);
+  d.setDate(day);
+  return d;
+};
+
 const demoInvoices: DemoInvoice[] = [
   {
-    id: "1",
-    invoiceNumber: "INV-2024-001",
-    invoiceDate: new Date("2024-01-15"),
+    invoiceNumber: "INV-2026-001",
+    invoiceDate: monthsAgo(1, 8),
     showName: "The Crown Season 6",
-    clientName: "Netflix Studios",
     totalAmount: 2850.0,
     status: "paid",
-    createdAt: new Date("2024-01-10"),
   },
   {
-    id: "2",
-    invoiceNumber: "INV-2024-002",
-    invoiceDate: new Date("2024-01-22"),
+    invoiceNumber: "INV-2026-002",
+    invoiceDate: monthsAgo(1, 22),
     showName: "Bridgerton Season 3",
-    clientName: "Shondaland",
     totalAmount: 3200.0,
     status: "sent",
-    createdAt: new Date("2024-01-20"),
   },
   {
-    id: "3",
-    invoiceNumber: "INV-2024-003",
-    invoiceDate: new Date("2024-02-05"),
+    invoiceNumber: "INV-2026-003",
+    invoiceDate: monthsAgo(1, 27),
     showName: "The Witcher Season 4",
-    clientName: "Netflix Studios",
     totalAmount: 2750.0,
     status: "paid",
-    createdAt: new Date("2024-02-01"),
   },
   {
-    id: "4",
-    invoiceNumber: "INV-2024-004",
-    invoiceDate: new Date("2024-02-12"),
+    invoiceNumber: "INV-2026-004",
+    invoiceDate: monthsAgo(0, 3),
     showName: "Stranger Things Season 5",
-    clientName: "Netflix Studios",
     totalAmount: 3100.0,
     status: "draft",
-    createdAt: new Date("2024-02-10"),
   },
   {
-    id: "5",
-    invoiceNumber: "INV-2024-005",
-    invoiceDate: new Date("2024-02-18"),
+    invoiceNumber: "INV-2026-005",
+    invoiceDate: monthsAgo(0, 11),
     showName: "The Last of Us Season 2",
-    clientName: "HBO Max",
     totalAmount: 2950.0,
     status: "overdue",
-    createdAt: new Date("2024-02-15"),
   },
   {
-    id: "6",
-    invoiceNumber: "INV-2024-006",
-    invoiceDate: new Date("2024-02-25"),
+    invoiceNumber: "INV-2026-006",
+    invoiceDate: monthsAgo(0, 18),
     showName: "House of the Dragon Season 2",
-    clientName: "HBO Max",
     totalAmount: 3300.0,
     status: "paid",
-    createdAt: new Date("2024-02-22"),
   },
 ];
 
+// UK financial year runs 6 April – 5 April, identified by the year it starts in
+const getFyStart = (date: Date): number => {
+  const month = date.getMonth();
+  const beforeApril6 = month < 3 || (month === 3 && date.getDate() < 6);
+  return beforeApril6 ? date.getFullYear() - 1 : date.getFullYear();
+};
+
+const formatFy = (fyStart: number): string =>
+  `${fyStart}/${String((fyStart + 1) % 100).padStart(2, "0")}`;
+
 export const DemoDashboard = () => {
   const invoices = demoInvoices;
+  const now = new Date();
 
-  const totalRevenue = invoices.reduce(
-    (sum, inv) => sum + Number(inv.totalAmount),
-    0,
-  );
+  const sum = (list: DemoInvoice[]) =>
+    list.reduce((total, inv) => total + inv.totalAmount, 0);
 
-  const paidRevenue = invoices
-    .filter((inv) => inv.status === "paid")
-    .reduce((sum, inv) => sum + Number(inv.totalAmount), 0);
+  const totalRevenue = sum(invoices);
+  const paidInvoices = invoices.filter((inv) => inv.status === "paid");
+  const unpaidInvoices = invoices.filter((inv) => inv.status !== "paid");
+  const paidRevenue = sum(paidInvoices);
+  const outstandingRevenue = sum(unpaidInvoices);
+  const averageInvoice = totalRevenue / invoices.length;
 
-  const outstandingRevenue = invoices
-    .filter((inv) => inv.status !== "paid")
-    .reduce((sum, inv) => sum + Number(inv.totalAmount), 0);
-
-  // Calculate monthly revenue for trend
-  const currentMonth = new Date().getMonth();
-  const currentYear = new Date().getFullYear();
-
-  const currentMonthRevenue = invoices
-    .filter((inv) => {
-      const invDate = new Date(inv.invoiceDate);
-      return (
-        invDate.getMonth() === currentMonth &&
-        invDate.getFullYear() === currentYear
-      );
-    })
-    .reduce((sum, inv) => sum + Number(inv.totalAmount), 0);
-
-  const lastMonthRevenue = invoices
-    .filter((inv) => {
-      const invDate = new Date(inv.invoiceDate);
-      const lastMonth = currentMonth === 0 ? 11 : currentMonth - 1;
-      const lastMonthYear = currentMonth === 0 ? currentYear - 1 : currentYear;
-      return (
-        invDate.getMonth() === lastMonth &&
-        invDate.getFullYear() === lastMonthYear
-      );
-    })
-    .reduce((sum, inv) => sum + Number(inv.totalAmount), 0);
-
-  const monthlyChange =
-    lastMonthRevenue > 0
-      ? ((currentMonthRevenue - lastMonthRevenue) / lastMonthRevenue) * 100
-      : currentMonthRevenue > 0
-        ? 100
-        : 0;
-
-  // Status breakdown
-  const statusCounts = {
-    draft: invoices.filter((inv) => inv.status === "draft").length,
-    sent: invoices.filter((inv) => inv.status === "sent").length,
-    paid: invoices.filter((inv) => inv.status === "paid").length,
-    overdue: invoices.filter((inv) => inv.status === "overdue").length,
+  const inMonth = (date: Date, offset: number) => {
+    const ref = new Date(now.getFullYear(), now.getMonth() - offset, 1);
+    return (
+      date.getMonth() === ref.getMonth() &&
+      date.getFullYear() === ref.getFullYear()
+    );
   };
 
-  // Top shows by revenue
-  const showRevenue = invoices.reduce(
-    (acc, inv) => {
-      const show = inv.showName || "Unknown";
-      acc[show] = (acc[show] || 0) + Number(inv.totalAmount);
-      return acc;
-    },
-    {} as Record<string, number>,
+  const currentMonthRevenue = sum(
+    invoices.filter((inv) => inMonth(inv.invoiceDate, 0)),
   );
+  const lastMonthRevenue = sum(
+    invoices.filter((inv) => inMonth(inv.invoiceDate, 1)),
+  );
+  const monthlyChange =
+    ((currentMonthRevenue - lastMonthRevenue) / lastMonthRevenue) * 100;
 
-  const topShows = Object.entries(showRevenue)
+  const statusRows = INVOICE_STATUSES.map((status) => {
+    const count = invoices.filter((inv) => inv.status === status.value).length;
+    return {
+      ...status,
+      count,
+      share: Math.round((count / invoices.length) * 100),
+    };
+  });
+
+  const topShows = Object.entries(
+    invoices.reduce<Record<string, number>>((acc, inv) => {
+      acc[inv.showName] = (acc[inv.showName] ?? 0) + inv.totalAmount;
+      return acc;
+    }, {}),
+  )
     .sort(([, a], [, b]) => b - a)
     .slice(0, 5)
     .map(([show, revenue]) => ({ show, revenue }));
-
-  // Average invoice value
-  const averageInvoice =
-    invoices.length > 0 ? totalRevenue / invoices.length : 0;
 
   return (
     <motion.div
@@ -172,37 +137,39 @@ export const DemoDashboard = () => {
       transition={{ duration: 0.5 }}
       className="glossy-frame p-0"
     >
-      <div className="zoom bg-background grid w-full grid-cols-1 gap-6 rounded-lg border p-12 pb-8 shadow-lg">
-        <div className="flex items-center justify-between">
+      <div className="zoom bg-background grid w-full grid-cols-1 gap-6 rounded-lg p-12 pb-8">
+        {/* Header — mirrors the app, where the nav pill already says
+            "Dashboard", so the heading carries the greeting instead */}
+        <div className="flex items-start justify-between gap-4">
           <div>
-            <h1 className="font-heading text-3xl font-bold">
-              Invoice Dashboard
+            <h1 className="text-3xl font-bold tracking-tight">
+              Afternoon, Seth
             </h1>
-            <p className="text-muted-foreground mt-1 text-left text-sm">
-              Create and manage your invoices
+            <p className="text-muted-foreground mt-1 text-sm" suppressHydrationWarning>
+              {now.toLocaleDateString("en-GB", {
+                weekday: "long",
+                day: "numeric",
+                month: "long",
+                year: "numeric",
+              })}
             </p>
           </div>
-          <Button size="lg">
-            <PlusIcon className="h-5 w-5" />
+          <Button>
+            <PlusIcon />
             Create Invoice
           </Button>
         </div>
 
-        {/* Revenue Stats */}
-        <div className="grid grid-cols-4 gap-4">
-          <Card>
-            <CardHeader className="pb-3">
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-muted-foreground text-sm font-medium">
-                  Total Revenue
-                </CardTitle>
-                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-500/10">
-                  <DollarSign className="h-4 w-4 text-blue-600 dark:text-blue-400" />
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="text-left text-2xl font-bold">
+        {/* Revenue hero — the one number the page is actually about */}
+        <Card className="bg-accent dark:border-accent gap-4 shadow-md">
+          <CardHeader className="pb-0">
+            <CardTitle className="text-muted-foreground text-xs font-semibold tracking-wider uppercase">
+              Total revenue · {formatFy(getFyStart(now))}
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex flex-wrap items-end justify-between gap-x-6 gap-y-3">
+              <div className="text-4xl font-bold tracking-tight tabular-nums">
                 <AnimatedCounter
                   value={totalRevenue}
                   prefix="£"
@@ -210,43 +177,40 @@ export const DemoDashboard = () => {
                   decimals={2}
                 />
               </div>
-              <div className="mt-2 flex items-center gap-1">
-                {monthlyChange >= 0 ? (
-                  <TrendingUp className="h-4 w-4 text-green-600" />
-                ) : (
-                  <TrendingDown className="h-4 w-4 text-red-600" />
-                )}
-                <p
-                  className={`text-xs font-medium ${
-                    monthlyChange >= 0 ? "text-green-600" : "text-red-600"
-                  }`}
-                >
-                  {monthlyChange >= 0 ? "+" : ""}
-                  <AnimatedCounter
-                    value={Math.abs(monthlyChange)}
-                    suffix="%"
-                    duration={1200}
-                    decimals={1}
-                  />
-                </p>
-                <p className="text-muted-foreground text-xs">vs last month</p>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="pb-3">
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-muted-foreground text-sm font-medium">
-                  Paid
-                </CardTitle>
-                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-green-500/10">
-                  <CreditCard className="h-4 w-4 text-green-600 dark:text-green-400" />
+              {lastMonthRevenue > 0 && (
+                <div className="bg-card flex items-center gap-1.5 rounded-full py-1.5 pr-3 pl-2.5 shadow-xs">
+                  {monthlyChange >= 0 ? (
+                    <TrendingUp className="text-success h-4 w-4" />
+                  ) : (
+                    <TrendingDown className="text-destructive h-4 w-4" />
+                  )}
+                  <span
+                    className={`text-xs font-semibold tabular-nums ${
+                      monthlyChange >= 0 ? "text-success" : "text-destructive"
+                    }`}
+                  >
+                    {monthlyChange >= 0 ? "+" : ""}
+                    {monthlyChange.toFixed(1)}%
+                  </span>
+                  <span className="text-muted-foreground text-xs">
+                    vs last month
+                  </span>
                 </div>
-              </div>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Supporting stats */}
+        <div className="grid grid-cols-3 gap-4">
+          <Card className="gap-2">
+            <CardHeader className="pb-0">
+              <CardTitle className="text-muted-foreground text-xs font-semibold tracking-wider uppercase">
+                Paid
+              </CardTitle>
             </CardHeader>
-            <CardContent>
-              <div className="text-left text-2xl font-bold text-green-600">
+            <CardContent className="mt-auto">
+              <div className="text-success text-3xl font-bold tracking-tight tabular-nums">
                 <AnimatedCounter
                   value={paidRevenue}
                   prefix="£"
@@ -255,26 +219,20 @@ export const DemoDashboard = () => {
                   delay={100}
                 />
               </div>
-              <p className="text-muted-foreground mt-2 text-left text-xs">
-                {invoices.filter((inv) => inv.status === "paid").length} paid
-                invoices
+              <p className="text-muted-foreground mt-2 text-xs font-medium">
+                {paidInvoices.length} paid invoices
               </p>
             </CardContent>
           </Card>
 
-          <Card>
-            <CardHeader className="pb-3">
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-muted-foreground text-sm font-medium">
-                  Outstanding
-                </CardTitle>
-                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-orange-500/10">
-                  <Clock className="h-4 w-4 text-orange-600 dark:text-orange-400" />
-                </div>
-              </div>
+          <Card className="gap-2">
+            <CardHeader className="pb-0">
+              <CardTitle className="text-muted-foreground text-xs font-semibold tracking-wider uppercase">
+                Outstanding
+              </CardTitle>
             </CardHeader>
-            <CardContent>
-              <div className="text-left text-2xl font-bold text-orange-600">
+            <CardContent className="mt-auto">
+              <div className="text-warning text-3xl font-bold tracking-tight tabular-nums">
                 <AnimatedCounter
                   value={outstandingRevenue}
                   prefix="£"
@@ -283,25 +241,20 @@ export const DemoDashboard = () => {
                   delay={200}
                 />
               </div>
-              <p className="text-muted-foreground mt-2 text-left text-xs">
-                {invoices.filter((inv) => inv.status !== "paid").length} unpaid
+              <p className="text-muted-foreground mt-2 text-xs font-medium">
+                {unpaidInvoices.length} unpaid
               </p>
             </CardContent>
           </Card>
 
-          <Card>
-            <CardHeader className="pb-3">
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-muted-foreground text-sm font-medium">
-                  Average Invoice
-                </CardTitle>
-                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-purple-500/10">
-                  <FileTextIcon className="h-4 w-4 text-purple-600 dark:text-purple-400" />
-                </div>
-              </div>
+          <Card className="gap-2">
+            <CardHeader className="pb-0">
+              <CardTitle className="text-muted-foreground text-xs font-semibold tracking-wider uppercase">
+                Average invoice
+              </CardTitle>
             </CardHeader>
-            <CardContent>
-              <div className="text-left text-2xl font-bold">
+            <CardContent className="mt-auto">
+              <div className="text-3xl font-bold tracking-tight tabular-nums">
                 <AnimatedCounter
                   value={averageInvoice}
                   prefix="£"
@@ -310,131 +263,71 @@ export const DemoDashboard = () => {
                   delay={300}
                 />
               </div>
-              <p className="text-muted-foreground mt-2 text-left text-xs">
+              <p className="text-muted-foreground mt-2 text-xs font-medium">
                 per invoice
               </p>
             </CardContent>
           </Card>
         </div>
 
-        {/* Charts Row */}
+        <h2 className="text-muted-foreground -mb-2 text-xs font-semibold tracking-wider uppercase">
+          Breakdown
+        </h2>
+
         <div className="grid grid-cols-2 gap-4">
-          {/* Status Breakdown */}
           <Card>
             <CardHeader>
-              <CardTitle>Invoice Status</CardTitle>
-              <p className="text-muted-foreground text-sm">
-                Breakdown by status
-              </p>
+              <CardTitle>Invoice status</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <div className="h-3 w-3 rounded-full bg-gray-500" />
-                    <span className="text-sm font-medium">Draft</span>
+                {statusRows.map((status) => (
+                  <div
+                    key={status.value}
+                    className="flex items-center justify-between"
+                  >
+                    <div className="flex items-center gap-2">
+                      <div
+                        className={`h-3 w-3 rounded-full ${status.dotClass}`}
+                      />
+                      <span className="text-sm font-medium">
+                        {status.label}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-3 tabular-nums">
+                      <span className="text-muted-foreground text-sm">
+                        {status.count}
+                      </span>
+                      <span className="w-8 text-right text-sm font-medium">
+                        {status.share}%
+                      </span>
+                    </div>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-muted-foreground text-sm">
-                      {statusCounts.draft}
-                    </span>
-                    <span className="text-sm font-medium">
-                      {invoices.length > 0
-                        ? (
-                            (statusCounts.draft / invoices.length) *
-                            100
-                          ).toFixed(0)
-                        : 0}
-                      %
-                    </span>
-                  </div>
-                </div>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <div className="h-3 w-3 rounded-full bg-blue-500" />
-                    <span className="text-sm font-medium">Sent</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-muted-foreground text-sm">
-                      {statusCounts.sent}
-                    </span>
-                    <span className="text-sm font-medium">
-                      {invoices.length > 0
-                        ? ((statusCounts.sent / invoices.length) * 100).toFixed(
-                            0,
-                          )
-                        : 0}
-                      %
-                    </span>
-                  </div>
-                </div>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <div className="h-3 w-3 rounded-full bg-green-500" />
-                    <span className="text-sm font-medium">Paid</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-muted-foreground text-sm">
-                      {statusCounts.paid}
-                    </span>
-                    <span className="text-sm font-medium">
-                      {invoices.length > 0
-                        ? ((statusCounts.paid / invoices.length) * 100).toFixed(
-                            0,
-                          )
-                        : 0}
-                      %
-                    </span>
-                  </div>
-                </div>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <div className="h-3 w-3 rounded-full bg-red-500" />
-                    <span className="text-sm font-medium">Overdue</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-muted-foreground text-sm">
-                      {statusCounts.overdue}
-                    </span>
-                    <span className="text-sm font-medium">
-                      {invoices.length > 0
-                        ? (
-                            (statusCounts.overdue / invoices.length) *
-                            100
-                          ).toFixed(0)
-                        : 0}
-                      %
-                    </span>
-                  </div>
-                </div>
+                ))}
               </div>
             </CardContent>
           </Card>
 
-          {/* Top Shows */}
           <Card>
             <CardHeader>
-              <CardTitle>Top Shows by Revenue</CardTitle>
-              <p className="text-muted-foreground text-sm">
-                Your highest earning projects
-              </p>
+              <CardTitle>Top shows by revenue</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
                 {topShows.map((item, index) => (
                   <div
                     key={item.show}
-                    className="flex items-center justify-between"
+                    className="flex items-center justify-between gap-3"
                   >
-                    <div className="flex items-center gap-3">
-                      <div className="bg-primary/10 flex h-6 w-6 items-center justify-center rounded-full text-xs font-bold">
+                    <div className="flex min-w-0 items-center gap-3">
+                      <div className="bg-muted text-muted-foreground flex h-6 w-6 shrink-0 items-center justify-center rounded-md font-mono text-xs">
                         {index + 1}
                       </div>
-                      <span className="max-w-[200px] truncate text-sm font-medium">
+                      <span className="truncate text-sm font-medium">
                         {item.show}
                       </span>
                     </div>
-                    <span className="text-sm font-bold">
+                    <span className="text-sm font-bold tabular-nums">
                       <AnimatedCounter
                         value={item.revenue}
                         prefix="£"

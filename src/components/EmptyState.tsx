@@ -18,17 +18,21 @@ export const EmptyState = ({
   description,
   action,
 }: EmptyStateProps) => (
-  <div className="py-12 text-center">
+  <div className="flex flex-col items-center px-6 py-14 text-center">
     {Icon && (
-      <Icon
-        className="text-muted-foreground mx-auto mb-4 h-10 w-10"
+      <div
+        className="bg-muted text-muted-foreground mb-5 flex size-14 items-center justify-center rounded-2xl"
         aria-hidden="true"
-      />
+      >
+        <Icon className="size-6" />
+      </div>
     )}
     <h3 className="text-base font-semibold">{title}</h3>
     {description && (
-      <p className="text-muted-foreground mt-1 text-sm">{description}</p>
+      <p className="text-muted-foreground mt-1.5 max-w-sm text-sm">
+        {description}
+      </p>
     )}
-    {action && <div className="mt-5 flex justify-center">{action}</div>}
+    {action && <div className="mt-6">{action}</div>}
   </div>
 );

@@ -1,12 +1,11 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-
-import { FileText, Home, Settings, Sparkles, Users } from "lucide-react";
+import { FileText, Home, Sparkles, Users } from "lucide-react";
 import { AnimatePresence, LayoutGroup, motion } from "motion/react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
+import { useHideOnScroll } from "@/hooks/use-hide-on-scroll";
 import { usePrefetchAppData } from "@/hooks/use-prefetch";
 import { useSession } from "@/lib/auth-client";
 import { hapticLight } from "@/lib/haptics";
@@ -19,10 +18,15 @@ interface NavItem {
   isActive: (pathname: string) => boolean;
 }
 
+/**
+ * Settings deliberately lives in the header's avatar menu rather than here:
+ * five labelled items overflowed a 375px viewport, clipping the first and
+ * last. Labels also match page titles, so "Dashboard" rather than "Home".
+ */
 const navItems: NavItem[] = [
   {
     href: "/dashboard",
-    label: "Home",
+    label: "Dashboard",
     icon: Home,
     isActive: (pathname) => pathname === "/dashboard",
   },
@@ -38,20 +42,13 @@ const navItems: NavItem[] = [
     icon: Users,
     isActive: (pathname) => pathname.startsWith("/clients"),
   },
-  {
-    href: "/settings",
-    label: "Settings",
-    icon: Settings,
-    isActive: (pathname) => pathname.startsWith("/settings"),
-  },
 ];
 
 export const MobileBottomNav = () => {
   const pathname = usePathname();
   const { data: session } = useSession();
   const { prefetchInvoices, prefetchClients } = usePrefetchAppData();
-  const [isVisible, setIsVisible] = useState(true);
-  const lastScrollYRef = useRef(0);
+  const isVisible = useHideOnScroll();
 
   // Warm the data cache as soon as a nav item is touched, before navigation
   const prefetchByHref: Record<string, () => void> = {
@@ -59,24 +56,6 @@ export const MobileBottomNav = () => {
     "/invoices": prefetchInvoices,
     "/clients": prefetchClients,
   };
-
-  useEffect(() => {
-    const controlNavbar = () => {
-      const currentScrollY = window.scrollY;
-
-      if (currentScrollY < 100) {
-        setIsVisible(true);
-      } else if (currentScrollY > lastScrollYRef.current) {
-        setIsVisible(false);
-      } else {
-        setIsVisible(true);
-      }
-      lastScrollYRef.current = currentScrollY;
-    };
-
-    window.addEventListener("scroll", controlNavbar, { passive: true });
-    return () => window.removeEventListener("scroll", controlNavbar);
-  }, []);
 
   // Don't show bottom nav if user is not logged in
   if (!session?.user) {
@@ -89,7 +68,7 @@ export const MobileBottomNav = () => {
       <div className="h-24 md:hidden" />
 
       <div className="pointer-events-none fixed right-0 bottom-6 left-0 z-50 flex justify-center md:hidden">
-        <AnimatePresence mode="wait">
+        <AnimatePresence initial={false} mode="wait">
           {isVisible && (
             <motion.nav
               initial={{ y: 100, opacity: 0 }}
@@ -100,43 +79,31 @@ export const MobileBottomNav = () => {
                 stiffness: 300,
                 damping: 30,
               }}
-              className="pointer-events-auto flex items-center gap-2 rounded-full border border-black/10 bg-white/90 p-2 shadow-lg backdrop-blur-xl dark:border-white/10 dark:bg-black/90"
+              className="border-border bg-card/90 pointer-events-auto flex items-center gap-2 rounded-full border p-2 shadow-lg backdrop-blur-xl"
             >
               <LayoutGroup>
-                <motion.ul
-                  layout
-                  className="m-0 flex list-none items-center gap-1 p-0"
-                >
+                <ul className="m-0 flex list-none items-center gap-1 p-0">
                   {navItems.slice(0, 2).map((item) => {
                     const isActive = item.isActive(pathname);
                     const Icon = item.icon;
 
                     return (
-                      <motion.li
-                        key={item.href}
-                        layout
-                        className="relative z-10"
-                        transition={{
-                          type: "spring",
-                          stiffness: 500,
-                          damping: 30,
-                        }}
-                      >
+                      <li key={item.href} className="relative z-10">
                         <Link
                           href={item.href}
                           onClick={() => hapticLight()}
                           onTouchStart={prefetchByHref[item.href]}
                           className={cn(
-                            "relative flex items-center gap-2 rounded-full px-5 py-2 transition-colors duration-200",
+                            "relative flex items-center gap-2 rounded-full px-3 py-2 transition-colors duration-200 min-[360px]:px-4",
                             !isActive &&
-                              "text-black/50 hover:bg-black/10 hover:text-black dark:text-white/60 dark:hover:bg-white/10 dark:hover:text-white",
-                            isActive && "text-white dark:text-black",
+                              "text-muted-foreground hover:bg-muted hover:text-foreground",
+                            isActive && "text-background",
                           )}
                         >
                           {isActive && (
                             <motion.div
                               layoutId="nav-pill"
-                              className="absolute inset-0 rounded-full bg-black dark:bg-white"
+                              className="bg-foreground absolute inset-0 rounded-full"
                               transition={{
                                 type: "spring",
                                 stiffness: 500,
@@ -147,39 +114,32 @@ export const MobileBottomNav = () => {
 
                           <div className="relative z-10 flex flex-col items-center gap-1">
                             <Icon className="h-5 w-5" />
-                            <motion.span
-                              transition={{
-                                type: "spring",
-                                stiffness: 500,
-                                damping: 30,
-                              }}
-                              className="overflow-hidden text-xs font-medium whitespace-nowrap"
-                            >
+                            <span className="text-xs font-medium whitespace-nowrap">
                               {item.label}
-                            </motion.span>
+                            </span>
                           </div>
                         </Link>
-                      </motion.li>
+                      </li>
                     );
                   })}
 
                   {/* AI chat — centre button */}
-                  <motion.li key="ai-chat" layout className="relative z-10">
+                  <li key="ai-chat" className="relative z-10">
                     <Link
                       href="/chat"
                       onClick={() => hapticLight()}
                       className={cn(
-                        "relative flex flex-col items-center gap-1 overflow-hidden rounded-full px-4 py-2",
+                        "relative flex flex-col items-center gap-1 rounded-full px-3 py-2 transition-colors duration-200 min-[360px]:px-4",
                         pathname === "/chat"
-                          ? "text-white dark:text-black"
-                          : "text-black/50 dark:text-white",
+                          ? "text-background"
+                          : "text-muted-foreground hover:bg-muted hover:text-foreground",
                       )}
                       aria-label="Open AI assistant"
                     >
                       {pathname === "/chat" && (
                         <motion.div
                           layoutId="nav-pill"
-                          className="absolute inset-0 rounded-full bg-black dark:bg-white"
+                          className="bg-foreground absolute inset-0 rounded-full"
                           transition={{
                             type: "spring",
                             stiffness: 500,
@@ -188,42 +148,33 @@ export const MobileBottomNav = () => {
                         />
                       )}
                       <Sparkles className="relative z-10 h-5 w-5" />
-                      <span className="relative z-10 overflow-hidden text-xs font-medium whitespace-nowrap">
+                      <span className="relative z-10 text-xs font-medium whitespace-nowrap">
                         Ask AI
                       </span>
                     </Link>
-                  </motion.li>
+                  </li>
 
                   {navItems.slice(2).map((item) => {
                     const isActive = item.isActive(pathname);
                     const Icon = item.icon;
 
                     return (
-                      <motion.li
-                        key={item.href}
-                        layout
-                        className="relative z-10"
-                        transition={{
-                          type: "spring",
-                          stiffness: 500,
-                          damping: 30,
-                        }}
-                      >
+                      <li key={item.href} className="relative z-10">
                         <Link
                           href={item.href}
                           onClick={() => hapticLight()}
                           onTouchStart={prefetchByHref[item.href]}
                           className={cn(
-                            "relative flex items-center gap-2 rounded-full px-5 py-2 transition-colors duration-200",
+                            "relative flex items-center gap-2 rounded-full px-3 py-2 transition-colors duration-200 min-[360px]:px-4",
                             !isActive &&
-                              "text-black/50 hover:bg-black/10 hover:text-black dark:text-white/60 dark:hover:bg-white/10 dark:hover:text-white",
-                            isActive && "text-white dark:text-black",
+                              "text-muted-foreground hover:bg-muted hover:text-foreground",
+                            isActive && "text-background",
                           )}
                         >
                           {isActive && (
                             <motion.div
                               layoutId="nav-pill"
-                              className="absolute inset-0 rounded-full bg-black dark:bg-white"
+                              className="bg-foreground absolute inset-0 rounded-full"
                               transition={{
                                 type: "spring",
                                 stiffness: 500,
@@ -234,22 +185,15 @@ export const MobileBottomNav = () => {
 
                           <div className="relative z-10 flex flex-col items-center gap-1">
                             <Icon className="h-5 w-5" />
-                            <motion.span
-                              transition={{
-                                type: "spring",
-                                stiffness: 500,
-                                damping: 30,
-                              }}
-                              className="overflow-hidden text-xs font-medium whitespace-nowrap"
-                            >
+                            <span className="text-xs font-medium whitespace-nowrap">
                               {item.label}
-                            </motion.span>
+                            </span>
                           </div>
                         </Link>
-                      </motion.li>
+                      </li>
                     );
                   })}
-                </motion.ul>
+                </ul>
               </LayoutGroup>
             </motion.nav>
           )}

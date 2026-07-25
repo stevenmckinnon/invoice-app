@@ -50,3 +50,21 @@ export const formatDate = (date: Date | string): string => {
     day: "numeric",
   });
 };
+
+/**
+ * Time-of-day greeting for the dashboard header.
+ *
+ * Reads the *viewer's* clock, which can differ from the server's by enough to
+ * flip morning/afternoon — whatever renders this needs suppressHydrationWarning.
+ * Falls back to "Good morning" when there's no name, since a bare "Morning"
+ * reads oddly as a heading on its own.
+ */
+export const getGreeting = (firstName?: string | null): string => {
+  const hour = new Date().getHours();
+  const partOfDay =
+    hour < 12 ? "morning" : hour < 18 ? "afternoon" : "evening";
+
+  return firstName
+    ? `${partOfDay[0].toUpperCase()}${partOfDay.slice(1)}, ${firstName}`
+    : `Good ${partOfDay}`;
+};

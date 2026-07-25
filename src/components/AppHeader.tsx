@@ -1,9 +1,7 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-
 import { User, LogOut, Settings } from "lucide-react";
-import { motion } from "motion/react";
+import { LayoutGroup, motion } from "motion/react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useTheme } from "next-themes";
@@ -19,6 +17,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { useHideOnScroll } from "@/hooks/use-hide-on-scroll";
 import { usePrefetchAppData } from "@/hooks/use-prefetch";
 import { useSession, signOut } from "@/lib/auth-client";
 import { cn } from "@/lib/utils";
@@ -28,7 +27,12 @@ import {
   useThemeTransition,
 } from "./ui/shadcn-io/theme-toggle-button";
 
-const SCROLL_THRESHOLD = 200;
+/** Order and labels mirror MobileBottomNav so the two navs agree */
+const navLinks = [
+  { href: "/dashboard", label: "Dashboard" },
+  { href: "/invoices", label: "Invoices" },
+  { href: "/clients", label: "Clients" },
+];
 
 export const AppHeader = () => {
   const { data: session, isPending } = useSession();
@@ -36,30 +40,18 @@ export const AppHeader = () => {
   const pathname = usePathname();
   const { startTransition } = useThemeTransition();
   const { prefetchInvoices, prefetchClients } = usePrefetchAppData();
-  const [isVisible, setIsVisible] = useState(true);
-  const lastScrollYRef = useRef(0);
+  const isVisible = useHideOnScroll();
 
-  useEffect(() => {
-    const controlHeader = () => {
-      const currentScrollY = window.scrollY;
+  const prefetchByHref: Record<string, () => void> = {
+    "/dashboard": prefetchInvoices,
+    "/invoices": prefetchInvoices,
+    "/clients": prefetchClients,
+  };
 
-      // Show header when scrolled to top
-      if (currentScrollY < SCROLL_THRESHOLD) {
-        setIsVisible(true);
-      } else if (currentScrollY > lastScrollYRef.current) {
-        // Scrolling down - hide header
-        setIsVisible(false);
-      } else {
-        // Scrolling up - show header
-        setIsVisible(true);
-      }
-
-      lastScrollYRef.current = currentScrollY;
-    };
-
-    window.addEventListener("scroll", controlHeader, { passive: true });
-    return () => window.removeEventListener("scroll", controlHeader);
-  }, []);
+  const isNavLinkActive = (href: string) =>
+    href === "/dashboard"
+      ? pathname === "/dashboard"
+      : pathname.startsWith(href) && pathname !== "/invoices/new";
 
   const handleSignOut = async () => {
     try {
@@ -92,7 +84,7 @@ export const AppHeader = () => {
       )}
     >
       <div
-        className="bg-background/95 supports-[backdrop-filter]:bg-background/60 border-border/50 flex w-full items-center justify-between px-4 py-3 shadow-sm backdrop-blur-md md:mx-4 md:rounded-xl md:border md:shadow-md"
+        className="bg-card/90 supports-[backdrop-filter]:bg-card/70 flex w-full items-center justify-between border-transparent px-4 py-3 shadow-sm backdrop-blur-md md:mx-4 md:rounded-2xl md:border md:shadow-md dark:border-border/50"
         style={{
           paddingTop: "max(12px, env(safe-area-inset-top))",
         }}
@@ -103,50 +95,49 @@ export const AppHeader = () => {
           className="flex items-center gap-2 transition-opacity hover:opacity-80"
         >
           <CaleyLogo className="h-8 w-8" />
-          <span className="font-heading hidden text-xl font-bold sm:inline-block">
+          <span className="hidden text-xl font-bold sm:inline-block">
             Caley
           </span>
         </Link>
 
-        {/* Navigation */}
+        {/* Navigation — shares the pill treatment with MobileBottomNav so
+            "selected" looks the same on both breakpoints */}
         {session?.user && (
-          <nav className="hidden items-center gap-6 text-sm font-medium md:flex">
-            <Link
-              href="/dashboard"
-              onMouseEnter={prefetchInvoices}
-              onFocus={prefetchInvoices}
-              className={`hover:text-foreground/80 transition-colors ${
-                pathname === "/dashboard"
-                  ? "text-foreground font-semibold"
-                  : "text-foreground/60"
-              }`}
-            >
-              Dashboard
-            </Link>
-            <Link
-              href="/clients"
-              onMouseEnter={prefetchClients}
-              onFocus={prefetchClients}
-              className={`hover:text-foreground/80 transition-colors ${
-                pathname.startsWith("/clients")
-                  ? "text-foreground font-semibold"
-                  : "text-foreground/60"
-              }`}
-            >
-              Clients
-            </Link>
-            <Link
-              href="/invoices"
-              onMouseEnter={prefetchInvoices}
-              onFocus={prefetchInvoices}
-              className={`hover:text-foreground/80 transition-colors ${
-                pathname.startsWith("/invoices") && pathname !== "/invoices/new"
-                  ? "text-foreground font-semibold"
-                  : "text-foreground/60"
-              }`}
-            >
-              Invoices
-            </Link>
+          <nav className="hidden items-center gap-1 text-sm font-medium md:flex">
+            <LayoutGroup>
+              {navLinks.map(({ href, label }) => {
+                const isActive = isNavLinkActive(href);
+
+                return (
+                  <Link
+                    key={href}
+                    href={href}
+                    onMouseEnter={prefetchByHref[href]}
+                    onFocus={prefetchByHref[href]}
+                    aria-current={isActive ? "page" : undefined}
+                    className={cn(
+                      "relative rounded-full px-3.5 py-1.5 transition-colors duration-200",
+                      isActive
+                        ? "text-background"
+                        : "text-muted-foreground hover:bg-muted hover:text-foreground",
+                    )}
+                  >
+                    {isActive && (
+                      <motion.span
+                        layoutId="header-nav-pill"
+                        className="bg-foreground absolute inset-0 rounded-full"
+                        transition={{
+                          type: "spring",
+                          stiffness: 500,
+                          damping: 30,
+                        }}
+                      />
+                    )}
+                    <span className="relative z-10">{label}</span>
+                  </Link>
+                );
+              })}
+            </LayoutGroup>
           </nav>
         )}
 
@@ -238,7 +229,7 @@ export const AppHeader = () => {
               </DropdownMenu>
             ) : (
               <Button asChild variant="outline">
-                <Link href="/auth/signin">Sign In</Link>
+                <Link href="/auth/signin">Sign in</Link>
               </Button>
             ))}
         </div>

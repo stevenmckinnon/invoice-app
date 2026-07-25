@@ -2,10 +2,9 @@
 
 import { useEffect } from "react";
 
-import { Home, RefreshCcw, AlertTriangle } from "lucide-react";
+import { Home, RefreshCcw, TriangleAlert } from "lucide-react";
 import Link from "next/link";
 
-import CaleyLogo from "@/components/CaleyLogo";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 
@@ -17,66 +16,46 @@ export default function Error({
   reset: () => void;
 }) {
   useEffect(() => {
-    // Log the error to an error reporting service
+    // No error reporting service is wired up yet — this only reaches the
+    // browser console, which is why the copy below doesn't promise otherwise.
     console.error("Application error:", error);
   }, [error]);
 
   return (
     <div className="flex items-center justify-center p-4 pt-28">
-      <Card className="w-full max-w-2xl border-2">
-        <CardContent className="py-6">
-          <div className="flex flex-col items-center space-y-8 text-center">
-            {/* Icon Section */}
-            <div className="relative">
-              <div className="bg-destructive/10 dark:bg-destructive/5 absolute inset-0 rounded-full blur-3xl" />
-              <div className="bg-muted/50 dark:bg-muted/20 border-destructive/20 relative rounded-full border-2 border-dashed p-8">
-                <AlertTriangle
-                  className="text-destructive h-24 w-24"
-                  strokeWidth={1.5}
-                />
-              </div>
-            </div>
+      <Card className="w-full max-w-lg">
+        <CardContent className="flex flex-col items-center px-6 py-6 text-center">
+          <div
+            className="bg-destructive/10 text-destructive mb-6 flex size-16 items-center justify-center rounded-2xl"
+            aria-hidden="true"
+          >
+            <TriangleAlert className="size-7" />
+          </div>
 
-            {/* Error Message */}
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <h1 className="from-destructive via-destructive/80 to-destructive/60 bg-gradient-to-br bg-clip-text text-4xl font-bold text-transparent">
-                  Something Went Wrong
-                </h1>
-                <h2 className="text-xl font-semibold tracking-tight">
-                  Unexpected Error
-                </h2>
-              </div>
-              <p className="text-muted-foreground mx-auto max-w-md">
-                We encountered an unexpected error while processing your
-                request. Don&apos;t worry, our team has been notified and
-                we&apos;re working on it!
-              </p>
-              {error.digest && (
-                <p className="text-muted-foreground/70 font-mono text-xs">
-                  Error ID: {error.digest}
-                </p>
-              )}
-            </div>
+          <h1 className="text-2xl font-bold tracking-tight">
+            Something went wrong
+          </h1>
+          <p className="text-muted-foreground mt-2 max-w-sm text-sm text-pretty">
+            This page didn&apos;t load. Trying again usually sorts it.
+          </p>
 
-            {/* Action Buttons */}
-            <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row">
-              <Button onClick={reset} size="lg" className="gap-2">
-                <RefreshCcw className="h-4 w-4" />
-                Try Again
-              </Button>
-              <Button asChild variant="outline" size="lg" className="gap-2">
-                <Link href="/">
-                  <Home className="h-4 w-4" />
-                  Back to Home
-                </Link>
-              </Button>
-            </div>
+          {error.digest && (
+            <p className="text-muted-foreground mt-4 font-mono text-xs">
+              Error ID: {error.digest}
+            </p>
+          )}
 
-            {/* Decorative Element */}
-            <div className="pt-8 opacity-50">
-              <CaleyLogo className="h-8" />
-            </div>
+          <div className="mt-7 flex w-full flex-col gap-3 sm:w-auto sm:flex-row">
+            <Button onClick={reset}>
+              <RefreshCcw />
+              Try again
+            </Button>
+            <Button asChild variant="outline">
+              <Link href="/">
+                <Home />
+                Back to home
+              </Link>
+            </Button>
           </div>
         </CardContent>
       </Card>

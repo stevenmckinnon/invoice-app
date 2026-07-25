@@ -28,13 +28,13 @@ const Hero = () => {
             transition={{ delay: 0.1, duration: 0.5 }}
             className="mb-8 inline-flex"
           >
-            <div className="bg-background/50 border-border/50 text-muted-foreground relative inline-flex items-center gap-2 rounded-lg border px-3 py-1.5 font-mono text-xs tracking-wide uppercase backdrop-blur-md">
+            <div className="bg-card/70 border-border/60 text-muted-foreground relative inline-flex items-center gap-2 rounded-lg border px-3 py-1.5 font-mono text-xs tracking-wide uppercase backdrop-blur-md">
               <span className="bg-primary h-1.5 w-1.5 rounded-full" />
               In beta
             </div>
           </motion.div>
 
-          <h1 className="font-heading text-5xl leading-[1.05] font-bold tracking-tight sm:text-6xl md:text-7xl">
+          <h1 className="text-5xl leading-[1.05] font-bold tracking-tight sm:text-6xl md:text-7xl">
             Invoicing for <span className="text-primary">film and TV</span>{" "}
             freelancers.
           </h1>
@@ -44,24 +44,24 @@ const Hero = () => {
             then send a branded PDF in under a minute.
           </p>
 
-          <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
+          <div className="mx-auto mt-10 flex w-full max-w-xs flex-col items-stretch justify-center gap-3 sm:max-w-none sm:flex-row sm:items-center sm:gap-4">
             <Button
               asChild
               size="lg"
-              className="bg-primary hover:bg-primary/90 h-12 rounded-lg px-8 text-base shadow-sm"
+              className="h-12 rounded-lg px-8 text-base"
             >
               <Link href="/auth/signup">
                 Create your first invoice
-                <ArrowRight className="ml-2 h-4 w-4" />
+                <ArrowRight className="h-4 w-4" />
               </Link>
             </Button>
             <Button
               asChild
               variant="outline"
               size="lg"
-              className="bg-background/50 hover:bg-muted h-12 rounded-lg px-8 text-base backdrop-blur-sm"
+              className="bg-card/70 hover:bg-muted h-12 rounded-lg px-8 text-base backdrop-blur-sm"
             >
-              <Link href="/auth/signin">Sign In</Link>
+              <Link href="/auth/signin">Sign in</Link>
             </Button>
           </div>
 

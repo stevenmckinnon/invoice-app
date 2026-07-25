@@ -36,7 +36,7 @@ export default function LegalPage() {
             </div>
           </CardHeader>
           <CardContent className="space-y-4">
-            <p className="text-muted-foreground leading-relaxed">
+            <p className="text-muted-foreground max-w-2xl leading-relaxed">
               This is a <strong>personal project</strong> created to demonstrate
               invoice management functionality for freelance production staff.
             </p>
@@ -54,7 +54,7 @@ export default function LegalPage() {
             </div>
           </CardHeader>
           <CardContent className="space-y-4">
-            <p className="text-muted-foreground leading-relaxed">
+            <p className="text-muted-foreground max-w-2xl leading-relaxed">
               This application was designed and developed by{" "}
               <strong>Steve McKinnon</strong>, a freelance software developer.
             </p>

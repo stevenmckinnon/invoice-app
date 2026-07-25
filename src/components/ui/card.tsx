@@ -7,7 +7,9 @@ function Card({ className, ...props }: React.ComponentProps<"div">) {
     <div
       data-slot="card"
       className={cn(
-        "flex flex-col gap-6 rounded-xl border bg-card py-6 text-card-foreground shadow-sm",
+        // Light mode separates card from canvas by surface contrast + shadow,
+        // so no hairline. Dark mode has less surface contrast, so it keeps one.
+        "flex flex-col gap-6 rounded-2xl border border-transparent bg-card py-6 text-card-foreground shadow-sm dark:border-border dark:shadow-none",
         className
       )}
       {...props}

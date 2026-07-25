@@ -1,4 +1,5 @@
 import {
+  ArrowUp,
   Bot,
   Check,
   Clock,
@@ -27,10 +28,10 @@ export default function Home() {
       <Hero />
 
       {/* Walkthrough — one real invoice, start to finish */}
-      <section className="border-border/40 border-y py-24">
+      <section className="py-24">
         <SectionReveal className="mx-auto max-w-7xl px-6">
           <div className="mb-16 max-w-2xl">
-            <h2 className="font-heading mb-4 text-4xl font-bold tracking-tight sm:text-5xl">
+            <h2 className="mb-4 text-4xl font-bold tracking-tight sm:text-5xl">
               Built for how crew actually get paid.
             </h2>
             <p className="text-muted-foreground text-lg">
@@ -61,11 +62,11 @@ export default function Home() {
                 },
               ].map((step, i) => (
                 <li key={step.title} className="flex gap-5">
-                  <span className="border-border text-muted-foreground flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border font-mono text-xs">
+                  <span className="bg-card text-muted-foreground dark:border-border flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-transparent font-mono text-xs shadow-xs">
                     {i + 1}
                   </span>
                   <div>
-                    <h3 className="font-heading mb-1.5 text-lg font-bold">
+                    <h3 className="mb-1.5 text-lg font-bold">
                       {step.title}
                     </h3>
                     <p className="text-muted-foreground text-sm leading-relaxed">
@@ -77,8 +78,8 @@ export default function Home() {
             </ol>
 
             {/* The resulting invoice */}
-            <div className="border-border/60 bg-background overflow-hidden rounded-xl border shadow-sm">
-              <div className="border-border/60 bg-muted/30 flex items-center justify-between border-b px-5 py-3.5">
+            <div className="bg-card dark:border-border overflow-hidden rounded-2xl border border-transparent shadow-md">
+              <div className="border-border/60 bg-muted flex items-center justify-between border-b px-5 py-3.5">
                 <div>
                   <p className="font-mono text-xs font-semibold">
                     INV-2025-042
@@ -87,7 +88,7 @@ export default function Home() {
                     The Crown Season 6 · Netflix Studios
                   </p>
                 </div>
-                <span className="border-border bg-background rounded-md border px-2 py-0.5 font-mono text-xs">
+                <span className="border-border bg-card rounded-md border px-2 py-0.5 font-mono text-xs">
                   Net 30
                 </span>
               </div>
@@ -107,20 +108,20 @@ export default function Home() {
                   >
                     <div>
                       <dt className="text-sm font-medium">{label}</dt>
-                      <dd className="text-muted-foreground font-mono text-xs">
+                      <dd className="text-muted-foreground font-mono text-xs tabular-nums">
                         {detail}
                       </dd>
                     </div>
-                    <dd className="font-mono text-sm">{amount}</dd>
+                    <dd className="font-mono text-sm tabular-nums">{amount}</dd>
                   </div>
                 ))}
               </dl>
 
-              <div className="border-border/60 bg-muted/30 flex items-baseline justify-between border-t px-5 py-4">
-                <span className="font-heading text-sm font-bold tracking-wide uppercase">
+              <div className="border-border/60 bg-muted flex items-baseline justify-between border-t px-5 py-4">
+                <span className="text-sm font-bold tracking-wide uppercase">
                   Total
                 </span>
-                <span className="text-primary font-mono text-lg font-bold">
+                <span className="text-primary font-mono text-lg font-bold tabular-nums">
                   £3,757.65
                 </span>
               </div>
@@ -130,13 +131,10 @@ export default function Home() {
       </section>
 
       {/* Features Section - Bento Grid */}
-      <section
-        className="bg-muted/10 relative overflow-hidden py-32"
-        id="features"
-      >
+      <section className="relative overflow-hidden py-32" id="features">
         <SectionReveal className="mx-auto max-w-7xl px-6">
           <div className="mb-16">
-            <h2 className="font-heading mb-4 text-4xl font-bold tracking-tight sm:text-5xl">
+            <h2 className="mb-4 text-4xl font-bold tracking-tight sm:text-5xl">
               Everything a shoot throws at an invoice.
             </h2>
             <p className="text-muted-foreground max-w-2xl text-lg">
@@ -148,20 +146,20 @@ export default function Home() {
           {/* Bento Grid */}
           <div className="grid grid-cols-1 gap-5 md:grid-cols-6 lg:grid-rows-2">
             {/* Dark hero card — Professional PDFs */}
-            <div className="group relative col-span-1 overflow-hidden rounded-xl bg-neutral-950 p-8 transition-all md:col-span-4 md:row-span-2 lg:p-12">
+            <div className="group bg-ink relative col-span-1 overflow-hidden rounded-2xl p-8 shadow-md md:col-span-4 md:row-span-2 lg:p-12">
               {/* Blue ambient glow */}
               <div className="pointer-events-none absolute top-0 right-[-10%] h-[120%] w-[80%] bg-gradient-to-l from-primary/25 to-transparent blur-3xl" />
 
               <div className="relative z-10 mb-8 max-w-sm">
-                <h3 className="font-heading mb-3 text-3xl font-bold text-white">
+                <h3 className="text-ink-foreground mb-3 text-3xl font-bold">
                   Professional PDFs
                 </h3>
-                <p className="leading-relaxed text-neutral-400">
+                <p className="text-ink-muted leading-relaxed">
                   The last thing a client sees is your invoice. Caley makes it a
                   branded PDF worth paying on time.
                 </p>
                 <div className="mt-6 flex flex-wrap gap-2">
-                  {["Custom Branding", "Instant Download", "Auto-calculation"].map(
+                  {["Custom branding", "Instant download", "Auto-calculation"].map(
                     (tag) => (
                       <span
                         key={tag}
@@ -175,12 +173,12 @@ export default function Home() {
               </div>
 
               {/* Floating PDF mockup */}
-              <div className="relative z-10 w-full max-w-sm transform transition-transform duration-500 group-hover:-translate-y-2">
+              <div className="relative z-10 w-full max-w-sm transition-transform duration-300 ease-out group-hover:-translate-y-2">
                 <div className="rounded-t-lg border border-white/10 bg-white p-5 shadow-[0_-20px_40px_rgba(0,0,0,0.4)]">
                   <div className="mb-4 flex items-start justify-between border-b border-neutral-100 pb-3">
                     <div className="h-10 w-10 rounded bg-neutral-950" />
                     <div className="text-right">
-                      <div className="font-heading text-lg font-bold tracking-tight text-neutral-900 uppercase">
+                      <div className="text-lg font-bold tracking-tight text-neutral-900 uppercase">
                         Invoice
                       </div>
                       <div className="font-mono text-xs text-neutral-500">
@@ -203,36 +201,36 @@ export default function Home() {
             </div>
 
             {/* Overtime Tracking */}
-            <div className="border-border/50 bg-background hover:border-primary/40 relative overflow-hidden rounded-xl border p-6 transition-all hover:-translate-y-1 md:col-span-2">
+            <div className="bg-card dark:border-border relative overflow-hidden rounded-2xl border border-transparent p-6 shadow-sm transition-[translate,box-shadow] duration-200 ease-out hover:-translate-y-1 hover:shadow-lg md:col-span-2">
               <div className="bg-primary/10 text-primary mb-3 w-fit rounded-lg p-3">
                 <Clock className="h-5 w-5" />
               </div>
-              <h3 className="font-heading mb-2 text-xl font-bold">Overtime</h3>
+              <h3 className="mb-2 text-xl font-bold">Overtime</h3>
               <p className="text-muted-foreground text-sm leading-relaxed">
                 Log the hours and the date. Caley applies the 1.5× or 2× rate
                 and adds it to the invoice.
               </p>
-              <div className="border-border/50 bg-muted/30 mt-5 flex items-center justify-between rounded-lg border p-3">
-                <span className="font-mono text-xs">3h at 1.5×</span>
-                <span className="text-primary font-mono text-xs font-bold">
+              <div className="bg-muted mt-5 flex items-center justify-between rounded-md p-3">
+                <span className="font-mono text-xs tabular-nums">3h at 1.5×</span>
+                <span className="text-primary font-mono text-xs font-bold tabular-nums">
                   £236.25
                 </span>
               </div>
             </div>
 
             {/* Revenue Analytics */}
-            <div className="border-border/50 bg-background hover:border-primary/40 relative overflow-hidden rounded-xl border p-6 transition-all hover:-translate-y-1 md:col-span-2">
+            <div className="bg-card dark:border-border relative overflow-hidden rounded-2xl border border-transparent p-6 shadow-sm transition-[translate,box-shadow] duration-200 ease-out hover:-translate-y-1 hover:shadow-lg md:col-span-2">
               <div className="bg-primary/10 text-primary mb-3 w-fit rounded-lg p-3">
                 <TrendingUp className="h-5 w-5" />
               </div>
-              <h3 className="font-heading mb-2 text-xl font-bold">
+              <h3 className="mb-2 text-xl font-bold">
                 What you&apos;re owed
               </h3>
               <p className="text-muted-foreground mb-5 text-sm leading-relaxed">
                 Billed, paid, and outstanding across every show, on the
                 dashboard.
               </p>
-              <dl className="divide-border/50 border-border/50 bg-muted/30 divide-y rounded-lg border">
+              <dl className="divide-border/60 bg-muted divide-y rounded-md">
                 {[
                   ["Outstanding", "£4,120.00"],
                   ["Paid this month", "£8,450.00"],
@@ -244,18 +242,20 @@ export default function Home() {
                     <dt className="text-muted-foreground font-mono text-xs">
                       {label}
                     </dt>
-                    <dd className="font-mono text-xs font-medium">{amount}</dd>
+                    <dd className="font-mono text-xs font-medium tabular-nums">
+                      {amount}
+                    </dd>
                   </div>
                 ))}
               </dl>
             </div>
 
             {/* Client Management */}
-            <div className="border-border/50 bg-background hover:border-primary/40 relative overflow-hidden rounded-xl border p-6 transition-all hover:-translate-y-1 md:col-span-3">
+            <div className="bg-card dark:border-border relative overflow-hidden rounded-2xl border border-transparent p-6 shadow-sm transition-[translate,box-shadow] duration-200 ease-out hover:-translate-y-1 hover:shadow-lg md:col-span-3">
               <div className="bg-primary/10 text-primary mb-3 w-fit rounded-lg p-3">
                 <Users className="h-5 w-5" />
               </div>
-              <h3 className="font-heading mb-2 text-xl font-bold">
+              <h3 className="mb-2 text-xl font-bold">
                 Clients and rates
               </h3>
               <p className="text-muted-foreground text-sm">
@@ -265,11 +265,11 @@ export default function Home() {
             </div>
 
             {/* Custom Expenses */}
-            <div className="border-border/50 bg-background hover:border-primary/40 relative overflow-hidden rounded-xl border p-6 transition-all hover:-translate-y-1 md:col-span-3">
+            <div className="bg-card dark:border-border relative overflow-hidden rounded-2xl border border-transparent p-6 shadow-sm transition-[translate,box-shadow] duration-200 ease-out hover:-translate-y-1 hover:shadow-lg md:col-span-3">
               <div className="bg-primary/10 text-primary mb-3 w-fit rounded-lg p-3">
                 <DollarSign className="h-5 w-5" />
               </div>
-              <h3 className="font-heading mb-2 text-xl font-bold">Expenses</h3>
+              <h3 className="mb-2 text-xl font-bold">Expenses</h3>
               <p className="text-muted-foreground text-sm">
                 Add travel, kit hire, parking, and anything else you fronted, as
                 its own line on the invoice.
@@ -289,9 +289,9 @@ export default function Home() {
             <div>
               <div className="text-primary bg-primary/10 mb-6 inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-sm font-medium">
                 <Bot className="h-4 w-4" />
-                AI-Powered
+                Built-in assistant
               </div>
-              <h2 className="font-heading mb-6 text-4xl font-bold tracking-tight sm:text-5xl">
+              <h2 className="mb-6 text-4xl font-bold tracking-tight sm:text-5xl">
                 Skip the forms.
               </h2>
               <p className="text-muted-foreground mb-8 text-lg leading-relaxed">
@@ -307,7 +307,7 @@ export default function Home() {
                 ].map((item) => (
                   <li key={item} className="flex items-start gap-3">
                     <div className="bg-primary/10 text-primary mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full">
-                      <Check className="h-3 w-3" />
+                      <Check className="h-3 w-3" strokeWidth={2.5} />
                     </div>
                     <span className="text-muted-foreground">{item}</span>
                   </li>
@@ -316,9 +316,9 @@ export default function Home() {
             </div>
 
             {/* Chat mockup */}
-            <div className="border-border/50 bg-background relative overflow-hidden rounded-xl border shadow-2xl">
+            <div className="bg-card dark:border-border relative overflow-hidden rounded-2xl border border-transparent shadow-xl">
               {/* Header */}
-              <div className="border-border/50 flex items-center gap-3 border-b px-5 py-3.5">
+              <div className="border-border/60 flex items-center gap-3 border-b px-5 py-3.5">
                 <div className="bg-primary/10 flex h-8 w-8 items-center justify-center rounded-full">
                   <Bot className="text-primary h-4 w-4" />
                 </div>
@@ -333,28 +333,22 @@ export default function Home() {
               {/* Messages */}
               <div className="space-y-5 p-5">
                 {/* User message */}
-                <div
-                  className="chat-bubble"
-                  style={{ animationDelay: "0.3s" }}
-                >
+                <SectionReveal delay={0.1} y={10} duration={0.35}>
                   <div className="flex justify-end">
                     <div className="bg-primary text-primary-foreground max-w-[80%] rounded-2xl rounded-br-sm px-4 py-2.5 text-sm">
                       Invoice Netflix Studios for The Crown — 5 shoot days plus
                       3 hours overtime
                     </div>
                   </div>
-                </div>
+                </SectionReveal>
 
                 {/* AI response with nested invoice card */}
-                <div
-                  className="chat-bubble"
-                  style={{ animationDelay: "1.6s" }}
-                >
+                <SectionReveal delay={0.45} y={10} duration={0.35}>
                   <div className="flex gap-3">
                     <div className="bg-primary/10 flex h-7 w-7 shrink-0 items-center justify-center rounded-full">
                       <Bot className="text-primary h-3.5 w-3.5" />
                     </div>
-                    <div className="bg-muted/50 max-w-[85%] rounded-2xl rounded-bl-sm px-4 py-3 text-sm">
+                    <div className="bg-muted max-w-[85%] rounded-2xl rounded-bl-sm px-4 py-3 text-sm">
                       <p className="mb-3">
                         Drafted for <strong>Netflix Studios</strong>: 5 days at
                         your day rate, plus 3 overtime hours at 1.5×. Have a
@@ -362,21 +356,21 @@ export default function Home() {
                       </p>
 
                       {/* Nested invoice card */}
-                      <div className="border-border overflow-hidden rounded-xl border">
-                        <div className="bg-muted/50 border-border flex items-center justify-between border-b px-3 py-2">
+                      <div className="border-border overflow-hidden rounded-lg border">
+                        <div className="bg-muted border-border flex items-center justify-between border-b px-3 py-2">
                           <span className="font-mono text-xs font-semibold">
                             INV-2025-043 · Draft
                           </span>
-                          <span className="border-border bg-background rounded-full border px-2 py-0.5 text-xs">
+                          <span className="border-border bg-card rounded-full border px-2 py-0.5 text-xs">
                             Net 30
                           </span>
                         </div>
-                        <div className="bg-background space-y-2 p-3">
+                        <div className="bg-card space-y-2 p-3">
                           <div className="flex items-center justify-between text-xs">
                             <span className="text-muted-foreground">
                               5 shoot days
                             </span>
-                            <span className="font-mono font-medium">
+                            <span className="font-mono font-medium tabular-nums">
                               £2,500.00
                             </span>
                           </div>
@@ -384,14 +378,14 @@ export default function Home() {
                             <span className="text-muted-foreground">
                               3h overtime (1.5×)
                             </span>
-                            <span className="font-mono font-medium">
+                            <span className="font-mono font-medium tabular-nums">
                               £236.25
                             </span>
                           </div>
                           <div className="border-border border-t pt-2">
                             <div className="flex items-center justify-between text-xs font-semibold">
                               <span>Total</span>
-                              <span className="text-primary font-mono">
+                              <span className="text-primary font-mono tabular-nums">
                                 £2,736.25
                               </span>
                             </div>
@@ -400,28 +394,41 @@ export default function Home() {
                       </div>
                     </div>
                   </div>
-                </div>
+                </SectionReveal>
 
                 {/* Second user message */}
-                <div
-                  className="chat-bubble"
-                  style={{ animationDelay: "3.2s" }}
-                >
+                <SectionReveal delay={0.8} y={10} duration={0.35}>
                   <div className="flex justify-end">
                     <div className="bg-primary text-primary-foreground max-w-[80%] rounded-2xl rounded-br-sm px-4 py-2.5 text-sm">
                       Add £86.40 for the train and parking.
                     </div>
                   </div>
-                </div>
+                </SectionReveal>
+
+                {/* Assistant closes the loop */}
+                <SectionReveal delay={1.05} y={10} duration={0.35}>
+                  <div className="flex gap-3">
+                    <div className="bg-primary/10 flex h-7 w-7 shrink-0 items-center justify-center rounded-full">
+                      <Bot className="text-primary h-3.5 w-3.5" />
+                    </div>
+                    <div className="bg-muted max-w-[85%] rounded-2xl rounded-bl-sm px-4 py-3 text-sm">
+                      Added as an expense line. The draft is now{" "}
+                      <strong className="font-mono tabular-nums">
+                        £2,822.65
+                      </strong>
+                      .
+                    </div>
+                  </div>
+                </SectionReveal>
               </div>
 
               {/* Input */}
-              <div className="border-border/50 flex items-center gap-3 border-t px-4 py-3">
-                <div className="bg-muted/50 text-muted-foreground flex-1 rounded-xl px-4 py-2 text-sm">
-                  Ask me anything about your invoices...
+              <div className="border-border/60 flex items-center gap-3 border-t px-4 py-3">
+                <div className="bg-muted text-muted-foreground flex-1 rounded-lg px-4 py-2 text-sm">
+                  Ask anything about your invoices…
                 </div>
-                <div className="bg-primary text-primary-foreground flex h-8 w-8 items-center justify-center rounded-xl text-sm font-bold">
-                  ↑
+                <div className="bg-primary text-primary-foreground flex h-8 w-8 items-center justify-center rounded-lg">
+                  <ArrowUp className="h-4 w-4" />
                 </div>
               </div>
             </div>
@@ -430,15 +437,12 @@ export default function Home() {
       </section>
 
       {/* FAQ Section */}
-      <section className="bg-muted/20 py-24" id="faq">
+      <section className="bg-muted/60 py-24" id="faq">
         <SectionReveal className="mx-auto max-w-4xl px-6">
-          <div className="mb-16 text-center">
-            <h2 className="font-heading mb-4 text-4xl font-bold tracking-tight sm:text-5xl">
-              Frequently Asked
+          <div className="mb-16 max-w-2xl">
+            <h2 className="text-4xl font-bold tracking-tight sm:text-5xl">
+              Frequently asked questions
             </h2>
-            <p className="text-muted-foreground text-lg">
-              What people ask before signing up
-            </p>
           </div>
 
           <Accordion type="single" collapsible className="w-full">
@@ -482,17 +486,15 @@ export default function Home() {
       </section>
 
       {/* CTA Section — Dark */}
-      <section className="relative overflow-hidden bg-neutral-950 py-32 text-center text-white">
+      <section className="bg-ink text-ink-foreground relative overflow-hidden py-32 text-center">
         {/* Radial blue glow */}
         <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(74,143,231,0.18)_0,transparent_70%)]" />
-        {/* Subtle structural line */}
-        <div className="absolute top-1/2 left-1/2 h-px w-[600px] -translate-x-1/2 -translate-y-1/2 rotate-12 border-t border-dashed border-white/10" />
 
         <SectionReveal className="mx-auto max-w-4xl px-6">
-          <h2 className="font-heading mb-6 text-5xl font-bold tracking-tight sm:text-6xl md:text-7xl">
-            Stop Doing Admin.
+          <h2 className="mb-6 text-5xl font-bold tracking-tight sm:text-6xl md:text-7xl">
+            Stop doing admin.
           </h2>
-          <p className="mx-auto mb-12 max-w-2xl text-xl text-neutral-400">
+          <p className="text-ink-muted mx-auto mb-12 max-w-2xl text-xl">
             Send your next invoice in under a minute. Free while Caley is in
             beta.
           </p>
@@ -500,7 +502,7 @@ export default function Home() {
             <Button
               asChild
               size="lg"
-              className="bg-primary hover:bg-primary/90 h-14 rounded-lg px-10 text-lg shadow-xl"
+              className="h-12 rounded-lg px-8 text-base"
             >
               <Link href="/auth/signup">Create your first invoice</Link>
             </Button>
@@ -509,31 +511,31 @@ export default function Home() {
       </section>
 
       {/* Footer */}
-      <footer className="border-border/40 bg-background overflow-hidden border-t px-3 py-8 md:px-6">
-        <div className="bg-accent mx-auto max-w-7xl rounded-xl p-6 md:p-12">
-          <div className="mb-24 flex flex-col justify-between gap-12 md:flex-row">
+      <footer className="overflow-hidden px-3 py-8 md:px-6">
+        <div className="bg-card dark:border-border mx-auto max-w-7xl rounded-2xl border border-transparent p-6 shadow-sm md:p-12">
+          <div className="flex flex-col justify-between gap-12 md:flex-row">
             <div className="max-w-sm">
               <div className="mb-6 flex items-center gap-2">
                 <CaleyLogo className="h-8 w-8" />
-                <span className="font-heading text-2xl font-bold">Caley</span>
+                <span className="text-2xl font-bold">Caley</span>
               </div>
               <p className="text-muted-foreground text-lg font-medium">
                 Invoicing for people who bill by the day.
               </p>
             </div>
 
-            <div className="flex flex-wrap gap-12 sm:gap-24">
+            <div className="grid grid-cols-2 gap-x-12 gap-y-10 sm:grid-cols-3 sm:gap-x-16 lg:gap-x-24">
               <div>
-                <h4 className="mb-6 font-mono text-xs font-semibold tracking-widest uppercase">
+                <h4 className="mb-4 font-mono text-xs font-semibold tracking-widest uppercase">
                   Product
                 </h4>
-                <ul className="space-y-4 text-sm">
+                <ul className="space-y-4 text-sm whitespace-nowrap">
                   <li>
                     <Link
                       href="/auth/signup"
                       className="text-muted-foreground hover:text-foreground transition-colors"
                     >
-                      Get Started
+                      Get started
                     </Link>
                   </li>
                   <li>
@@ -541,7 +543,7 @@ export default function Home() {
                       href="/auth/signin"
                       className="text-muted-foreground hover:text-foreground transition-colors"
                     >
-                      Sign In
+                      Sign in
                     </Link>
                   </li>
                   <li>
@@ -556,16 +558,16 @@ export default function Home() {
               </div>
 
               <div>
-                <h4 className="mb-6 font-mono text-xs font-semibold tracking-widest uppercase">
+                <h4 className="mb-4 font-mono text-xs font-semibold tracking-widest uppercase">
                   Support
                 </h4>
-                <ul className="space-y-4 text-sm">
+                <ul className="space-y-4 text-sm whitespace-nowrap">
                   <li>
                     <Link
                       href="mailto:hello@stevenmckinnon.co.uk"
                       className="text-muted-foreground hover:text-foreground transition-colors"
                     >
-                      Contact Us
+                      Contact
                     </Link>
                   </li>
                   <li>
@@ -580,16 +582,16 @@ export default function Home() {
               </div>
 
               <div>
-                <h4 className="mb-6 font-mono text-xs font-semibold tracking-widest uppercase">
+                <h4 className="mb-4 font-mono text-xs font-semibold tracking-widest uppercase">
                   Legal
                 </h4>
-                <ul className="space-y-4 text-sm">
+                <ul className="space-y-4 text-sm whitespace-nowrap">
                   <li>
                     <Link
                       href="/legal"
                       className="text-muted-foreground hover:text-foreground transition-colors"
                     >
-                      Project Details
+                      Project details
                     </Link>
                   </li>
                   <li>
@@ -597,7 +599,7 @@ export default function Home() {
                       href="/cookies"
                       className="text-muted-foreground hover:text-foreground transition-colors"
                     >
-                      Cookie Policy
+                      Cookie policy
                     </Link>
                   </li>
                 </ul>
@@ -605,8 +607,8 @@ export default function Home() {
             </div>
           </div>
 
-          <div className="border-border/40 text-muted-foreground mt-16 flex flex-col items-center justify-between gap-4 border-t pt-8 text-sm md:flex-row">
-            <p>© {new Date().getFullYear()} Caley, made in Scotland 🏴󠁧󠁢󠁳󠁣󠁴󠁿</p>
+          <div className="border-border text-muted-foreground mt-12 flex flex-col items-center justify-between gap-4 border-t pt-8 text-sm md:flex-row">
+            <p>© {new Date().getFullYear()} Caley, made in Scotland</p>
             <Link
               href="https://stevemckinnon.co.uk"
               className="hover:text-foreground flex items-center gap-1 transition-colors"

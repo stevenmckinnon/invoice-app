@@ -50,7 +50,12 @@ import {
 import { useInvoices } from "@/hooks/use-invoices";
 import { useSession } from "@/lib/auth-client";
 import { INVOICE_STATUSES } from "@/lib/invoice-status";
-import { currencySymbol, formatCurrency, formatDate } from "@/lib/utils";
+import {
+  currencySymbol,
+  formatCurrency,
+  formatDate,
+  getGreeting,
+} from "@/lib/utils";
 
 // Aggregated stats need a single display currency — use the most common one
 const dominantCurrency = (invoices: { currency: string }[]): string => {
@@ -340,9 +345,24 @@ export default function Home() {
 
   return (
     <div className="mx-auto grid w-full max-w-6xl grid-cols-1 gap-6 p-6 py-10 md:pb-8">
+      {/* The nav pill already labels this page "Dashboard", so the heading
+          carries the greeting instead of repeating it */}
       <PageHeader
-        title="Dashboard"
-        subtitle={`Financial year ${formatFy(selectedFy)}`}
+        title={
+          <span suppressHydrationWarning>
+            {getGreeting(session?.user.name?.split(" ")[0])}
+          </span>
+        }
+        subtitle={
+          <span suppressHydrationWarning>
+            {new Date().toLocaleDateString("en-GB", {
+              weekday: "long",
+              day: "numeric",
+              month: "long",
+              year: "numeric",
+            })}
+          </span>
+        }
         actions={
           <>
             <Select
@@ -370,16 +390,16 @@ export default function Home() {
         }
       />
 
-      {/* Revenue Stats */}
-      <div className="grid grid-cols-2 gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-muted-foreground text-xs font-semibold tracking-wider uppercase">
-              Total Revenue
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="mt-auto">
-            <div className="text-xl font-bold tracking-tight tabular-nums sm:text-3xl">
+      {/* Revenue hero — the one number the page is actually about */}
+      <Card className="bg-accent dark:border-accent gap-4 shadow-md">
+        <CardHeader className="pb-0">
+          <CardTitle className="text-muted-foreground text-xs font-semibold tracking-wider uppercase">
+            Total revenue · {formatFy(selectedFy)}
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-5">
+          <div className="flex flex-wrap items-end justify-between gap-x-6 gap-y-3">
+            <div className="text-4xl font-bold tracking-tight tabular-nums sm:text-5xl">
               <AnimatedCounter
                 value={totalRevenue}
                 prefix={displaySymbol}
@@ -388,17 +408,15 @@ export default function Home() {
               />
             </div>
             {isCurrentFy && lastMonthRevenue > 0 ? (
-              <div className="mt-3 flex items-center gap-1.5">
+              <div className="bg-card flex items-center gap-1.5 rounded-full py-1.5 pr-3 pl-2.5 shadow-xs">
                 {monthlyChange >= 0 ? (
-                  <TrendingUp className="h-4 w-4 text-green-600 dark:text-green-500" />
+                  <TrendingUp className="text-success h-4 w-4" />
                 ) : (
-                  <TrendingDown className="h-4 w-4 text-red-600 dark:text-red-500" />
+                  <TrendingDown className="text-destructive h-4 w-4" />
                 )}
-                <p
+                <span
                   className={`text-xs font-semibold ${
-                    monthlyChange >= 0
-                      ? "text-green-600 dark:text-green-500"
-                      : "text-red-600 dark:text-red-500"
+                    monthlyChange >= 0 ? "text-success" : "text-destructive"
                   }`}
                 >
                   {monthlyChange >= 0 ? "+" : "-"}
@@ -408,28 +426,51 @@ export default function Home() {
                     duration={1200}
                     decimals={1}
                   />
-                </p>
-                <p className="text-muted-foreground text-xs font-medium">
+                </span>
+                <span className="text-muted-foreground text-xs font-medium">
                   vs last month
-                </p>
+                </span>
               </div>
             ) : (
-              <p className="text-muted-foreground mt-3 text-xs font-medium">
+              <span className="text-muted-foreground text-sm font-medium">
                 {fyInvoices.length} invoice{fyInvoices.length !== 1 ? "s" : ""}{" "}
                 this year
-              </p>
+              </span>
             )}
-          </CardContent>
-        </Card>
+          </div>
 
-        <Card>
-          <CardHeader className="pb-2">
+          {totalRevenue > 0 && (
+            <div className="space-y-2">
+              <div className="bg-card flex h-2 overflow-hidden rounded-full">
+                <div
+                  className="bg-success h-full"
+                  style={{ width: `${(paidRevenue / totalRevenue) * 100}%` }}
+                />
+              </div>
+              <div className="flex items-center justify-between text-xs font-medium">
+                <span className="text-success">
+                  {formatCurrency(paidRevenue, displayCurrency)} paid
+                </span>
+                <span className="text-muted-foreground">
+                  {formatCurrency(outstandingRevenue, displayCurrency)}{" "}
+                  outstanding
+                </span>
+              </div>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Supporting stats */}
+      <div className="grid grid-cols-2 gap-4 lg:grid-cols-3">
+        <Card className="gap-2">
+          <CardHeader className="pb-0">
             <CardTitle className="text-muted-foreground text-xs font-semibold tracking-wider uppercase">
               Paid
             </CardTitle>
           </CardHeader>
           <CardContent className="mt-auto">
-            <div className="text-xl font-bold tracking-tight tabular-nums text-green-600 sm:text-3xl dark:text-green-500">
+            <div className="text-success text-xl font-bold tracking-tight tabular-nums sm:text-3xl">
               <AnimatedCounter
                 value={paidRevenue}
                 prefix={displaySymbol}
@@ -438,21 +479,21 @@ export default function Home() {
                 delay={100}
               />
             </div>
-            <p className="text-muted-foreground mt-3 text-xs font-medium">
+            <p className="text-muted-foreground mt-2 text-xs font-medium">
               {fyInvoices.filter((inv) => inv.status === "paid").length} paid
               invoices
             </p>
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader className="pb-2">
+        <Card className="gap-2">
+          <CardHeader className="pb-0">
             <CardTitle className="text-muted-foreground text-xs font-semibold tracking-wider uppercase">
               Outstanding
             </CardTitle>
           </CardHeader>
           <CardContent className="mt-auto">
-            <div className="text-xl font-bold tracking-tight tabular-nums text-orange-600 sm:text-3xl dark:text-orange-500">
+            <div className="text-warning text-xl font-bold tracking-tight tabular-nums sm:text-3xl">
               <AnimatedCounter
                 value={outstandingRevenue}
                 prefix={displaySymbol}
@@ -461,14 +502,14 @@ export default function Home() {
                 delay={200}
               />
             </div>
-            <p className="text-muted-foreground mt-3 text-xs font-medium">
+            <p className="text-muted-foreground mt-2 text-xs font-medium">
               {fyInvoices.filter((inv) => inv.status !== "paid").length} unpaid
             </p>
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader className="pb-2">
+        <Card className="col-span-2 gap-2 lg:col-span-1">
+          <CardHeader className="pb-0">
             <CardTitle className="text-muted-foreground text-xs font-semibold tracking-wider uppercase">
               Average Invoice
             </CardTitle>
@@ -483,317 +524,9 @@ export default function Home() {
                 delay={300}
               />
             </div>
-            <p className="text-muted-foreground mt-3 text-xs font-medium">
+            <p className="text-muted-foreground mt-2 text-xs font-medium">
               per invoice
             </p>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Charts Row */}
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-        {/* Status Breakdown */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-xl">Invoice Status</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {INVOICE_STATUSES.map(({ value, label, dotClass }) => (
-                <div
-                  key={value}
-                  className="border-border/50 bg-muted/20 flex items-center justify-between rounded-lg border p-3"
-                >
-                  <div className="flex items-center gap-3">
-                    <div className={`h-3 w-3 rounded-full ${dotClass}`} />
-                    <span className="text-sm font-semibold">{label}</span>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <span className="text-muted-foreground text-sm font-medium">
-                      {statusCounts[value]}
-                    </span>
-                    <span className="text-sm font-bold">
-                      {fyInvoices.length > 0
-                        ? (
-                            (statusCounts[value] / fyInvoices.length) *
-                            100
-                          ).toFixed(0)
-                        : 0}
-                      %
-                    </span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Top Shows */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-xl">Top Shows & Projects</CardTitle>
-          </CardHeader>
-          <CardContent>
-            {topShows.length > 0 ? (
-              <div className="space-y-2">
-                {topShows.map((item, index) => (
-                  <div
-                    key={item.show}
-                    className="border-border/50 bg-muted/20 hover:bg-muted/30 flex items-center justify-between rounded-lg border p-3 transition-colors"
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className="bg-primary/20 text-primary flex h-7 w-7 items-center justify-center rounded-full text-xs font-bold shadow-sm">
-                        {index + 1}
-                      </div>
-                      <span className="max-w-[200px] truncate text-sm font-semibold">
-                        {item.show}
-                      </span>
-                    </div>
-                    <span className="text-sm font-bold tracking-tight">
-                      <AnimatedCounter
-                        value={item.revenue}
-                        prefix={displaySymbol}
-                        duration={1000}
-                        decimals={2}
-                        delay={400 + index * 100}
-                      />
-                    </span>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <EmptyState
-                title="No shows yet"
-                description="Revenue by show appears once you create an invoice."
-              />
-            )}
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Monthly + year overview */}
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-        <Card>
-          <CardHeader>
-            {isCurrentFy ? (
-              <>
-                <CardTitle className="text-xl">This Month</CardTitle>
-                <p className="text-muted-foreground text-sm font-medium">
-                  {new Date().toLocaleDateString("en-GB", {
-                    month: "long",
-                    year: "numeric",
-                  })}
-                </p>
-              </>
-            ) : (
-              <>
-                <CardTitle className="text-xl">
-                  Best Month {formatFy(selectedFy)}
-                </CardTitle>
-                <p className="text-muted-foreground text-sm font-medium">
-                  {bestMonthName} {bestMonthCalendarYear}
-                </p>
-              </>
-            )}
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-              <div className="space-y-2">
-                <p className="text-muted-foreground text-sm font-medium">
-                  Revenue
-                </p>
-                <p className="text-2xl font-bold">
-                  <AnimatedCounter
-                    value={isCurrentFy ? currentMonthRevenue : bestMonthRevenue}
-                    prefix={displaySymbol}
-                    duration={1200}
-                    decimals={2}
-                    delay={100}
-                  />
-                </p>
-                {isCurrentFy && (
-                  <div className="flex items-center gap-1">
-                    {monthlyChange >= 0 ? (
-                      <TrendingUp className="h-3 w-3 text-green-600" />
-                    ) : (
-                      <TrendingDown className="h-3 w-3 text-red-600" />
-                    )}
-                    <p
-                      className={`text-xs ${
-                        monthlyChange >= 0 ? "text-green-600" : "text-red-600"
-                      }`}
-                    >
-                      {monthlyChange >= 0 ? "+" : ""}
-                      <AnimatedCounter
-                        value={Math.abs(monthlyChange)}
-                        suffix="% from last month"
-                        duration={1000}
-                        decimals={1}
-                        delay={100}
-                      />
-                    </p>
-                  </div>
-                )}
-              </div>
-              <div className="space-y-2">
-                <p className="text-muted-foreground text-sm font-medium">
-                  Invoices Created
-                </p>
-                <p className="text-2xl font-bold">
-                  <AnimatedCounter
-                    value={
-                      isCurrentFy
-                        ? fyInvoices.filter(
-                            (inv) =>
-                              new Date(inv.invoiceDate).getMonth() ===
-                              currentMonth,
-                          ).length
-                        : bestMonthIndex >= 0
-                          ? fyInvoices.filter(
-                              (inv) =>
-                                new Date(inv.invoiceDate).getMonth() ===
-                                bestMonthIndex,
-                            ).length
-                          : 0
-                    }
-                    duration={1000}
-                    decimals={0}
-                    delay={200}
-                  />
-                </p>
-                <p className="text-muted-foreground text-xs">
-                  {isCurrentFy ? "This month" : `In ${bestMonthName}`}
-                </p>
-              </div>
-              <div className="space-y-2">
-                <p className="text-muted-foreground text-sm font-medium">
-                  {isCurrentFy ? "Paid This Month" : "Paid That Month"}
-                </p>
-                <p className="text-2xl font-bold text-green-600">
-                  <AnimatedCounter
-                    value={
-                      isCurrentFy
-                        ? fyInvoices.filter(
-                            (inv) =>
-                              inv.status === "paid" &&
-                              new Date(inv.invoiceDate).getMonth() ===
-                                currentMonth,
-                          ).length
-                        : bestMonthIndex >= 0
-                          ? fyInvoices.filter(
-                              (inv) =>
-                                inv.status === "paid" &&
-                                new Date(inv.invoiceDate).getMonth() ===
-                                  bestMonthIndex,
-                            ).length
-                          : 0
-                    }
-                    duration={1000}
-                    decimals={0}
-                    delay={300}
-                  />
-                </p>
-                <p className="text-muted-foreground text-xs">Invoices paid</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-xl">Year Performance</CardTitle>
-            <p className="text-muted-foreground text-sm font-medium">
-              {formatFy(selectedFy)} vs {formatFy(selectedFy - 1)}
-            </p>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <div>
-                <div className="mb-2 flex items-center justify-between">
-                  <span className="text-sm font-medium">
-                    {formatFy(selectedFy)}
-                  </span>
-                  <span className="text-sm font-bold">
-                    <AnimatedCounter
-                      value={selectedFyRevenue}
-                      prefix={displaySymbol}
-                      duration={1200}
-                      decimals={2}
-                      delay={100}
-                    />
-                  </span>
-                </div>
-                <div className="bg-muted h-2 overflow-hidden rounded-full">
-                  <div
-                    className="bg-primary h-full rounded-full"
-                    style={{
-                      width: `${Math.min(
-                        100,
-                        (selectedFyRevenue /
-                          Math.max(selectedFyRevenue, prevFyRevenue, 1)) *
-                          100,
-                      )}%`,
-                    }}
-                  />
-                </div>
-              </div>
-              <div>
-                <div className="mb-2 flex items-center justify-between">
-                  <span className="text-sm font-medium">
-                    {formatFy(selectedFy - 1)}
-                  </span>
-                  <span className="text-sm font-bold">
-                    <AnimatedCounter
-                      value={prevFyRevenue}
-                      prefix={displaySymbol}
-                      duration={1200}
-                      decimals={2}
-                      delay={200}
-                    />
-                  </span>
-                </div>
-                <div className="bg-muted h-2 overflow-hidden rounded-full">
-                  <div
-                    className="bg-muted-foreground/50 h-full rounded-full"
-                    style={{
-                      width: `${Math.min(
-                        100,
-                        (prevFyRevenue /
-                          Math.max(selectedFyRevenue, prevFyRevenue, 1)) *
-                          100,
-                      )}%`,
-                    }}
-                  />
-                </div>
-              </div>
-              {prevFyRevenue > 0 ? (
-                <div className="flex items-center gap-2 pt-2">
-                  {fyChange >= 0 ? (
-                    <TrendingUp className="h-5 w-5 text-green-600" />
-                  ) : (
-                    <TrendingDown className="h-5 w-5 text-red-600" />
-                  )}
-                  <span
-                    className={`text-sm font-semibold ${
-                      fyChange >= 0 ? "text-green-600" : "text-red-600"
-                    }`}
-                  >
-                    {fyChange >= 0 ? "+" : "-"}
-                    <AnimatedCounter
-                      value={Math.abs(fyChange)}
-                      suffix="% vs last financial year"
-                      duration={1000}
-                      decimals={1}
-                      delay={300}
-                    />
-                  </span>
-                </div>
-              ) : (
-                <p className="text-muted-foreground pt-2 text-sm font-medium">
-                  No invoices in {formatFy(selectedFy - 1)} to compare against
-                </p>
-              )}
-            </div>
           </CardContent>
         </Card>
       </div>
@@ -936,7 +669,7 @@ export default function Home() {
               <TableBody>
                 {sortedInvoices.map((invoice) => (
                   <TableRow key={invoice.id}>
-                    <TableCell className="font-medium">
+                    <TableCell className="font-mono text-[0.8125rem] font-medium tracking-tight">
                       {invoice.invoiceNumber}
                     </TableCell>
                     <TableCell>{invoice.showName}</TableCell>
@@ -973,6 +706,319 @@ export default function Home() {
           )}
         </CardContent>
       </Card>
+
+      {/* Secondary analytics, grouped and demoted: the page should read
+          hero → trend → actionable list → breakdown, not ten equal cards */}
+      <h2 className="text-muted-foreground mt-2 text-xs font-semibold tracking-wider uppercase">
+        Breakdown
+      </h2>
+      {/* Charts Row */}
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+        {/* Status Breakdown */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">Invoice Status</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-2">
+              {INVOICE_STATUSES.map(({ value, label, dotClass }) => (
+                <div
+                  key={value}
+                  className="bg-muted/60 flex items-center justify-between rounded-xl px-4 py-3"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className={`h-2.5 w-2.5 rounded-full ${dotClass}`} />
+                    <span className="text-sm font-semibold">{label}</span>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <span className="text-muted-foreground text-sm font-medium tabular-nums">
+                      {statusCounts[value]}
+                    </span>
+                    <span className="w-9 text-right text-sm font-bold tabular-nums">
+                      {fyInvoices.length > 0
+                        ? (
+                            (statusCounts[value] / fyInvoices.length) *
+                            100
+                          ).toFixed(0)
+                        : 0}
+                      %
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Top Shows */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">Top Shows & Projects</CardTitle>
+          </CardHeader>
+          <CardContent>
+            {topShows.length > 0 ? (
+              <div className="space-y-2">
+                {topShows.map((item, index) => (
+                  <div
+                    key={item.show}
+                    className="bg-muted/60 hover:bg-muted flex items-center justify-between rounded-xl px-4 py-3 transition-colors"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="bg-card text-muted-foreground flex h-7 w-7 items-center justify-center rounded-full text-xs font-bold">
+                        {index + 1}
+                      </div>
+                      <span className="max-w-[200px] truncate text-sm font-semibold">
+                        {item.show}
+                      </span>
+                    </div>
+                    <span className="text-sm font-bold tracking-tight">
+                      <AnimatedCounter
+                        value={item.revenue}
+                        prefix={displaySymbol}
+                        duration={1000}
+                        decimals={2}
+                        delay={400 + index * 100}
+                      />
+                    </span>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <EmptyState
+                title="No shows yet"
+                description="Revenue by show appears once you create an invoice."
+              />
+            )}
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Monthly + year overview */}
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+        <Card>
+          <CardHeader>
+            {isCurrentFy ? (
+              <>
+                <CardTitle className="text-base">This Month</CardTitle>
+                <p className="text-muted-foreground text-sm font-medium">
+                  {new Date().toLocaleDateString("en-GB", {
+                    month: "long",
+                    year: "numeric",
+                  })}
+                </p>
+              </>
+            ) : (
+              <>
+                <CardTitle className="text-base">
+                  Best Month {formatFy(selectedFy)}
+                </CardTitle>
+                <p className="text-muted-foreground text-sm font-medium">
+                  {bestMonthName} {bestMonthCalendarYear}
+                </p>
+              </>
+            )}
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+              <div className="space-y-2">
+                <p className="text-muted-foreground text-sm font-medium">
+                  Revenue
+                </p>
+                <p className="text-2xl font-bold">
+                  <AnimatedCounter
+                    value={isCurrentFy ? currentMonthRevenue : bestMonthRevenue}
+                    prefix={displaySymbol}
+                    duration={1200}
+                    decimals={2}
+                    delay={100}
+                  />
+                </p>
+                {isCurrentFy && (
+                  <div className="flex items-center gap-1">
+                    {monthlyChange >= 0 ? (
+                      <TrendingUp className="text-success h-3 w-3" />
+                    ) : (
+                      <TrendingDown className="text-destructive h-3 w-3" />
+                    )}
+                    <p
+                      className={`text-xs ${
+                        monthlyChange >= 0 ? "text-success" : "text-destructive"
+                      }`}
+                    >
+                      {monthlyChange >= 0 ? "+" : ""}
+                      <AnimatedCounter
+                        value={Math.abs(monthlyChange)}
+                        suffix="% from last month"
+                        duration={1000}
+                        decimals={1}
+                        delay={100}
+                      />
+                    </p>
+                  </div>
+                )}
+              </div>
+              <div className="space-y-2">
+                <p className="text-muted-foreground text-sm font-medium">
+                  Invoices Created
+                </p>
+                <p className="text-2xl font-bold">
+                  <AnimatedCounter
+                    value={
+                      isCurrentFy
+                        ? fyInvoices.filter(
+                            (inv) =>
+                              new Date(inv.invoiceDate).getMonth() ===
+                              currentMonth,
+                          ).length
+                        : bestMonthIndex >= 0
+                          ? fyInvoices.filter(
+                              (inv) =>
+                                new Date(inv.invoiceDate).getMonth() ===
+                                bestMonthIndex,
+                            ).length
+                          : 0
+                    }
+                    duration={1000}
+                    decimals={0}
+                    delay={200}
+                  />
+                </p>
+                <p className="text-muted-foreground text-xs">
+                  {isCurrentFy ? "This month" : `In ${bestMonthName}`}
+                </p>
+              </div>
+              <div className="space-y-2">
+                <p className="text-muted-foreground text-sm font-medium">
+                  {isCurrentFy ? "Paid This Month" : "Paid That Month"}
+                </p>
+                <p className="text-success text-2xl font-bold">
+                  <AnimatedCounter
+                    value={
+                      isCurrentFy
+                        ? fyInvoices.filter(
+                            (inv) =>
+                              inv.status === "paid" &&
+                              new Date(inv.invoiceDate).getMonth() ===
+                                currentMonth,
+                          ).length
+                        : bestMonthIndex >= 0
+                          ? fyInvoices.filter(
+                              (inv) =>
+                                inv.status === "paid" &&
+                                new Date(inv.invoiceDate).getMonth() ===
+                                  bestMonthIndex,
+                            ).length
+                          : 0
+                    }
+                    duration={1000}
+                    decimals={0}
+                    delay={300}
+                  />
+                </p>
+                <p className="text-muted-foreground text-xs">Invoices paid</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">Year Performance</CardTitle>
+            <p className="text-muted-foreground text-sm font-medium">
+              {formatFy(selectedFy)} vs {formatFy(selectedFy - 1)}
+            </p>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <div>
+                <div className="mb-2 flex items-center justify-between">
+                  <span className="text-sm font-medium">
+                    {formatFy(selectedFy)}
+                  </span>
+                  <span className="text-sm font-bold">
+                    <AnimatedCounter
+                      value={selectedFyRevenue}
+                      prefix={displaySymbol}
+                      duration={1200}
+                      decimals={2}
+                      delay={100}
+                    />
+                  </span>
+                </div>
+                <div className="bg-muted h-2 overflow-hidden rounded-full">
+                  <div
+                    className="bg-primary h-full rounded-full"
+                    style={{
+                      width: `${Math.min(
+                        100,
+                        (selectedFyRevenue /
+                          Math.max(selectedFyRevenue, prevFyRevenue, 1)) *
+                          100,
+                      )}%`,
+                    }}
+                  />
+                </div>
+              </div>
+              <div>
+                <div className="mb-2 flex items-center justify-between">
+                  <span className="text-sm font-medium">
+                    {formatFy(selectedFy - 1)}
+                  </span>
+                  <span className="text-sm font-bold">
+                    <AnimatedCounter
+                      value={prevFyRevenue}
+                      prefix={displaySymbol}
+                      duration={1200}
+                      decimals={2}
+                      delay={200}
+                    />
+                  </span>
+                </div>
+                <div className="bg-muted h-2 overflow-hidden rounded-full">
+                  <div
+                    className="bg-muted-foreground/50 h-full rounded-full"
+                    style={{
+                      width: `${Math.min(
+                        100,
+                        (prevFyRevenue /
+                          Math.max(selectedFyRevenue, prevFyRevenue, 1)) *
+                          100,
+                      )}%`,
+                    }}
+                  />
+                </div>
+              </div>
+              {prevFyRevenue > 0 ? (
+                <div className="flex items-center gap-2 pt-2">
+                  {fyChange >= 0 ? (
+                    <TrendingUp className="text-success h-5 w-5" />
+                  ) : (
+                    <TrendingDown className="text-destructive h-5 w-5" />
+                  )}
+                  <span
+                    className={`text-sm font-semibold ${
+                      fyChange >= 0 ? "text-success" : "text-destructive"
+                    }`}
+                  >
+                    {fyChange >= 0 ? "+" : "-"}
+                    <AnimatedCounter
+                      value={Math.abs(fyChange)}
+                      suffix="% vs last financial year"
+                      duration={1000}
+                      decimals={1}
+                      delay={300}
+                    />
+                  </span>
+                </div>
+              ) : (
+                <p className="text-muted-foreground pt-2 text-sm font-medium">
+                  No invoices in {formatFy(selectedFy - 1)} to compare against
+                </p>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }

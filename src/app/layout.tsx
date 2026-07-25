@@ -1,6 +1,6 @@
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
-import { Roboto_Mono } from "next/font/google";
+import { JetBrains_Mono } from "next/font/google";
 import localFont from "next/font/local";
 
 import { ConditionalLayout } from "@/components/ConditionalLayout";
@@ -10,7 +10,7 @@ import { Toaster } from "@/components/ui/sonner";
 import type { Metadata, Viewport } from "next";
 
 import "./globals.css";
-// fonts: Satoshi (body + headings), Roboto Mono (code)
+// fonts: Satoshi (body + headings), JetBrains Mono (invoice numbers, code)
 
 const satoshi = localFont({
   src: [
@@ -27,8 +27,8 @@ const satoshi = localFont({
   display: "swap",
 });
 
-const robotoMono = Roboto_Mono({
-  variable: "--font-roboto-mono",
+const jetbrainsMono = JetBrains_Mono({
+  variable: "--font-jetbrains-mono",
   subsets: ["latin"],
   display: "swap",
 });
@@ -132,14 +132,17 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  // Both font variables must land on <html>: --font-mono is declared on :root,
+  // so a --font-jetbrains-mono set on <body> is out of scope there and the
+  // whole declaration falls back to the inherited family.
   return (
     <html
       lang="en"
       suppressHydrationWarning
-      className={`${satoshi.variable}`}
+      className={`${satoshi.variable} ${jetbrainsMono.variable}`}
       data-scroll-behavior="smooth"
     >
-      <body className={`${robotoMono.variable} font-sans antialiased`}>
+      <body className="font-sans antialiased">
         <Analytics />
         <SpeedInsights />
         <Providers>

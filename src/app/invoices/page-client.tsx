@@ -35,7 +35,8 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { useInvoices } from "@/hooks/use-invoices";
-import { formatCurrency, formatDate } from "@/lib/utils";
+import { getInvoiceStatusConfig } from "@/lib/invoice-status";
+import { cn, formatCurrency, formatDate } from "@/lib/utils";
 
 const ITEMS_PER_PAGE = 10;
 
@@ -167,7 +168,7 @@ export default function AllInvoicesPage() {
 
       {/* Invoices Table */}
       <Card>
-        <CardContent>
+        <CardContent className="px-3 md:px-6">
           {isLoading ? (
             <>
               {/* Desktop skeleton */}
@@ -213,18 +214,18 @@ export default function AllInvoicesPage() {
                   </TableBody>
                 </Table>
               </div>
-              {/* Mobile skeleton */}
-              <div className="flex flex-col gap-3 md:hidden">
+              {/* Mobile skeleton — mirrors the row shape below */}
+              <div className="flex flex-col gap-2 md:hidden">
                 {[...Array(5)].map((_, i) => (
-                  <div key={i} className="space-y-3 rounded-lg border p-4">
-                    <div className="flex items-center justify-between">
-                      <Skeleton className="h-4 w-24" />
-                      <Skeleton className="h-6 w-16 rounded-full" />
+                  <div key={i} className="flex items-center gap-3 px-2 py-3">
+                    <Skeleton className="size-11 shrink-0 rounded-xl" />
+                    <div className="flex-1 space-y-2">
+                      <Skeleton className="h-4 w-36" />
+                      <Skeleton className="h-3 w-28" />
                     </div>
-                    <Skeleton className="h-4 w-40" />
-                    <div className="flex items-center justify-between">
-                      <Skeleton className="h-3 w-20" />
+                    <div className="flex flex-col items-end gap-2">
                       <Skeleton className="h-4 w-20" />
+                      <Skeleton className="h-3 w-16" />
                     </div>
                   </div>
                 ))}
@@ -283,7 +284,7 @@ export default function AllInvoicesPage() {
                             href={`/invoices/${invoice.id}`}
                             transitionTypes={["forward"]}
                             onClick={(e) => e.stopPropagation()}
-                            className="focus-visible:ring-ring rounded-sm outline-none hover:underline focus-visible:ring-2"
+                            className="focus-visible:ring-ring rounded-sm font-mono text-[0.8125rem] tracking-tight outline-none hover:underline focus-visible:ring-2"
                           >
                             {invoice.invoiceNumber}
                           </Link>
@@ -327,41 +328,59 @@ export default function AllInvoicesPage() {
                 </Table>
               </div>
 
-              {/* Mobile cards */}
-              <div className="flex flex-col gap-3 md:hidden">
-                {paginatedInvoices.map((invoice) => (
-                  <Link
-                    key={invoice.id}
-                    href={`/invoices/${invoice.id}`}
-                    transitionTypes={["forward"]}
-                    className="hover:bg-muted/40 flex flex-col gap-2 rounded-lg border p-4 transition-colors"
-                  >
-                    <div className="flex items-center justify-between gap-2">
-                      <span className="font-medium">
-                        {invoice.invoiceNumber}
-                      </span>
-                      <InvoiceStatusBadge status={invoice.status} />
-                    </div>
-                    <div className="text-muted-foreground text-sm">
-                      {invoice.showName}
-                      {invoice.clientName ? ` · ${invoice.clientName}` : ""}
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span
-                        className="text-muted-foreground text-xs"
-                        suppressHydrationWarning
-                      >
-                        {formatDate(invoice.invoiceDate)}
-                      </span>
-                      <span className="font-semibold tabular-nums">
-                        {formatCurrency(
-                          Number(invoice.totalAmount),
-                          invoice.currency,
+              {/* Mobile rows */}
+              <div className="flex flex-col gap-2 md:hidden">
+                {paginatedInvoices.map((invoice) => {
+                  const status = getInvoiceStatusConfig(invoice.status);
+                  const StatusIcon = status.icon;
+
+                  return (
+                    <Link
+                      key={invoice.id}
+                      href={`/invoices/${invoice.id}`}
+                      transitionTypes={["forward"]}
+                      className="hover:bg-muted/60 active:bg-muted -mx-2 flex items-center gap-3 rounded-3xl px-2 py-3 transition-colors"
+                    >
+                      <div
+                        className={cn(
+                          "flex size-11 shrink-0 items-center justify-center rounded-xl",
+                          status.tileClass,
                         )}
-                      </span>
-                    </div>
-                  </Link>
-                ))}
+                        aria-hidden="true"
+                      >
+                        <StatusIcon className="size-5" />
+                      </div>
+
+                      <div className="min-w-0 flex-1">
+                        <p className="truncate font-semibold">
+                          {invoice.showName}
+                          <span className="sr-only"> — {status.label}</span>
+                        </p>
+                        <p className="text-muted-foreground truncate text-sm">
+                          <span className="font-mono text-[0.8125rem] tracking-tight">
+                            {invoice.invoiceNumber}
+                          </span>
+                          {invoice.clientName ? ` · ${invoice.clientName}` : ""}
+                        </p>
+                      </div>
+
+                      <div className="flex shrink-0 flex-col items-end gap-1">
+                        <span className="font-semibold tabular-nums">
+                          {formatCurrency(
+                            Number(invoice.totalAmount),
+                            invoice.currency,
+                          )}
+                        </span>
+                        <span
+                          className="text-muted-foreground text-xs"
+                          suppressHydrationWarning
+                        >
+                          {formatDate(invoice.invoiceDate)}
+                        </span>
+                      </div>
+                    </Link>
+                  );
+                })}
               </div>
 
               {/* Pagination */}

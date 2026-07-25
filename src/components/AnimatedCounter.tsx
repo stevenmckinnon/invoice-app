@@ -2,6 +2,8 @@
 
 import { useEffect, useRef, useState } from "react";
 
+import { cn } from "@/lib/utils";
+
 interface AnimatedCounterProps {
   value: number;
   duration?: number;
@@ -77,7 +79,9 @@ export const AnimatedCounter: React.FC<AnimatedCounterProps> = ({
   }, [value, duration, delay]);
 
   return (
-    <span className={className}>
+    // tabular-nums by construction: this value changes every frame while it
+    // counts up, and proportional digits make it jitter horizontally.
+    <span className={cn("tabular-nums", className)}>
       {prefix}
       {count.toLocaleString("en-GB", {
         minimumFractionDigits: decimals,
