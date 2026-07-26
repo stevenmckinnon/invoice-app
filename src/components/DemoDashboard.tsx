@@ -143,9 +143,12 @@ export const DemoDashboard = () => {
         <div className="flex items-start justify-between gap-4">
           <div>
             <h1 className="text-3xl font-bold tracking-tight">
-              Afternoon, Seth
+              Afternoon, Ellie
             </h1>
-            <p className="text-muted-foreground mt-1 text-sm" suppressHydrationWarning>
+            <p
+              className="text-muted-foreground mt-1 text-sm"
+              suppressHydrationWarning
+            >
               {now.toLocaleDateString("en-GB", {
                 weekday: "long",
                 day: "numeric",

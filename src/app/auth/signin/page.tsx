@@ -94,7 +94,7 @@ const SignInForm = () => {
                   It just gets out of the way and lets me work.&quot;
                 </p>
                 <footer className="text-base font-medium text-zinc-400">
-                  Seth Chen, Freelance Developer
+                  Ellie Chen, Freelance Developer
                 </footer>
               </blockquote>
             </div>
