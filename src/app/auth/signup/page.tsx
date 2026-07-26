@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
 
-import { Eye, EyeOff, Loader2, Sparkles } from "lucide-react";
+import { Check, Eye, EyeOff, Loader2, Sparkles } from "lucide-react";
 import { motion } from "motion/react";
 import Link from "next/link";
 import { toast } from "sonner";
@@ -94,12 +94,12 @@ export default function SignUpPage() {
   };
 
   return (
-    <div className="grid min-h-screen w-full grid-cols-1 overflow-hidden lg:grid-cols-2">
+    <div className="grid min-h-screen w-full grid-cols-1 lg:grid-cols-2">
       {/* Brand Sidebar */}
       <div className="bg-muted relative hidden flex-col p-12 text-white lg:flex dark:border-r">
-        <div className="absolute inset-0 overflow-hidden bg-zinc-900">
+        <div className="absolute inset-0 overflow-hidden bg-zinc-900 dark:bg-card">
           <BackgroundPattern />
-          <div className="absolute inset-0 bg-linear-to-bl from-zinc-900/90 via-zinc-900/50 to-zinc-900/20" />
+          <div className="absolute inset-0 bg-linear-to-bl from-zinc-900/90 via-zinc-900/50 to-zinc-900/20 dark:from-card/90 dark:via-card/50 dark:to-card/20" />
         </div>
 
         <Link href="/">
@@ -112,15 +112,20 @@ export default function SignUpPage() {
         </Link>
 
         <div className="relative z-20 mt-auto max-w-md">
-          <blockquote className="space-y-6">
-            <p className="text-4xl leading-tight font-medium tracking-tight text-white drop-shadow-sm">
-              &quot;Finally, an invoicing tool that understands the creative
-              industry. Pure brilliance.&quot;
-            </p>
-            <footer className="text-base font-medium text-zinc-400">
-              Sarah Mitchell, Art Director
-            </footer>
-          </blockquote>
+          <ul className="space-y-4">
+            <li className="flex items-center gap-3 text-lg font-medium text-white">
+              <Check className="h-5 w-5 shrink-0 text-white/70" />
+              Track day rates, overtime, and per diems
+            </li>
+            <li className="flex items-center gap-3 text-lg font-medium text-white">
+              <Check className="h-5 w-5 shrink-0 text-white/70" />
+              Send a branded PDF invoice in under a minute
+            </li>
+            <li className="flex items-center gap-3 text-lg font-medium text-white">
+              <Check className="h-5 w-5 shrink-0 text-white/70" />
+              Built specifically for film and TV freelancers
+            </li>
+          </ul>
         </div>
       </div>
 
@@ -152,7 +157,9 @@ export default function SignUpPage() {
                 <Label htmlFor="firstName">First Name</Label>
                 <Input
                   id="firstName"
+                  name="firstName"
                   type="text"
+                  autoComplete="given-name"
                   placeholder="John"
                   value={formData.firstName}
                   onChange={(e) =>
@@ -167,7 +174,9 @@ export default function SignUpPage() {
                 <Label htmlFor="lastName">Last Name</Label>
                 <Input
                   id="lastName"
+                  name="lastName"
                   type="text"
+                  autoComplete="family-name"
                   placeholder="Doe"
                   value={formData.lastName}
                   onChange={(e) =>
@@ -183,7 +192,9 @@ export default function SignUpPage() {
               <Label htmlFor="email">Email</Label>
               <Input
                 id="email"
+                name="email"
                 type="email"
+                autoComplete="email"
                 placeholder="name@example.com"
                 value={formData.email}
                 onChange={(e) =>
@@ -199,7 +210,9 @@ export default function SignUpPage() {
               <div className="relative">
                 <Input
                   id="password"
+                  name="password"
                   type={showPassword ? "text" : "password"}
+                  autoComplete="new-password"
                   placeholder="••••••••"
                   value={formData.password}
                   onChange={(e) =>
@@ -212,7 +225,7 @@ export default function SignUpPage() {
                 <button
                   type="button"
                   onClick={() => setShowPassword((prev) => !prev)}
-                  className="text-muted-foreground hover:text-foreground absolute top-1/2 right-3 -translate-y-1/2 transition-colors"
+                  className="text-muted-foreground hover:text-foreground absolute inset-y-0 right-1 flex items-center rounded-sm px-2 transition-colors"
                   aria-label={showPassword ? "Hide password" : "Show password"}
                 >
                   {showPassword ? (
@@ -234,26 +247,18 @@ export default function SignUpPage() {
               disabled={isLoading}
             >
               {isLoading ? (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  Creating account...
+                </>
               ) : (
                 <>
                   Create Account
-                  <Sparkles className="ml-2 h-4 w-4" />
+                  <Sparkles className="h-4 w-4" />
                 </>
               )}
             </Button>
           </form>
-
-          <div className="relative">
-            <div className="absolute inset-0 flex items-center">
-              <span className="w-full border-t" />
-            </div>
-            <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-background text-muted-foreground px-2">
-                Or continue with
-              </span>
-            </div>
-          </div>
 
           <div className="text-center text-sm">
             <span className="text-muted-foreground">

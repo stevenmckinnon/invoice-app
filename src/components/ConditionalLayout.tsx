@@ -29,7 +29,7 @@ export const ConditionalLayout = ({ children }: ConditionalLayoutProps) => {
 
   if (isAuthRoute) {
     return (
-      <main className="h-[100dvh] w-full overflow-hidden">
+      <main className="min-h-dvh w-full">
         <ViewTransition>{children}</ViewTransition>
       </main>
     );

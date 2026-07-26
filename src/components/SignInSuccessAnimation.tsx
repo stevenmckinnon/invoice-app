@@ -20,11 +20,11 @@ export function SignInSuccessAnimation({
     setTimeout(() => setIsVisible(true), 50);
 
     // Complete after animation duration (wait for all animations to finish + a brief pause)
-    // Last animation starts at 600ms delay and has 500ms duration, so completes at 1100ms
-    // Add 400ms pause to let user see the completed animation
+    // Last animation starts at 300ms delay and has 500ms duration, so completes at 800ms
+    // Add 100ms pause to let user see the completed animation
     const timer = setTimeout(() => {
       onComplete();
-    }, 1500);
+    }, 900);
 
     return () => clearTimeout(timer);
   }, [onComplete]);
@@ -32,14 +32,14 @@ export function SignInSuccessAnimation({
   return (
     <div className="bg-background fixed inset-0 z-50 flex items-center justify-center">
       <div
-        className={`flex flex-col items-center justify-center gap-6 transition-all duration-700 ${
+        className={`flex flex-col items-center justify-center gap-6 transition-[opacity,scale] duration-700 ${
           isVisible ? "scale-100 opacity-100" : "scale-95 opacity-0"
         }`}
       >
         {/* Logo with checkmark animation */}
         <div className="relative">
           <div
-            className={`transition-all duration-500 ${
+            className={`transition-[opacity,scale] duration-500 ${
               isVisible ? "scale-100 opacity-100" : "scale-90 opacity-0"
             }`}
           >
@@ -49,14 +49,16 @@ export function SignInSuccessAnimation({
 
         {/* Success message */}
         <div
-          className={`text-center transition-all duration-500 ${
+          className={`text-center transition-[opacity,translate] duration-500 ${
             isVisible ? "translate-y-0 opacity-100" : "translate-y-4 opacity-0"
           }`}
           style={{
-            transitionDelay: isVisible ? "600ms" : "0ms",
+            transitionDelay: isVisible ? "300ms" : "0ms",
           }}
         >
-          <h2 className="text-2xl font-bold">Welcome back, {userName}!</h2>
+          <h2 className="text-2xl font-bold">
+            Welcome back{userName ? `, ${userName}` : ""}!
+          </h2>
           <p className="text-muted-foreground mt-2 text-sm">
             Taking you to your dashboard...
           </p>
