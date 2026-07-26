@@ -22,18 +22,6 @@ const Hero = () => {
         className="relative z-10 mx-auto flex flex-col items-center justify-center px-6 pt-24 pb-12 md:px-12 md:pt-36"
       >
         <div className="mx-auto w-full max-w-4xl text-center">
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.1, duration: 0.5 }}
-            className="mb-8 inline-flex"
-          >
-            <div className="bg-card/70 border-border/60 text-muted-foreground relative inline-flex items-center gap-2 rounded-lg border px-3 py-1.5 font-mono text-xs tracking-wide uppercase backdrop-blur-md">
-              <span className="bg-primary h-1.5 w-1.5 rounded-full" />
-              In beta
-            </div>
-          </motion.div>
-
           <h1 className="text-5xl leading-[1.05] font-bold tracking-tight sm:text-6xl md:text-7xl">
             Invoicing for <span className="text-primary">film and TV</span>{" "}
             freelancers.
