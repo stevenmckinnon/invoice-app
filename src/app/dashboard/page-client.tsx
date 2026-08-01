@@ -20,7 +20,6 @@ import {
   YAxis,
 } from "recharts";
 
-import { AnimatedCounter } from "@/components/AnimatedCounter";
 import { DashboardSkeleton } from "@/components/DashboardSkeleton";
 import { EmptyState } from "@/components/EmptyState";
 import { InvoiceStatusBadge } from "@/components/InvoiceStatusBadge";
@@ -50,12 +49,7 @@ import {
 import { useInvoices } from "@/hooks/use-invoices";
 import { useSession } from "@/lib/auth-client";
 import { INVOICE_STATUSES } from "@/lib/invoice-status";
-import {
-  currencySymbol,
-  formatCurrency,
-  formatDate,
-  getGreeting,
-} from "@/lib/utils";
+import { formatCurrency, formatDate, getGreeting } from "@/lib/utils";
 
 // Aggregated stats need a single display currency — use the most common one
 const dominantCurrency = (invoices: { currency: string }[]): string => {
@@ -187,7 +181,6 @@ export default function Home() {
   );
 
   const displayCurrency = dominantCurrency(fyInvoices);
-  const displaySymbol = currencySymbol(displayCurrency);
 
   const sortedInvoices = [...invoices]
     .sort(
@@ -400,12 +393,7 @@ export default function Home() {
         <CardContent className="space-y-5">
           <div className="flex flex-wrap items-end justify-between gap-x-6 gap-y-3">
             <div className="text-4xl font-bold tracking-tight tabular-nums sm:text-5xl">
-              <AnimatedCounter
-                value={totalRevenue}
-                prefix={displaySymbol}
-                duration={1200}
-                decimals={2}
-              />
+              {formatCurrency(totalRevenue, displayCurrency)}
             </div>
             {isCurrentFy && lastMonthRevenue > 0 ? (
               <div className="bg-card flex items-center gap-1.5 rounded-full py-1.5 pr-3 pl-2.5 shadow-xs">
@@ -420,12 +408,7 @@ export default function Home() {
                   }`}
                 >
                   {monthlyChange >= 0 ? "+" : "-"}
-                  <AnimatedCounter
-                    value={Math.abs(monthlyChange)}
-                    suffix="%"
-                    duration={1200}
-                    decimals={1}
-                  />
+                  {Math.abs(monthlyChange).toFixed(1)}%
                 </span>
                 <span className="text-muted-foreground text-xs font-medium">
                   vs last month
@@ -471,13 +454,7 @@ export default function Home() {
           </CardHeader>
           <CardContent className="mt-auto">
             <div className="text-success text-xl font-bold tracking-tight tabular-nums sm:text-3xl">
-              <AnimatedCounter
-                value={paidRevenue}
-                prefix={displaySymbol}
-                duration={1200}
-                decimals={2}
-                delay={100}
-              />
+              {formatCurrency(paidRevenue, displayCurrency)}
             </div>
             <p className="text-muted-foreground mt-2 text-xs font-medium">
               {fyInvoices.filter((inv) => inv.status === "paid").length} paid
@@ -494,13 +471,7 @@ export default function Home() {
           </CardHeader>
           <CardContent className="mt-auto">
             <div className="text-warning text-xl font-bold tracking-tight tabular-nums sm:text-3xl">
-              <AnimatedCounter
-                value={outstandingRevenue}
-                prefix={displaySymbol}
-                duration={1200}
-                decimals={2}
-                delay={200}
-              />
+              {formatCurrency(outstandingRevenue, displayCurrency)}
             </div>
             <p className="text-muted-foreground mt-2 text-xs font-medium">
               {fyInvoices.filter((inv) => inv.status !== "paid").length} unpaid
@@ -516,13 +487,7 @@ export default function Home() {
           </CardHeader>
           <CardContent className="mt-auto">
             <div className="text-xl font-bold tracking-tight tabular-nums sm:text-3xl">
-              <AnimatedCounter
-                value={averageInvoice}
-                prefix={displaySymbol}
-                duration={1200}
-                decimals={2}
-                delay={300}
-              />
+              {formatCurrency(averageInvoice, displayCurrency)}
             </div>
             <p className="text-muted-foreground mt-2 text-xs font-medium">
               per invoice
@@ -771,14 +736,8 @@ export default function Home() {
                         {item.show}
                       </span>
                     </div>
-                    <span className="text-sm font-bold tracking-tight">
-                      <AnimatedCounter
-                        value={item.revenue}
-                        prefix={displaySymbol}
-                        duration={1000}
-                        decimals={2}
-                        delay={400 + index * 100}
-                      />
+                    <span className="text-sm font-bold tracking-tight tabular-nums">
+                      {formatCurrency(item.revenue, displayCurrency)}
                     </span>
                   </div>
                 ))}
@@ -824,14 +783,11 @@ export default function Home() {
                 <p className="text-muted-foreground text-sm font-medium">
                   Revenue
                 </p>
-                <p className="text-2xl font-bold">
-                  <AnimatedCounter
-                    value={isCurrentFy ? currentMonthRevenue : bestMonthRevenue}
-                    prefix={displaySymbol}
-                    duration={1200}
-                    decimals={2}
-                    delay={100}
-                  />
+                <p className="text-2xl font-bold tabular-nums">
+                  {formatCurrency(
+                    isCurrentFy ? currentMonthRevenue : bestMonthRevenue,
+                    displayCurrency,
+                  )}
                 </p>
                 {isCurrentFy && (
                   <div className="flex items-center gap-1">
@@ -845,14 +801,8 @@ export default function Home() {
                         monthlyChange >= 0 ? "text-success" : "text-destructive"
                       }`}
                     >
-                      {monthlyChange >= 0 ? "+" : ""}
-                      <AnimatedCounter
-                        value={Math.abs(monthlyChange)}
-                        suffix="% from last month"
-                        duration={1000}
-                        decimals={1}
-                        delay={100}
-                      />
+                      {monthlyChange >= 0 ? "+" : "-"}
+                      {Math.abs(monthlyChange).toFixed(1)}% from last month
                     </p>
                   </div>
                 )}
@@ -861,27 +811,19 @@ export default function Home() {
                 <p className="text-muted-foreground text-sm font-medium">
                   Invoices Created
                 </p>
-                <p className="text-2xl font-bold">
-                  <AnimatedCounter
-                    value={
-                      isCurrentFy
-                        ? fyInvoices.filter(
-                            (inv) =>
-                              new Date(inv.invoiceDate).getMonth() ===
-                              currentMonth,
-                          ).length
-                        : bestMonthIndex >= 0
-                          ? fyInvoices.filter(
-                              (inv) =>
-                                new Date(inv.invoiceDate).getMonth() ===
-                                bestMonthIndex,
-                            ).length
-                          : 0
-                    }
-                    duration={1000}
-                    decimals={0}
-                    delay={200}
-                  />
+                <p className="text-2xl font-bold tabular-nums">
+                  {isCurrentFy
+                    ? fyInvoices.filter(
+                        (inv) =>
+                          new Date(inv.invoiceDate).getMonth() === currentMonth,
+                      ).length
+                    : bestMonthIndex >= 0
+                      ? fyInvoices.filter(
+                          (inv) =>
+                            new Date(inv.invoiceDate).getMonth() ===
+                            bestMonthIndex,
+                        ).length
+                      : 0}
                 </p>
                 <p className="text-muted-foreground text-xs">
                   {isCurrentFy ? "This month" : `In ${bestMonthName}`}
@@ -891,29 +833,21 @@ export default function Home() {
                 <p className="text-muted-foreground text-sm font-medium">
                   {isCurrentFy ? "Paid This Month" : "Paid That Month"}
                 </p>
-                <p className="text-success text-2xl font-bold">
-                  <AnimatedCounter
-                    value={
-                      isCurrentFy
-                        ? fyInvoices.filter(
-                            (inv) =>
-                              inv.status === "paid" &&
-                              new Date(inv.invoiceDate).getMonth() ===
-                                currentMonth,
-                          ).length
-                        : bestMonthIndex >= 0
-                          ? fyInvoices.filter(
-                              (inv) =>
-                                inv.status === "paid" &&
-                                new Date(inv.invoiceDate).getMonth() ===
-                                  bestMonthIndex,
-                            ).length
-                          : 0
-                    }
-                    duration={1000}
-                    decimals={0}
-                    delay={300}
-                  />
+                <p className="text-success text-2xl font-bold tabular-nums">
+                  {isCurrentFy
+                    ? fyInvoices.filter(
+                        (inv) =>
+                          inv.status === "paid" &&
+                          new Date(inv.invoiceDate).getMonth() === currentMonth,
+                      ).length
+                    : bestMonthIndex >= 0
+                      ? fyInvoices.filter(
+                          (inv) =>
+                            inv.status === "paid" &&
+                            new Date(inv.invoiceDate).getMonth() ===
+                              bestMonthIndex,
+                        ).length
+                      : 0}
                 </p>
                 <p className="text-muted-foreground text-xs">Invoices paid</p>
               </div>
@@ -935,14 +869,8 @@ export default function Home() {
                   <span className="text-sm font-medium">
                     {formatFy(selectedFy)}
                   </span>
-                  <span className="text-sm font-bold">
-                    <AnimatedCounter
-                      value={selectedFyRevenue}
-                      prefix={displaySymbol}
-                      duration={1200}
-                      decimals={2}
-                      delay={100}
-                    />
+                  <span className="text-sm font-bold tabular-nums">
+                    {formatCurrency(selectedFyRevenue, displayCurrency)}
                   </span>
                 </div>
                 <div className="bg-muted h-2 overflow-hidden rounded-full">
@@ -964,14 +892,8 @@ export default function Home() {
                   <span className="text-sm font-medium">
                     {formatFy(selectedFy - 1)}
                   </span>
-                  <span className="text-sm font-bold">
-                    <AnimatedCounter
-                      value={prevFyRevenue}
-                      prefix={displaySymbol}
-                      duration={1200}
-                      decimals={2}
-                      delay={200}
-                    />
+                  <span className="text-sm font-bold tabular-nums">
+                    {formatCurrency(prevFyRevenue, displayCurrency)}
                   </span>
                 </div>
                 <div className="bg-muted h-2 overflow-hidden rounded-full">
@@ -1001,13 +923,7 @@ export default function Home() {
                     }`}
                   >
                     {fyChange >= 0 ? "+" : "-"}
-                    <AnimatedCounter
-                      value={Math.abs(fyChange)}
-                      suffix="% vs last financial year"
-                      duration={1000}
-                      decimals={1}
-                      delay={300}
-                    />
+                    {Math.abs(fyChange).toFixed(1)}% vs last financial year
                   </span>
                 </div>
               ) : (

@@ -1,108 +1,79 @@
 "use client";
 
-import { useState } from "react";
+import { SparklesIcon, XIcon } from "lucide-react";
+import { usePathname } from "next/navigation";
 
-import { ChevronDownIcon, SparklesIcon } from "lucide-react";
-
-import { ChatContent } from "@/components/ai/ChatContent";
 import { useChatSession } from "@/components/ai/ChatProvider";
-import { DraftInvoicePreview } from "@/components/ai/DraftInvoicePreview";
+import { ChatSurface } from "@/components/ai/ChatSurface";
 import { Button } from "@/components/ui/button";
 import {
   Sheet,
+  SheetClose,
   SheetContent,
-  SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
 
 export const AiChat = () => {
-  const { open, setOpen, draftInvoiceId, isGenerating } = useChatSession();
-  const [expandedOnNarrow, setExpandedOnNarrow] = useState(false);
+  const { open, setOpen, draftInvoiceId, draftPanelOpen } = useChatSession();
+  const pathname = usePathname();
 
-  const hasDraft = Boolean(draftInvoiceId);
+  const showDraftAlongside = Boolean(draftInvoiceId) && draftPanelOpen;
 
   return (
     <>
-      {/* Desktop floating action button — hidden on mobile (mobile uses /chat route) */}
-      <Button
-        onClick={() => setOpen(true)}
-        className="fixed right-6 bottom-6 z-40 hidden size-14 overflow-hidden rounded-full shadow-lg md:flex"
-        size="icon"
-        aria-label="Open AI assistant"
-      >
-        <SparklesIcon className="relative z-10 size-5" />
-        <span className="shimmer-overlay" />
-      </Button>
+      {/* Desktop floating action button. Hidden on mobile (mobile uses the
+          /chat route) and on /chat itself, where it would float over the
+          assistant it opens. */}
+      {pathname !== "/chat" && (
+        <Button
+          onClick={() => setOpen(true)}
+          className="fixed right-6 bottom-6 z-40 hidden size-14 rounded-full shadow-lg md:flex"
+          size="icon"
+          aria-label="Open AI assistant"
+        >
+          <SparklesIcon className="size-5" />
+        </Button>
+      )}
 
-      <Sheet open={open} onOpenChange={setOpen}>
+      {/* Non-modal: the assistant acts on the app's data, so the app has to
+          stay readable and clickable while it's open. */}
+      <Sheet open={open} onOpenChange={setOpen} modal={false}>
         <SheetContent
           side="right"
+          overlay={false}
+          // The header carries its own close button, in line with the rest of
+          // the controls rather than floating over the conversation
+          closeButton={false}
+          // Clicking into the app behind the panel must not dismiss it
+          onInteractOutside={(e) => e.preventDefault()}
           className={cn(
-            "flex w-full flex-col gap-0 p-0 pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)] transition-[max-width] duration-300 sm:max-w-[480px]",
-            // Widen to fit the draft alongside the conversation
-            hasDraft && "lg:max-w-[860px]",
+            // A floating card rather than an edge-to-edge sheet — the same
+            // surface language as every other panel in the app. max-w-none is
+            // required at the sm: breakpoint too — the base sets sm:max-w-sm,
+            // and a bare max-w-none is a different modifier group, so
+            // tailwind-merge keeps both and the media query wins.
+            "bg-card inset-y-4 right-4 flex h-auto w-[min(26rem,calc(100vw-2rem))] max-w-none flex-col gap-0 overflow-hidden rounded-2xl p-0 shadow-xl sm:max-w-none md:border-none",
+            // Widen only when the draft is actually showing beside the
+            // conversation, so collapsing it gives the width back
+            showDraftAlongside && "lg:w-[min(52rem,calc(100vw-2rem))]",
           )}
         >
-          <SheetHeader className="shrink-0 border-b px-6 py-4">
-            <div className="flex items-center gap-3">
-              <div className="bg-primary/10 flex size-8 shrink-0 items-center justify-center rounded-full">
-                <SparklesIcon className="text-primary size-4" />
-              </div>
-              <div className="flex-1 text-left">
-                <SheetTitle className="text-sm leading-none font-semibold">
-                  Caley Assistant
-                </SheetTitle>
-                <p className="text-muted-foreground mt-0.5 text-xs">
-                  Powered by Claude
-                </p>
-              </div>
-            </div>
-          </SheetHeader>
-
-          {/* Draft summary — collapsible below lg, where the side panel is hidden */}
-          {hasDraft && (
-            <div className="shrink-0 border-b lg:hidden">
-              <button
-                type="button"
-                onClick={() => setExpandedOnNarrow((v) => !v)}
-                className="hover:bg-muted/50 flex w-full items-center gap-2 px-4 py-2.5 text-left transition-colors"
-                aria-expanded={expandedOnNarrow}
-              >
-                <span className="text-xs font-medium">Draft invoice</span>
-                <ChevronDownIcon
-                  className={cn(
-                    "text-muted-foreground ml-auto size-4 transition-transform",
-                    expandedOnNarrow && "rotate-180",
-                  )}
-                />
-              </button>
-              {expandedOnNarrow && (
-                <div className="max-h-72 overflow-y-auto border-t">
-                  <DraftInvoicePreview
-                    invoiceId={draftInvoiceId!}
-                    isGenerating={isGenerating}
-                    onNavigate={() => setOpen(false)}
-                  />
-                </div>
-              )}
-            </div>
-          )}
-
-          <div className="flex min-h-0 flex-1">
-            <ChatContent className="min-w-0 flex-1" />
-
-            {/* Live draft alongside the conversation */}
-            {hasDraft && (
-              <aside className="hidden w-[340px] shrink-0 border-l lg:flex lg:flex-col">
-                <DraftInvoicePreview
-                  invoiceId={draftInvoiceId!}
-                  isGenerating={isGenerating}
-                  onNavigate={() => setOpen(false)}
-                />
-              </aside>
-            )}
-          </div>
+          <ChatSurface
+            title={
+              <SheetTitle className="text-sm leading-none font-semibold">
+                Caley Assistant
+              </SheetTitle>
+            }
+            trailing={
+              <SheetClose asChild>
+                <Button variant="ghost" size="icon-sm" aria-label="Close assistant">
+                  <XIcon className="size-4" />
+                </Button>
+              </SheetClose>
+            }
+            onNavigate={() => setOpen(false)}
+          />
         </SheetContent>
       </Sheet>
     </>

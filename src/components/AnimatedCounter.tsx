@@ -1,8 +1,16 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
 
 import { cn } from "@/lib/utils";
+
+const REDUCED_MOTION_QUERY = "(prefers-reduced-motion: reduce)";
+
+const subscribeToReducedMotion = (onChange: () => void) => {
+  const mq = window.matchMedia(REDUCED_MOTION_QUERY);
+  mq.addEventListener("change", onChange);
+  return () => mq.removeEventListener("change", onChange);
+};
 
 interface AnimatedCounterProps {
   value: number;
@@ -31,7 +39,17 @@ export const AnimatedCounter: React.FC<AnimatedCounterProps> = ({
   const frameRef = useRef<number | undefined>(undefined);
   const startTimeRef = useRef<number | undefined>(undefined);
 
+  // Counting up is decoration, not information. When the OS asks for less
+  // motion we skip the animation entirely and render the target value.
+  const prefersReducedMotion = useSyncExternalStore(
+    subscribeToReducedMotion,
+    useCallback(() => window.matchMedia(REDUCED_MOTION_QUERY).matches, []),
+    useCallback(() => false, []),
+  );
+
   useEffect(() => {
+    if (prefersReducedMotion) return;
+
     // Cancel any ongoing animation
     if (frameRef.current !== undefined) {
       cancelAnimationFrame(frameRef.current);
@@ -76,14 +94,16 @@ export const AnimatedCounter: React.FC<AnimatedCounterProps> = ({
         cancelAnimationFrame(frameRef.current);
       }
     };
-  }, [value, duration, delay]);
+  }, [value, duration, delay, prefersReducedMotion]);
+
+  const displayed = prefersReducedMotion ? value : count;
 
   return (
     // tabular-nums by construction: this value changes every frame while it
     // counts up, and proportional digits make it jitter horizontally.
     <span className={cn("tabular-nums", className)}>
       {prefix}
-      {count.toLocaleString("en-GB", {
+      {displayed.toLocaleString("en-GB", {
         minimumFractionDigits: decimals,
         maximumFractionDigits: decimals,
       })}

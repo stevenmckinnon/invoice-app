@@ -52,6 +52,9 @@ type ChatContextValue = ReturnType<typeof useChat> & {
   isGenerating: boolean;
   /** Invoice the assistant is currently working on, for the live preview */
   draftInvoiceId: string | null;
+  /** Whether the draft preview is showing, shared across both chat surfaces */
+  draftPanelOpen: boolean;
+  setDraftPanelOpen: (open: boolean) => void;
   clearChat: () => void;
   /** Drawer open state, shared so any surface can open the assistant */
   open: boolean;
@@ -78,6 +81,14 @@ export const ChatProvider = ({ children }: { children: React.ReactNode }) => {
 
   // Derived, not stored — clearing the conversation clears the draft with it
   const draftInvoiceId = useMemo(() => findDraftInvoiceId(messages), [messages]);
+
+  // Stored as "which draft did you collapse", not as a plain boolean, so a
+  // newly created draft opens on its own without an effect that writes state.
+  const [collapsedDraftId, setCollapsedDraftId] = useState<string | null>(null);
+  const draftPanelOpen =
+    Boolean(draftInvoiceId) && collapsedDraftId !== draftInvoiceId;
+  const setDraftPanelOpen = (open: boolean) =>
+    setCollapsedDraftId(open ? null : draftInvoiceId);
 
   // Restore history once on mount
   const restored = useRef(false);
@@ -130,6 +141,8 @@ export const ChatProvider = ({ children }: { children: React.ReactNode }) => {
         mounted,
         isGenerating,
         draftInvoiceId,
+        draftPanelOpen,
+        setDraftPanelOpen,
         clearChat,
         open,
         setOpen,

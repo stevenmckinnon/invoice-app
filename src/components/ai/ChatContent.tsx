@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 
 import { isTextUIPart, type ToolUIPart, type UIMessage } from "ai";
-import { BotIcon } from "lucide-react";
 
 import { useChatSession } from "@/components/ai/ChatProvider";
 import {
@@ -78,20 +77,15 @@ const ThinkingIndicator = () => {
   );
 };
 
-const AssistantAvatar = () => (
-  <div className="bg-primary/10 mt-0.5 flex size-7 shrink-0 items-center justify-center rounded-full">
-    <BotIcon className="text-primary size-3.5" />
-  </div>
-);
-
-/** Assistant turn: avatar in the gutter, message body beside it */
+/**
+ * Assistant turn. No avatar chip: the alternating alignment and the blue user
+ * bubble already carry who is speaking, and a tinted icon badge on every turn
+ * is the decorative-chip pattern the rest of the app avoids.
+ */
 const AssistantRow = ({ children }: { children: React.ReactNode }) => (
-  <div className="flex gap-3">
-    <AssistantAvatar />
-    <Message from="assistant" className="min-w-0 flex-1">
-      {children}
-    </Message>
-  </div>
+  <Message from="assistant" className="min-w-0">
+    {children}
+  </Message>
 );
 
 export const ChatContent = ({ className }: { className?: string }) => {
@@ -199,7 +193,9 @@ export const ChatContent = ({ className }: { className?: string }) => {
         <ConversationScrollButton />
       </Conversation>
 
-      <div className="shrink-0 border-t p-3">
+      {/* Separated from the conversation by a lift rather than a hairline —
+          the same way cards separate from the canvas everywhere else. */}
+      <div className="shrink-0 px-4 pt-2 pb-4 shadow-[0_-8px_16px_-12px_var(--shadow-color)]">
         <PromptInput onSubmit={handleSubmit}>
           <PromptInputTextarea
             placeholder="Ask anything about your invoices…"

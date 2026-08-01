@@ -88,8 +88,12 @@ export const DraftInvoicePreview = ({
   ];
 
   return (
-    <div className="flex min-h-0 flex-col">
-      <div className="flex shrink-0 items-start justify-between gap-3 border-b px-4 py-3">
+    // flex-1 rather than h-full: both placements are flex columns, and only one
+    // of them has a definite height (the lg aside). Against the max-height-only
+    // wrapper used below lg, `height: 100%` resolves to auto and the total and
+    // CTA get clipped instead of pinning.
+    <div className="flex min-h-0 w-full flex-1 flex-col">
+      <div className="flex shrink-0 items-start justify-between gap-3 px-4 py-3">
         <div className="min-w-0">
           <p className="truncate font-mono text-xs font-semibold">
             {invoice.invoiceNumber}
@@ -108,7 +112,7 @@ export const DraftInvoicePreview = ({
             No line items yet.
           </p>
         ) : (
-          <dl className="divide-border/60 divide-y">
+          <dl className="divide-border/40 divide-y">
             {rows.map((row, i) => (
               <div
                 key={`${row.label}-${i}`}
@@ -131,8 +135,8 @@ export const DraftInvoicePreview = ({
         )}
       </div>
 
-      <div className="shrink-0 border-t">
-        <div className="bg-muted/30 flex items-baseline justify-between px-4 py-3">
+      <div className="shrink-0">
+        <div className="flex items-baseline justify-between px-4 py-3">
           <span className="text-xs font-semibold tracking-wide uppercase">
             Total
           </span>

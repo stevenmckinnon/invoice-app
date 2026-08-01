@@ -4,6 +4,7 @@ import type { ComponentProps } from "react";
 import { useCallback } from "react";
 
 import { ArrowDownIcon, DownloadIcon } from "lucide-react";
+import { AnimatePresence, motion } from "motion/react";
 import { StickToBottom, useStickToBottomContext } from "use-stick-to-bottom";
 
 import { Button } from "@/components/ui/button";
@@ -90,21 +91,33 @@ export const ConversationScrollButton = ({
   }, [scrollToBottom]);
 
   return (
-    !isAtBottom && (
-      <Button
-        className={cn(
-          "dark:bg-background dark:hover:bg-muted absolute bottom-4 left-[50%] translate-x-[-50%] rounded-full",
-          className,
-        )}
-        onClick={handleScrollToBottom}
-        size="icon"
-        type="button"
-        variant="outline"
-        {...props}
-      >
-        <ArrowDownIcon className="size-4" />
-      </Button>
-    )
+    // initial={false} so it never animates in on first paint; the exit is a
+    // shorter, softer fade than the enter.
+    <AnimatePresence initial={false}>
+      {!isAtBottom && (
+        <motion.div
+          className="absolute bottom-4 left-[50%] z-10"
+          initial={{ opacity: 0, y: 4, x: "-50%" }}
+          animate={{ opacity: 1, y: 0, x: "-50%" }}
+          exit={{ opacity: 0, y: 4, x: "-50%" }}
+          transition={{ type: "spring", duration: 0.3, bounce: 0 }}
+        >
+          <Button
+            className={cn(
+              "dark:bg-background dark:hover:bg-muted rounded-full shadow-sm",
+              className,
+            )}
+            onClick={handleScrollToBottom}
+            size="icon"
+            type="button"
+            variant="outline"
+            {...props}
+          >
+            <ArrowDownIcon className="size-4" />
+          </Button>
+        </motion.div>
+      )}
+    </AnimatePresence>
   );
 };
 

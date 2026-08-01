@@ -55,8 +55,12 @@ export const MessageContent = ({
   <div
     className={cn(
       "is-user:dark flex w-fit max-w-full min-w-0 flex-col gap-2 overflow-hidden text-sm",
-      "group-[.is-user]:bg-primary group-[.is-user]:text-primary-foreground group-[.is-user]:ml-auto group-[.is-user]:rounded-lg group-[.is-user]:px-4 group-[.is-user]:py-3",
-      "group-[.is-assistant]:bg-muted/50 group-[.is-assistant]:text-foreground group-[.is-assistant]:rounded-2xl group-[.is-assistant]:rounded-bl-sm group-[.is-assistant]:px-4 group-[.is-assistant]:py-2.5",
+      // One radius and one padding for both roles. No tailed bubble: the
+      // asymmetric-corner idiom belongs to messaging apps, not to this one.
+      "group-[.is-user]:bg-primary group-[.is-user]:text-primary-foreground group-[.is-user]:ml-auto group-[.is-user]:rounded-xl group-[.is-user]:px-4 group-[.is-user]:py-3",
+      // The assistant is unboxed — its prose sits directly on the panel, which
+      // keeps the only tinted surface in the conversation the user's own turn.
+      "group-[.is-assistant]:text-foreground",
       className,
     )}
     {...props}

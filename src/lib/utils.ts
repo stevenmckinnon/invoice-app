@@ -35,12 +35,6 @@ export const formatCurrency = (
   { decimals = 2 }: { decimals?: number } = {},
 ): string => getCurrencyFormatter(currency, decimals).format(amount);
 
-/** Currency symbol only (e.g. "£", "€", "US$") — for AnimatedCounter prefixes */
-export const currencySymbol = (currency: string = "GBP"): string =>
-  getCurrencyFormatter(currency, 0)
-    .formatToParts(0)
-    .find((p) => p.type === "currency")?.value ?? currency;
-
 export const formatDate = (date: Date | string): string => {
   const d = typeof date === "string" ? new Date(date) : date;
   if (isNaN(d.getTime())) return "Invalid date";
