@@ -22,8 +22,10 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { useCreateClient } from "@/hooks/use-clients";
+import { OVERTIME_RATE_TYPES } from "@/lib/overtime";
 
 import { type Client } from "./ClientSelector";
+import { OvertimeTierFields } from "./OvertimeTierFields";
 
 const clientSchema = z.object({
   name: z.string().min(1, "Name is required"),
@@ -37,6 +39,9 @@ const clientSchema = z.object({
   dayRate: z.union([z.string(), z.number()]).optional(),
   perDiemWork: z.union([z.string(), z.number()]).optional(),
   perDiemTravel: z.union([z.string(), z.number()]).optional(),
+  overtimeTierHours: z.union([z.string(), z.number()]).optional(),
+  overtimeFirstRate: z.enum(OVERTIME_RATE_TYPES),
+  overtimeAfterRate: z.enum(OVERTIME_RATE_TYPES),
 });
 
 interface CreateClientDialogProps {
@@ -66,6 +71,9 @@ export const CreateClientDialog = ({
       dayRate: 0,
       perDiemWork: 0,
       perDiemTravel: 0,
+      overtimeTierHours: "",
+      overtimeFirstRate: "1.5x",
+      overtimeAfterRate: "2x",
     },
   });
 
@@ -77,6 +85,10 @@ export const CreateClientDialog = ({
       perDiemWork: values.perDiemWork ? Number(values.perDiemWork) : undefined,
       perDiemTravel: values.perDiemTravel
         ? Number(values.perDiemTravel)
+        : undefined,
+      // Blank hours means no tiering — the API clears the whole rule
+      overtimeTierHours: values.overtimeTierHours
+        ? Number(values.overtimeTierHours)
         : undefined,
     };
     createClientMutation.mutate(payload, {
@@ -288,6 +300,8 @@ export const CreateClientDialog = ({
                 )}
               />
             </div>
+
+            <OvertimeTierFields control={form.control} />
 
             <div className="flex justify-end gap-2 pt-4">
               <Button

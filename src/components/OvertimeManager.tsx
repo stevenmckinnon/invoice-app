@@ -36,6 +36,12 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import {
+  overtimeMultiplier,
+  splitOvertimeHours,
+  type OvertimeRateType,
+  type OvertimeTierRule,
+} from "@/lib/overtime";
 import { formatCurrency, parseDate } from "@/lib/utils";
 
 import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
@@ -44,7 +50,7 @@ export interface OvertimeEntry {
   id: string;
   date: Date;
   hours: number;
-  rateType: "1.5x" | "2x";
+  rateType: OvertimeRateType;
 }
 
 interface OvertimeManagerProps {
@@ -52,12 +58,12 @@ interface OvertimeManagerProps {
   onEntriesChange: (entries: OvertimeEntry[]) => void;
   regularRate: number;
   currency?: string;
+  /** The selected client's tiered overtime terms, when they have any */
+  tierRule?: OvertimeTierRule | null;
 }
 
-const RATE_MULTIPLIERS = {
-  "1.5x": 1.5,
-  "2x": 2,
-};
+/** Compared as a plain day key so entries on the same date share a tier */
+const dayKey = (date: Date) => format(date, "yyyy-MM-dd");
 
 const overtimeFormSchema = z.object({
   date: z.date({
@@ -67,7 +73,9 @@ const overtimeFormSchema = z.object({
     .number()
     .positive("Hours must be positive")
     .min(0.5, "Minimum 0.5 hours"),
-  rateType: z.enum(["1.5x", "2x"]),
+  // "auto" only appears when the client has a rule; it defers the choice to
+  // splitOvertimeHours, which is the same path the AI assistant takes
+  rateType: z.enum(["auto", "1.5x", "2x"]),
 });
 
 type OvertimeFormValues = z.infer<typeof overtimeFormSchema>;
@@ -77,21 +85,26 @@ export const OvertimeManager = ({
   onEntriesChange,
   regularRate,
   currency = "GBP",
+  tierRule,
 }: OvertimeManagerProps) => {
+  const defaultRateType: OvertimeFormValues["rateType"] = tierRule
+    ? "auto"
+    : "1.5x";
+
   // @ts-ignore - React Hook Form type inference issues
   const form = useForm<OvertimeFormValues>({
     // @ts-ignore
     resolver: zodResolver(overtimeFormSchema),
     defaultValues: {
       hours: 1,
-      rateType: "1.5x",
+      rateType: defaultRateType,
     },
   });
 
   // Calculate overtime rates dynamically based on regularRate
   const ratePrices = {
-    "1.5x": regularRate * RATE_MULTIPLIERS["1.5x"],
-    "2x": regularRate * RATE_MULTIPLIERS["2x"],
+    "1.5x": regularRate * overtimeMultiplier("1.5x"),
+    "2x": regularRate * overtimeMultiplier("2x"),
   };
 
   const onSubmit = (values: OvertimeFormValues) => {
@@ -100,15 +113,35 @@ export const OvertimeManager = ({
     const month = String(values.date.getMonth() + 1).padStart(2, "0");
     const day = String(values.date.getDate()).padStart(2, "0");
     const dateString = `${year}-${month}-${day}`;
+    const date = parseDate(dateString);
 
-    const entry: OvertimeEntry = {
-      id: crypto.randomUUID(),
-      date: parseDate(dateString),
-      hours: values.hours,
-      rateType: values.rateType,
-    };
+    // Hours already on this date consume the day's lower-rate allowance, so a
+    // second entry picks up where the first left off instead of restarting it
+    const hoursAlreadyLogged = entries
+      .filter((e) => dayKey(new Date(e.date)) === dateString)
+      .reduce((sum, e) => sum + e.hours, 0);
 
-    const newEntries = [...entries, entry].sort((a, b) => {
+    const rows =
+      values.rateType === "auto" && tierRule
+        ? splitOvertimeHours(values.hours, tierRule, hoursAlreadyLogged)
+        : [
+            {
+              hours: values.hours,
+              rateType: (values.rateType === "auto"
+                ? "1.5x"
+                : values.rateType) as OvertimeRateType,
+            },
+          ];
+
+    const newEntries = [
+      ...entries,
+      ...rows.map((row) => ({
+        id: crypto.randomUUID(),
+        date,
+        hours: row.hours,
+        rateType: row.rateType,
+      })),
+    ].sort((a, b) => {
       // Sort by date first
       const dateCompare =
         new Date(a.date).getTime() - new Date(b.date).getTime();
@@ -122,7 +155,7 @@ export const OvertimeManager = ({
     onEntriesChange(newEntries);
     form.reset({
       hours: 1,
-      rateType: "1.5x",
+      rateType: defaultRateType,
     });
   };
 
@@ -132,8 +165,7 @@ export const OvertimeManager = ({
 
   const getTotalCost = () => {
     return entries.reduce((total, entry) => {
-      const multiplier = RATE_MULTIPLIERS[entry.rateType];
-      const hourlyRate = regularRate * multiplier;
+      const hourlyRate = regularRate * overtimeMultiplier(entry.rateType);
       return total + entry.hours * hourlyRate;
     }, 0);
   };
@@ -208,16 +240,14 @@ export const OvertimeManager = ({
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Rate</FormLabel>
-                <Select
-                  onValueChange={field.onChange}
-                  defaultValue={field.value}
-                >
+                <Select onValueChange={field.onChange} value={field.value}>
                   <FormControl>
                     <SelectTrigger className="w-full">
                       <SelectValue placeholder="Select rate" />
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
+                    {tierRule && <SelectItem value="auto">Auto</SelectItem>}
                     <SelectItem value="1.5x">
                       1.5x ({formatCurrency(ratePrices["1.5x"], currency)}/hr)
                     </SelectItem>
@@ -241,6 +271,14 @@ export const OvertimeManager = ({
               Add Overtime
             </Button>
           </div>
+
+          {tierRule && (
+            <p className="text-muted-foreground text-sm md:col-span-5">
+              Auto splits each day at this client&apos;s tier: the first{" "}
+              {tierRule.tierHours}h at {tierRule.firstRate}, then{" "}
+              {tierRule.afterRate}.
+            </p>
+          )}
         </div>
 
         {/* Display existing entries */}
@@ -260,7 +298,7 @@ export const OvertimeManager = ({
                 <TableBody>
                   {entries.map((entry) => {
                     const hourlyRate =
-                      regularRate * RATE_MULTIPLIERS[entry.rateType];
+                      regularRate * overtimeMultiplier(entry.rateType);
                     const cost = entry.hours * hourlyRate;
 
                     return (
@@ -275,7 +313,8 @@ export const OvertimeManager = ({
                           {entry.hours}h
                         </TableCell>
                         <TableCell className="text-sm font-medium">
-                          {entry.rateType} ({formatCurrency(hourlyRate, currency)}/hr)
+                          {entry.rateType} (
+                          {formatCurrency(hourlyRate, currency)}/hr)
                         </TableCell>
                         <TableCell className="text-sm font-medium">
                           {formatCurrency(cost, currency)}

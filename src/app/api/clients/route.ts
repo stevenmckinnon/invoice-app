@@ -4,6 +4,7 @@ import { z } from "zod";
 
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
+import { overtimeRuleData } from "@/lib/overtime";
 
 const clientInputSchema = z.object({
   name: z.string().min(1),
@@ -17,7 +18,32 @@ const clientInputSchema = z.object({
   dayRate: z.union([z.string(), z.number()]).optional(),
   perDiemWork: z.union([z.string(), z.number()]).optional(),
   perDiemTravel: z.union([z.string(), z.number()]).optional(),
+  overtimeTierHours: z.union([z.string(), z.number()]).optional(),
+  // The forms send "" for "no tiering", which is not a valid rate
+  overtimeFirstRate: z.enum(["1.5x", "2x"]).or(z.literal("")).optional(),
+  overtimeAfterRate: z.enum(["1.5x", "2x"]).or(z.literal("")).optional(),
 });
+
+/** Every consumer of a client needs its rates, so the shape is shared */
+const clientSelect = {
+  id: true,
+  name: true,
+  addressLine1: true,
+  addressLine2: true,
+  city: true,
+  state: true,
+  postalCode: true,
+  country: true,
+  attentionTo: true,
+  dayRate: true,
+  perDiemWork: true,
+  perDiemTravel: true,
+  overtimeTierHours: true,
+  overtimeFirstRate: true,
+  overtimeAfterRate: true,
+  createdAt: true,
+  updatedAt: true,
+} as const;
 
 export const POST = async (req: NextRequest) => {
   try {
@@ -48,23 +74,9 @@ export const POST = async (req: NextRequest) => {
         perDiemTravel: parsed.perDiemTravel
           ? Number(parsed.perDiemTravel)
           : null,
+        ...overtimeRuleData(parsed),
       },
-      select: {
-        id: true,
-        name: true,
-        addressLine1: true,
-        addressLine2: true,
-        city: true,
-        state: true,
-        postalCode: true,
-        country: true,
-        attentionTo: true,
-        dayRate: true,
-        perDiemWork: true,
-        perDiemTravel: true,
-        createdAt: true,
-        updatedAt: true,
-      },
+      select: clientSelect,
     });
 
     return NextResponse.json(created, { status: 201 });
@@ -89,22 +101,7 @@ export const GET = async () => {
     const clients = await prisma.client.findMany({
       where: { userId: session.user.id },
       orderBy: { createdAt: "desc" },
-      select: {
-        id: true,
-        name: true,
-        addressLine1: true,
-        addressLine2: true,
-        city: true,
-        state: true,
-        postalCode: true,
-        country: true,
-        attentionTo: true,
-        dayRate: true,
-        perDiemWork: true,
-        perDiemTravel: true,
-        createdAt: true,
-        updatedAt: true,
-      },
+      select: clientSelect,
     });
 
     return NextResponse.json(clients);
@@ -115,4 +112,3 @@ export const GET = async () => {
     );
   }
 };
-

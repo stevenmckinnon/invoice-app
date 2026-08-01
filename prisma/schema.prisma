@@ -43,6 +43,19 @@ model User {
   sessions      Session[]
   invoices      Invoice[]
   clients       Client[]
+  photo         UserPhoto?
+}
+
+/// Avatar bytes live here rather than in User.image, which better-auth copies
+/// verbatim into the session cookie — a base64 data URI there pushed the cookie
+/// past its 4093-byte limit and silently disabled the session cookie cache.
+/// User.image holds the URL of the route that serves this instead.
+model UserPhoto {
+  userId      String   @id
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  data        Bytes
+  contentType String
+  updatedAt   DateTime @updatedAt
 }
 
 model Account {
@@ -222,6 +235,12 @@ model Client {
   dayRate     Decimal?  // Day rate for work, travel, and dark days
   perDiemWork Decimal?  // Per diem rate for work days
   perDiemTravel Decimal? // Per diem rate for travel days
+
+  // Tiered overtime terms. Null overtimeTierHours means no tiering — one rate
+  // for the whole entry. The tier resets each day, not each invoice.
+  overtimeTierHours Decimal? // Hours at the first rate, per day (e.g. 2)
+  overtimeFirstRate String?  // '1.5x' or '2x'
+  overtimeAfterRate String?  // '1.5x' or '2x'
 
   // Relations
   invoices    Invoice[]

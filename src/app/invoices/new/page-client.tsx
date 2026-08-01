@@ -17,14 +17,27 @@ import {
 } from "@/components/InvoiceForm";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
+import { useClients } from "@/hooks/use-clients";
 import { useCreateInvoice } from "@/hooks/use-invoices";
 import { useProfile } from "@/hooks/use-profile";
+import {
+  STANDARD_LINE_ITEMS,
+  type StandardLineItem,
+} from "@/lib/invoice-items";
+import { clientOvertimeRule } from "@/lib/overtime";
 
 export default function NewInvoicePage() {
   const router = useRouter();
   const createInvoiceMutation = useCreateInvoice();
   const [selectedClientId, setSelectedClientId] = useState<string | null>(null);
   const [showCreateClientDialog, setShowCreateClientDialog] = useState(false);
+
+  // Derived, not state: the overtime manager needs the selected client's tier
+  // rule, and the list is already cached by the selector
+  const { data: clients = [] } = useClients();
+  const overtimeTierRule = clientOvertimeRule(
+    clients.find((c) => c.id === selectedClientId) ?? null,
+  );
 
   const form = useForm<InvoiceFormValues>({
     resolver: zodResolver(invoiceFormSchema),
@@ -111,35 +124,28 @@ export default function NewInvoicePage() {
       form.setValue("clientCountry", client.country || "");
       form.setValue("attentionTo", client.attentionTo || "");
 
-      // Update line items with client rates - always include all 5 items
-      const updatedItems = [
-        {
-          description: "Travel Days",
+      // Update line items with client rates — always include all 5, built from
+      // the shared names so this can't drift from the AI tool schema
+      const dayRate = client.dayRate ? Number(client.dayRate) : 0;
+      const clientRates: Record<StandardLineItem, number> = {
+        "Travel Days": dayRate,
+        "Work Days": dayRate,
+        "Dark days": dayRate,
+        "Per Diems Travel Days": client.perDiemTravel
+          ? Number(client.perDiemTravel)
+          : 0,
+        "Per Diems Work Days": client.perDiemWork
+          ? Number(client.perDiemWork)
+          : 0,
+      };
+      form.setValue(
+        "items",
+        STANDARD_LINE_ITEMS.map((description) => ({
+          description,
           quantity: 1,
-          unitPrice: client.dayRate ? Number(client.dayRate) : 0,
-        },
-        {
-          description: "Work Days",
-          quantity: 1,
-          unitPrice: client.dayRate ? Number(client.dayRate) : 0,
-        },
-        {
-          description: "Dark days",
-          quantity: 1,
-          unitPrice: client.dayRate ? Number(client.dayRate) : 0,
-        },
-        {
-          description: "Per Diems Travel Days",
-          quantity: 1,
-          unitPrice: client.perDiemTravel ? Number(client.perDiemTravel) : 0,
-        },
-        {
-          description: "Per Diems Work Days",
-          quantity: 1,
-          unitPrice: client.perDiemWork ? Number(client.perDiemWork) : 0,
-        },
-      ];
-      form.setValue("items", updatedItems);
+          unitPrice: clientRates[description],
+        })),
+      );
     }
   };
 
@@ -178,8 +184,8 @@ export default function NewInvoicePage() {
               <TriangleAlertIcon />
               <AlertTitle>Profile Setup Required</AlertTitle>
               <AlertDescription>
-                Complete your profile with your personal information and
-                banking details — it pre-fills every invoice you create.
+                Complete your profile with your personal information and banking
+                details — it pre-fills every invoice you create.
                 <Button
                   type="button"
                   variant="outline"
@@ -193,6 +199,7 @@ export default function NewInvoicePage() {
             </Alert>
           )
         }
+        overtimeTierRule={overtimeTierRule}
         clientSelector={
           <ClientSelector
             value={selectedClientId || undefined}

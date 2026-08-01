@@ -11,13 +11,37 @@ pnpm dev          # Start dev server (binds to 0.0.0.0, runs prisma generate fir
 pnpm build        # Production build (runs prisma generate first)
 pnpm lint         # ESLint check
 pnpm lint:fix     # ESLint auto-fix
+pnpm test         # Node's test runner via tsx
 
 pnpm db:migrate   # Run pending migrations (prisma migrate deploy)
 pnpm db:push      # Push schema changes without migration (dev only)
 pnpm db:studio    # Open Prisma Studio GUI
+
+pnpm db:local:up     # Start the local postgres container and push the schema
+pnpm db:local:down   # Stop it (data survives in a named volume)
+pnpm db:local:reset  # Wipe the volume, recreate, push schema, reseed
+pnpm db:seed         # Reseed the local database
 ```
 
 After editing `prisma/schema.prisma`, run `pnpm prisma generate` to regenerate the client (or just restart dev — `predev` does it automatically).
+
+## Local development database
+
+Day-to-day work runs against a local postgres container (`compose.yaml`), not the live Neon instance.
+
+```bash
+pnpm db:local:up && pnpm db:seed
+```
+
+`.env.local` points `DATABASE_URL` at it, and is read ahead of `.env` by Next.js, the Prisma CLI (via `prisma.config.ts`) and `pnpm test`. **Keep those three in sync** — if only some of them read `.env.local`, `pnpm dev` ends up on the local database while `pnpm db:push` rewrites the live one. Note the two loaders order their files oppositely: dotenv keeps the *first* value it finds, Node's `--env-file` lets the *last* file win.
+
+To work against Neon instead, comment out `DATABASE_URL` in `.env.local`. Everything else (`BETTER_AUTH_SECRET`, `ANTHROPIC_API_KEY`, `RESEND_API_KEY`) still comes from `.env` either way.
+
+Seed credentials: `dev@caley.test` / `devpassword123`. The seed (`prisma/seed.ts`) builds the user through better-auth so the password hash is one it can verify, computes invoice totals with `calculateInvoiceTotals` so seeded rows can't disagree with what the app renders, and **refuses to run against a non-local host** (override with `SEED_ALLOW_REMOTE=1`). Re-running is safe — the seeded user is deleted first and everything cascades.
+
+It seeds three clients (one with tiered overtime, one without, one with no rates at all) and five invoices across every status.
+
+⚠️ **Use `db:push`, not `db:migrate`, on a fresh database.** `20250116000000_add_client_model` sorts before `20251014163218_init_postgres` but references `Invoice`, so replaying the migration history from empty fails at step one. The live database predates the divergence and is fine; `migrate deploy` still works there for new migrations.
 
 ## Architecture
 

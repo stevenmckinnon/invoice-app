@@ -4,17 +4,15 @@ import {
   createUIMessageStreamResponse,
   isStepCount,
   streamText,
-  tool,
   toUIMessageStream,
   type UIMessage,
 } from "ai";
 import { headers } from "next/headers";
-import { z } from "zod";
 
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
-import { generateNextInvoiceNumber } from "@/lib/invoice-number";
-import { deriveOvertimeHourlyRate, overtimeEntryCost } from "@/lib/overtime";
+import { buildInvoiceTools } from "@/lib/invoice-tools";
+import { clientOvertimeRule } from "@/lib/overtime";
 
 export const POST = async (req: Request) => {
   const session = await auth.api.getSession({ headers: await headers() });
@@ -62,6 +60,9 @@ export const POST = async (req: Request) => {
         dayRate: true,
         perDiemWork: true,
         perDiemTravel: true,
+        overtimeTierHours: true,
+        overtimeFirstRate: true,
+        overtimeAfterRate: true,
       },
     }),
     prisma.invoice.findMany({
@@ -110,15 +111,20 @@ export const POST = async (req: Request) => {
   const clientsList =
     clients.length > 0
       ? clients
-          .map(
-            (c) =>
+          .map((c) => {
+            // Named only so the model knows not to pass a rateType — the split
+            // itself happens server-side
+            const tier = clientOvertimeRule(c);
+            return (
               `- ${c.name} (ID: ${c.id})` +
               (c.dayRate ? `, day rate: ${sym}${c.dayRate}` : "") +
               (c.perDiemWork ? `, per diem work: ${sym}${c.perDiemWork}` : "") +
               (c.perDiemTravel
                 ? `, per diem travel: ${sym}${c.perDiemTravel}`
-                : ""),
-          )
+                : "") +
+              (tier ? `, tiered overtime (omit rateType)` : "")
+            );
+          })
           .join("\n")
       : "No clients saved yet.";
 
@@ -159,551 +165,24 @@ ${recentInvoices}
 - Call createInvoiceDraft as soon as you have a project name, date, and at least one line item. Don't wait for every detail — the user can edit it afterwards. Let them know the draft is saved and they can open it in the editor.
 - For revenue/stats questions, calculate from the data above. Today's date: ${new Date().toISOString().split("T")[0]}.
 - When correcting an existing draft, use updateInvoiceDraft with the invoice ID.
-- IMPORTANT — use the correct fields for each type of charge:
-  - Every invoice has 5 standard line items: "Travel Days", "Work Days", "Dark days", "Per Diems Travel Days", "Per Diems Work Days". Use these exact descriptions in items[]. When a saved clientId is provided, their saved rates fill in automatically — if you don't know a rate for a standard item, pass unitPrice 0 and the client's saved rate will be used.
-  - Regular work days → items[] "Work Days", quantity = number of days, unitPrice = client's day rate
-  - Travel days → items[] "Travel Days" (day rate). Per diems → items[] "Per Diems Work Days" / "Per Diems Travel Days" (client's per diem rates), quantity = number of days
-  - Overtime hours (1.5x or 2x rate) → use overtimeEntries[] (NOT items). The overtime hourly rate is derived automatically from the "Work Days" item (dayRate ÷ 10 hours). Always include a "Work Days" item whenever there are overtime entries, or overtime will show as £0 in the editor.
-  - Other fixed fees or expenses (e.g. kit rental, materials) → use customExpenseEntries[]
-- Always pass clientId when the invoice is for a saved client, so their address and rates are applied.`;
+- Route each charge to the right field: days and per diems → items[]; overtime hours → overtimeEntries[]; fixed fees and expenses (kit rental, materials) → customExpenseEntries[].
+- Report overtime as the user states it — the date and the hours. For a client marked "tiered overtime", leave rateType out and the tiers are applied for you; never split the hours yourself. Pass rateType only when the user names a rate, or the client has no tiering.
+- Always pass clientId when the invoice is for a saved client, so their address and saved rates are applied. Leave a standard item's unitPrice out to use the saved rate — don't pass 0 for a rate you don't know.
+- If a tool returns an error, read it and fix the call, or ask the user for what's missing. Don't retry the same arguments.`;
 
   const result = streamText({
     model: anthropic("claude-haiku-4-5"),
     instructions: systemPrompt,
     messages: await convertToModelMessages(messages),
     stopWhen: isStepCount(5),
-    tools: {
-      createInvoiceDraft: tool({
-        description:
-          "Create a draft invoice. Call this when you have: a project/show name, invoice date, and at least one line item. The user's profile details are used automatically.",
-        inputSchema: z.object({
-          showName: z.string().describe("Project or show name"),
-          invoiceDate: z
-            .string()
-            .describe("Invoice date in ISO format (YYYY-MM-DD)"),
-          clientId: z
-            .string()
-            .optional()
-            .describe("ID of a saved client, if applicable"),
-          clientName: z.string().optional().describe("Client company name"),
-          clientAddress1: z.string().optional(),
-          clientCity: z.string().optional(),
-          clientPostalCode: z.string().optional(),
-          clientCountry: z.string().optional(),
-          attentionTo: z
-            .string()
-            .optional()
-            .describe("Contact person at the client"),
-          items: z
-            .array(
-              z.object({
-                description: z.string(),
-                quantity: z.number(),
-                unitPrice: z
-                  .number()
-                  .describe("Price per unit in the user's currency"),
-              }),
-            )
-            .min(1)
-            .describe("Invoice line items"),
-          overtimeEntries: z
-            .array(
-              z.object({
-                date: z.string().describe("Date in ISO format (YYYY-MM-DD)"),
-                hours: z.number().positive(),
-                rateType: z
-                  .enum(["1.5x", "2x"])
-                  .describe("Overtime multiplier"),
-                description: z.string().optional(),
-              }),
-            )
-            .optional()
-            .describe(
-              "Overtime hours entries — use this instead of adding overtime as a line item",
-            ),
-          customExpenseEntries: z
-            .array(
-              z.object({
-                description: z.string(),
-                quantity: z.number().int().positive(),
-                unitPrice: z
-                  .number()
-                  .nonnegative()
-                  .describe("Price per unit in the user's currency"),
-              }),
-            )
-            .optional()
-            .describe(
-              "Custom expense entries (e.g. kit rental, travel costs) — use this instead of adding expenses as line items",
-            ),
-          notes: z.string().optional(),
-        }),
-        execute: async ({
-          showName,
-          invoiceDate,
-          clientId,
-          clientName,
-          clientAddress1,
-          clientCity,
-          clientPostalCode,
-          clientCountry,
-          attentionTo,
-          items,
-          overtimeEntries,
-          customExpenseEntries,
-          notes,
-        }) => {
-          if (!profileComplete) {
-            return {
-              error:
-                "User profile is incomplete. Please visit /profile to add your address and banking details before creating invoices.",
-            };
-          }
-
-          const invoiceNumber = await generateNextInvoiceNumber(userId);
-
-          let resolvedClient = null;
-          if (clientId) {
-            resolvedClient = await prisma.client.findFirst({
-              where: { id: clientId, userId },
-            });
-          }
-
-          // Always include the 5 standard line items (matching the manual new-invoice form defaults).
-          // AI-provided items override defaults where descriptions match; extras are appended.
-          const dayRate = resolvedClient?.dayRate
-            ? Number(resolvedClient.dayRate)
-            : 0;
-          const perDiemWorkRate = resolvedClient?.perDiemWork
-            ? Number(resolvedClient.perDiemWork)
-            : 0;
-          const perDiemTravelRate = resolvedClient?.perDiemTravel
-            ? Number(resolvedClient.perDiemTravel)
-            : 0;
-
-          const DEFAULT_LINE_ITEMS = [
-            { description: "Travel Days", unitPrice: dayRate },
-            { description: "Work Days", unitPrice: dayRate },
-            { description: "Dark days", unitPrice: dayRate },
-            {
-              description: "Per Diems Travel Days",
-              unitPrice: perDiemTravelRate,
-            },
-            { description: "Per Diems Work Days", unitPrice: perDiemWorkRate },
-          ];
-
-          const normalizeDesc = (s: string) => s.trim().toLowerCase();
-          const aiItemMap = new Map(
-            items.map((i) => [normalizeDesc(i.description), i]),
-          );
-          const defaultDescriptions = new Set(
-            DEFAULT_LINE_ITEMS.map((d) => normalizeDesc(d.description)),
-          );
-
-          const mergedItems = [
-            ...DEFAULT_LINE_ITEMS.map((def) => {
-              const ai = aiItemMap.get(normalizeDesc(def.description));
-              return ai
-                ? {
-                    description: def.description,
-                    quantity: ai.quantity,
-                    // The model often passes 0 when the user only gave a
-                    // quantity — the client's saved rate wins in that case
-                    unitPrice: ai.unitPrice > 0 ? ai.unitPrice : def.unitPrice,
-                  }
-                : {
-                    description: def.description,
-                    quantity: 0,
-                    unitPrice: def.unitPrice,
-                  };
-            }),
-            ...items.filter(
-              (i) => !defaultDescriptions.has(normalizeDesc(i.description)),
-            ),
-          ];
-
-          const lineItems = mergedItems.map((i) => ({
-            description: i.description,
-            quantity: i.quantity,
-            unitPrice: i.unitPrice,
-            cost: i.quantity * i.unitPrice,
-          }));
-
-          // Falls back to the client's saved day rate when the draft has no
-          // priced "Work Days" item yet
-          const regularRate =
-            deriveOvertimeHourlyRate(lineItems) ||
-            (resolvedClient?.dayRate ? Number(resolvedClient.dayRate) / 10 : 0);
-
-          const overtimeTotal = (overtimeEntries ?? []).reduce(
-            (s, e) => s + overtimeEntryCost(e, regularRate),
-            0,
-          );
-
-          const expenseItems = (customExpenseEntries ?? []).map((e) => {
-            let unitPrice = e.unitPrice;
-            if (unitPrice <= 0 && /per diem/i.test(e.description)) {
-              unitPrice = /travel/i.test(e.description)
-                ? perDiemTravelRate
-                : perDiemWorkRate;
-            }
-            return {
-              description: e.description,
-              quantity: e.quantity,
-              unitPrice,
-              cost: e.quantity * unitPrice,
-            };
-          });
-          const expensesTotal = expenseItems.reduce((s, e) => s + e.cost, 0);
-
-          const itemsTotal = lineItems.reduce((s, i) => s + i.cost, 0);
-          const totalAmount = itemsTotal + overtimeTotal + expensesTotal;
-
-          const invoice = await prisma.invoice.create({
-            data: {
-              userId,
-              clientId: resolvedClient?.id ?? null,
-              invoiceNumber,
-              invoiceDate: new Date(invoiceDate),
-              showName,
-              fullName: user!.fullName ?? user!.name ?? "",
-              email: session.user.email,
-              addressLine1: user!.addressLine1!,
-              addressLine2: user?.addressLine2 ?? undefined,
-              city: user!.city!,
-              state: user?.state ?? undefined,
-              postalCode: user!.postalCode!,
-              country: user!.country!,
-              clientName: resolvedClient?.name ?? clientName ?? undefined,
-              clientAddress1:
-                resolvedClient?.addressLine1 ?? clientAddress1 ?? undefined,
-              clientCity: resolvedClient?.city ?? clientCity ?? undefined,
-              clientPostalCode:
-                resolvedClient?.postalCode ?? clientPostalCode ?? undefined,
-              clientCountry:
-                resolvedClient?.country ?? clientCountry ?? undefined,
-              attentionTo:
-                resolvedClient?.attentionTo ?? attentionTo ?? undefined,
-              iban: user!.iban!,
-              swiftBic: user!.swiftBic!,
-              accountNumber: user?.accountNumber ?? undefined,
-              sortCode: user?.sortCode ?? undefined,
-              bankAddress: user?.bankAddress ?? undefined,
-              currency,
-              regularHours: 0,
-              overtimeHours: 0,
-              perDiemDays: 0,
-              travelDays: 0,
-              regularRate: 0 as unknown as any,
-              overtimeRate: 0 as unknown as any,
-              perDiemRate: 0 as unknown as any,
-              travelDayRate: 0 as unknown as any,
-              subtotalLabor: totalAmount as unknown as any,
-              subtotalPerDiem: 0 as unknown as any,
-              subtotalTravel: 0 as unknown as any,
-              totalAmount: totalAmount as unknown as any,
-              status: "draft",
-              notes: notes ?? undefined,
-              items: {
-                createMany: {
-                  data: lineItems.map((i) => ({
-                    description: i.description,
-                    quantity: i.quantity,
-                    unitPrice: i.unitPrice as unknown as any,
-                    cost: i.cost as unknown as any,
-                  })),
-                },
-              },
-              overtimeEntries: {
-                createMany: {
-                  data: (overtimeEntries ?? []).map((e) => ({
-                    date: new Date(e.date),
-                    hours: e.hours as unknown as any,
-                    rateType: e.rateType,
-                    description: e.description ?? undefined,
-                  })),
-                },
-              },
-              customExpenseEntries: {
-                createMany: {
-                  data: expenseItems.map((e) => ({
-                    description: e.description,
-                    quantity: e.quantity,
-                    unitPrice: e.unitPrice as unknown as any,
-                    cost: e.cost as unknown as any,
-                  })),
-                },
-              },
-            },
-            select: { id: true, invoiceNumber: true, totalAmount: true },
-          });
-
-          return {
-            success: true,
-            invoiceId: invoice.id,
-            invoiceNumber: invoice.invoiceNumber,
-            total: `${sym}${Number(invoice.totalAmount).toFixed(2)}`,
-          };
-        },
-      }),
-
-      updateInvoiceDraft: tool({
-        description:
-          "Update an existing draft invoice with corrected or additional information.",
-        inputSchema: z.object({
-          invoiceId: z.string(),
-          showName: z.string().optional(),
-          invoiceDate: z.string().optional(),
-          clientName: z.string().optional(),
-          items: z
-            .array(
-              z.object({
-                description: z.string(),
-                quantity: z.number(),
-                unitPrice: z.number(),
-              }),
-            )
-            .optional()
-            .describe("Replaces all existing line items if provided"),
-          overtimeEntries: z
-            .array(
-              z.object({
-                date: z.string(),
-                hours: z.number().positive(),
-                rateType: z.enum(["1.5x", "2x"]),
-                description: z.string().optional(),
-              }),
-            )
-            .optional()
-            .describe("Replaces all existing overtime entries if provided"),
-          customExpenseEntries: z
-            .array(
-              z.object({
-                description: z.string(),
-                quantity: z.number().int().positive(),
-                unitPrice: z.number().nonnegative(),
-              }),
-            )
-            .optional()
-            .describe(
-              "Replaces all existing custom expense entries if provided",
-            ),
-          notes: z.string().optional(),
-        }),
-        execute: async ({
-          invoiceId,
-          showName,
-          invoiceDate,
-          clientName,
-          items,
-          overtimeEntries,
-          customExpenseEntries,
-          notes,
-        }) => {
-          const existing = await prisma.invoice.findFirst({
-            where: { id: invoiceId, userId },
-            select: { id: true, totalAmount: true },
-          });
-
-          if (!existing) {
-            return { error: "Invoice not found or does not belong to you." };
-          }
-
-          const needsTotalRecalc = !!(
-            items ||
-            overtimeEntries ||
-            customExpenseEntries
-          );
-
-          if (items) {
-            // Fetch existing items to preserve client rates for defaults
-            const existingItems = await prisma.invoiceLineItem.findMany({
-              where: { invoiceId },
-            });
-            const existingWorkDays = existingItems.find(
-              (i) => i.description === "Work Days",
-            );
-            const existingTravelDays = existingItems.find(
-              (i) => i.description === "Travel Days",
-            );
-            const existingPerDiemWork = existingItems.find(
-              (i) => i.description === "Per Diems Work Days",
-            );
-            const existingPerDiemTravel = existingItems.find(
-              (i) => i.description === "Per Diems Travel Days",
-            );
-
-            const DEFAULT_LINE_ITEMS = [
-              {
-                description: "Travel Days",
-                unitPrice: existingTravelDays
-                  ? Number(existingTravelDays.unitPrice)
-                  : existingWorkDays
-                    ? Number(existingWorkDays.unitPrice)
-                    : 0,
-              },
-              {
-                description: "Work Days",
-                unitPrice: existingWorkDays
-                  ? Number(existingWorkDays.unitPrice)
-                  : 0,
-              },
-              {
-                description: "Dark days",
-                unitPrice: existingWorkDays
-                  ? Number(existingWorkDays.unitPrice)
-                  : 0,
-              },
-              {
-                description: "Per Diems Travel Days",
-                unitPrice: existingPerDiemTravel
-                  ? Number(existingPerDiemTravel.unitPrice)
-                  : 0,
-              },
-              {
-                description: "Per Diems Work Days",
-                unitPrice: existingPerDiemWork
-                  ? Number(existingPerDiemWork.unitPrice)
-                  : 0,
-              },
-            ];
-
-            const normalizeDesc = (s: string) => s.trim().toLowerCase();
-            const aiItemMap = new Map(
-              items.map((i) => [normalizeDesc(i.description), i]),
-            );
-            const defaultDescriptions = new Set(
-              DEFAULT_LINE_ITEMS.map((d) => normalizeDesc(d.description)),
-            );
-
-            const mergedItems = [
-              ...DEFAULT_LINE_ITEMS.map((def) => {
-                const ai = aiItemMap.get(normalizeDesc(def.description));
-                return ai
-                  ? {
-                      description: def.description,
-                      quantity: ai.quantity,
-                      // Keep the existing rate when the model passes 0
-                      unitPrice:
-                        ai.unitPrice > 0 ? ai.unitPrice : def.unitPrice,
-                    }
-                  : {
-                      description: def.description,
-                      quantity: 0,
-                      unitPrice: def.unitPrice,
-                    };
-              }),
-              ...items.filter(
-                (i) => !defaultDescriptions.has(normalizeDesc(i.description)),
-              ),
-            ];
-
-            const lineItems = mergedItems.map((i) => ({
-              description: i.description,
-              quantity: i.quantity,
-              unitPrice: i.unitPrice,
-              cost: i.quantity * i.unitPrice,
-            }));
-
-            await prisma.invoiceLineItem.deleteMany({ where: { invoiceId } });
-            await prisma.invoiceLineItem.createMany({
-              data: lineItems.map((i) => ({
-                invoiceId,
-                description: i.description,
-                quantity: i.quantity,
-                unitPrice: i.unitPrice as unknown as any,
-                cost: i.cost as unknown as any,
-              })),
-            });
-          }
-
-          if (overtimeEntries) {
-            await prisma.overtimeEntry.deleteMany({ where: { invoiceId } });
-            await prisma.overtimeEntry.createMany({
-              data: overtimeEntries.map((e) => ({
-                invoiceId,
-                date: new Date(e.date),
-                hours: e.hours as unknown as any,
-                rateType: e.rateType,
-                description: e.description ?? undefined,
-              })),
-            });
-          }
-
-          if (customExpenseEntries) {
-            await prisma.customExpenseEntry.deleteMany({
-              where: { invoiceId },
-            });
-            await prisma.customExpenseEntry.createMany({
-              data: customExpenseEntries.map((e) => ({
-                invoiceId,
-                description: e.description,
-                quantity: e.quantity,
-                unitPrice: e.unitPrice as unknown as any,
-                cost: (e.quantity * e.unitPrice) as unknown as any,
-              })),
-            });
-          }
-
-          let totalAmount = Number(existing.totalAmount);
-          if (needsTotalRecalc) {
-            const current = await prisma.invoice.findUnique({
-              where: { id: invoiceId },
-              include: {
-                items: true,
-                overtimeEntries: true,
-                customExpenseEntries: true,
-              },
-            });
-            const regularRate = deriveOvertimeHourlyRate(
-              current!.items.map((i) => ({
-                description: i.description,
-                unitPrice: Number(i.unitPrice),
-              })),
-            );
-            const currentItemsTotal = current!.items.reduce(
-              (s, i) => s + Number(i.cost),
-              0,
-            );
-            const currentOvertimeTotal = current!.overtimeEntries.reduce(
-              (s, e) =>
-                s +
-                overtimeEntryCost(
-                  { hours: Number(e.hours), rateType: e.rateType },
-                  regularRate,
-                ),
-              0,
-            );
-            const currentExpensesTotal = current!.customExpenseEntries.reduce(
-              (s, e) => s + Number(e.cost),
-              0,
-            );
-            totalAmount =
-              currentItemsTotal + currentOvertimeTotal + currentExpensesTotal;
-          }
-
-          await prisma.invoice.update({
-            where: { id: invoiceId },
-            data: {
-              ...(showName && { showName }),
-              ...(invoiceDate && { invoiceDate: new Date(invoiceDate) }),
-              ...(clientName && { clientName }),
-              ...(notes !== undefined && { notes }),
-              ...(needsTotalRecalc && {
-                totalAmount: totalAmount as unknown as any,
-                subtotalLabor: totalAmount as unknown as any,
-              }),
-            },
-          });
-
-          return {
-            success: true,
-            invoiceId,
-            total: `${sym}${totalAmount.toFixed(2)}`,
-          };
-        },
-      }),
-    },
+    tools: buildInvoiceTools({
+      userId,
+      email: session.user.email,
+      user,
+      profileComplete,
+      currency,
+      sym,
+    }),
   });
 
   return createUIMessageStreamResponse({

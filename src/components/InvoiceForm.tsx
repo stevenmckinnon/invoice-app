@@ -45,8 +45,13 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Textarea } from "@/components/ui/textarea";
+import { STANDARD_LINE_ITEMS } from "@/lib/invoice-items";
 import { INVOICE_STATUSES } from "@/lib/invoice-status";
-import { deriveOvertimeHourlyRate, overtimeEntryCost } from "@/lib/overtime";
+import {
+  deriveOvertimeHourlyRate,
+  overtimeEntryCost,
+  type OvertimeTierRule,
+} from "@/lib/overtime";
 import { cn, formatCurrency } from "@/lib/utils";
 
 const itemSchema = z.object({
@@ -107,14 +112,17 @@ export const invoiceFormSchema = z.object({
 
 export type InvoiceFormValues = z.infer<typeof invoiceFormSchema>;
 
-/** The five standard line items every invoice starts with */
-export const STANDARD_LINE_ITEMS: InvoiceFormValues["items"] = [
-  { description: "Travel Days", quantity: 0, unitPrice: 0 },
-  { description: "Work Days", quantity: 0, unitPrice: 0 },
-  { description: "Dark days", quantity: 0, unitPrice: 0 },
-  { description: "Per Diems Travel Days", quantity: 0, unitPrice: 0 },
-  { description: "Per Diems Work Days", quantity: 0, unitPrice: 0 },
-];
+/**
+ * The five standard line items every invoice starts with, unpriced. Built from
+ * the shared names so this form and the AI tool schema can't drift — the
+ * descriptions are load-bearing for overtime pricing.
+ */
+export const STANDARD_LINE_ITEM_ROWS: InvoiceFormValues["items"] =
+  STANDARD_LINE_ITEMS.map((description) => ({
+    description,
+    quantity: 0,
+    unitPrice: 0,
+  }));
 
 export const invoiceFormDefaults: InvoiceFormValues = {
   invoiceNumber: "",
@@ -143,7 +151,7 @@ export const invoiceFormDefaults: InvoiceFormValues = {
   bankAddress: "",
   dateOfBirth: "",
   currency: "GBP",
-  items: STANDARD_LINE_ITEMS,
+  items: STANDARD_LINE_ITEM_ROWS,
   overtimeEntries: [],
   customExpenseEntries: [],
   status: "draft",
@@ -162,6 +170,8 @@ interface InvoiceFormProps {
   banner?: React.ReactNode;
   /** Rendered at the top of the client section (e.g. saved-client picker) */
   clientSelector?: React.ReactNode;
+  /** The invoice's client tiered-overtime terms, when they have any */
+  overtimeTierRule?: OvertimeTierRule | null;
   /** When set, shows a Cancel button linking back */
   cancelHref?: string;
 }
@@ -188,6 +198,7 @@ export function InvoiceForm({
   subtitle,
   banner,
   clientSelector,
+  overtimeTierRule,
   cancelHref,
 }: InvoiceFormProps) {
   const items = useWatch({ control: form.control, name: "items" });
@@ -807,12 +818,17 @@ export function InvoiceForm({
         </Card>
 
         <OvertimeManager
+          // The add-entry form picks its default rate at mount, so remount it
+          // when tiering appears or goes away — otherwise picking a tiered
+          // client leaves the rate stuck on the untiered default
+          key={overtimeTierRule ? "tiered" : "flat"}
           entries={overtimeEntries}
           onEntriesChange={(entries) =>
             form.setValue("overtimeEntries", entries)
           }
           regularRate={regularRate}
           currency={invoiceCurrency}
+          tierRule={overtimeTierRule}
         />
 
         <CustomExpenseManager

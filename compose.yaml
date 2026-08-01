@@ -1,0 +1,26 @@
+# Local development database, so day-to-day work never touches the live Neon
+# instance. Port 55432 rather than 5432 to avoid clashing with any postgres
+# already installed on the host.
+services:
+  postgres:
+    image: postgres:17
+    container_name: caley-dev-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: caley
+      POSTGRES_PASSWORD: caley
+      POSTGRES_DB: caley_dev
+    ports:
+      - "55432:5432"
+    volumes:
+      - caley-dev-db:/var/lib/postgresql/data
+    healthcheck:
+      # `docker compose up --wait` blocks on this, so the scripts can push the
+      # schema immediately after without racing the server's startup
+      test: ["CMD-SHELL", "pg_isready -U caley -d caley_dev"]
+      interval: 2s
+      timeout: 3s
+      retries: 15
+
+volumes:
+  caley-dev-db:

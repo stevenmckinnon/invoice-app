@@ -8,6 +8,7 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 
 import { CountryPicker } from "@/components/CountryPicker";
+import { OvertimeTierFields } from "@/components/OvertimeTierFields";
 import { PageHeader } from "@/components/PageHeader";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -21,6 +22,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
+import { OVERTIME_RATE_TYPES } from "@/lib/overtime";
 
 const clientSchema = z.object({
   name: z.string().min(1, "Name is required"),
@@ -34,6 +36,9 @@ const clientSchema = z.object({
   dayRate: z.string().optional(),
   perDiemWork: z.string().optional(),
   perDiemTravel: z.string().optional(),
+  overtimeTierHours: z.string().optional(),
+  overtimeFirstRate: z.enum(OVERTIME_RATE_TYPES),
+  overtimeAfterRate: z.enum(OVERTIME_RATE_TYPES),
 });
 
 export default function EditClientPage({
@@ -60,6 +65,9 @@ export default function EditClientPage({
       dayRate: "",
       perDiemWork: "",
       perDiemTravel: "",
+      overtimeTierHours: "",
+      overtimeFirstRate: "1.5x",
+      overtimeAfterRate: "2x",
     },
   });
 
@@ -92,6 +100,13 @@ export default function EditClientPage({
                 perDiemTravel: client.perDiemTravel
                   ? String(client.perDiemTravel)
                   : "",
+                overtimeTierHours: client.overtimeTierHours
+                  ? String(client.overtimeTierHours)
+                  : "",
+                // Fall back to the common 1.5x-then-2x shape so the selects
+                // read sensibly for a client with no rule set yet
+                overtimeFirstRate: client.overtimeFirstRate || "1.5x",
+                overtimeAfterRate: client.overtimeAfterRate || "2x",
               });
             } else {
               alert("Client not found");
@@ -362,6 +377,8 @@ export default function EditClientPage({
                   )}
                 />
               </div>
+
+              <OvertimeTierFields control={form.control} />
             </CardContent>
           </Card>
 

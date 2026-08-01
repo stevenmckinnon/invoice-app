@@ -32,6 +32,12 @@ yarn-error.log*
 
 # env files (can opt-in for committing if needed)
 .env*
+# ...except the two that carry no secrets and that a fresh clone needs:
+# the template, and the local-database defaults that keep `pnpm dev` off the
+# hosted database. Personal overrides still belong in .env.local, which Next.js
+# loads ahead of .env.development and which stays ignored.
+!.env.example
+!.env.development
 
 # vercel
 .vercel

@@ -14,7 +14,9 @@ import {
 } from "@/components/InvoiceForm";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useClients } from "@/hooks/use-clients";
 import { useUpdateInvoice } from "@/hooks/use-invoices";
+import { clientOvertimeRule } from "@/lib/overtime";
 
 export default function EditInvoicePage() {
   const router = useRouter();
@@ -22,6 +24,14 @@ export default function EditInvoicePage() {
   const invoiceId = params.id as string;
   const updateInvoiceMutation = useUpdateInvoice();
   const [isLoading, setIsLoading] = useState(true);
+  const [clientId, setClientId] = useState<string | null>(null);
+
+  // The invoice stores the client's details, but the tier rule lives on the
+  // client itself so it stays current if their terms change
+  const { data: clients = [] } = useClients();
+  const overtimeTierRule = clientOvertimeRule(
+    clients.find((c) => c.id === clientId) ?? null,
+  );
 
   const form = useForm<InvoiceFormValues>({
     resolver: zodResolver(invoiceFormSchema),
@@ -35,6 +45,7 @@ export default function EditInvoicePage() {
         if (!res.ok) throw new Error("Failed to fetch invoice");
 
         const invoice = await res.json();
+        setClientId(invoice.clientId ?? null);
 
         // Transform the data to match form structure
         form.reset({
@@ -165,6 +176,7 @@ export default function EditInvoicePage() {
       pendingLabel="Updating..."
       title="Edit Invoice"
       subtitle="Update invoice details"
+      overtimeTierRule={overtimeTierRule}
       cancelHref="/invoices"
     />
   );

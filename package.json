@@ -8,11 +8,16 @@
     "prebuild": "prisma generate",
     "build": "next build",
     "start": "next start",
+    "test": "tsx --env-file-if-exists=.env --env-file-if-exists=.env.development --env-file-if-exists=.env.local --test \"src/**/*.test.ts\"",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "db:migrate": "prisma migrate deploy",
     "db:push": "prisma db push",
-    "db:studio": "prisma studio"
+    "db:studio": "prisma studio",
+    "db:seed": "tsx --env-file-if-exists=.env --env-file-if-exists=.env.development --env-file-if-exists=.env.local prisma/seed.ts",
+    "db:local:up": "docker compose up -d --wait && prisma db push",
+    "db:local:down": "docker compose down",
+    "db:local:reset": "docker compose down -v && pnpm db:local:up && pnpm db:seed"
   },
   "dependencies": {
     "@ai-sdk/anthropic": "^4.0.16",

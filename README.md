@@ -16,50 +16,77 @@ A modern invoice management application built with Next.js, Prisma, and Better A
 ### Prerequisites
 
 - Node.js 20+
-- PostgreSQL database
-- [Resend](https://resend.com) account (for email functionality)
+- Docker (runs the local development database)
+- [Anthropic API key](https://console.anthropic.com) (for the AI assistant)
+- [Resend](https://resend.com) account (optional in development — reset links are logged to the console)
 
 ### Installation
 
-1. Clone the repository:
+1. Clone the repository and install dependencies:
 
 ```bash
 git clone <your-repo-url>
 cd invoice-app
-```
-
-2. Install dependencies:
-
-```bash
 pnpm install
 ```
 
-3. Set up environment variables:
+2. Set up environment variables:
 
 ```bash
-cp .env.example .env.local
+cp .env.example .env
 ```
 
-Edit `.env.local` with your values:
+Edit `.env` with your values:
 
-- `DATABASE_URL`: Your PostgreSQL connection string
 - `BETTER_AUTH_SECRET`: Random 32+ character string for session encryption
+- `ANTHROPIC_API_KEY`: Your key from [console.anthropic.com](https://console.anthropic.com)
 - `RESEND_API_KEY`: Your Resend API key from [resend.com/api-keys](https://resend.com/api-keys)
 - `EMAIL_FROM`: Verified sender email (use `onboarding@resend.dev` for testing)
+- `DATABASE_URL`: only needed if you're pointing at a hosted database — the local setup below supplies its own
 
-4. Run database migrations:
+3. Start the database and seed it:
 
 ```bash
-pnpm db:migrate
+pnpm db:local:up   # starts postgres in Docker and pushes the schema
+pnpm db:seed       # creates a user, clients and sample invoices
 ```
 
-5. Start the development server:
+4. Start the development server:
 
 ```bash
 pnpm dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000) and sign in with:
+
+```
+dev@caley.test / devpassword123
+```
+
+## Local development database
+
+The app runs against a postgres container defined in [`compose.yaml`](compose.yaml) rather than a hosted database, so ordinary development can't touch production data.
+
+```bash
+pnpm db:local:up     # start the container and push the current schema
+pnpm db:local:down   # stop it (data survives in a named volume)
+pnpm db:local:reset  # wipe the volume, recreate, push schema, reseed
+pnpm db:seed         # reseed without wiping
+```
+
+### How the connection is chosen
+
+`.env.local` sets `DATABASE_URL` to the container and is read **ahead of** `.env` by Next.js, the Prisma CLI (via `prisma.config.ts`) and `pnpm test`. All three must stay in agreement — if only some of them read `.env.local`, `pnpm dev` runs against the local database while `pnpm db:push` rewrites the hosted one.
+
+To work against a hosted database instead, comment out `DATABASE_URL` in `.env.local`. Everything else still comes from `.env` either way.
+
+### What gets seeded
+
+[`prisma/seed.ts`](prisma/seed.ts) creates one user (through Better Auth, so the password actually works), three clients — one with tiered overtime, one without, one with no rates at all — and five invoices spanning every status. Invoice totals are computed with the same `calculateInvoiceTotals` helper the PDF uses, so seeded rows can't disagree with what the app renders.
+
+Re-running is safe: the seeded user is deleted first and everything else cascades. The script **refuses to run against a non-local host**, since it deletes data (override with `SEED_ALLOW_REMOTE=1` if you genuinely mean it).
+
+> **Use `db:push`, not `db:migrate`, on a fresh database.** `20250116000000_add_client_model` sorts before `20251014163218_init_postgres` but references `Invoice`, so replaying the migration history from empty fails immediately. `db:local:up` uses `db:push` for this reason. Existing databases are unaffected — `db:migrate` still applies new migrations there.
 
 ### Email Setup
 
@@ -74,18 +101,28 @@ This app uses [Resend](https://resend.com) for sending password reset emails:
 ### Database Commands
 
 ```bash
-# Generate Prisma client
+# Generate Prisma client (dev and build do this automatically)
 pnpm prisma generate
 
-# Run migrations
+# Push schema changes without a migration
+pnpm db:push
+
+# Apply pending migrations to an existing database
 pnpm db:migrate
 
-# Open Prisma Studio
+# Browse the data
 pnpm db:studio
-
-# Push schema changes (development)
-pnpm db:push
 ```
+
+These act on whichever database `.env.local` / `.env` resolves to — the local container by default.
+
+### Tests
+
+```bash
+pnpm test
+```
+
+Node's built-in test runner via `tsx`. The schema and pricing tests are pure and always run; the tests that exercise the AI tools against real rows need `TEST_DATABASE_URL` and **skip without it** rather than falling back to `DATABASE_URL`. `.env.local` points it at the local container, so `pnpm test` runs everything once the database is up.
 
 ### Email Assets
 

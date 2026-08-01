@@ -34,6 +34,10 @@ export interface Client {
   dayRate?: number | null;
   perDiemWork?: number | null;
   perDiemTravel?: number | null;
+  /** Tiered overtime terms — see `clientOvertimeRule` */
+  overtimeTierHours?: number | string | null;
+  overtimeFirstRate?: string | null;
+  overtimeAfterRate?: string | null;
 }
 
 interface ClientSelectorProps {

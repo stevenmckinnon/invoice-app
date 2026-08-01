@@ -3,6 +3,12 @@
 import { useEffect, useState } from "react";
 
 import { isTextUIPart, type ToolUIPart, type UIMessage } from "ai";
+import {
+  CheckIcon,
+  CopyIcon,
+  RefreshCwIcon,
+  TriangleAlertIcon,
+} from "lucide-react";
 
 import { useChatSession } from "@/components/ai/ChatProvider";
 import {
@@ -12,6 +18,8 @@ import {
 } from "@/components/ai-elements/conversation";
 import {
   Message,
+  MessageAction,
+  MessageActions,
   MessageContent,
   MessageResponse,
 } from "@/components/ai-elements/message";
@@ -30,6 +38,7 @@ import {
   ToolInput,
   ToolOutput,
 } from "@/components/ai-elements/tool";
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 const SUGGESTIONS = [
@@ -88,6 +97,59 @@ const AssistantRow = ({ children }: { children: React.ReactNode }) => (
   </Message>
 );
 
+/** Copy / retry, revealed on hover — always visible on the turn being acted on */
+const AssistantActions = ({
+  text,
+  onRetry,
+  alwaysVisible,
+}: {
+  text: string;
+  onRetry?: () => void;
+  alwaysVisible: boolean;
+}) => {
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopied(true);
+    } catch {
+      // Clipboard blocked (insecure context, denied permission) — no state change
+    }
+  };
+
+  // Reset the tick without leaving a timer running if the message unmounts first
+  useEffect(() => {
+    if (!copied) return;
+    const id = setTimeout(() => setCopied(false), 2000);
+    return () => clearTimeout(id);
+  }, [copied]);
+
+  return (
+    <MessageActions
+      className={cn(
+        "-ml-1 transition-opacity",
+        // Hover reveal is desktop-only; on touch there is no hover, so the
+        // actions on the turn you would act on stay visible.
+        alwaysVisible ? "opacity-100" : "opacity-0 group-hover:opacity-100",
+      )}
+    >
+      <MessageAction tooltip={copied ? "Copied" : "Copy"} onClick={handleCopy}>
+        {copied ? (
+          <CheckIcon className="text-success size-3.5" />
+        ) : (
+          <CopyIcon className="size-3.5" />
+        )}
+      </MessageAction>
+      {onRetry && (
+        <MessageAction tooltip="Try again" onClick={onRetry}>
+          <RefreshCwIcon className="size-3.5" />
+        </MessageAction>
+      )}
+    </MessageActions>
+  );
+};
+
 export const ChatContent = ({ className }: { className?: string }) => {
   const {
     messages,
@@ -97,11 +159,20 @@ export const ChatContent = ({ className }: { className?: string }) => {
     mounted,
     isGenerating,
     clearChat,
+    error,
+    clearError,
+    regenerate,
   } = useChatSession();
 
   const handleSubmit = ({ text }: { text: string }) => {
     if (!text.trim()) return;
+    if (error) clearError();
     sendMessage({ text });
+  };
+
+  const handleRetry = () => {
+    if (error) clearError();
+    regenerate();
   };
 
   const visibleMessages = messages.filter(
@@ -138,7 +209,7 @@ export const ChatContent = ({ className }: { className?: string }) => {
               </Suggestions>
             </div>
           ) : (
-            visibleMessages.map((message) =>
+            visibleMessages.map((message, messageIndex) =>
               message.role === "assistant" ? (
                 <AssistantRow key={message.id}>
                   {message.parts.map((part, i) => {
@@ -171,6 +242,19 @@ export const ChatContent = ({ className }: { className?: string }) => {
                     }
                     return null;
                   })}
+                  {/* Streaming text is incomplete and not worth copying, and
+                      retrying mid-stream would abandon output still arriving */}
+                  {!isGenerating && getMessageText(message) && (
+                    <AssistantActions
+                      text={getMessageText(message)}
+                      alwaysVisible={messageIndex === visibleMessages.length - 1}
+                      onRetry={
+                        messageIndex === visibleMessages.length - 1
+                          ? handleRetry
+                          : undefined
+                      }
+                    />
+                  )}
                 </AssistantRow>
               ) : (
                 <Message key={message.id} from="user">
@@ -188,6 +272,30 @@ export const ChatContent = ({ className }: { className?: string }) => {
                 <ThinkingIndicator />
               </MessageContent>
             </AssistantRow>
+          )}
+
+          {/* Without this the request just vanishes: the thinking indicator
+              stops and nothing replaces it, leaving the user staring at their
+              own message with no idea whether it is still working. */}
+          {error && (
+            <div className="bg-destructive/10 flex flex-col gap-2 rounded-xl px-4 py-3">
+              <div className="text-destructive flex items-start gap-2 text-sm">
+                <TriangleAlertIcon className="mt-0.5 size-4 shrink-0" />
+                <p className="min-w-0">
+                  Something went wrong reaching the assistant. Your message
+                  wasn&apos;t lost — try again.
+                </p>
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleRetry}
+                className="self-start"
+              >
+                <RefreshCwIcon className="size-3.5" />
+                Try again
+              </Button>
+            </div>
           )}
         </ConversationContent>
         <ConversationScrollButton />

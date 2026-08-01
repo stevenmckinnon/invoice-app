@@ -4,6 +4,7 @@ import { z } from "zod";
 
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
+import { overtimeRuleData } from "@/lib/overtime";
 
 const clientInputSchema = z.object({
   name: z.string().min(1),
@@ -17,7 +18,31 @@ const clientInputSchema = z.object({
   dayRate: z.string().optional(),
   perDiemWork: z.string().optional(),
   perDiemTravel: z.string().optional(),
+  overtimeTierHours: z.string().optional(),
+  // The edit form sends "" for "no tiering", which is not a valid rate
+  overtimeFirstRate: z.enum(["1.5x", "2x"]).or(z.literal("")).optional(),
+  overtimeAfterRate: z.enum(["1.5x", "2x"]).or(z.literal("")).optional(),
 });
+
+const clientSelect = {
+  id: true,
+  name: true,
+  addressLine1: true,
+  addressLine2: true,
+  city: true,
+  state: true,
+  postalCode: true,
+  country: true,
+  attentionTo: true,
+  dayRate: true,
+  perDiemWork: true,
+  perDiemTravel: true,
+  overtimeTierHours: true,
+  overtimeFirstRate: true,
+  overtimeAfterRate: true,
+  createdAt: true,
+  updatedAt: true,
+} as const;
 
 export const PUT = async (
   req: NextRequest,
@@ -62,23 +87,9 @@ export const PUT = async (
         perDiemTravel: parsed.perDiemTravel
           ? Number(parsed.perDiemTravel)
           : null,
+        ...overtimeRuleData(parsed),
       },
-      select: {
-        id: true,
-        name: true,
-        addressLine1: true,
-        addressLine2: true,
-        city: true,
-        state: true,
-        postalCode: true,
-        country: true,
-        attentionTo: true,
-        dayRate: true,
-        perDiemWork: true,
-        perDiemTravel: true,
-        createdAt: true,
-        updatedAt: true,
-      },
+      select: clientSelect,
     });
 
     return NextResponse.json(updated);
@@ -126,4 +137,3 @@ export const DELETE = async (
     );
   }
 };
-
