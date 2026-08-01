@@ -33,9 +33,13 @@ Day-to-day work runs against a local postgres container (`compose.yaml`), not th
 pnpm db:local:up && pnpm db:seed
 ```
 
-`.env.local` points `DATABASE_URL` at it, and is read ahead of `.env` by Next.js, the Prisma CLI (via `prisma.config.ts`) and `pnpm test`. **Keep those three in sync** — if only some of them read `.env.local`, `pnpm dev` ends up on the local database while `pnpm db:push` rewrites the live one. Note the two loaders order their files oppositely: dotenv keeps the *first* value it finds, Node's `--env-file` lets the *last* file win.
+`.env.development` is committed and points `DATABASE_URL` at the container (no secrets — the credentials match `compose.yaml`). Next.js resolves `process.env` → `.env.development.local` → `.env.local` → `.env.development` → `.env`; the Prisma CLI (via `prisma.config.ts`) and `pnpm test` mirror that chain because neither has one of its own. **Keep those three in sync** — if only some read the local files, `pnpm dev` ends up on the local database while `pnpm db:push` rewrites the live one.
 
-To work against Neon instead, comment out `DATABASE_URL` in `.env.local`. Everything else (`BETTER_AUTH_SECRET`, `ANTHROPIC_API_KEY`, `RESEND_API_KEY`) still comes from `.env` either way.
+Note the two loaders order their files oppositely: dotenv keeps the _first_ value it finds, Node's `--env-file` lets the _last_ file win. The arrays in `prisma.config.ts` and the `test` / `db:seed` scripts are therefore written in opposite orders on purpose.
+
+To work against Neon, set `DATABASE_URL` in your own untracked `.env.local`, which outranks `.env.development`. Secrets always come from `.env`.
+
+Reseeding replaces the user, but the Better Auth session cookie cache serves the old one for up to 5 minutes — sign out and back in, or the app looks logged in with no data.
 
 Seed credentials: `dev@caley.test` / `devpassword123`. The seed (`prisma/seed.ts`) builds the user through better-auth so the password hash is one it can verify, computes invoice totals with `calculateInvoiceTotals` so seeded rows can't disagree with what the app renders, and **refuses to run against a non-local host** (override with `SEED_ALLOW_REMOTE=1`). Re-running is safe — the seeded user is deleted first and everything cascades.
 

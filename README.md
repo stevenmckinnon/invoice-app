@@ -76,15 +76,25 @@ pnpm db:seed         # reseed without wiping
 
 ### How the connection is chosen
 
-`.env.local` sets `DATABASE_URL` to the container and is read **ahead of** `.env` by Next.js, the Prisma CLI (via `prisma.config.ts`) and `pnpm test`. All three must stay in agreement — if only some of them read `.env.local`, `pnpm dev` runs against the local database while `pnpm db:push` rewrites the hosted one.
+`.env.development` is committed and points `DATABASE_URL` at the container, so a fresh clone runs locally without any setup. It carries no secrets — the credentials match `compose.yaml` and grant nothing beyond it.
 
-To work against a hosted database instead, comment out `DATABASE_URL` in `.env.local`. Everything else still comes from `.env` either way.
+Next.js resolves env files in this order, first match winning:
+
+```
+process.env  →  .env.development.local  →  .env.local  →  .env.development  →  .env
+```
+
+The Prisma CLI (via `prisma.config.ts`) and `pnpm test` mirror that chain, because neither has one of its own. **All three must stay in agreement** — if only some of them read the local file, `pnpm dev` runs against the local database while `pnpm db:push` rewrites the hosted one.
+
+To work against a hosted database, set `DATABASE_URL` in your own `.env.local`, which is untracked and sits above `.env.development`. Secrets (`BETTER_AUTH_SECRET`, `ANTHROPIC_API_KEY`, `RESEND_API_KEY`) always come from `.env`.
 
 ### What gets seeded
 
 [`prisma/seed.ts`](prisma/seed.ts) creates one user (through Better Auth, so the password actually works), three clients — one with tiered overtime, one without, one with no rates at all — and five invoices spanning every status. Invoice totals are computed with the same `calculateInvoiceTotals` helper the PDF uses, so seeded rows can't disagree with what the app renders.
 
 Re-running is safe: the seeded user is deleted first and everything else cascades. The script **refuses to run against a non-local host**, since it deletes data (override with `SEED_ALLOW_REMOTE=1` if you genuinely mean it).
+
+> **Sign out and back in after reseeding.** Reseeding replaces the user, but Better Auth's session cookie cache keeps serving the old one for up to 5 minutes — the app stays logged in and shows no data, which looks like the seed failed. Signing out clears it immediately.
 
 > **Use `db:push`, not `db:migrate`, on a fresh database.** `20250116000000_add_client_model` sorts before `20251014163218_init_postgres` but references `Invoice`, so replaying the migration history from empty fails immediately. `db:local:up` uses `db:push` for this reason. Existing databases are unaffected — `db:migrate` still applies new migrations there.
 
