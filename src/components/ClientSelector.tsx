@@ -65,7 +65,10 @@ export const ClientSelector = ({
           variant="outline"
           role="combobox"
           aria-expanded={open}
-          className="w-full justify-between"
+          // bg-transparent overrides the outline variant's bg-background: this
+          // is a form control and must match the inputs beside it, which let
+          // the card show through. --background is the cream canvas, not white.
+          className="w-full justify-between bg-transparent"
         >
           {value
             ? selectedClient

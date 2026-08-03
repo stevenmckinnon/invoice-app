@@ -177,7 +177,7 @@ export const OvertimeManager = ({
       </CardHeader>
       <CardContent className="space-y-4">
         {/* Add new overtime entry */}
-        <div className="grid grid-cols-1 gap-4 rounded-lg border bg-gray-50 p-4 md:grid-cols-5 dark:bg-black/50">
+        <div className="bg-muted/60 grid grid-cols-1 gap-4 rounded-xl p-4 md:grid-cols-5">
           <FormField
             control={form.control as any}
             name="date"
@@ -189,7 +189,7 @@ export const OvertimeManager = ({
                     <FormControl>
                       <Button
                         variant="outline"
-                        className="w-full justify-start text-left font-normal"
+                        className="w-full justify-start bg-transparent text-left font-normal"
                       >
                         <CalendarIcon className="mr-1 h-4 w-4" />
                         {field.value ? (
@@ -328,7 +328,7 @@ export const OvertimeManager = ({
                                 onClick={() => removeEntry(entry.id)}
                                 aria-label="Remove overtime entry"
                               >
-                                <TrashIcon className="h-4 w-4 text-red-600" />
+                                <TrashIcon className="text-destructive h-4 w-4" />
                               </Button>
                             </TooltipTrigger>
                             <TooltipContent>Delete entry</TooltipContent>

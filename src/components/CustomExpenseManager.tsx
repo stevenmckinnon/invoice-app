@@ -103,7 +103,7 @@ export const CustomExpenseManager = ({
       </CardHeader>
       <CardContent className="space-y-4">
         {/* Add new custom expense */}
-        <div className="grid grid-cols-2 gap-4 rounded-lg border bg-gray-50 p-4 md:grid-cols-5 dark:bg-black/50">
+        <div className="bg-muted/60 grid grid-cols-2 gap-4 rounded-xl p-4 md:grid-cols-5">
           <FormField
             control={form.control as any}
             name="description"
@@ -258,7 +258,7 @@ export const CustomExpenseManager = ({
                               aria-label="Remove custom expense entry"
                               className="h-8 w-8 p-0"
                             >
-                              <TrashIcon className="h-4 w-4 text-red-600" />
+                              <TrashIcon className="text-destructive h-4 w-4" />
                             </Button>
                           </TooltipTrigger>
                           <TooltipContent>Delete entry</TooltipContent>
