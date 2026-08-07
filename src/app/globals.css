@@ -79,8 +79,15 @@
   /* Full-bleed dark brand blocks (the bento hero card, the closing CTA).
      Tinted to the canvas hue 83 for the same reason the shadows are: a
      pure-neutral black reads as grime beside warm cream. Deliberately not
-     redeclared in `.dark` — these blocks are a brand constant, the one part
-     of the page that looks identical in both themes. */
+     redeclared in `.dark` - these blocks are a brand constant, the one part
+     of the page that looks identical in both themes.
+
+     Because the colour is fixed, it lands at CIE L* 2.8, which is *below* the
+     dark canvas (4.4), so in dark mode these blocks recede rather than lift.
+     That is fine for the full-bleed CTA band, which reads as a deliberate
+     darker stripe. It is not fine for the bento card, which floats among
+     `bg-card` siblings, so that one carries `dark:border-border` in the JSX -
+     the same defining edge `Card` gets, for the same reason. */
   --ink: oklch(0.145 0.008 83);
   --ink-foreground: oklch(1 0 0);
   --ink-muted: oklch(0.708 0.014 83);
@@ -415,57 +422,23 @@ button {
     inset 0 1px 0 rgba(255, 255, 255, 0.05);
 }
 
-/* Desktop zoom - works on desktop browsers */
+/* The hero mockup is app UI shown at a distance, so it renders smaller than
+   life size. `zoom` does that honestly: it scales layout, so the frame sizes
+   itself to the result and nothing needs a magic height.
+
+   This deliberately does NOT scale on mobile. The previous rule used
+   `transform: scale(0.6)` with `width: 166.67%`, which takes the element out
+   of layout flow, so the frame needed a hardcoded `height: 638px` tuned to the
+   current content - already clipping by 4px, and silently cropping more the
+   moment a show name wrapped. It also restyled Tailwind utilities by class
+   name (`.zoom .grid-cols-3`, `.zoom .text-sm`) from an unlayered global,
+   which outranks the utilities the component actually declares.
+
+   Below 768px the mockup uses DemoDashboard's own responsive classes instead,
+   which is also what the real app does at that width. */
 @media (min-width: 768px) {
   .zoom {
     zoom: 70%;
-  }
-}
-
-/* Mobile: Use responsive design instead of scaling */
-@media (max-width: 767px) {
-  .zoom {
-    zoom: unset;
-    transform: scale(0.6);
-    transform-origin: top left;
-    width: 166.67%; /* Compensate for scale reduction (100/0.6) */
-    height: auto; /* Let height be natural */
-    margin: 0 auto; /* Center the scaled content */
-    /* Use responsive spacing and sizing */
-    padding: 1rem;
-    gap: 1rem;
-  }
-
-  /* Ensure the glass frame accommodates the scaled content */
-  .glossy-frame {
-    height: 638px;
-  }
-
-  /* Make demo dashboard mobile-friendly */
-  .zoom .grid-cols-3 {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 0.75rem;
-  }
-
-  .zoom .grid-cols-2 {
-    grid-template-columns: 1fr;
-    gap: 1rem;
-  }
-
-  .zoom h1 {
-    font-size: 1.5rem;
-  }
-
-  .zoom .text-2xl {
-    font-size: 1.25rem;
-  }
-
-  .zoom .text-sm {
-    font-size: 0.75rem;
-  }
-
-  .zoom .text-xs {
-    font-size: 0.625rem;
   }
 }
 

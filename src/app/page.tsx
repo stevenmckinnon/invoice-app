@@ -8,6 +8,7 @@ import {
   TrendingUp,
   Users,
 } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 
 import CaleyLogo from "@/components/CaleyLogo";
@@ -98,8 +99,8 @@ export default function Home() {
                   ["Shoot days", "6 × £500.00", "£3,000.00"],
                   ["Per diem, work", "6 × £45.00", "£270.00"],
                   ["Per diem, travel", "2 × £30.00", "£60.00"],
-                  ["Overtime", "3h at 1.5×", "£236.25"],
-                  ["Overtime", "1h at 2×", "£105.00"],
+                  ["Overtime", "3h at 1.5×", "£225.00"],
+                  ["Overtime", "1h at 2×", "£100.00"],
                   ["Expenses", "Train, parking", "£86.40"],
                 ].map(([label, detail, amount], i) => (
                   <div
@@ -122,7 +123,7 @@ export default function Home() {
                   Total
                 </span>
                 <span className="text-primary font-mono text-lg font-bold tabular-nums">
-                  £3,757.65
+                  £3,741.40
                 </span>
               </div>
             </div>
@@ -143,10 +144,11 @@ export default function Home() {
             </p>
           </div>
 
-          {/* Bento Grid */}
-          <div className="grid grid-cols-1 gap-5 md:grid-cols-6 lg:grid-rows-2">
+          {/* Bento grid. Every row splits 4|2 on the same seam — the wide cell
+              changes rows, the column edge does not. */}
+          <div className="grid grid-cols-1 gap-5 md:grid-cols-6">
             {/* Dark hero card — Professional PDFs */}
-            <div className="group bg-ink relative col-span-1 overflow-hidden rounded-2xl p-8 shadow-md md:col-span-4 md:row-span-2 lg:p-12">
+            <div className="group bg-ink dark:border-border relative col-span-1 overflow-hidden rounded-2xl border border-transparent p-8 shadow-md md:col-span-4 md:row-span-2 lg:p-12">
               {/* Blue ambient glow */}
               <div className="pointer-events-none absolute top-0 right-[-10%] h-[120%] w-[80%] bg-gradient-to-l from-primary/25 to-transparent blur-3xl" />
 
@@ -172,31 +174,18 @@ export default function Home() {
                 </div>
               </div>
 
-              {/* Floating PDF mockup */}
-              <div className="relative z-10 w-full max-w-sm transition-transform duration-300 ease-out group-hover:-translate-y-2">
-                <div className="rounded-t-lg border border-white/10 bg-white p-5 shadow-[0_-20px_40px_rgba(0,0,0,0.4)]">
-                  <div className="mb-4 flex items-start justify-between border-b border-neutral-100 pb-3">
-                    <div className="h-10 w-10 rounded bg-neutral-950" />
-                    <div className="text-right">
-                      <div className="text-lg font-bold tracking-tight text-neutral-900 uppercase">
-                        Invoice
-                      </div>
-                      <div className="font-mono text-xs text-neutral-500">
-                        INV-2025-042
-                      </div>
-                    </div>
-                  </div>
-                  <div className="mb-5 space-y-1.5">
-                    <div className="h-3 w-3/4 rounded bg-neutral-100" />
-                    <div className="h-3 w-1/2 rounded bg-neutral-100" />
-                  </div>
-                  <div className="flex items-center justify-between border-b border-neutral-900 py-1.5">
-                    <div className="h-2.5 w-1/3 rounded bg-neutral-200" />
-                    <div className="font-mono text-sm font-bold text-neutral-900">
-                      £2,500.00
-                    </div>
-                  </div>
-                </div>
+              {/* The real thing: rendered by src/lib/pdf.ts from the same
+                  invoice the walkthrough section above describes, so the
+                  figures on this page and the app's output cannot drift. */}
+              <div className="relative z-10 -mb-12 w-full max-w-md transition-transform duration-300 ease-out group-hover:-translate-y-2 lg:-mb-16">
+                <Image
+                  src="/invoice-pdf-preview.png"
+                  alt="A Caley invoice PDF for The Crown Season 6, billed to Netflix Studios, itemising six work days, per diems, overtime and expenses, totalling £3,741.40."
+                  width={1000}
+                  height={1012}
+                  className="rounded-t-lg border border-white/10 bg-white shadow-[0_-20px_40px_rgba(0,0,0,0.4)]"
+                  priority={false}
+                />
               </div>
             </div>
 
@@ -211,9 +200,11 @@ export default function Home() {
                 and adds it to the invoice.
               </p>
               <div className="bg-muted mt-5 flex items-center justify-between rounded-md p-3">
-                <span className="font-mono text-xs tabular-nums">3h at 1.5×</span>
+                <span className="font-mono text-xs tabular-nums">
+                  3h at 1.5×
+                </span>
                 <span className="text-primary font-mono text-xs font-bold tabular-nums">
-                  £236.25
+                  £225.00
                 </span>
               </div>
             </div>
@@ -251,29 +242,49 @@ export default function Home() {
             </div>
 
             {/* Client Management */}
-            <div className="bg-card dark:border-border relative overflow-hidden rounded-2xl border border-transparent p-6 shadow-sm transition-[translate,box-shadow] duration-200 ease-out hover:-translate-y-1 hover:shadow-lg md:col-span-3">
+            <div className="bg-card dark:border-border relative overflow-hidden rounded-2xl border border-transparent p-6 shadow-sm transition-[translate,box-shadow] duration-200 ease-out hover:-translate-y-1 hover:shadow-lg md:col-span-4">
               <div className="bg-primary/10 text-primary mb-3 w-fit rounded-lg p-3">
                 <Users className="h-5 w-5" />
               </div>
-              <h3 className="mb-2 text-xl font-bold">
-                Clients and rates
-              </h3>
-              <p className="text-muted-foreground text-sm">
+              <h3 className="mb-2 text-xl font-bold">Clients and rates</h3>
+              <p className="text-muted-foreground mb-5 text-sm">
                 Save each production company with its own day rate and per
                 diems. Bill in GBP, USD, EUR, CAD, or AUD.
               </p>
+              <dl className="divide-border/60 bg-muted divide-y rounded-md sm:grid sm:grid-cols-2 sm:divide-x sm:divide-y-0">
+                {[
+                  ["Netflix Studios", "£500 / day"],
+                  ["Kelvin Row Films", "£475 / day"],
+                ].map(([client, rate]) => (
+                  <div
+                    key={client}
+                    className="flex items-center justify-between gap-3 px-3 py-2"
+                  >
+                    <dt className="truncate text-xs font-medium">{client}</dt>
+                    <dd className="text-muted-foreground shrink-0 font-mono text-xs tabular-nums">
+                      {rate}
+                    </dd>
+                  </div>
+                ))}
+              </dl>
             </div>
 
             {/* Custom Expenses */}
-            <div className="bg-card dark:border-border relative overflow-hidden rounded-2xl border border-transparent p-6 shadow-sm transition-[translate,box-shadow] duration-200 ease-out hover:-translate-y-1 hover:shadow-lg md:col-span-3">
+            <div className="bg-card dark:border-border relative overflow-hidden rounded-2xl border border-transparent p-6 shadow-sm transition-[translate,box-shadow] duration-200 ease-out hover:-translate-y-1 hover:shadow-lg md:col-span-2">
               <div className="bg-primary/10 text-primary mb-3 w-fit rounded-lg p-3">
                 <DollarSign className="h-5 w-5" />
               </div>
               <h3 className="mb-2 text-xl font-bold">Expenses</h3>
-              <p className="text-muted-foreground text-sm">
+              <p className="text-muted-foreground text-sm leading-relaxed">
                 Add travel, kit hire, parking, and anything else you fronted, as
                 its own line on the invoice.
               </p>
+              <div className="bg-muted mt-5 flex items-center justify-between rounded-md p-3">
+                <span className="font-mono text-xs">Train, parking</span>
+                <span className="text-primary font-mono text-xs font-bold tabular-nums">
+                  £86.40
+                </span>
+              </div>
             </div>
           </div>
         </SectionReveal>
@@ -336,8 +347,8 @@ export default function Home() {
                 <SectionReveal delay={0.1} y={10} duration={0.35}>
                   <div className="flex justify-end">
                     <div className="bg-primary text-primary-foreground max-w-[80%] rounded-2xl rounded-br-sm px-4 py-2.5 text-sm">
-                      Invoice Netflix Studios for The Crown — 5 shoot days plus
-                      3 hours overtime
+                      Invoice Netflix Studios for The Crown: 5 shoot days plus 3
+                      hours overtime
                     </div>
                   </div>
                 </SectionReveal>
@@ -379,14 +390,14 @@ export default function Home() {
                               3h overtime (1.5×)
                             </span>
                             <span className="font-mono font-medium tabular-nums">
-                              £236.25
+                              £225.00
                             </span>
                           </div>
                           <div className="border-border border-t pt-2">
                             <div className="flex items-center justify-between text-xs font-semibold">
                               <span>Total</span>
                               <span className="text-primary font-mono tabular-nums">
-                                £2,736.25
+                                £2,725.00
                               </span>
                             </div>
                           </div>
@@ -414,7 +425,7 @@ export default function Home() {
                     <div className="bg-muted max-w-[85%] rounded-2xl rounded-bl-sm px-4 py-3 text-sm">
                       Added as an expense line. The draft is now{" "}
                       <strong className="font-mono tabular-nums">
-                        £2,822.65
+                        £2,811.40
                       </strong>
                       .
                     </div>
@@ -437,7 +448,7 @@ export default function Home() {
       </section>
 
       {/* FAQ Section */}
-      <section className="bg-muted/60 py-24" id="faq">
+      <section className="bg-muted py-24" id="faq">
         <SectionReveal className="mx-auto max-w-4xl px-6">
           <div className="mb-16 max-w-2xl">
             <h2 className="text-4xl font-bold tracking-tight sm:text-5xl">
@@ -461,7 +472,7 @@ export default function Home() {
               },
               {
                 q: "What about per diems and expenses?",
-                a: "Work days and travel days carry separate per diem rates, set per client. You can also add one-off expenses — travel, kit hire, meals — as their own lines.",
+                a: "Work days and travel days carry separate per diem rates, set per client. You can also add one-off expenses (travel, kit hire, meals) as their own lines.",
               },
               {
                 q: "What currencies are supported?",
@@ -469,7 +480,7 @@ export default function Home() {
               },
               {
                 q: "Is my financial data secure?",
-                a: "Your data is encrypted in transit and at rest, sign-in is handled by a dedicated auth library rather than rolled by hand, and every query is scoped to your account — no one else can read your invoices or banking details.",
+                a: "Your data is encrypted in transit and at rest, sign-in is handled by a dedicated auth library rather than rolled by hand, and every query is scoped to your account. No one else can read your invoices or banking details.",
               },
             ].map((faq, i) => (
               <AccordionItem key={i} value={`item-${i}`} className="mb-4">
@@ -495,8 +506,7 @@ export default function Home() {
             Stop doing admin.
           </h2>
           <p className="text-ink-muted mx-auto mb-12 max-w-2xl text-xl">
-            Send your next invoice in under a minute. Free while Caley is in
-            beta.
+            Send your next invoice in under a minute.
           </p>
           <div className="flex justify-center">
             <Button

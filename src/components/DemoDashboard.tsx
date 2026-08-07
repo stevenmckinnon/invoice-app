@@ -1,6 +1,6 @@
 "use client";
 import { PlusIcon, TrendingDown, TrendingUp } from "lucide-react";
-import { motion } from "motion/react";
+import { motion, useReducedMotion } from "motion/react";
 
 import { AnimatedCounter } from "@/components/AnimatedCounter";
 import { Button } from "@/components/ui/button";
@@ -83,6 +83,7 @@ const formatFy = (fyStart: number): string =>
 export const DemoDashboard = () => {
   const invoices = demoInvoices;
   const now = new Date();
+  const reduceMotion = useReducedMotion();
 
   const sum = (list: DemoInvoice[]) =>
     list.reduce((total, inv) => total + inv.totalAmount, 0);
@@ -132,17 +133,18 @@ export const DemoDashboard = () => {
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
+      initial={reduceMotion ? false : { opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5 }}
+      transition={reduceMotion ? { duration: 0 } : { duration: 0.5 }}
       className="glossy-frame p-0"
     >
-      <div className="zoom bg-background grid w-full grid-cols-1 gap-6 rounded-lg p-12 pb-8">
+      <div className="zoom bg-background grid w-full grid-cols-1 gap-4 rounded-lg p-4 pb-6 md:gap-6 md:p-12 md:pb-8">
         {/* Header — mirrors the app, where the nav pill already says
             "Dashboard", so the heading carries the greeting instead */}
-        <div className="flex items-start justify-between gap-4">
+        {/* Same shape as the app's PageHeader: stacked below md, row above. */}
+        <div className="flex flex-col justify-between gap-4 md:flex-row md:items-start">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">
+            <h1 className="text-2xl font-bold tracking-tight md:text-3xl">
               Afternoon, Ellie
             </h1>
             <p
@@ -157,7 +159,7 @@ export const DemoDashboard = () => {
               })}
             </p>
           </div>
-          <Button>
+          <Button className="w-fit">
             <PlusIcon />
             Create Invoice
           </Button>
@@ -172,7 +174,7 @@ export const DemoDashboard = () => {
           </CardHeader>
           <CardContent>
             <div className="flex flex-wrap items-end justify-between gap-x-6 gap-y-3">
-              <div className="text-4xl font-bold tracking-tight tabular-nums">
+              <div className="text-3xl font-bold tracking-tight tabular-nums md:text-4xl">
                 <AnimatedCounter
                   value={totalRevenue}
                   prefix="£"
@@ -204,16 +206,17 @@ export const DemoDashboard = () => {
           </CardContent>
         </Card>
 
-        {/* Supporting stats */}
-        <div className="grid grid-cols-3 gap-4">
+        {/* Supporting stats. Two across on mobile like the real dashboard,
+            with the odd third spanning the row so there is no hanging cell. */}
+        <div className="grid grid-cols-2 gap-3 md:grid-cols-3 md:gap-4">
           <Card className="gap-2">
-            <CardHeader className="pb-0">
+            <CardHeader className="px-3 pb-0 md:px-6">
               <CardTitle className="text-muted-foreground text-xs font-semibold tracking-wider uppercase">
                 Paid
               </CardTitle>
             </CardHeader>
-            <CardContent className="mt-auto">
-              <div className="text-success text-3xl font-bold tracking-tight tabular-nums">
+            <CardContent className="mt-auto px-3 md:px-6">
+              <div className="text-success text-lg font-bold tracking-tight tabular-nums md:text-3xl">
                 <AnimatedCounter
                   value={paidRevenue}
                   prefix="£"
@@ -229,13 +232,13 @@ export const DemoDashboard = () => {
           </Card>
 
           <Card className="gap-2">
-            <CardHeader className="pb-0">
+            <CardHeader className="px-3 pb-0 md:px-6">
               <CardTitle className="text-muted-foreground text-xs font-semibold tracking-wider uppercase">
                 Outstanding
               </CardTitle>
             </CardHeader>
-            <CardContent className="mt-auto">
-              <div className="text-warning text-3xl font-bold tracking-tight tabular-nums">
+            <CardContent className="mt-auto px-3 md:px-6">
+              <div className="text-warning text-lg font-bold tracking-tight tabular-nums md:text-3xl">
                 <AnimatedCounter
                   value={outstandingRevenue}
                   prefix="£"
@@ -250,14 +253,14 @@ export const DemoDashboard = () => {
             </CardContent>
           </Card>
 
-          <Card className="gap-2">
+          <Card className="col-span-2 gap-2 md:col-span-1">
             <CardHeader className="pb-0">
               <CardTitle className="text-muted-foreground text-xs font-semibold tracking-wider uppercase">
                 Average invoice
               </CardTitle>
             </CardHeader>
-            <CardContent className="mt-auto">
-              <div className="text-3xl font-bold tracking-tight tabular-nums">
+            <CardContent className="mt-auto px-3 md:px-6">
+              <div className="text-2xl font-bold tracking-tight tabular-nums md:text-3xl">
                 <AnimatedCounter
                   value={averageInvoice}
                   prefix="£"
@@ -273,11 +276,14 @@ export const DemoDashboard = () => {
           </Card>
         </div>
 
-        <h2 className="text-muted-foreground -mb-2 text-xs font-semibold tracking-wider uppercase">
+        {/* The demoted analytics pair. Held back below md: at 301px of frame
+            it doubles the mockup's height to 1.5 viewports, and it is the
+            least load-bearing part of the dashboard to lose. */}
+        <h2 className="text-muted-foreground -mb-2 hidden text-xs font-semibold tracking-wider uppercase md:block">
           Breakdown
         </h2>
 
-        <div className="grid grid-cols-2 gap-4">
+        <div className="hidden grid-cols-1 gap-4 md:grid md:grid-cols-2">
           <Card>
             <CardHeader>
               <CardTitle>Invoice status</CardTitle>
