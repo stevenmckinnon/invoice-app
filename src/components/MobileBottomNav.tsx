@@ -1,6 +1,11 @@
 "use client";
-
-import { FileText, Home, MessageCircle, Users } from "lucide-react";
+import {
+  FileAttachmentIcon,
+  Home01Icon,
+  BubbleChatSpark01Icon,
+  UserGroupIcon,
+} from "@hugeicons/core-free-icons";
+import { HugeiconsIcon, IconSvgElement } from "@hugeicons/react";
 import { AnimatePresence, LayoutGroup, motion } from "motion/react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -14,7 +19,7 @@ import { cn } from "@/lib/utils";
 interface NavItem {
   href: string;
   label: string;
-  icon: React.ComponentType<{ className?: string }>;
+  icon: IconSvgElement;
   isActive: (pathname: string) => boolean;
 }
 
@@ -27,19 +32,19 @@ const navItems: NavItem[] = [
   {
     href: "/dashboard",
     label: "Dashboard",
-    icon: Home,
+    icon: Home01Icon,
     isActive: (pathname) => pathname === "/dashboard",
   },
   {
     href: "/invoices",
     label: "Invoices",
-    icon: FileText,
+    icon: FileAttachmentIcon,
     isActive: (pathname) => pathname.startsWith("/invoices"),
   },
   {
     href: "/clients",
     label: "Clients",
-    icon: Users,
+    icon: UserGroupIcon,
     isActive: (pathname) => pathname.startsWith("/clients"),
   },
 ];
@@ -113,7 +118,10 @@ export const MobileBottomNav = () => {
                           )}
 
                           <div className="relative z-10 flex flex-col items-center gap-1">
-                            <Icon className="h-5 w-5" />
+                            <HugeiconsIcon
+                              icon={item.icon}
+                              className="h-5 w-5"
+                            />
                             <span className="text-xs font-medium whitespace-nowrap">
                               {item.label}
                             </span>
@@ -147,7 +155,10 @@ export const MobileBottomNav = () => {
                           }}
                         />
                       )}
-                      <MessageCircle className="relative z-10 h-5 w-5" />
+                      <HugeiconsIcon
+                        icon={BubbleChatSpark01Icon}
+                        className="relative z-10 h-5 w-5"
+                      />
                       <span className="relative z-10 text-xs font-medium whitespace-nowrap">
                         Ask AI
                       </span>
@@ -184,7 +195,10 @@ export const MobileBottomNav = () => {
                           )}
 
                           <div className="relative z-10 flex flex-col items-center gap-1">
-                            <Icon className="h-5 w-5" />
+                            <HugeiconsIcon
+                              icon={item.icon}
+                              className="h-5 w-5"
+                            />
                             <span className="text-xs font-medium whitespace-nowrap">
                               {item.label}
                             </span>

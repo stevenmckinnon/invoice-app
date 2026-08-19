@@ -1,7 +1,7 @@
 "use client";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { ArrowLeft01Icon, Loading02Icon } from "@hugeicons/core-free-icons";
 import { useState } from "react";
-
-import { ArrowLeft, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { toast } from "sonner";
 
@@ -83,7 +83,7 @@ const ForgotPasswordPage = () => {
                 href="/auth/signin"
                 className="text-primary inline-flex items-center gap-2 hover:underline"
               >
-                <ArrowLeft className="h-4 w-4" />
+                <HugeiconsIcon icon={ArrowLeft01Icon} className="h-4 w-4" />
                 Back to sign in
               </Link>
             </div>
@@ -125,7 +125,7 @@ const ForgotPasswordPage = () => {
             <Button type="submit" className="w-full" disabled={isLoading}>
               {isLoading ? (
                 <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  <HugeiconsIcon icon={Loading02Icon} className="mr-2 h-4 w-4 animate-spin" />
                   Sending...
                 </>
               ) : (
@@ -139,7 +139,7 @@ const ForgotPasswordPage = () => {
               href="/auth/signin"
               className="text-primary inline-flex items-center gap-2 hover:underline"
             >
-              <ArrowLeft className="h-4 w-4" />
+              <HugeiconsIcon icon={ArrowLeft01Icon} className="h-4 w-4" />
               Back to sign in
             </Link>
           </div>

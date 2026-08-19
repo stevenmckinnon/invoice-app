@@ -1,20 +1,10 @@
 "use client";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { Alert01Icon, Camera01Icon, ComputerIcon, Delete02Icon, Key01Icon, Loading02Icon, MoonIcon, Settings01Icon, Shield01Icon, Sun01Icon } from "@hugeicons/core-free-icons";
 import { useState } from "react";
 
 import { useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns";
-import {
-  AlertTriangle,
-  Camera,
-  Key,
-  Loader2,
-  Monitor,
-  MoonIcon,
-  Settings,
-  Shield,
-  SunIcon,
-  Trash2,
-} from "lucide-react";
 import { useTheme } from "next-themes";
 import { toast } from "sonner";
 
@@ -299,7 +289,7 @@ const SettingsPage = () => {
   if (!session?.user) {
     return (
       <div className="flex min-h-[100dvh] items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin" />
+        <HugeiconsIcon icon={Loading02Icon} className="h-8 w-8 animate-spin" />
       </div>
     );
   }
@@ -315,7 +305,7 @@ const SettingsPage = () => {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Settings className="h-5 w-5" />
+            <HugeiconsIcon icon={Settings01Icon} className="h-5 w-5" />
             General Preferences
           </CardTitle>
           <CardDescription>Manage your preferences</CardDescription>
@@ -338,7 +328,7 @@ const SettingsPage = () => {
                 aria-controls="theme"
                 onClick={() => handleThemeToggle("light")}
               >
-                <SunIcon className="size-4" aria-hidden="true" />
+                <HugeiconsIcon icon={Sun01Icon} className="size-4" aria-hidden="true" />
               </span>
               <Switch
                 id="theme"
@@ -355,7 +345,7 @@ const SettingsPage = () => {
                 aria-controls="theme"
                 onClick={() => handleThemeToggle("dark")}
               >
-                <MoonIcon className="size-4" aria-hidden="true" />
+                <HugeiconsIcon icon={MoonIcon} className="size-4" aria-hidden="true" />
               </span>
             </div>
           </div>
@@ -366,7 +356,7 @@ const SettingsPage = () => {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Shield className="h-5 w-5" />
+            <HugeiconsIcon icon={Shield01Icon} className="h-5 w-5" />
             Account Information
           </CardTitle>
           <CardDescription>
@@ -398,7 +388,7 @@ const SettingsPage = () => {
                     disabled={uploadingPhoto}
                     className="relative"
                   >
-                    <Camera className="mr-2 h-4 w-4" />
+                    <HugeiconsIcon icon={Camera01Icon} className="mr-2 h-4 w-4" />
                     {uploadingPhoto ? "Uploading..." : "Upload Photo"}
                     <input
                       type="file"
@@ -418,12 +408,12 @@ const SettingsPage = () => {
                     >
                       {deletingPhoto ? (
                         <>
-                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          <HugeiconsIcon icon={Loading02Icon} className="mr-2 h-4 w-4 animate-spin" />
                           Removing...
                         </>
                       ) : (
                         <>
-                          <Trash2 className="mr-2 h-4 w-4" />
+                          <HugeiconsIcon icon={Delete02Icon} className="mr-2 h-4 w-4" />
                           Remove
                         </>
                       )}
@@ -462,7 +452,7 @@ const SettingsPage = () => {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Key className="h-5 w-5" />
+            <HugeiconsIcon icon={Key01Icon} className="h-5 w-5" />
             Password & Security
           </CardTitle>
           <CardDescription>
@@ -480,7 +470,7 @@ const SettingsPage = () => {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Monitor className="h-5 w-5" />
+            <HugeiconsIcon icon={ComputerIcon} className="h-5 w-5" />
             Active Sessions
           </CardTitle>
           <CardDescription>
@@ -490,7 +480,7 @@ const SettingsPage = () => {
         <CardContent>
           {loadingSessions ? (
             <div className="text-muted-foreground flex items-center gap-2">
-              <Loader2 className="h-4 w-4 animate-spin" />
+              <HugeiconsIcon icon={Loading02Icon} className="h-4 w-4 animate-spin" />
               <span className="text-sm">Loading sessions...</span>
             </div>
           ) : sessions.length === 0 ? (
@@ -549,7 +539,7 @@ const SettingsPage = () => {
       <Card className="border-destructive">
         <CardHeader>
           <CardTitle className="text-destructive flex items-center gap-2">
-            <AlertTriangle className="h-5 w-5" />
+            <HugeiconsIcon icon={Alert01Icon} className="h-5 w-5" />
             Danger Zone
           </CardTitle>
           <CardDescription>
@@ -568,7 +558,7 @@ const SettingsPage = () => {
                 variant="destructive"
                 onClick={() => setShowDeleteDialog(true)}
               >
-                <Trash2 className="mr-2 h-4 w-4" />
+                <HugeiconsIcon icon={Delete02Icon} className="mr-2 h-4 w-4" />
                 Delete Account
               </Button>
             </div>
@@ -653,7 +643,7 @@ const SettingsPage = () => {
             <Button onClick={handlePasswordChange} disabled={changingPassword}>
               {changingPassword ? (
                 <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  <HugeiconsIcon icon={Loading02Icon} className="mr-2 h-4 w-4 animate-spin" />
                   Changing...
                 </>
               ) : (
@@ -679,7 +669,7 @@ const SettingsPage = () => {
           <div className="space-y-4 py-4">
             <div className="bg-destructive/10 border-destructive/20 rounded-lg border p-4">
               <h4 className="mb-2 flex items-center gap-2 text-sm font-medium">
-                <AlertTriangle className="h-4 w-4" />
+                <HugeiconsIcon icon={Alert01Icon} className="h-4 w-4" />
                 Warning
               </h4>
               <ul className="text-muted-foreground list-inside list-disc space-y-1 text-sm">
@@ -773,7 +763,7 @@ const SettingsPage = () => {
             >
               {deletingAccount ? (
                 <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  <HugeiconsIcon icon={Loading02Icon} className="mr-2 h-4 w-4 animate-spin" />
                   Deleting...
                 </>
               ) : (

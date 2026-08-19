@@ -1,7 +1,6 @@
 "use client";
-
-import { XIcon } from "lucide-react";
-
+import { HugeiconsIcon } from "@hugeicons/react";
+import { Cancel01Icon } from "@hugeicons/core-free-icons";
 import { useChatSession } from "@/components/ai/ChatProvider";
 import { ChatSurface } from "@/components/ai/ChatSurface";
 import { Button } from "@/components/ui/button";
@@ -52,7 +51,7 @@ export const AiChat = () => {
             trailing={
               <SheetClose asChild>
                 <Button variant="ghost" size="icon-sm" aria-label="Close assistant">
-                  <XIcon className="size-4" />
+                  <HugeiconsIcon icon={Cancel01Icon} className="size-4" />
                 </Button>
               </SheetClose>
             }

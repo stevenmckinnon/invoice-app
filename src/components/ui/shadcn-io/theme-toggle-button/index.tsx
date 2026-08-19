@@ -1,8 +1,8 @@
 "use client";
 
+import { HugeiconsIcon } from "@hugeicons/react";
+import { MoonIcon, Sun01Icon } from "@hugeicons/core-free-icons";
 import { useCallback, useEffect, useState } from "react";
-
-import { Moon, Sun } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 
 import { Button } from "@/components/ui/button";
@@ -208,7 +208,7 @@ export const ThemeToggleButton = ({
         )}
         disabled
       >
-        <Sun className="h-4 w-4" />
+        <HugeiconsIcon icon={Sun01Icon} className="h-4 w-4" />
         {showLabel && <span>Theme</span>}
       </Button>
     );
@@ -239,9 +239,9 @@ export const ThemeToggleButton = ({
             className="absolute inset-0 flex items-center justify-center"
           >
             {theme === "light" ? (
-              <Sun className="size-[1.2rem]" />
+              <HugeiconsIcon icon={Sun01Icon} className="size-[1.2rem]" />
             ) : (
-              <Moon className="size-[1.2rem]" />
+              <HugeiconsIcon icon={MoonIcon} className="size-[1.2rem]" />
             )}
           </motion.span>
         </AnimatePresence>

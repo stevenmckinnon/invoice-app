@@ -1,5 +1,5 @@
-import { Loader2 } from "lucide-react";
-
+import { HugeiconsIcon } from "@hugeicons/react";
+import { Loading02Icon } from "@hugeicons/core-free-icons";
 import { cn } from "@/lib/utils";
 
 interface LoadingSpinnerProps {
@@ -26,7 +26,7 @@ export const LoadingSpinner = ({
         className,
       )}
     >
-      <Loader2 className={cn("text-primary animate-spin", sizeClasses[size])} />
+      <HugeiconsIcon icon={Loading02Icon} className={cn("text-primary animate-spin", sizeClasses[size])} />
       {text && <p className="text-muted-foreground text-sm">{text}</p>}
     </div>
   );

@@ -1,8 +1,8 @@
 "use client";
 
+import { HugeiconsIcon } from "@hugeicons/react";
+import { Alert01Icon, Home01Icon, Refresh01Icon } from "@hugeicons/core-free-icons";
 import { useEffect } from "react";
-
-import { Home, RefreshCcw, TriangleAlert } from "lucide-react";
 import Link from "next/link";
 
 import { Button } from "@/components/ui/button";
@@ -29,7 +29,7 @@ export default function Error({
             className="bg-destructive/10 text-destructive mb-6 flex size-16 items-center justify-center rounded-2xl"
             aria-hidden="true"
           >
-            <TriangleAlert className="size-7" />
+            <HugeiconsIcon icon={Alert01Icon} className="size-7" />
           </div>
 
           <h1 className="text-2xl font-bold tracking-tight">
@@ -47,12 +47,12 @@ export default function Error({
 
           <div className="mt-7 flex w-full flex-col gap-3 sm:w-auto sm:flex-row">
             <Button onClick={reset}>
-              <RefreshCcw />
+              <HugeiconsIcon icon={Refresh01Icon} />
               Try again
             </Button>
             <Button asChild variant="outline">
               <Link href="/">
-                <Home />
+                <HugeiconsIcon icon={Home01Icon} />
                 Back to home
               </Link>
             </Button>

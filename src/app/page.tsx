@@ -1,12 +1,7 @@
+import { HugeiconsIcon } from "@hugeicons/react";
+import { AnalyticsUpIcon, ArrowUp01Icon, BotIcon, Clock01Icon, LinkSquare01Icon, Tick01Icon, UserGroupIcon } from "@hugeicons/core-free-icons";
 import {
-  ArrowUp,
-  Bot,
-  Check,
-  Clock,
-  DollarSign,
-  ExternalLink,
-  TrendingUp,
-  Users,
+  DollarSign
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -192,7 +187,7 @@ export default function Home() {
             {/* Overtime Tracking */}
             <div className="bg-card dark:border-border relative overflow-hidden rounded-2xl border border-transparent p-6 shadow-sm transition-[translate,box-shadow] duration-200 ease-out hover:-translate-y-1 hover:shadow-lg md:col-span-2">
               <div className="bg-primary/10 text-primary mb-3 w-fit rounded-lg p-3">
-                <Clock className="h-5 w-5" />
+                <HugeiconsIcon icon={Clock01Icon} className="h-5 w-5" />
               </div>
               <h3 className="mb-2 text-xl font-bold">Overtime</h3>
               <p className="text-muted-foreground text-sm leading-relaxed">
@@ -212,7 +207,7 @@ export default function Home() {
             {/* Revenue Analytics */}
             <div className="bg-card dark:border-border relative overflow-hidden rounded-2xl border border-transparent p-6 shadow-sm transition-[translate,box-shadow] duration-200 ease-out hover:-translate-y-1 hover:shadow-lg md:col-span-2">
               <div className="bg-primary/10 text-primary mb-3 w-fit rounded-lg p-3">
-                <TrendingUp className="h-5 w-5" />
+                <HugeiconsIcon icon={AnalyticsUpIcon} className="h-5 w-5" />
               </div>
               <h3 className="mb-2 text-xl font-bold">
                 What you&apos;re owed
@@ -244,7 +239,7 @@ export default function Home() {
             {/* Client Management */}
             <div className="bg-card dark:border-border relative overflow-hidden rounded-2xl border border-transparent p-6 shadow-sm transition-[translate,box-shadow] duration-200 ease-out hover:-translate-y-1 hover:shadow-lg md:col-span-4">
               <div className="bg-primary/10 text-primary mb-3 w-fit rounded-lg p-3">
-                <Users className="h-5 w-5" />
+                <HugeiconsIcon icon={UserGroupIcon} className="h-5 w-5" />
               </div>
               <h3 className="mb-2 text-xl font-bold">Clients and rates</h3>
               <p className="text-muted-foreground mb-5 text-sm">
@@ -299,7 +294,7 @@ export default function Home() {
             {/* Text */}
             <div>
               <div className="text-primary bg-primary/10 mb-6 inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-sm font-medium">
-                <Bot className="h-4 w-4" />
+                <HugeiconsIcon icon={BotIcon} className="h-4 w-4" />
                 Built-in assistant
               </div>
               <h2 className="mb-6 text-4xl font-bold tracking-tight sm:text-5xl">
@@ -318,7 +313,7 @@ export default function Home() {
                 ].map((item) => (
                   <li key={item} className="flex items-start gap-3">
                     <div className="bg-primary/10 text-primary mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full">
-                      <Check className="h-3 w-3" strokeWidth={2.5} />
+                      <HugeiconsIcon icon={Tick01Icon} className="h-3 w-3" strokeWidth={2.5} />
                     </div>
                     <span className="text-muted-foreground">{item}</span>
                   </li>
@@ -331,7 +326,7 @@ export default function Home() {
               {/* Header */}
               <div className="border-border/60 flex items-center gap-3 border-b px-5 py-3.5">
                 <div className="bg-primary/10 flex h-8 w-8 items-center justify-center rounded-full">
-                  <Bot className="text-primary h-4 w-4" />
+                  <HugeiconsIcon icon={BotIcon} className="text-primary h-4 w-4" />
                 </div>
                 <div>
                   <p className="text-sm font-semibold">Caley Assistant</p>
@@ -357,7 +352,7 @@ export default function Home() {
                 <SectionReveal delay={0.45} y={10} duration={0.35}>
                   <div className="flex gap-3">
                     <div className="bg-primary/10 flex h-7 w-7 shrink-0 items-center justify-center rounded-full">
-                      <Bot className="text-primary h-3.5 w-3.5" />
+                      <HugeiconsIcon icon={BotIcon} className="text-primary h-3.5 w-3.5" />
                     </div>
                     <div className="bg-muted max-w-[85%] rounded-2xl rounded-bl-sm px-4 py-3 text-sm">
                       <p className="mb-3">
@@ -420,7 +415,7 @@ export default function Home() {
                 <SectionReveal delay={1.05} y={10} duration={0.35}>
                   <div className="flex gap-3">
                     <div className="bg-primary/10 flex h-7 w-7 shrink-0 items-center justify-center rounded-full">
-                      <Bot className="text-primary h-3.5 w-3.5" />
+                      <HugeiconsIcon icon={BotIcon} className="text-primary h-3.5 w-3.5" />
                     </div>
                     <div className="bg-muted max-w-[85%] rounded-2xl rounded-bl-sm px-4 py-3 text-sm">
                       Added as an expense line. The draft is now{" "}
@@ -439,7 +434,7 @@ export default function Home() {
                   Ask anything about your invoices…
                 </div>
                 <div className="bg-primary text-primary-foreground flex h-8 w-8 items-center justify-center rounded-lg">
-                  <ArrowUp className="h-4 w-4" />
+                  <HugeiconsIcon icon={ArrowUp01Icon} className="h-4 w-4" />
                 </div>
               </div>
             </div>
@@ -625,7 +620,7 @@ export default function Home() {
               target="_blank"
             >
               <span>Built by Steve McKinnon</span>
-              <ExternalLink className="h-3 w-3" />
+              <HugeiconsIcon icon={LinkSquare01Icon} className="h-3 w-3" />
             </Link>
           </div>
         </div>

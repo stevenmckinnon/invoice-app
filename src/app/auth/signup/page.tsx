@@ -1,7 +1,7 @@
 "use client";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { Loading02Icon, SparklesIcon, Tick01Icon, ViewIcon, ViewOffIcon } from "@hugeicons/core-free-icons";
 import { useState } from "react";
-
-import { Check, Eye, EyeOff, Loader2, Sparkles } from "lucide-react";
 import { motion } from "motion/react";
 import Link from "next/link";
 import { toast } from "sonner";
@@ -114,15 +114,15 @@ export default function SignUpPage() {
         <div className="relative z-20 mt-auto max-w-md">
           <ul className="space-y-4">
             <li className="flex items-center gap-3 text-lg font-medium text-white">
-              <Check className="h-5 w-5 shrink-0 text-white/70" />
+              <HugeiconsIcon icon={Tick01Icon} className="h-5 w-5 shrink-0 text-white/70" />
               Track day rates, overtime, and per diems
             </li>
             <li className="flex items-center gap-3 text-lg font-medium text-white">
-              <Check className="h-5 w-5 shrink-0 text-white/70" />
+              <HugeiconsIcon icon={Tick01Icon} className="h-5 w-5 shrink-0 text-white/70" />
               Send a branded PDF invoice in under a minute
             </li>
             <li className="flex items-center gap-3 text-lg font-medium text-white">
-              <Check className="h-5 w-5 shrink-0 text-white/70" />
+              <HugeiconsIcon icon={Tick01Icon} className="h-5 w-5 shrink-0 text-white/70" />
               Built specifically for film and TV freelancers
             </li>
           </ul>
@@ -229,9 +229,9 @@ export default function SignUpPage() {
                   aria-label={showPassword ? "Hide password" : "Show password"}
                 >
                   {showPassword ? (
-                    <EyeOff className="h-4 w-4" />
+                    <HugeiconsIcon icon={ViewOffIcon} className="h-4 w-4" />
                   ) : (
-                    <Eye className="h-4 w-4" />
+                    <HugeiconsIcon icon={ViewIcon} className="h-4 w-4" />
                   )}
                 </button>
               </div>
@@ -248,13 +248,13 @@ export default function SignUpPage() {
             >
               {isLoading ? (
                 <>
-                  <Loader2 className="h-4 w-4 animate-spin" />
+                  <HugeiconsIcon icon={Loading02Icon} className="h-4 w-4 animate-spin" />
                   Creating account...
                 </>
               ) : (
                 <>
                   Create Account
-                  <Sparkles className="h-4 w-4" />
+                  <HugeiconsIcon icon={SparklesIcon} className="h-4 w-4" />
                 </>
               )}
             </Button>

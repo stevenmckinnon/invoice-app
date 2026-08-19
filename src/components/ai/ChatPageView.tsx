@@ -1,6 +1,6 @@
 "use client";
-
-import { ArrowLeftIcon } from "lucide-react";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { ArrowLeft01Icon } from "@hugeicons/core-free-icons";
 import { useRouter } from "next/navigation";
 
 import { ChatSurface } from "@/components/ai/ChatSurface";
@@ -27,7 +27,7 @@ export const ChatPageView = () => {
               className="shrink-0 md:hidden"
               aria-label="Go back"
             >
-              <ArrowLeftIcon className="size-4" />
+              <HugeiconsIcon icon={ArrowLeft01Icon} className="size-4" />
             </Button>
           }
           title={

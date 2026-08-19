@@ -1,13 +1,7 @@
 "use client";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { Add01Icon, ArrowLeft01Icon, ArrowRight01Icon, FileAttachmentIcon, Search01Icon } from "@hugeicons/core-free-icons";
 import { useState } from "react";
-
-import {
-  PlusIcon,
-  SearchIcon,
-  ChevronLeft,
-  ChevronRight,
-  FileTextIcon,
-} from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
@@ -127,7 +121,7 @@ export default function AllInvoicesPage() {
         actions={
           <Button asChild>
             <Link href="/invoices/new">
-              <PlusIcon />
+              <HugeiconsIcon icon={Add01Icon} />
               Create Invoice
             </Link>
           </Button>
@@ -139,7 +133,7 @@ export default function AllInvoicesPage() {
         <CardContent className="pt-0">
           <div className="flex flex-col gap-4 md:flex-row">
             <div className="relative flex-1">
-              <SearchIcon className="text-muted-foreground absolute top-3 left-3 h-4 w-4" />
+              <HugeiconsIcon icon={Search01Icon} className="text-muted-foreground absolute top-3 left-3 h-4 w-4" />
               <Input
                 placeholder="Search by invoice number, show name, or client..."
                 value={searchQuery}
@@ -233,7 +227,7 @@ export default function AllInvoicesPage() {
             </>
           ) : paginatedInvoices.length === 0 ? (
             <EmptyState
-              icon={FileTextIcon}
+              icon={FileAttachmentIcon}
               title={
                 searchQuery || statusFilter !== "all"
                   ? "No invoices match your filters"
@@ -249,7 +243,7 @@ export default function AllInvoicesPage() {
                 statusFilter === "all" && (
                   <Button asChild>
                     <Link href="/invoices/new">
-                      <PlusIcon />
+                      <HugeiconsIcon icon={Add01Icon} />
                       Create Invoice
                     </Link>
                   </Button>
@@ -398,7 +392,7 @@ export default function AllInvoicesPage() {
                       onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
                       disabled={currentPage === 1}
                     >
-                      <ChevronLeft className="h-4 w-4" />
+                      <HugeiconsIcon icon={ArrowLeft01Icon} className="h-4 w-4" />
                       Previous
                     </Button>
                     <div className="flex items-center gap-1">
@@ -454,7 +448,7 @@ export default function AllInvoicesPage() {
                       disabled={currentPage === totalPages}
                     >
                       Next
-                      <ChevronRight className="h-4 w-4" />
+                      <HugeiconsIcon icon={ArrowRight01Icon} className="h-4 w-4" />
                     </Button>
                   </div>
                 </div>

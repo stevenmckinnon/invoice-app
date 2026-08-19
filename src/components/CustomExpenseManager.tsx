@@ -1,6 +1,7 @@
 "use client";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { Delete01Icon } from "@hugeicons/core-free-icons";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { TrashIcon } from "lucide-react";
 import { useForm, useWatch } from "react-hook-form";
 import { z } from "zod";
 
@@ -258,7 +259,7 @@ export const CustomExpenseManager = ({
                               aria-label="Remove custom expense entry"
                               className="h-8 w-8 p-0"
                             >
-                              <TrashIcon className="text-destructive h-4 w-4" />
+                              <HugeiconsIcon icon={Delete01Icon} className="text-destructive h-4 w-4" />
                             </Button>
                           </TooltipTrigger>
                           <TooltipContent>Delete entry</TooltipContent>

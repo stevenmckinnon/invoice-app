@@ -1,8 +1,9 @@
 "use client";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { Alert01Icon } from "@hugeicons/core-free-icons";
 import { useEffect, useState } from "react";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { TriangleAlertIcon } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
@@ -181,7 +182,7 @@ export default function NewInvoicePage() {
         banner={
           profileIncomplete && (
             <Alert>
-              <TriangleAlertIcon />
+              <HugeiconsIcon icon={Alert01Icon} />
               <AlertTitle>Profile Setup Required</AlertTitle>
               <AlertDescription>
                 Complete your profile with your personal information and banking

@@ -1,6 +1,11 @@
 "use client";
-
-import { User, LogOut, MessageCircle, Settings } from "lucide-react";
+import {
+  Logout01Icon,
+  BubbleChatSpark01Icon,
+  Settings01Icon,
+  UserIcon,
+} from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
 import { LayoutGroup, motion } from "motion/react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -86,7 +91,7 @@ export const AppHeader = () => {
       )}
     >
       <div
-        className="bg-card/90 supports-[backdrop-filter]:bg-card/70 flex w-full items-center justify-between border-transparent px-4 py-3 shadow-sm backdrop-blur-md md:mx-4 md:rounded-2xl md:border md:shadow-md dark:border-border/50"
+        className="bg-card/90 supports-[backdrop-filter]:bg-card/70 dark:border-border/50 flex w-full items-center justify-between border-transparent px-4 py-3 shadow-sm backdrop-blur-md md:mx-4 md:rounded-2xl md:border md:shadow-md"
         style={{
           paddingTop: "max(12px, env(safe-area-inset-top))",
         }}
@@ -156,7 +161,10 @@ export const AppHeader = () => {
               aria-pressed={chatSession.open}
               className={cn(chatSession.open && "bg-accent")}
             >
-              <MessageCircle className="size-4.5" />
+              <HugeiconsIcon
+                icon={BubbleChatSpark01Icon}
+                className="size-4.5"
+              />
             </Button>
           )}
 
@@ -224,13 +232,16 @@ export const AppHeader = () => {
                   <DropdownMenuSeparator />
                   <DropdownMenuItem asChild>
                     <Link href="/profile" className="cursor-pointer">
-                      <User className="mr-2 h-4 w-4" />
+                      <HugeiconsIcon icon={UserIcon} className="mr-2 h-4 w-4" />
                       Profile Settings
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
                     <Link href="/settings" className="cursor-pointer">
-                      <Settings className="mr-2 h-4 w-4" />
+                      <HugeiconsIcon
+                        icon={Settings01Icon}
+                        className="mr-2 h-4 w-4"
+                      />
                       Account Settings
                     </Link>
                   </DropdownMenuItem>
@@ -239,7 +250,10 @@ export const AppHeader = () => {
                     onClick={handleSignOut}
                     className="cursor-pointer text-red-600 dark:text-red-400"
                   >
-                    <LogOut className="mr-2 h-4 w-4" />
+                    <HugeiconsIcon
+                      icon={Logout01Icon}
+                      className="mr-2 h-4 w-4"
+                    />
                     Sign Out
                   </DropdownMenuItem>
                 </DropdownMenuContent>

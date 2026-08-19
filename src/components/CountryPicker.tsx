@@ -1,8 +1,8 @@
 "use client";
 
+import { HugeiconsIcon } from "@hugeicons/react";
+import { ArrowUpDownIcon, Tick01Icon } from "@hugeicons/core-free-icons";
 import * as React from "react";
-
-import { Check, ChevronsUpDown } from "lucide-react";
 import countries from "world-countries";
 
 import { Button } from "@/components/ui/button";
@@ -67,7 +67,7 @@ export function CountryPicker({
           ) : (
             "Select country..."
           )}
-          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+          <HugeiconsIcon icon={ArrowUpDownIcon} className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-full p-0" align="start">
@@ -85,12 +85,10 @@ export function CountryPicker({
                     setOpen(false);
                   }}
                 >
-                  <Check
-                    className={cn(
-                      "mr-2 h-4 w-4",
-                      value === country.value ? "opacity-100" : "opacity-0",
-                    )}
-                  />
+                  <HugeiconsIcon icon={Tick01Icon} className={cn(
+                                            "mr-2 h-4 w-4",
+                                            value === country.value ? "opacity-100" : "opacity-0",
+                                          )} />
                   <span className="mr-2 text-lg">{country.flag}</span>
                   {country.label}
                 </CommandItem>

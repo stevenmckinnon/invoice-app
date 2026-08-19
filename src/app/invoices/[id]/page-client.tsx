@@ -1,7 +1,7 @@
 "use client";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { PencilIcon } from "@hugeicons/core-free-icons";
 import { useEffect, useState } from "react";
-
-import { PencilIcon } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
@@ -261,7 +261,7 @@ export default function InvoiceDetailPage({ params }: Props) {
                   href={`/invoices/${invoice.id}/edit`}
                   transitionTypes={["forward"]}
                 >
-                  <PencilIcon /> Edit
+                  <HugeiconsIcon icon={PencilIcon} /> Edit
                 </Link>
               </Button>
               <PdfPreviewDialog

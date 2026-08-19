@@ -1,5 +1,6 @@
 "use client";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight01Icon } from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
 import { motion, useReducedMotion } from "motion/react";
 import Link from "next/link";
 
@@ -48,7 +49,7 @@ const Hero = () => {
             >
               <Link href="/auth/signup">
                 Create your first invoice
-                <ArrowRight className="h-4 w-4" />
+                <HugeiconsIcon icon={ArrowRight01Icon} className="h-4 w-4" />
               </Link>
             </Button>
             <Button

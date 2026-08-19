@@ -1,7 +1,8 @@
 "use client";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { Calendar01Icon, Delete01Icon } from "@hugeicons/core-free-icons";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { format } from "date-fns";
-import { CalendarIcon, TrashIcon } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
@@ -191,7 +192,7 @@ export const OvertimeManager = ({
                         variant="outline"
                         className="w-full justify-start bg-transparent text-left font-normal"
                       >
-                        <CalendarIcon className="mr-1 h-4 w-4" />
+                        <HugeiconsIcon icon={Calendar01Icon} className="mr-1 h-4 w-4" />
                         {field.value ? (
                           format(field.value, "PPP")
                         ) : (
@@ -328,7 +329,7 @@ export const OvertimeManager = ({
                                 onClick={() => removeEntry(entry.id)}
                                 aria-label="Remove overtime entry"
                               >
-                                <TrashIcon className="text-destructive h-4 w-4" />
+                                <HugeiconsIcon icon={Delete01Icon} className="text-destructive h-4 w-4" />
                               </Button>
                             </TooltipTrigger>
                             <TooltipContent>Delete entry</TooltipContent>

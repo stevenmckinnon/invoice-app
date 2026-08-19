@@ -1,7 +1,7 @@
 "use client";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { ArrowDown01Icon } from "@hugeicons/core-free-icons";
 import { useMemo, useState } from "react";
-
-import { ChevronDownIcon } from "lucide-react";
 import Link from "next/link";
 import { useWatch, type UseFormReturn } from "react-hook-form";
 import { z } from "zod";
@@ -410,12 +410,10 @@ export function InvoiceForm({
                     size="sm"
                     className="shrink-0"
                   >
-                    <ChevronDownIcon
-                      className={cn(
-                        "h-4 w-4 transition-transform",
-                        detailsSectionOpen && "rotate-180",
-                      )}
-                    />
+                    <HugeiconsIcon icon={ArrowDown01Icon} className={cn(
+                                                              "h-4 w-4 transition-transform",
+                                                              detailsSectionOpen && "rotate-180",
+                                                            )} />
                     {detailsSectionOpen ? "Hide" : "Edit"}
                   </Button>
                 </CollapsibleTrigger>

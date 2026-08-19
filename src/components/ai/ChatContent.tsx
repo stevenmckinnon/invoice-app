@@ -1,15 +1,10 @@
 "use client";
 
+import { HugeiconsIcon } from "@hugeicons/react";
+import { Alert01Icon, Copy01Icon, Refresh01Icon, Tick01Icon } from "@hugeicons/core-free-icons";
 import { useEffect, useState } from "react";
 
 import { isTextUIPart, type ToolUIPart, type UIMessage } from "ai";
-import {
-  CheckIcon,
-  CopyIcon,
-  RefreshCwIcon,
-  TriangleAlertIcon,
-} from "lucide-react";
-
 import { useChatSession } from "@/components/ai/ChatProvider";
 import {
   Conversation,
@@ -136,14 +131,14 @@ const AssistantActions = ({
     >
       <MessageAction tooltip={copied ? "Copied" : "Copy"} onClick={handleCopy}>
         {copied ? (
-          <CheckIcon className="text-success size-3.5" />
+          <HugeiconsIcon icon={Tick01Icon} className="text-success size-3.5" />
         ) : (
-          <CopyIcon className="size-3.5" />
+          <HugeiconsIcon icon={Copy01Icon} className="size-3.5" />
         )}
       </MessageAction>
       {onRetry && (
         <MessageAction tooltip="Try again" onClick={onRetry}>
-          <RefreshCwIcon className="size-3.5" />
+          <HugeiconsIcon icon={Refresh01Icon} className="size-3.5" />
         </MessageAction>
       )}
     </MessageActions>
@@ -280,7 +275,7 @@ export const ChatContent = ({ className }: { className?: string }) => {
           {error && (
             <div className="bg-destructive/10 flex flex-col gap-2 rounded-xl px-4 py-3">
               <div className="text-destructive flex items-start gap-2 text-sm">
-                <TriangleAlertIcon className="mt-0.5 size-4 shrink-0" />
+                <HugeiconsIcon icon={Alert01Icon} className="mt-0.5 size-4 shrink-0" />
                 <p className="min-w-0">
                   Something went wrong reaching the assistant. Your message
                   wasn&apos;t lost — try again.
@@ -292,7 +287,7 @@ export const ChatContent = ({ className }: { className?: string }) => {
                 onClick={handleRetry}
                 className="self-start"
               >
-                <RefreshCwIcon className="size-3.5" />
+                <HugeiconsIcon icon={Refresh01Icon} className="size-3.5" />
                 Try again
               </Button>
             </div>

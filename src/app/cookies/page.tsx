@@ -1,11 +1,5 @@
-import {
-  ArrowLeft,
-  Cookie,
-  Shield,
-  Settings,
-  CheckCircle,
-  ExternalLink,
-} from "lucide-react";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { ArrowLeft01Icon, CheckmarkCircle01Icon, CookieIcon, LinkSquare01Icon, Settings01Icon, Shield01Icon } from "@hugeicons/core-free-icons";
 import Link from "next/link";
 
 import { Button } from "@/components/ui/button";
@@ -18,13 +12,13 @@ export default function CookiesPage() {
       <div className="space-y-4">
         <Button asChild variant="ghost" size="sm" className="mb-4">
           <Link href="/">
-            <ArrowLeft className="h-4 w-4" /> Back to Home
+            <HugeiconsIcon icon={ArrowLeft01Icon} className="h-4 w-4" /> Back to Home
           </Link>
         </Button>
 
         <div className="mb-4 flex items-center gap-3">
           <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-orange-500/10">
-            <Cookie className="h-6 w-6 text-orange-600 dark:text-orange-400" />
+            <HugeiconsIcon icon={CookieIcon} className="h-6 w-6 text-orange-600 dark:text-orange-400" />
           </div>
           <h1 className="text-4xl font-bold md:text-5xl">Cookie Policy</h1>
         </div>
@@ -49,7 +43,7 @@ export default function CookiesPage() {
         <CardHeader>
           <div className="mb-2 flex items-center gap-2">
             <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-500/10">
-              <Cookie className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+              <HugeiconsIcon icon={CookieIcon} className="h-5 w-5 text-blue-600 dark:text-blue-400" />
             </div>
             <CardTitle className="text-2xl">What Are Cookies?</CardTitle>
           </div>
@@ -72,7 +66,7 @@ export default function CookiesPage() {
         <CardHeader>
           <div className="mb-2 flex items-center gap-2">
             <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-green-500/10">
-              <CheckCircle className="h-5 w-5 text-green-600 dark:text-green-400" />
+              <HugeiconsIcon icon={CheckmarkCircle01Icon} className="h-5 w-5 text-green-600 dark:text-green-400" />
             </div>
             <CardTitle className="text-2xl">Cookies We Use</CardTitle>
           </div>
@@ -81,7 +75,7 @@ export default function CookiesPage() {
           {/* Authentication Cookies */}
           <div className="space-y-2">
             <div className="flex items-center gap-2">
-              <Shield className="text-primary h-5 w-5" />
+              <HugeiconsIcon icon={Shield01Icon} className="text-primary h-5 w-5" />
               <h4 className="font-semibold">Authentication Cookies</h4>
               <span className="rounded-full bg-green-500/10 px-2 py-1 text-xs text-green-700 dark:text-green-400">
                 Essential
@@ -108,7 +102,7 @@ export default function CookiesPage() {
           {/* Theme Preference */}
           <div className="space-y-2">
             <div className="flex items-center gap-2">
-              <Settings className="text-primary h-5 w-5" />
+              <HugeiconsIcon icon={Settings01Icon} className="text-primary h-5 w-5" />
               <h4 className="font-semibold">Preference Cookies</h4>
               <span className="rounded-full bg-blue-500/10 px-2 py-1 text-xs text-blue-700 dark:text-blue-400">
                 Functional
@@ -135,7 +129,7 @@ export default function CookiesPage() {
           {/* CSRF Protection */}
           <div className="space-y-2">
             <div className="flex items-center gap-2">
-              <Shield className="text-primary h-5 w-5" />
+              <HugeiconsIcon icon={Shield01Icon} className="text-primary h-5 w-5" />
               <h4 className="font-semibold">Security Cookies</h4>
               <span className="rounded-full bg-green-500/10 px-2 py-1 text-xs text-green-700 dark:text-green-400">
                 Essential
@@ -166,7 +160,7 @@ export default function CookiesPage() {
         <CardHeader>
           <div className="mb-2 flex items-center gap-2">
             <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-green-500/10">
-              <Shield className="h-5 w-5 text-green-600 dark:text-green-400" />
+              <HugeiconsIcon icon={Shield01Icon} className="h-5 w-5 text-green-600 dark:text-green-400" />
             </div>
             <CardTitle className="text-2xl">What We Don&apos;t Use</CardTitle>
           </div>
@@ -174,7 +168,7 @@ export default function CookiesPage() {
         <CardContent>
           <ul className="space-y-3">
             <li className="flex items-start gap-2">
-              <CheckCircle className="mt-0.5 h-5 w-5 flex-shrink-0 text-green-600" />
+              <HugeiconsIcon icon={CheckmarkCircle01Icon} className="mt-0.5 h-5 w-5 flex-shrink-0 text-green-600" />
               <span className="text-muted-foreground">
                 <strong className="text-foreground">
                   No advertising cookies
@@ -183,7 +177,7 @@ export default function CookiesPage() {
               </span>
             </li>
             <li className="flex items-start gap-2">
-              <CheckCircle className="mt-0.5 h-5 w-5 flex-shrink-0 text-green-600" />
+              <HugeiconsIcon icon={CheckmarkCircle01Icon} className="mt-0.5 h-5 w-5 flex-shrink-0 text-green-600" />
               <span className="text-muted-foreground">
                 <strong className="text-foreground">
                   No analytics cookies
@@ -192,7 +186,7 @@ export default function CookiesPage() {
               </span>
             </li>
             <li className="flex items-start gap-2">
-              <CheckCircle className="mt-0.5 h-5 w-5 flex-shrink-0 text-green-600" />
+              <HugeiconsIcon icon={CheckmarkCircle01Icon} className="mt-0.5 h-5 w-5 flex-shrink-0 text-green-600" />
               <span className="text-muted-foreground">
                 <strong className="text-foreground">
                   No third-party cookies
@@ -201,7 +195,7 @@ export default function CookiesPage() {
               </span>
             </li>
             <li className="flex items-start gap-2">
-              <CheckCircle className="mt-0.5 h-5 w-5 flex-shrink-0 text-green-600" />
+              <HugeiconsIcon icon={CheckmarkCircle01Icon} className="mt-0.5 h-5 w-5 flex-shrink-0 text-green-600" />
               <span className="text-muted-foreground">
                 <strong className="text-foreground">
                   No social media cookies
@@ -218,7 +212,7 @@ export default function CookiesPage() {
         <CardHeader>
           <div className="mb-2 flex items-center gap-2">
             <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-purple-500/10">
-              <Settings className="h-5 w-5 text-purple-600 dark:text-purple-400" />
+              <HugeiconsIcon icon={Settings01Icon} className="h-5 w-5 text-purple-600 dark:text-purple-400" />
             </div>
             <CardTitle className="text-2xl">Managing Cookies</CardTitle>
           </div>
@@ -249,7 +243,7 @@ export default function CookiesPage() {
                 className="text-muted-foreground hover:text-foreground flex items-center gap-1 transition-colors"
               >
                 Chrome
-                <ExternalLink className="h-3 w-3" />
+                <HugeiconsIcon icon={LinkSquare01Icon} className="h-3 w-3" />
               </Link>
               <Link
                 href="https://support.mozilla.org/en-US/kb/enhanced-tracking-protection-firefox-desktop"
@@ -257,7 +251,7 @@ export default function CookiesPage() {
                 className="text-muted-foreground hover:text-foreground flex items-center gap-1 transition-colors"
               >
                 Firefox
-                <ExternalLink className="h-3 w-3" />
+                <HugeiconsIcon icon={LinkSquare01Icon} className="h-3 w-3" />
               </Link>
               <Link
                 href="https://support.apple.com/guide/safari/manage-cookies-sfri11471/mac"
@@ -265,7 +259,7 @@ export default function CookiesPage() {
                 className="text-muted-foreground hover:text-foreground flex items-center gap-1 transition-colors"
               >
                 Safari
-                <ExternalLink className="h-3 w-3" />
+                <HugeiconsIcon icon={LinkSquare01Icon} className="h-3 w-3" />
               </Link>
               <Link
                 href="https://support.microsoft.com/en-us/microsoft-edge/delete-cookies-in-microsoft-edge-63947406-40ac-c3b8-57b9-2a946a29ae09"
@@ -273,7 +267,7 @@ export default function CookiesPage() {
                 className="text-muted-foreground hover:text-foreground flex items-center gap-1 transition-colors"
               >
                 Edge
-                <ExternalLink className="h-3 w-3" />
+                <HugeiconsIcon icon={LinkSquare01Icon} className="h-3 w-3" />
               </Link>
             </div>
           </div>
@@ -299,7 +293,7 @@ export default function CookiesPage() {
       <div className="pt-4 text-center">
         <Button asChild variant="outline" size="lg">
           <Link href="/legal">
-            <ArrowLeft className="h-4 w-4" /> Back to Legal
+            <HugeiconsIcon icon={ArrowLeft01Icon} className="h-4 w-4" /> Back to Legal
           </Link>
         </Button>
       </div>

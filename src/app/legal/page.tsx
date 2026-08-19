@@ -1,12 +1,5 @@
-import {
-  ExternalLink,
-  Mail,
-  Code,
-  Shield,
-  Info,
-  ArrowLeft,
-  Cookie,
-} from "lucide-react";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { ArrowLeft01Icon, CodeIcon, CookieIcon, InformationCircleIcon, LinkSquare01Icon, Mail01Icon, Shield01Icon } from "@hugeicons/core-free-icons";
 import Link from "next/link";
 
 import { Button } from "@/components/ui/button";
@@ -30,7 +23,7 @@ export default function LegalPage() {
           <CardHeader>
             <div className="mb-2 flex items-center gap-2">
               <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-amber-500/10">
-                <Info className="h-5 w-5 text-amber-600 dark:text-amber-400" />
+                <HugeiconsIcon icon={InformationCircleIcon} className="h-5 w-5 text-amber-600 dark:text-amber-400" />
               </div>
               <CardTitle className="text-2xl">Disclaimer</CardTitle>
             </div>
@@ -48,7 +41,7 @@ export default function LegalPage() {
           <CardHeader>
             <div className="mb-2 flex items-center gap-2">
               <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-500/10">
-                <Code className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                <HugeiconsIcon icon={CodeIcon} className="h-5 w-5 text-blue-600 dark:text-blue-400" />
               </div>
               <CardTitle className="text-2xl">Created By</CardTitle>
             </div>
@@ -66,7 +59,7 @@ export default function LegalPage() {
                   className="flex items-center justify-center gap-2"
                 >
                   Visit Portfolio
-                  <ExternalLink className="h-4 w-4" />
+                  <HugeiconsIcon icon={LinkSquare01Icon} className="h-4 w-4" />
                 </Link>
               </Button>
               <Button asChild variant="outline" className="w-full">
@@ -74,7 +67,7 @@ export default function LegalPage() {
                   href="mailto:hello@stevenmckinnon.co.uk"
                   className="flex items-center justify-center gap-2"
                 >
-                  <Mail className="h-4 w-4" />
+                  <HugeiconsIcon icon={Mail01Icon} className="h-4 w-4" />
                   Contact Me
                 </Link>
               </Button>
@@ -88,7 +81,7 @@ export default function LegalPage() {
         <CardHeader>
           <div className="mb-2 flex items-center gap-2">
             <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-purple-500/10">
-              <Code className="h-5 w-5 text-purple-600 dark:text-purple-400" />
+              <HugeiconsIcon icon={CodeIcon} className="h-5 w-5 text-purple-600 dark:text-purple-400" />
             </div>
             <CardTitle className="text-2xl">Technology Stack</CardTitle>
           </div>
@@ -139,7 +132,7 @@ export default function LegalPage() {
         <CardHeader>
           <div className="mb-2 flex items-center gap-2">
             <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-green-500/10">
-              <Shield className="h-5 w-5 text-green-600 dark:text-green-400" />
+              <HugeiconsIcon icon={Shield01Icon} className="h-5 w-5 text-green-600 dark:text-green-400" />
             </div>
             <CardTitle className="text-2xl">Privacy & Data</CardTitle>
           </div>
@@ -190,7 +183,7 @@ export default function LegalPage() {
       <div className="flex justify-center gap-4">
         <Button asChild variant="outline">
           <Link href="/cookies">
-            <Cookie className="h-4 w-4" /> Cookie Policy
+            <HugeiconsIcon icon={CookieIcon} className="h-4 w-4" /> Cookie Policy
           </Link>
         </Button>
       </div>
@@ -199,7 +192,7 @@ export default function LegalPage() {
       <div className="pt-4 text-center">
         <Button asChild size="lg" variant="outline">
           <Link href="/">
-            <ArrowLeft className="h-4 w-4" /> Back to Home
+            <HugeiconsIcon icon={ArrowLeft01Icon} className="h-4 w-4" /> Back to Home
           </Link>
         </Button>
       </div>

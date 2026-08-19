@@ -1,5 +1,10 @@
 "use client";
-import { PlusIcon, TrendingDown, TrendingUp } from "lucide-react";
+import {
+  Add01Icon,
+  AnalyticsDownIcon,
+  AnalyticsUpIcon,
+} from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
 import { motion, useReducedMotion } from "motion/react";
 
 import { AnimatedCounter } from "@/components/AnimatedCounter";
@@ -160,7 +165,7 @@ export const DemoDashboard = () => {
             </p>
           </div>
           <Button className="w-fit">
-            <PlusIcon />
+            <HugeiconsIcon icon={Add01Icon} />
             Create Invoice
           </Button>
         </div>
@@ -185,9 +190,15 @@ export const DemoDashboard = () => {
               {lastMonthRevenue > 0 && (
                 <div className="bg-card flex items-center gap-1.5 rounded-full py-1.5 pr-3 pl-2.5 shadow-xs">
                   {monthlyChange >= 0 ? (
-                    <TrendingUp className="text-success h-4 w-4" />
+                    <HugeiconsIcon
+                      icon={AnalyticsUpIcon}
+                      className="text-success h-4 w-4"
+                    />
                   ) : (
-                    <TrendingDown className="text-destructive h-4 w-4" />
+                    <HugeiconsIcon
+                      icon={AnalyticsDownIcon}
+                      className="text-destructive h-4 w-4"
+                    />
                   )}
                   <span
                     className={`text-xs font-semibold tabular-nums ${

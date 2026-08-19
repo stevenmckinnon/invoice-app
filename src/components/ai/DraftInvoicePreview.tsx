@@ -1,9 +1,10 @@
 "use client";
 
+import { HugeiconsIcon } from "@hugeicons/react";
+import { LinkSquare01Icon } from "@hugeicons/core-free-icons";
 import { useEffect } from "react";
 
 import { useQueryClient } from "@tanstack/react-query";
-import { ExternalLinkIcon } from "lucide-react";
 import Link from "next/link";
 
 import { InvoiceStatusBadge } from "@/components/InvoiceStatusBadge";
@@ -147,7 +148,7 @@ export const DraftInvoicePreview = ({
         <div className="p-3">
           <Button asChild size="sm" variant="outline" className="w-full">
             <Link href={`/invoices/${invoiceId}/edit`} onClick={onNavigate}>
-              <ExternalLinkIcon className="size-3.5" />
+              <HugeiconsIcon icon={LinkSquare01Icon} className="size-3.5" />
               Open in editor
             </Link>
           </Button>

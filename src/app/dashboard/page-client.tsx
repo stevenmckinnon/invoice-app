@@ -1,13 +1,7 @@
 "use client";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { Add01Icon, AnalyticsDownIcon, AnalyticsUpIcon, FileAttachmentIcon, ViewIcon } from "@hugeicons/core-free-icons";
 import { useEffect, useState } from "react";
-
-import {
-  EyeIcon,
-  FileTextIcon,
-  PlusIcon,
-  TrendingDown,
-  TrendingUp,
-} from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
@@ -375,7 +369,7 @@ export default function Home() {
             </Select>
             <Button asChild>
               <Link href="/invoices/new">
-                <PlusIcon />
+                <HugeiconsIcon icon={Add01Icon} />
                 Create Invoice
               </Link>
             </Button>
@@ -398,9 +392,9 @@ export default function Home() {
             {isCurrentFy && lastMonthRevenue > 0 ? (
               <div className="bg-card flex items-center gap-1.5 rounded-full py-1.5 pr-3 pl-2.5 shadow-xs">
                 {monthlyChange >= 0 ? (
-                  <TrendingUp className="text-success h-4 w-4" />
+                  <HugeiconsIcon icon={AnalyticsUpIcon} className="text-success h-4 w-4" />
                 ) : (
-                  <TrendingDown className="text-destructive h-4 w-4" />
+                  <HugeiconsIcon icon={AnalyticsDownIcon} className="text-destructive h-4 w-4" />
                 )}
                 <span
                   className={`text-xs font-semibold ${
@@ -606,13 +600,13 @@ export default function Home() {
         <CardContent>
           {sortedInvoices.length === 0 ? (
             <EmptyState
-              icon={FileTextIcon}
+              icon={FileAttachmentIcon}
               title="No invoices yet"
               description="Get started by creating your first invoice."
               action={
                 <Button asChild>
                   <Link href="/invoices/new">
-                    <PlusIcon />
+                    <HugeiconsIcon icon={Add01Icon} />
                     Create Invoice
                   </Link>
                 </Button>
@@ -657,7 +651,7 @@ export default function Home() {
                               href={`/invoices/${invoice.id}`}
                               transitionTypes={["forward"]}
                             >
-                              <EyeIcon className="h-4 w-4" />
+                              <HugeiconsIcon icon={ViewIcon} className="h-4 w-4" />
                             </Link>
                           </Button>
                         </TooltipTrigger>
@@ -792,9 +786,9 @@ export default function Home() {
                 {isCurrentFy && (
                   <div className="flex items-center gap-1">
                     {monthlyChange >= 0 ? (
-                      <TrendingUp className="text-success h-3 w-3" />
+                      <HugeiconsIcon icon={AnalyticsUpIcon} className="text-success h-3 w-3" />
                     ) : (
-                      <TrendingDown className="text-destructive h-3 w-3" />
+                      <HugeiconsIcon icon={AnalyticsDownIcon} className="text-destructive h-3 w-3" />
                     )}
                     <p
                       className={`text-xs ${
@@ -913,9 +907,9 @@ export default function Home() {
               {prevFyRevenue > 0 ? (
                 <div className="flex items-center gap-2 pt-2">
                   {fyChange >= 0 ? (
-                    <TrendingUp className="text-success h-5 w-5" />
+                    <HugeiconsIcon icon={AnalyticsUpIcon} className="text-success h-5 w-5" />
                   ) : (
-                    <TrendingDown className="text-destructive h-5 w-5" />
+                    <HugeiconsIcon icon={AnalyticsDownIcon} className="text-destructive h-5 w-5" />
                   )}
                   <span
                     className={`text-sm font-semibold ${

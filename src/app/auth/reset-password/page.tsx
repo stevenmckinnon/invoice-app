@@ -1,7 +1,7 @@
 "use client";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { ArrowLeft01Icon, Loading02Icon } from "@hugeicons/core-free-icons";
 import { Suspense, useState } from "react";
-
-import { ArrowLeft, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
@@ -94,7 +94,7 @@ const ResetPasswordForm = () => {
             <div className="mb-4 flex flex-col items-center gap-2">
               <Button asChild variant="outline">
                 <Link href="/">
-                  <ArrowLeft /> Back Home
+                  <HugeiconsIcon icon={ArrowLeft01Icon} /> Back Home
                 </Link>
               </Button>
               <CaleyLogo className="h-24 w-24" />
@@ -128,7 +128,7 @@ const ResetPasswordForm = () => {
           <div className="mb-4 flex flex-col items-center gap-2">
             <Button asChild variant="outline">
               <Link href="/">
-                <ArrowLeft /> Back Home
+                <HugeiconsIcon icon={ArrowLeft01Icon} /> Back Home
               </Link>
             </Button>
             <CaleyLogo className="h-24 w-24" />
@@ -172,7 +172,7 @@ const ResetPasswordForm = () => {
             <Button type="submit" className="w-full" disabled={isLoading}>
               {isLoading ? (
                 <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  <HugeiconsIcon icon={Loading02Icon} className="mr-2 h-4 w-4 animate-spin" />
                   Resetting password...
                 </>
               ) : (
@@ -198,7 +198,7 @@ export default function ResetPasswordPage() {
     <Suspense
       fallback={
         <div className="flex min-h-screen flex-col items-center justify-center gap-4">
-          <Loader2 className="text-primary h-8 w-8 animate-spin" />
+          <HugeiconsIcon icon={Loading02Icon} className="text-primary h-8 w-8 animate-spin" />
           <p className="text-muted-foreground text-sm">Loading...</p>
         </div>
       }

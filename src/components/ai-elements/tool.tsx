@@ -1,17 +1,9 @@
 "use client";
 
+import { HugeiconsIcon } from "@hugeicons/react";
+import { ArrowDown01Icon, CancelCircleIcon, CheckmarkCircle01Icon, CircleIcon, Clock01Icon, Wrench01Icon } from "@hugeicons/core-free-icons";
 import type { ComponentProps, ReactNode } from "react";
 import { isValidElement } from "react";
-
-import {
-  CheckCircleIcon,
-  ChevronDownIcon,
-  CircleIcon,
-  ClockIcon,
-  WrenchIcon,
-  XCircleIcon,
-} from "lucide-react";
-
 import { Badge } from "@/components/ui/badge";
 import {
   Collapsible,
@@ -63,13 +55,13 @@ const statusLabels: Record<ToolPart["state"], string> = {
 // Semantic tokens only — the raw Tailwind palette drifts from the theme and
 // does not follow the warm neutral into dark mode.
 const statusIcons: Record<ToolPart["state"], ReactNode> = {
-  "approval-requested": <ClockIcon className="text-warning size-4" />,
-  "approval-responded": <CheckCircleIcon className="text-primary size-4" />,
-  "input-available": <ClockIcon className="size-4 animate-pulse" />,
-  "input-streaming": <CircleIcon className="size-4" />,
-  "output-available": <CheckCircleIcon className="text-success size-4" />,
-  "output-denied": <XCircleIcon className="text-warning size-4" />,
-  "output-error": <XCircleIcon className="text-destructive size-4" />,
+  "approval-requested": <HugeiconsIcon icon={Clock01Icon} className="text-warning size-4" />,
+  "approval-responded": <HugeiconsIcon icon={CheckmarkCircle01Icon} className="text-primary size-4" />,
+  "input-available": <HugeiconsIcon icon={Clock01Icon} className="size-4 animate-pulse" />,
+  "input-streaming": <HugeiconsIcon icon={CircleIcon} className="size-4" />,
+  "output-available": <HugeiconsIcon icon={CheckmarkCircle01Icon} className="text-success size-4" />,
+  "output-denied": <HugeiconsIcon icon={CancelCircleIcon} className="text-warning size-4" />,
+  "output-error": <HugeiconsIcon icon={CancelCircleIcon} className="text-destructive size-4" />,
 };
 
 // ghost, not secondary: secondary is near-black in this theme, and a solid
@@ -101,11 +93,11 @@ export const ToolHeader = ({
       {...props}
     >
       <div className="flex items-center gap-2">
-        <WrenchIcon className="size-4 text-muted-foreground" />
+        <HugeiconsIcon icon={Wrench01Icon} className="size-4 text-muted-foreground" />
         <span className="font-medium text-sm">{title ?? derivedName}</span>
         {getStatusBadge(state)}
       </div>
-      <ChevronDownIcon className="size-4 text-muted-foreground transition-transform group-data-[state=open]:rotate-180" />
+      <HugeiconsIcon icon={ArrowDown01Icon} className="size-4 text-muted-foreground transition-transform group-data-[state=open]:rotate-180" />
     </CollapsibleTrigger>
   );
 };

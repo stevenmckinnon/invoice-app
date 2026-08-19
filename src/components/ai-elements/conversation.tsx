@@ -1,9 +1,9 @@
 "use client";
 
+import { HugeiconsIcon } from "@hugeicons/react";
+import { ArrowDown01Icon, Download01Icon } from "@hugeicons/core-free-icons";
 import type { ComponentProps } from "react";
 import { useCallback } from "react";
-
-import { ArrowDownIcon, DownloadIcon } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { StickToBottom, useStickToBottomContext } from "use-stick-to-bottom";
 
@@ -113,7 +113,7 @@ export const ConversationScrollButton = ({
             variant="outline"
             {...props}
           >
-            <ArrowDownIcon className="size-4" />
+            <HugeiconsIcon icon={ArrowDown01Icon} className="size-4" />
           </Button>
         </motion.div>
       )}
@@ -183,7 +183,7 @@ export const ConversationDownload = ({
       variant="outline"
       {...props}
     >
-      {children ?? <DownloadIcon className="size-4" />}
+      {children ?? <HugeiconsIcon icon={Download01Icon} className="size-4" />}
     </Button>
   );
 };

@@ -1,7 +1,13 @@
 "use client";
 import { Suspense, useState } from "react";
 
-import { Check, Eye, EyeOff, Loader2 } from "lucide-react";
+import {
+  Loading02Icon,
+  Tick01Icon,
+  ViewIcon,
+  ViewOffIcon,
+} from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
 import { motion } from "motion/react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
@@ -73,32 +79,39 @@ const SignInForm = () => {
         <div className="grid min-h-screen w-full grid-cols-1 lg:grid-cols-2">
           {/* Brand Sidebar */}
           <div className="bg-muted relative hidden flex-col p-12 text-white lg:flex dark:border-r">
-            <div className="absolute inset-0 overflow-hidden bg-zinc-900 dark:bg-card">
+            <div className="dark:bg-card absolute inset-0 overflow-hidden bg-zinc-900">
               <BackgroundPattern />
-              <div className="absolute inset-0 bg-linear-to-tr from-zinc-900/90 via-zinc-900/50 to-zinc-900/20 dark:from-card/90 dark:via-card/50 dark:to-card/20" />
+              <div className="dark:from-card/90 dark:via-card/50 dark:to-card/20 absolute inset-0 bg-linear-to-tr from-zinc-900/90 via-zinc-900/50 to-zinc-900/20" />
             </div>
 
             <Link href="/">
               <div className="relative z-20 flex items-center gap-2 text-lg font-medium">
                 <CaleyLogo className="h-8 w-8 fill-white text-white" />
-                <span className="text-xl font-bold tracking-tight">
-                  Caley
-                </span>
+                <span className="text-xl font-bold tracking-tight">Caley</span>
               </div>
             </Link>
 
             <div className="relative z-20 mt-auto max-w-md">
               <ul className="space-y-4">
                 <li className="flex items-center gap-3 text-lg font-medium text-white">
-                  <Check className="h-5 w-5 shrink-0 text-white/70" />
+                  <HugeiconsIcon
+                    icon={Tick01Icon}
+                    className="h-5 w-5 shrink-0 text-white/70"
+                  />
                   Track day rates, overtime, and per diems
                 </li>
                 <li className="flex items-center gap-3 text-lg font-medium text-white">
-                  <Check className="h-5 w-5 shrink-0 text-white/70" />
+                  <HugeiconsIcon
+                    icon={Tick01Icon}
+                    className="h-5 w-5 shrink-0 text-white/70"
+                  />
                   Send a branded PDF invoice in under a minute
                 </li>
                 <li className="flex items-center gap-3 text-lg font-medium text-white">
-                  <Check className="h-5 w-5 shrink-0 text-white/70" />
+                  <HugeiconsIcon
+                    icon={Tick01Icon}
+                    className="h-5 w-5 shrink-0 text-white/70"
+                  />
                   Built specifically for film and TV freelancers
                 </li>
               </ul>
@@ -179,9 +192,12 @@ const SignInForm = () => {
                         }
                       >
                         {showPassword ? (
-                          <EyeOff className="h-4 w-4" />
+                          <HugeiconsIcon
+                            icon={ViewOffIcon}
+                            className="h-4 w-4"
+                          />
                         ) : (
-                          <Eye className="h-4 w-4" />
+                          <HugeiconsIcon icon={ViewIcon} className="h-4 w-4" />
                         )}
                       </button>
                     </div>
@@ -196,7 +212,10 @@ const SignInForm = () => {
                 >
                   {isLoading ? (
                     <>
-                      <Loader2 className="h-4 w-4 animate-spin" />
+                      <HugeiconsIcon
+                        icon={Loading02Icon}
+                        className="h-4 w-4 animate-spin"
+                      />
                       Signing in...
                     </>
                   ) : (
@@ -229,7 +248,10 @@ export default function SignInPage() {
     <Suspense
       fallback={
         <div className="bg-background flex min-h-screen flex-col items-center justify-center gap-4">
-          <Loader2 className="text-primary h-8 w-8 animate-spin" />
+          <HugeiconsIcon
+            icon={Loading02Icon}
+            className="text-primary h-8 w-8 animate-spin"
+          />
           <p className="text-muted-foreground text-sm font-medium">
             Loading secure session...
           </p>

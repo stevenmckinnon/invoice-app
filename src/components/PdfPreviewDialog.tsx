@@ -1,8 +1,7 @@
 "use client";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { Download01Icon, FileAttachmentIcon } from "@hugeicons/core-free-icons";
 import { useState } from "react";
-
-import { DownloadIcon, FileTextIcon } from "lucide-react";
-
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -84,7 +83,7 @@ export const PdfPreviewDialog = ({
     >
       <DialogTrigger asChild>
         <Button size={size} variant={variant}>
-          <FileTextIcon className="h-4 w-4" />
+          <HugeiconsIcon icon={FileAttachmentIcon} className="h-4 w-4" />
           {showText && "View PDF"}
         </Button>
       </DialogTrigger>
@@ -138,7 +137,7 @@ export const PdfPreviewDialog = ({
             Cancel
           </Button>
           <Button onClick={downloadInvoicePdf}>
-            <DownloadIcon className="h-4 w-4" />
+            <HugeiconsIcon icon={Download01Icon} className="h-4 w-4" />
             Download PDF
           </Button>
         </DialogFooter>

@@ -1,8 +1,8 @@
 "use client";
 
+import { HugeiconsIcon } from "@hugeicons/react";
+import { Add01Icon, Delete02Icon, PencilIcon, UserGroupIcon } from "@hugeicons/core-free-icons";
 import { useMemo, useState } from "react";
-
-import { Pencil, Plus, Trash2, Users } from "lucide-react";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -97,7 +97,7 @@ export default function ClientsPage() {
         subtitle="Store client details to pre-fill invoices faster"
         actions={
           <Button onClick={() => setShowCreateDialog(true)}>
-            <Plus />
+            <HugeiconsIcon icon={Add01Icon} />
             Add Client
           </Button>
         }
@@ -169,12 +169,12 @@ export default function ClientsPage() {
             </>
           ) : clients.length === 0 ? (
             <EmptyState
-              icon={Users}
+              icon={UserGroupIcon}
               title="No clients yet"
               description="Add a client to pre-fill their details on invoices."
               action={
                 <Button onClick={() => setShowCreateDialog(true)}>
-                  <Plus />
+                  <HugeiconsIcon icon={Add01Icon} />
                   Add Client
                 </Button>
               }
@@ -250,7 +250,7 @@ export default function ClientsPage() {
                                       transitionTypes={["forward"]}
                                       aria-label="Edit client"
                                     >
-                                      <Pencil className="h-4 w-4" />
+                                      <HugeiconsIcon icon={PencilIcon} className="h-4 w-4" />
                                     </Link>
                                   </Button>
                                 </TooltipTrigger>
@@ -270,7 +270,7 @@ export default function ClientsPage() {
                                     disabled={deleteClientMutation.isPending}
                                     aria-label="Delete client"
                                   >
-                                    <Trash2 className="text-destructive h-4 w-4" />
+                                    <HugeiconsIcon icon={Delete02Icon} className="text-destructive h-4 w-4" />
                                   </Button>
                                 </TooltipTrigger>
                                 <TooltipContent>Delete client</TooltipContent>
@@ -339,7 +339,7 @@ export default function ClientsPage() {
                       disabled={deleteClientMutation.isPending}
                       aria-label={`Delete ${client.name}`}
                     >
-                      <Trash2 className="h-4 w-4" />
+                      <HugeiconsIcon icon={Delete02Icon} className="h-4 w-4" />
                     </Button>
                   </div>
                 ))}

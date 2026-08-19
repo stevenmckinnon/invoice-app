@@ -1,7 +1,6 @@
 "use client";
-
-import { PanelRightIcon, SparklesIcon } from "lucide-react";
-
+import { HugeiconsIcon } from "@hugeicons/react";
+import { PanelRightIcon, SparklesIcon } from "@hugeicons/core-free-icons";
 import { ChatContent } from "@/components/ai/ChatContent";
 import { useChatSession } from "@/components/ai/ChatProvider";
 import { DraftInvoicePreview } from "@/components/ai/DraftInvoicePreview";
@@ -47,7 +46,7 @@ export const ChatSurface = ({
     <>
       <div className="flex shrink-0 items-center gap-2 px-4 py-3.5">
         {leading}
-        <SparklesIcon className="text-primary size-4 shrink-0" />
+        <HugeiconsIcon icon={SparklesIcon} className="text-primary size-4 shrink-0" />
         {title}
         <div className="ml-auto flex shrink-0 items-center gap-1">
           {hasDraft && (
@@ -60,7 +59,7 @@ export const ChatSurface = ({
               // depending on breakpoint, so there is no single id to point at.
               aria-expanded={draftPanelOpen}
             >
-              <PanelRightIcon className="size-3.5" />
+              <HugeiconsIcon icon={PanelRightIcon} className="size-3.5" />
               Draft
             </Button>
           )}

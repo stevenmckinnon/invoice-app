@@ -1,4 +1,5 @@
-import { ArrowLeftIcon } from "lucide-react";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { ArrowLeft01Icon } from "@hugeicons/core-free-icons";
 import Link from "next/link";
 
 import { Button } from "@/components/ui/button";
@@ -29,7 +30,7 @@ export const PageHeader = ({
       {backHref && (
         <Button asChild variant="outline" size="sm">
           <Link href={backHref} transitionTypes={["back"]} aria-label="Go back">
-            <ArrowLeftIcon className="h-4 w-4" />
+            <HugeiconsIcon icon={ArrowLeft01Icon} className="h-4 w-4" />
             <span className="hidden md:block">Back</span>
           </Link>
         </Button>

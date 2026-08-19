@@ -1,9 +1,8 @@
 "use client";
 
+import { HugeiconsIcon } from "@hugeicons/react";
+import { Add01Icon, ArrowUpDownIcon, Tick01Icon } from "@hugeicons/core-free-icons";
 import { useState } from "react";
-
-import { Check, ChevronsUpDown, Plus } from "lucide-react";
-
 import { Button } from "@/components/ui/button";
 import {
   Command,
@@ -75,7 +74,7 @@ export const ClientSelector = ({
               ? selectedClient.name
               : "Select client..."
             : "Select client or create new..."}
-          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+          <HugeiconsIcon icon={ArrowUpDownIcon} className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-full p-0" align="start">
@@ -94,7 +93,7 @@ export const ClientSelector = ({
                       onCreateNew();
                     }}
                   >
-                    <Plus className="mr-2 h-4 w-4" />
+                    <HugeiconsIcon icon={Add01Icon} className="mr-2 h-4 w-4" />
                     Create New Client
                   </Button>
                 </div>
@@ -111,7 +110,7 @@ export const ClientSelector = ({
                   }}
                   className="cursor-pointer"
                 >
-                  <Plus className="mr-2 h-4 w-4" />
+                  <HugeiconsIcon icon={Add01Icon} className="mr-2 h-4 w-4" />
                   Create New Client
                 </CommandItem>
               )}
@@ -126,12 +125,10 @@ export const ClientSelector = ({
                   }}
                   className="cursor-pointer"
                 >
-                  <Check
-                    className={cn(
-                      "mr-2 h-4 w-4",
-                      value === client.id ? "opacity-100" : "opacity-0",
-                    )}
-                  />
+                  <HugeiconsIcon icon={Tick01Icon} className={cn(
+                                            "mr-2 h-4 w-4",
+                                            value === client.id ? "opacity-100" : "opacity-0",
+                                          )} />
                   {client.name}
                 </CommandItem>
               ))}
