@@ -1,7 +1,7 @@
-import type { LucideIcon } from "lucide-react";
+import { HugeiconsIcon, IconSvgElement } from "@hugeicons/react";
 
 interface EmptyStateProps {
-  icon?: LucideIcon;
+  icon?: IconSvgElement;
   title: string;
   description?: string;
   /** Optional call to action, e.g. a create button */
@@ -24,7 +24,7 @@ export const EmptyState = ({
         className="bg-muted text-muted-foreground mb-5 flex size-14 items-center justify-center rounded-2xl"
         aria-hidden="true"
       >
-        <Icon className="size-6" />
+        <HugeiconsIcon icon={Icon} className="size-6" />
       </div>
     )}
     <h3 className="text-base font-semibold">{title}</h3>

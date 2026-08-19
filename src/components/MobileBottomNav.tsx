@@ -76,6 +76,7 @@ export const MobileBottomNav = () => {
         <AnimatePresence initial={false} mode="wait">
           {isVisible && (
             <motion.nav
+              layout
               initial={{ y: 100, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               exit={{ y: 100, opacity: 0 }}
