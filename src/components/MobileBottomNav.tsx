@@ -1,6 +1,6 @@
 "use client";
 
-import { FileText, Home, Sparkles, Users } from "lucide-react";
+import { FileText, Home, MessageCircle, Users } from "lucide-react";
 import { AnimatePresence, LayoutGroup, motion } from "motion/react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -147,7 +147,7 @@ export const MobileBottomNav = () => {
                           }}
                         />
                       )}
-                      <Sparkles className="relative z-10 h-5 w-5" />
+                      <MessageCircle className="relative z-10 h-5 w-5" />
                       <span className="relative z-10 text-xs font-medium whitespace-nowrap">
                         Ask AI
                       </span>

@@ -71,6 +71,10 @@ export const useChatSession = () => {
   return ctx;
 };
 
+/** Non-throwing variant for surfaces that render outside ChatProvider, like
+ *  the marketing header — returns null instead of erroring. */
+export const useChatSessionOptional = () => useContext(ChatContext);
+
 export const ChatProvider = ({ children }: { children: React.ReactNode }) => {
   const mounted = useIsHydrated();
   const [open, setOpen] = useState(false);

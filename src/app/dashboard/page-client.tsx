@@ -392,7 +392,7 @@ export default function Home() {
         </CardHeader>
         <CardContent className="space-y-5">
           <div className="flex flex-wrap items-end justify-between gap-x-6 gap-y-3">
-            <div className="text-4xl font-bold tracking-tight tabular-nums sm:text-5xl">
+            <div className="min-w-0 break-words text-4xl font-bold tracking-tight tabular-nums sm:text-5xl">
               {formatCurrency(totalRevenue, displayCurrency)}
             </div>
             {isCurrentFy && lastMonthRevenue > 0 ? (
@@ -453,7 +453,7 @@ export default function Home() {
             </CardTitle>
           </CardHeader>
           <CardContent className="mt-auto">
-            <div className="text-success text-xl font-bold tracking-tight tabular-nums sm:text-3xl">
+            <div className="text-success break-words text-xl font-bold tracking-tight tabular-nums sm:text-3xl">
               {formatCurrency(paidRevenue, displayCurrency)}
             </div>
             <p className="text-muted-foreground mt-2 text-xs font-medium">
@@ -470,7 +470,7 @@ export default function Home() {
             </CardTitle>
           </CardHeader>
           <CardContent className="mt-auto">
-            <div className="text-warning text-xl font-bold tracking-tight tabular-nums sm:text-3xl">
+            <div className="text-warning break-words text-xl font-bold tracking-tight tabular-nums sm:text-3xl">
               {formatCurrency(outstandingRevenue, displayCurrency)}
             </div>
             <p className="text-muted-foreground mt-2 text-xs font-medium">
@@ -486,7 +486,7 @@ export default function Home() {
             </CardTitle>
           </CardHeader>
           <CardContent className="mt-auto">
-            <div className="text-xl font-bold tracking-tight tabular-nums sm:text-3xl">
+            <div className="break-words text-xl font-bold tracking-tight tabular-nums sm:text-3xl">
               {formatCurrency(averageInvoice, displayCurrency)}
             </div>
             <p className="text-muted-foreground mt-2 text-xs font-medium">
@@ -726,17 +726,17 @@ export default function Home() {
                 {topShows.map((item, index) => (
                   <div
                     key={item.show}
-                    className="bg-muted/60 hover:bg-muted flex items-center justify-between rounded-xl px-4 py-3 transition-colors"
+                    className="bg-muted/60 hover:bg-muted flex items-center justify-between gap-3 rounded-xl px-4 py-3 transition-colors"
                   >
-                    <div className="flex items-center gap-3">
-                      <div className="bg-card text-muted-foreground flex h-7 w-7 items-center justify-center rounded-full text-xs font-bold">
+                    <div className="flex min-w-0 items-center gap-3">
+                      <div className="bg-card text-muted-foreground flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-xs font-bold">
                         {index + 1}
                       </div>
-                      <span className="max-w-[200px] truncate text-sm font-semibold">
+                      <span className="min-w-0 flex-1 truncate text-sm font-semibold">
                         {item.show}
                       </span>
                     </div>
-                    <span className="text-sm font-bold tracking-tight tabular-nums">
+                    <span className="shrink-0 text-sm font-bold tracking-tight tabular-nums">
                       {formatCurrency(item.revenue, displayCurrency)}
                     </span>
                   </div>

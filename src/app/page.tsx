@@ -174,7 +174,7 @@ export default function Home() {
                 </div>
               </div>
 
-              {/* The real thing: rendered by src/lib/pdf.ts from the same
+              {/* The real thing: rendered by src/lib/pdf.tsx from the same
                   invoice the walkthrough section above describes, so the
                   figures on this page and the app's output cannot drift. */}
               <div className="relative z-10 -mb-12 w-full max-w-md transition-transform duration-300 ease-out group-hover:-translate-y-2 lg:-mb-16">

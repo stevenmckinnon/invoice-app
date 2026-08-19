@@ -1,11 +1,12 @@
 "use client";
 
-import { User, LogOut, Settings } from "lucide-react";
+import { User, LogOut, MessageCircle, Settings } from "lucide-react";
 import { LayoutGroup, motion } from "motion/react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useTheme } from "next-themes";
 
+import { useChatSessionOptional } from "@/components/ai/ChatProvider";
 import CaleyLogo from "@/components/CaleyLogo";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -41,6 +42,7 @@ export const AppHeader = () => {
   const { startTransition } = useThemeTransition();
   const { prefetchInvoices, prefetchClients } = usePrefetchAppData();
   const isVisible = useHideOnScroll();
+  const chatSession = useChatSessionOptional();
 
   const prefetchByHref: Record<string, () => void> = {
     "/dashboard": prefetchInvoices,
@@ -143,6 +145,21 @@ export const AppHeader = () => {
 
         {/* Right Section */}
         <div className="flex items-center gap-2">
+          {/* AI assistant trigger — a tool, not a page, so it lives with the
+              other utility controls rather than in the nav links */}
+          {chatSession && pathname !== "/chat" && (
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => chatSession.setOpen(true)}
+              aria-label="Open AI assistant"
+              aria-pressed={chatSession.open}
+              className={cn(chatSession.open && "bg-accent")}
+            >
+              <MessageCircle className="size-4.5" />
+            </Button>
+          )}
+
           {/* Theme Toggle */}
           {!isPending && (
             <ThemeToggleButton

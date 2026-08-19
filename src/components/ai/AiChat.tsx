@@ -1,7 +1,6 @@
 "use client";
 
-import { SparklesIcon, XIcon } from "lucide-react";
-import { usePathname } from "next/navigation";
+import { XIcon } from "lucide-react";
 
 import { useChatSession } from "@/components/ai/ChatProvider";
 import { ChatSurface } from "@/components/ai/ChatSurface";
@@ -16,26 +15,11 @@ import { cn } from "@/lib/utils";
 
 export const AiChat = () => {
   const { open, setOpen, draftInvoiceId, draftPanelOpen } = useChatSession();
-  const pathname = usePathname();
 
   const showDraftAlongside = Boolean(draftInvoiceId) && draftPanelOpen;
 
   return (
     <>
-      {/* Desktop floating action button. Hidden on mobile (mobile uses the
-          /chat route) and on /chat itself, where it would float over the
-          assistant it opens. */}
-      {pathname !== "/chat" && (
-        <Button
-          onClick={() => setOpen(true)}
-          className="fixed right-6 bottom-6 z-40 hidden size-14 rounded-full shadow-lg md:flex"
-          size="icon"
-          aria-label="Open AI assistant"
-        >
-          <SparklesIcon className="size-5" />
-        </Button>
-      )}
-
       {/* Non-modal: the assistant acts on the app's data, so the app has to
           stay readable and clickable while it's open. */}
       <Sheet open={open} onOpenChange={setOpen} modal={false}>
