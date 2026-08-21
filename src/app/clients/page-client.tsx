@@ -244,35 +244,44 @@ export default function ClientsPage() {
                           >
                             <div className="flex items-center justify-end gap-2">
                               <Tooltip>
-                                <TooltipTrigger asChild>
-                                  <Button asChild variant="outline" size="sm">
-                                    <Link
-                                      href={`/clients/${client.id}/edit`}
-                                      transitionTypes={["forward"]}
-                                      aria-label="Edit client"
-                                    >
-                                      <HugeiconsIcon icon={PencilIcon} className="h-4 w-4" />
-                                    </Link>
-                                  </Button>
-                                </TooltipTrigger>
+                                <TooltipTrigger
+                                  render={
+                                    <Button
+                                      variant="outline"
+                                      size="sm"
+                                      nativeButton={false}
+                                      render={
+                                        <Link
+                                          href={`/clients/${client.id}/edit`}
+                                          transitionTypes={["forward"]}
+                                          aria-label="Edit client"
+                                        >
+                                          <HugeiconsIcon icon={PencilIcon} className="h-4 w-4" />
+                                        </Link>
+                                      }
+                                    />
+                                  }
+                                />
                                 <TooltipContent>Edit client</TooltipContent>
                               </Tooltip>
                               <Tooltip>
-                                <TooltipTrigger asChild>
-                                  <Button
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={() =>
-                                      setClientToDelete({
-                                        id: client.id,
-                                        name: client.name,
-                                      })
-                                    }
-                                    disabled={deleteClientMutation.isPending}
-                                    aria-label="Delete client"
-                                  >
-                                    <HugeiconsIcon icon={Delete02Icon} className="text-destructive h-4 w-4" />
-                                  </Button>
+                                <TooltipTrigger
+                                  render={
+                                    <Button
+                                      variant="outline"
+                                      size="sm"
+                                      onClick={() =>
+                                        setClientToDelete({
+                                          id: client.id,
+                                          name: client.name,
+                                        })
+                                      }
+                                      disabled={deleteClientMutation.isPending}
+                                      aria-label="Delete client"
+                                    />
+                                  }
+                                >
+                                  <HugeiconsIcon icon={Delete02Icon} className="text-destructive h-4 w-4" />
                                 </TooltipTrigger>
                                 <TooltipContent>Delete client</TooltipContent>
                               </Tooltip>

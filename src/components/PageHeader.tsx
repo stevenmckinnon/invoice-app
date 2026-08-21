@@ -1,5 +1,5 @@
-import { HugeiconsIcon } from "@hugeicons/react";
 import { ArrowLeft01Icon } from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
 import Link from "next/link";
 
 import { Button } from "@/components/ui/button";
@@ -28,12 +28,17 @@ export const PageHeader = ({
   <div className="flex flex-col justify-between gap-4 md:flex-row md:items-end">
     <div className="flex items-center gap-4">
       {backHref && (
-        <Button asChild variant="outline" size="sm">
-          <Link href={backHref} transitionTypes={["back"]} aria-label="Go back">
-            <HugeiconsIcon icon={ArrowLeft01Icon} className="h-4 w-4" />
-            <span className="hidden md:block">Back</span>
-          </Link>
-        </Button>
+        <Button
+          variant="outline"
+          size="sm"
+          nativeButton={false}
+          render={
+            <Link href={backHref} transitionTypes={["back"]} aria-label="Go back">
+              <HugeiconsIcon icon={ArrowLeft01Icon} className="h-4 w-4" />
+              <span className="hidden md:block">Back</span>
+            </Link>
+          }
+        />
       )}
       <div>
         <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">

@@ -1,8 +1,9 @@
 "use client";
 
-import { HugeiconsIcon } from "@hugeicons/react";
-import { Alert01Icon, Home01Icon, Refresh01Icon } from "@hugeicons/core-free-icons";
 import { useEffect } from "react";
+
+import { Alert01Icon, Home01Icon, Refresh01Icon } from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
 import Link from "next/link";
 
 import { Button } from "@/components/ui/button";
@@ -50,12 +51,16 @@ export default function Error({
               <HugeiconsIcon icon={Refresh01Icon} />
               Try again
             </Button>
-            <Button asChild variant="outline">
-              <Link href="/">
-                <HugeiconsIcon icon={Home01Icon} />
-                Back to home
-              </Link>
-            </Button>
+            <Button
+              variant="outline"
+              nativeButton={false}
+              render={
+                <Link href="/">
+                  <HugeiconsIcon icon={Home01Icon} />
+                  Back to home
+                </Link>
+              }
+            />
           </div>
         </CardContent>
       </Card>

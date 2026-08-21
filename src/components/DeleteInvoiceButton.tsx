@@ -1,7 +1,9 @@
 "use client";
-import { HugeiconsIcon } from "@hugeicons/react";
-import { Delete01Icon } from "@hugeicons/core-free-icons";
 import { useState } from "react";
+
+import { Delete01Icon } from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
+
 import {
   AlertDialog,
   AlertDialogAction,
@@ -46,10 +48,10 @@ export const DeleteInvoiceButton = ({
 
   return (
     <AlertDialog open={open} onOpenChange={setOpen}>
-      <AlertDialogTrigger asChild>
-        <Button variant="outline" size={size}>
-          <HugeiconsIcon icon={Delete01Icon} className="h-4 w-4" /> Delete
-        </Button>
+      <AlertDialogTrigger
+        render={<Button variant="outline" size={size} />}
+      >
+        <HugeiconsIcon icon={Delete01Icon} className="h-4 w-4" /> Delete
       </AlertDialogTrigger>
       <AlertDialogContent>
         <AlertDialogHeader>

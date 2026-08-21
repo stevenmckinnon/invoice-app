@@ -1,7 +1,7 @@
 "use client";
-import { HugeiconsIcon } from "@hugeicons/react";
-import { Calendar01Icon, Delete01Icon } from "@hugeicons/core-free-icons";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { Calendar01Icon, Delete01Icon } from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
 import { format } from "date-fns";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -186,21 +186,23 @@ export const OvertimeManager = ({
               <FormItem className="col-span-2 flex flex-col">
                 <FormLabel>Date</FormLabel>
                 <Popover>
-                  <PopoverTrigger asChild>
-                    <FormControl>
-                      <Button
-                        variant="outline"
-                        className="w-full justify-start bg-transparent text-left font-normal"
-                      >
-                        <HugeiconsIcon icon={Calendar01Icon} className="mr-1 h-4 w-4" />
-                        {field.value ? (
-                          format(field.value, "PPP")
-                        ) : (
-                          <span>Select date</span>
-                        )}
-                      </Button>
-                    </FormControl>
-                  </PopoverTrigger>
+                  <PopoverTrigger
+                    render={
+                      <FormControl>
+                        <Button
+                          variant="outline"
+                          className="w-full justify-start bg-transparent text-left font-normal"
+                        >
+                          <HugeiconsIcon icon={Calendar01Icon} className="mr-1 h-4 w-4" />
+                          {field.value ? (
+                            format(field.value, "PPP")
+                          ) : (
+                            <span>Select date</span>
+                          )}
+                        </Button>
+                      </FormControl>
+                    }
+                  />
                   <PopoverContent className="w-auto p-0">
                     <Calendar
                       mode="single"
@@ -322,15 +324,17 @@ export const OvertimeManager = ({
                         </TableCell>
                         <TableCell>
                           <Tooltip>
-                            <TooltipTrigger asChild>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => removeEntry(entry.id)}
-                                aria-label="Remove overtime entry"
-                              >
-                                <HugeiconsIcon icon={Delete01Icon} className="text-destructive h-4 w-4" />
-                              </Button>
+                            <TooltipTrigger
+                              render={
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => removeEntry(entry.id)}
+                                  aria-label="Remove overtime entry"
+                                />
+                              }
+                            >
+                              <HugeiconsIcon icon={Delete01Icon} className="text-destructive h-4 w-4" />
                             </TooltipTrigger>
                             <TooltipContent>Delete entry</TooltipContent>
                           </Tooltip>

@@ -1,6 +1,7 @@
 "use client";
+import { ArrowTurnBackwardIcon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
-import { Cancel01Icon } from "@hugeicons/core-free-icons";
+
 import { useChatSession } from "@/components/ai/ChatProvider";
 import { ChatSurface } from "@/components/ai/ChatSurface";
 import { Button } from "@/components/ui/button";
@@ -21,15 +22,27 @@ export const AiChat = () => {
     <>
       {/* Non-modal: the assistant acts on the app's data, so the app has to
           stay readable and clickable while it's open. */}
-      <Sheet open={open} onOpenChange={setOpen} modal={false}>
+      <Sheet
+        open={open}
+        onOpenChange={(nextOpen, eventDetails) => {
+          // Clicking into the app behind the panel must not dismiss it
+          if (
+            eventDetails.reason === "outside-press" ||
+            eventDetails.reason === "focus-out"
+          ) {
+            eventDetails.cancel();
+            return;
+          }
+          setOpen(nextOpen);
+        }}
+        modal={false}
+      >
         <SheetContent
           side="right"
           overlay={false}
           // The header carries its own close button, in line with the rest of
           // the controls rather than floating over the conversation
           closeButton={false}
-          // Clicking into the app behind the panel must not dismiss it
-          onInteractOutside={(e) => e.preventDefault()}
           className={cn(
             // A floating card rather than an edge-to-edge sheet — the same
             // surface language as every other panel in the app. max-w-none is
@@ -49,10 +62,19 @@ export const AiChat = () => {
               </SheetTitle>
             }
             trailing={
-              <SheetClose asChild>
-                <Button variant="ghost" size="icon-sm" aria-label="Close assistant">
-                  <HugeiconsIcon icon={Cancel01Icon} className="size-4" />
-                </Button>
+              <SheetClose
+                render={
+                  <Button
+                    variant="ghost"
+                    size="icon-sm"
+                    aria-label="Close assistant"
+                  />
+                }
+              >
+                <HugeiconsIcon
+                  icon={ArrowTurnBackwardIcon}
+                  className="size-4"
+                />
               </SheetClose>
             }
             onNavigate={() => setOpen(false)}

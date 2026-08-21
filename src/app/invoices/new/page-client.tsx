@@ -1,9 +1,9 @@
 "use client";
-import { HugeiconsIcon } from "@hugeicons/react";
-import { Alert01Icon } from "@hugeicons/core-free-icons";
 import { useEffect, useState } from "react";
 
 import { zodResolver } from "@hookform/resolvers/zod";
+import { Alert01Icon } from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
@@ -192,10 +192,9 @@ export default function NewInvoicePage() {
                   variant="outline"
                   size="sm"
                   className="mt-2"
-                  asChild
-                >
-                  <Link href="/profile">Complete Profile</Link>
-                </Button>
+                  nativeButton={false}
+                  render={<Link href="/profile">Complete Profile</Link>}
+                />
               </AlertDescription>
             </Alert>
           )

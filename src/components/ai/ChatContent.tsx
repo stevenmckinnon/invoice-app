@@ -1,10 +1,11 @@
 "use client";
 
-import { HugeiconsIcon } from "@hugeicons/react";
-import { Alert01Icon, Copy01Icon, Refresh01Icon, Tick01Icon } from "@hugeicons/core-free-icons";
 import { useEffect, useState } from "react";
 
+import { Alert01Icon, Copy01Icon, Refresh01Icon, Tick01Icon } from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
 import { isTextUIPart, type ToolUIPart, type UIMessage } from "ai";
+
 import { useChatSession } from "@/components/ai/ChatProvider";
 import {
   Conversation,
