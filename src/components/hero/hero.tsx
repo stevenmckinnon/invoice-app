@@ -43,23 +43,23 @@ const Hero = () => {
 
           <div className="mx-auto mt-10 flex w-full max-w-xs flex-col items-stretch justify-center gap-3 sm:max-w-none sm:flex-row sm:items-center sm:gap-4">
             <Button
-              asChild
               size="lg"
               className="h-12 rounded-lg px-8 text-base"
-            >
-              <Link href="/auth/signup">
-                Create your first invoice
-                <HugeiconsIcon icon={ArrowRight01Icon} className="h-4 w-4" />
-              </Link>
-            </Button>
+              nativeButton={false}
+              render={
+                <Link href="/auth/signup">
+                  Create your first invoice
+                  <HugeiconsIcon icon={ArrowRight01Icon} className="h-4 w-4" />
+                </Link>
+              }
+            />
             <Button
-              asChild
               variant="outline"
               size="lg"
               className="bg-card/70 hover:bg-muted h-12 rounded-lg px-8 text-base backdrop-blur-sm"
-            >
-              <Link href="/auth/signin">Sign in</Link>
-            </Button>
+              nativeButton={false}
+              render={<Link href="/auth/signin">Sign in</Link>}
+            />
           </div>
 
           <p className="text-muted-foreground mt-8 text-sm">

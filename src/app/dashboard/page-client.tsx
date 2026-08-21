@@ -1,7 +1,8 @@
 "use client";
-import { HugeiconsIcon } from "@hugeicons/react";
-import { Add01Icon, AnalyticsDownIcon, AnalyticsUpIcon, FileAttachmentIcon, ViewIcon } from "@hugeicons/core-free-icons";
 import { useEffect, useState } from "react";
+
+import { Add01Icon, AnalyticsDownIcon, AnalyticsUpIcon, FileAttachmentIcon, ViewIcon } from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
@@ -367,12 +368,15 @@ export default function Home() {
                 ))}
               </SelectContent>
             </Select>
-            <Button asChild>
-              <Link href="/invoices/new">
-                <HugeiconsIcon icon={Add01Icon} />
-                Create Invoice
-              </Link>
-            </Button>
+            <Button
+              nativeButton={false}
+              render={
+                <Link href="/invoices/new">
+                  <HugeiconsIcon icon={Add01Icon} />
+                  Create Invoice
+                </Link>
+              }
+            />
           </>
         }
       />
@@ -590,11 +594,16 @@ export default function Home() {
         <CardHeader>
           <div className="flex items-center justify-between">
             <CardTitle className="text-xl">Recent Invoices</CardTitle>
-            <Button asChild variant="outline" size="sm">
-              <Link href="/invoices" transitionTypes={["forward"]}>
-                View All
-              </Link>
-            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              nativeButton={false}
+              render={
+                <Link href="/invoices" transitionTypes={["forward"]}>
+                  View All
+                </Link>
+              }
+            />
           </div>
         </CardHeader>
         <CardContent>
@@ -604,12 +613,15 @@ export default function Home() {
               title="No invoices yet"
               description="Get started by creating your first invoice."
               action={
-                <Button asChild>
-                  <Link href="/invoices/new">
-                    <HugeiconsIcon icon={Add01Icon} />
-                    Create Invoice
-                  </Link>
-                </Button>
+                <Button
+                  nativeButton={false}
+                  render={
+                    <Link href="/invoices/new">
+                      <HugeiconsIcon icon={Add01Icon} />
+                      Create Invoice
+                    </Link>
+                  }
+                />
               }
             />
           ) : (
@@ -645,16 +657,23 @@ export default function Home() {
                     </TableCell>
                     <TableCell className="text-right">
                       <Tooltip>
-                        <TooltipTrigger asChild>
-                          <Button asChild variant="outline" size="sm">
-                            <Link
-                              href={`/invoices/${invoice.id}`}
-                              transitionTypes={["forward"]}
-                            >
-                              <HugeiconsIcon icon={ViewIcon} className="h-4 w-4" />
-                            </Link>
-                          </Button>
-                        </TooltipTrigger>
+                        <TooltipTrigger
+                          render={
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              nativeButton={false}
+                              render={
+                                <Link
+                                  href={`/invoices/${invoice.id}`}
+                                  transitionTypes={["forward"]}
+                                >
+                                  <HugeiconsIcon icon={ViewIcon} className="h-4 w-4" />
+                                </Link>
+                              }
+                            />
+                          }
+                        />
                         <TooltipContent>View invoice</TooltipContent>
                       </Tooltip>
                     </TableCell>

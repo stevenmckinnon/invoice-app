@@ -1,7 +1,8 @@
 "use client";
-import { HugeiconsIcon } from "@hugeicons/react";
-import { ArrowDown01Icon } from "@hugeicons/core-free-icons";
 import { useMemo, useState } from "react";
+
+import { ArrowDown01Icon } from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
 import Link from "next/link";
 import { useWatch, type UseFormReturn } from "react-hook-form";
 import { z } from "zod";
@@ -403,19 +404,21 @@ export function InvoiceForm({
                     ) : null}
                   </p>
                 </div>
-                <CollapsibleTrigger asChild>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    className="shrink-0"
-                  >
-                    <HugeiconsIcon icon={ArrowDown01Icon} className={cn(
-                                                              "h-4 w-4 transition-transform",
-                                                              detailsSectionOpen && "rotate-180",
-                                                            )} />
-                    {detailsSectionOpen ? "Hide" : "Edit"}
-                  </Button>
+                <CollapsibleTrigger
+                  render={
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="shrink-0"
+                    />
+                  }
+                >
+                  <HugeiconsIcon icon={ArrowDown01Icon} className={cn(
+                                                            "h-4 w-4 transition-transform",
+                                                            detailsSectionOpen && "rotate-180",
+                                                          )} />
+                  {detailsSectionOpen ? "Hide" : "Edit"}
                 </CollapsibleTrigger>
               </div>
               <CollapsibleContent className="mt-4">
@@ -885,11 +888,16 @@ export function InvoiceForm({
               />
               <div className="flex items-end justify-end gap-2">
                 {cancelHref && (
-                  <Button type="button" variant="outline" asChild>
-                    <Link href={cancelHref} transitionTypes={["back"]}>
-                      Cancel
-                    </Link>
-                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    nativeButton={false}
+                    render={
+                      <Link href={cancelHref} transitionTypes={["back"]}>
+                        Cancel
+                      </Link>
+                    }
+                  />
                 )}
                 <Button type="submit" disabled={isPending}>
                   {isPending && <Spinner />}

@@ -1,5 +1,5 @@
-import { HugeiconsIcon } from "@hugeicons/react";
 import { Home01Icon } from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -33,12 +33,15 @@ export default function NotFound() {
           </p>
 
           <div className="mt-7">
-            <Button asChild>
-              <Link href="/">
-                <HugeiconsIcon icon={Home01Icon} />
-                Back to home
-              </Link>
-            </Button>
+            <Button
+              nativeButton={false}
+              render={
+                <Link href="/">
+                  <HugeiconsIcon icon={Home01Icon} />
+                  Back to home
+                </Link>
+              }
+            />
           </div>
         </CardContent>
       </Card>

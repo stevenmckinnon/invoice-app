@@ -1,7 +1,8 @@
 "use client";
-import { HugeiconsIcon } from "@hugeicons/react";
-import { ArrowLeft01Icon, Loading02Icon } from "@hugeicons/core-free-icons";
 import { Suspense, useState } from "react";
+
+import { ArrowLeft01Icon, Loading02Icon } from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
@@ -92,11 +93,15 @@ const ResetPasswordForm = () => {
         <div className="w-full max-w-md">
           <CardHeader className="mb-4 text-center">
             <div className="mb-4 flex flex-col items-center gap-2">
-              <Button asChild variant="outline">
-                <Link href="/">
-                  <HugeiconsIcon icon={ArrowLeft01Icon} /> Back Home
-                </Link>
-              </Button>
+              <Button
+                variant="outline"
+                nativeButton={false}
+                render={
+                  <Link href="/">
+                    <HugeiconsIcon icon={ArrowLeft01Icon} /> Back Home
+                  </Link>
+                }
+              />
               <CaleyLogo className="h-24 w-24" />
             </div>
             <CardTitle>
@@ -126,11 +131,15 @@ const ResetPasswordForm = () => {
       <div className="w-full max-w-md">
         <CardHeader className="mb-4 text-center">
           <div className="mb-4 flex flex-col items-center gap-2">
-            <Button asChild variant="outline">
-              <Link href="/">
-                <HugeiconsIcon icon={ArrowLeft01Icon} /> Back Home
-              </Link>
-            </Button>
+            <Button
+              variant="outline"
+              nativeButton={false}
+              render={
+                <Link href="/">
+                  <HugeiconsIcon icon={ArrowLeft01Icon} /> Back Home
+                </Link>
+              }
+            />
             <CaleyLogo className="h-24 w-24" />
           </div>
           <CardTitle>

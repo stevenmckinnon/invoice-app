@@ -1,8 +1,10 @@
 "use client";
 
-import { HugeiconsIcon } from "@hugeicons/react";
-import { Add01Icon, ArrowUpDownIcon, Tick01Icon } from "@hugeicons/core-free-icons";
 import { useState } from "react";
+
+import { Add01Icon, ArrowUpDownIcon, Tick01Icon } from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
+
 import { Button } from "@/components/ui/button";
 import {
   Command,
@@ -59,23 +61,25 @@ export const ClientSelector = ({
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger asChild>
-        <Button
-          variant="outline"
-          role="combobox"
-          aria-expanded={open}
-          // bg-transparent overrides the outline variant's bg-background: this
-          // is a form control and must match the inputs beside it, which let
-          // the card show through. --background is the cream canvas, not white.
-          className="w-full justify-between bg-transparent"
-        >
-          {value
-            ? selectedClient
-              ? selectedClient.name
-              : "Select client..."
-            : "Select client or create new..."}
-          <HugeiconsIcon icon={ArrowUpDownIcon} className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-        </Button>
+      <PopoverTrigger
+        render={
+          <Button
+            variant="outline"
+            role="combobox"
+            aria-expanded={open}
+            // bg-transparent overrides the outline variant's bg-background: this
+            // is a form control and must match the inputs beside it, which let
+            // the card show through. --background is the cream canvas, not white.
+            className="w-full justify-between bg-transparent"
+          />
+        }
+      >
+        {value
+          ? selectedClient
+            ? selectedClient.name
+            : "Select client..."
+          : "Select client or create new..."}
+        <HugeiconsIcon icon={ArrowUpDownIcon} className="ml-2 h-4 w-4 shrink-0 opacity-50" />
       </PopoverTrigger>
       <PopoverContent className="w-full p-0" align="start">
         <Command>

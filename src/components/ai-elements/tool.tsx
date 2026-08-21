@@ -1,9 +1,11 @@
 "use client";
 
-import { HugeiconsIcon } from "@hugeicons/react";
-import { ArrowDown01Icon, CancelCircleIcon, CheckmarkCircle01Icon, CircleIcon, Clock01Icon, Wrench01Icon } from "@hugeicons/core-free-icons";
 import type { ComponentProps, ReactNode } from "react";
 import { isValidElement } from "react";
+
+import { ArrowDown01Icon, CancelCircleIcon, CheckmarkCircle01Icon, CircleIcon, Clock01Icon, Wrench01Icon } from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
+
 import { Badge } from "@/components/ui/badge";
 import {
   Collapsible,

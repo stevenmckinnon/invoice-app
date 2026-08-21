@@ -1,9 +1,9 @@
 "use client";
 
-import { HugeiconsIcon } from "@hugeicons/react";
-import { LinkSquare01Icon } from "@hugeicons/core-free-icons";
 import { useEffect } from "react";
 
+import { LinkSquare01Icon } from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
 import { useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
 
@@ -146,12 +146,18 @@ export const DraftInvoicePreview = ({
           </span>
         </div>
         <div className="p-3">
-          <Button asChild size="sm" variant="outline" className="w-full">
-            <Link href={`/invoices/${invoiceId}/edit`} onClick={onNavigate}>
-              <HugeiconsIcon icon={LinkSquare01Icon} className="size-3.5" />
-              Open in editor
-            </Link>
-          </Button>
+          <Button
+            size="sm"
+            variant="outline"
+            className="w-full"
+            nativeButton={false}
+            render={
+              <Link href={`/invoices/${invoiceId}/edit`} onClick={onNavigate}>
+                <HugeiconsIcon icon={LinkSquare01Icon} className="size-3.5" />
+                Open in editor
+              </Link>
+            }
+          />
         </div>
       </div>
     </div>

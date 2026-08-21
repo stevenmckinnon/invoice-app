@@ -1,7 +1,8 @@
 "use client";
-import { HugeiconsIcon } from "@hugeicons/react";
-import { Add01Icon, ArrowLeft01Icon, ArrowRight01Icon, FileAttachmentIcon, Search01Icon } from "@hugeicons/core-free-icons";
 import { useState } from "react";
+
+import { Add01Icon, ArrowLeft01Icon, ArrowRight01Icon, FileAttachmentIcon, Search01Icon } from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
@@ -72,7 +73,8 @@ export default function AllInvoicesPage() {
     setCurrentPage(1);
   };
 
-  const handleStatusFilterChange = (value: string) => {
+  const handleStatusFilterChange = (value: string | null) => {
+    if (!value) return;
     setStatusFilter(value);
     setCurrentPage(1);
   };
@@ -119,12 +121,15 @@ export default function AllInvoicesPage() {
           </>
         }
         actions={
-          <Button asChild>
-            <Link href="/invoices/new">
-              <HugeiconsIcon icon={Add01Icon} />
-              Create Invoice
-            </Link>
-          </Button>
+          <Button
+            nativeButton={false}
+            render={
+              <Link href="/invoices/new">
+                <HugeiconsIcon icon={Add01Icon} />
+                Create Invoice
+              </Link>
+            }
+          />
         }
       />
 
@@ -241,12 +246,15 @@ export default function AllInvoicesPage() {
               action={
                 !searchQuery &&
                 statusFilter === "all" && (
-                  <Button asChild>
-                    <Link href="/invoices/new">
-                      <HugeiconsIcon icon={Add01Icon} />
-                      Create Invoice
-                    </Link>
-                  </Button>
+                  <Button
+                    nativeButton={false}
+                    render={
+                      <Link href="/invoices/new">
+                        <HugeiconsIcon icon={Add01Icon} />
+                        Create Invoice
+                      </Link>
+                    }
+                  />
                 )
               }
             />
