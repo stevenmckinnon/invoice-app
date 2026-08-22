@@ -1,7 +1,5 @@
 "use client";
 
-import { HugeiconsIcon } from "@hugeicons/react";
-import { Add01Icon, ArrowTurnDownIcon, Cancel01Icon, ComputerIcon, Image01Icon, SquareIcon } from "@hugeicons/core-free-icons";
 import type {
   ChangeEvent,
   ChangeEventHandler,
@@ -25,6 +23,9 @@ import {
   useRef,
   useState,
 } from "react";
+
+import { Add01Icon, ArrowTurnDownIcon, Cancel01Icon, ComputerIcon, Image01Icon, SquareIcon } from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
 import { nanoid } from "nanoid";
 
 import {

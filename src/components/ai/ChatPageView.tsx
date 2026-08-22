@@ -1,6 +1,6 @@
 "use client";
-import { HugeiconsIcon } from "@hugeicons/react";
 import { ArrowLeft01Icon } from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
 import { useRouter } from "next/navigation";
 
 import { ChatSurface } from "@/components/ai/ChatSurface";

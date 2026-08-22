@@ -1,7 +1,8 @@
 "use client";
-import { HugeiconsIcon } from "@hugeicons/react";
-import { ArrowLeft01Icon, Loading02Icon } from "@hugeicons/core-free-icons";
 import { Suspense, useState } from "react";
+
+import { ArrowLeft01Icon, Loading02Icon } from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";

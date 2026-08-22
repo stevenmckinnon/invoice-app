@@ -1,7 +1,5 @@
 "use client";
 
-import { HugeiconsIcon } from "@hugeicons/react";
-import { ArrowLeft01Icon, ArrowRight01Icon } from "@hugeicons/core-free-icons";
 import type { ComponentProps, HTMLAttributes, ReactElement } from "react";
 import {
   createContext,
@@ -13,6 +11,8 @@ import {
   useState,
 } from "react";
 
+import { ArrowLeft01Icon, ArrowRight01Icon } from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
 import { cjk } from "@streamdown/cjk";
 import { code } from "@streamdown/code";
 import { math } from "@streamdown/math";
@@ -326,7 +326,11 @@ export const MessageBranchPage = ({
 
 export type MessageResponseProps = ComponentProps<typeof Streamdown>;
 
-const streamdownPlugins = { cjk, code, math, mermaid };
+// @streamdown/code bundles its own shiki whose BundledLanguage type doesn't
+// line up with the app's shiki version, so the plugin object needs a cast here.
+const streamdownPlugins = { cjk, code, math, mermaid } as ComponentProps<
+  typeof Streamdown
+>["plugins"];
 
 export const MessageResponse = memo(
   ({ className, ...props }: MessageResponseProps) => (

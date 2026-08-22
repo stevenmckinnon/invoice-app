@@ -1,7 +1,9 @@
 "use client";
-import { HugeiconsIcon } from "@hugeicons/react";
-import { Download01Icon, FileAttachmentIcon } from "@hugeicons/core-free-icons";
 import { useState } from "react";
+
+import { Download01Icon, FileAttachmentIcon } from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
+
 import { Button } from "@/components/ui/button";
 import {
   Dialog,

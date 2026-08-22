@@ -1,8 +1,9 @@
 "use client";
 
-import { HugeiconsIcon } from "@hugeicons/react";
-import { ArrowUpDownIcon, Tick01Icon } from "@hugeicons/core-free-icons";
 import * as React from "react";
+
+import { ArrowUpDownIcon, Tick01Icon } from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
 import countries from "world-countries";
 
 import { Button } from "@/components/ui/button";

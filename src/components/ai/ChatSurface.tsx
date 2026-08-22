@@ -1,6 +1,7 @@
 "use client";
-import { HugeiconsIcon } from "@hugeicons/react";
 import { PanelRightIcon, SparklesIcon } from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
+
 import { ChatContent } from "@/components/ai/ChatContent";
 import { useChatSession } from "@/components/ai/ChatProvider";
 import { DraftInvoicePreview } from "@/components/ai/DraftInvoicePreview";

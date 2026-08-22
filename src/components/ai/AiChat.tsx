@@ -1,6 +1,7 @@
 "use client";
-import { HugeiconsIcon } from "@hugeicons/react";
 import { Cancel01Icon } from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
+
 import { useChatSession } from "@/components/ai/ChatProvider";
 import { ChatSurface } from "@/components/ai/ChatSurface";
 import { Button } from "@/components/ui/button";

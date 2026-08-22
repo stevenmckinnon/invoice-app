@@ -1,8 +1,9 @@
 "use client";
 
-import { HugeiconsIcon } from "@hugeicons/react";
-import { MoonIcon, Sun01Icon } from "@hugeicons/core-free-icons";
 import { useCallback, useEffect, useState } from "react";
+
+import { MoonIcon, Sun01Icon } from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
 import { AnimatePresence, motion } from "motion/react";
 
 import { Button } from "@/components/ui/button";

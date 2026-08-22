@@ -1,7 +1,8 @@
 "use client";
-import { HugeiconsIcon } from "@hugeicons/react";
-import { Add01Icon, AnalyticsDownIcon, AnalyticsUpIcon, FileAttachmentIcon, ViewIcon } from "@hugeicons/core-free-icons";
 import { useEffect, useState } from "react";
+
+import { Add01Icon, AnalyticsDownIcon, AnalyticsUpIcon, FileAttachmentIcon, ViewIcon } from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
@@ -559,8 +560,8 @@ export default function Home() {
                       fontWeight: "600",
                       marginBottom: "4px",
                     }}
-                    formatter={(value: number) => [
-                      formatCurrency(value, displayCurrency),
+                    formatter={(value) => [
+                      formatCurrency(Number(value ?? 0), displayCurrency),
                       "Revenue",
                     ]}
                   />

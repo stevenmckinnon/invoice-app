@@ -1,8 +1,10 @@
 "use client";
 
-import { HugeiconsIcon } from "@hugeicons/react";
-import { Add01Icon, ArrowUpDownIcon, Tick01Icon } from "@hugeicons/core-free-icons";
 import { useState } from "react";
+
+import { Add01Icon, ArrowUpDownIcon, Tick01Icon } from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
+
 import { Button } from "@/components/ui/button";
 import {
   Command,

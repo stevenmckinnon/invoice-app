@@ -1,7 +1,8 @@
 "use client";
-import { HugeiconsIcon } from "@hugeicons/react";
-import { PencilIcon } from "@hugeicons/core-free-icons";
 import { useEffect, useState } from "react";
+
+import { PencilIcon } from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 

@@ -1,8 +1,9 @@
 "use client"
 
-import { HugeiconsIcon } from "@hugeicons/react";
-import { ArrowRight01Icon, CircleIcon, Tick01Icon } from "@hugeicons/core-free-icons";
 import * as React from "react"
+
+import { ArrowRight01Icon, CircleIcon, Tick01Icon } from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
 import { DropdownMenu as DropdownMenuPrimitive } from "radix-ui"
 
 import { cn } from "@/lib/utils"
