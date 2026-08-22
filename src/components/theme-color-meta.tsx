@@ -1,7 +1,5 @@
 "use client";
 
-import { useEffect } from "react";
-
 import { useTheme } from "next-themes";
 
 const THEME_COLORS: Record<string, string> = {
@@ -10,26 +8,27 @@ const THEME_COLORS: Record<string, string> = {
 };
 
 /**
- * layout.tsx sets the initial theme-color via prefers-color-scheme media
- * queries so the status bar is right before hydration. Those follow the OS
- * setting, not the in-app toggle, so once next-themes resolves the actual
- * theme this replaces them with a single tag that tracks it.
+ * Rendered as JSX (not an imperative DOM write) so React owns the <meta>
+ * node — React 19 auto-hoists <meta> tags into <head> regardless of where
+ * in the tree they're rendered. An earlier version of this used
+ * document.head.appendChild/removeChild directly, which fought Next's own
+ * head management and threw "Cannot read properties of null (removeChild)"
+ * on every client-side navigation.
+ *
+ * Before hydration there's no theme-color tag at all (layout.tsx no longer
+ * sets one), so the browser briefly uses its default chrome color — next-
+ * themes' no-flash script resolves the theme before paint, so this fills in
+ * within the same frame in practice.
  */
 export function ThemeColorMeta() {
   const { resolvedTheme } = useTheme();
 
-  useEffect(() => {
-    if (!resolvedTheme) return;
+  if (!resolvedTheme) return null;
 
-    document
-      .querySelectorAll('meta[name="theme-color"]')
-      .forEach((el) => el.remove());
-
-    const meta = document.createElement("meta");
-    meta.name = "theme-color";
-    meta.content = THEME_COLORS[resolvedTheme] ?? THEME_COLORS.light;
-    document.head.appendChild(meta);
-  }, [resolvedTheme]);
-
-  return null;
+  return (
+    <meta
+      name="theme-color"
+      content={THEME_COLORS[resolvedTheme] ?? THEME_COLORS.light}
+    />
+  );
 }

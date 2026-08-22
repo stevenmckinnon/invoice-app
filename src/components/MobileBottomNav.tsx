@@ -72,7 +72,7 @@ export const MobileBottomNav = () => {
       {/* Spacer to prevent content from being hidden behind nav */}
       <div className="h-24 md:hidden" />
 
-      <div className="pointer-events-none fixed right-0 bottom-[calc(1.5rem+env(safe-area-inset-bottom))] left-0 z-50 flex justify-center md:hidden">
+      <div className="pointer-events-none fixed right-0 bottom-[max(1.5rem,calc(env(safe-area-inset-bottom)+0.5rem))] left-0 z-50 flex justify-center md:hidden">
         <AnimatePresence initial={false} mode="wait">
           {isVisible && (
             <motion.nav
@@ -100,7 +100,7 @@ export const MobileBottomNav = () => {
                           onClick={() => hapticLight()}
                           onTouchStart={prefetchByHref[item.href]}
                           className={cn(
-                            "relative flex items-center gap-2 rounded-full px-3 py-2 transition-colors duration-200 min-[360px]:px-4",
+                            "relative flex w-16 items-center justify-center gap-2 rounded-full py-2 transition-colors duration-200",
                             !isActive &&
                               "text-muted-foreground hover:bg-muted hover:text-foreground",
                             isActive && "text-background",
@@ -138,7 +138,7 @@ export const MobileBottomNav = () => {
                       href="/chat"
                       onClick={() => hapticLight()}
                       className={cn(
-                        "relative flex flex-col items-center gap-1 rounded-full px-3 py-2 transition-colors duration-200 min-[360px]:px-4",
+                        "relative flex w-16 flex-col items-center justify-center gap-1 rounded-full py-2 transition-colors duration-200",
                         pathname === "/chat"
                           ? "text-background"
                           : "text-muted-foreground hover:bg-muted hover:text-foreground",
@@ -177,7 +177,7 @@ export const MobileBottomNav = () => {
                           onClick={() => hapticLight()}
                           onTouchStart={prefetchByHref[item.href]}
                           className={cn(
-                            "relative flex items-center gap-2 rounded-full px-3 py-2 transition-colors duration-200 min-[360px]:px-4",
+                            "relative flex w-16 items-center justify-center gap-2 rounded-full py-2 transition-colors duration-200",
                             !isActive &&
                               "text-muted-foreground hover:bg-muted hover:text-foreground",
                             isActive && "text-background",
