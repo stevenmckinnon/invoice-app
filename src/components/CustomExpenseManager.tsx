@@ -251,16 +251,18 @@ export const CustomExpenseManager = ({
                       </TableCell>
                       <TableCell className="w-16">
                         <Tooltip>
-                          <TooltipTrigger asChild>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => removeEntry(entry.id)}
-                              aria-label="Remove custom expense entry"
-                              className="h-8 w-8 p-0"
-                            >
-                              <HugeiconsIcon icon={Delete01Icon} className="text-destructive h-4 w-4" />
-                            </Button>
+                          <TooltipTrigger
+                            render={
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => removeEntry(entry.id)}
+                                aria-label="Remove custom expense entry"
+                                className="h-8 w-8 p-0"
+                              />
+                            }
+                          >
+                            <HugeiconsIcon icon={Delete01Icon} className="text-destructive h-4 w-4" />
                           </TooltipTrigger>
                           <TooltipContent>Delete entry</TooltipContent>
                         </Tooltip>

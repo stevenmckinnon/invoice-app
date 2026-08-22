@@ -33,12 +33,15 @@ export default function NotFound() {
           </p>
 
           <div className="mt-7">
-            <Button asChild>
-              <Link href="/">
-                <HugeiconsIcon icon={Home01Icon} />
-                Back to home
-              </Link>
-            </Button>
+            <Button
+              nativeButton={false}
+              render={
+                <Link href="/">
+                  <HugeiconsIcon icon={Home01Icon} />
+                  Back to home
+                </Link>
+              }
+            />
           </div>
         </CardContent>
       </Card>

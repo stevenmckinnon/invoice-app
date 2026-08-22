@@ -10,11 +10,17 @@ export default function CookiesPage() {
     <div className="mx-auto max-w-4xl space-y-8 px-4 py-12">
       {/* Header */}
       <div className="space-y-4">
-        <Button asChild variant="ghost" size="sm" className="mb-4">
-          <Link href="/">
-            <HugeiconsIcon icon={ArrowLeft01Icon} className="h-4 w-4" /> Back to Home
-          </Link>
-        </Button>
+        <Button
+          variant="ghost"
+          size="sm"
+          className="mb-4"
+          nativeButton={false}
+          render={
+            <Link href="/">
+              <HugeiconsIcon icon={ArrowLeft01Icon} className="h-4 w-4" /> Back to Home
+            </Link>
+          }
+        />
 
         <div className="mb-4 flex items-center gap-3">
           <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-orange-500/10">
@@ -291,11 +297,16 @@ export default function CookiesPage() {
 
       {/* Back to Legal */}
       <div className="pt-4 text-center">
-        <Button asChild variant="outline" size="lg">
-          <Link href="/legal">
-            <HugeiconsIcon icon={ArrowLeft01Icon} className="h-4 w-4" /> Back to Legal
-          </Link>
-        </Button>
+        <Button
+          variant="outline"
+          size="lg"
+          nativeButton={false}
+          render={
+            <Link href="/legal">
+              <HugeiconsIcon icon={ArrowLeft01Icon} className="h-4 w-4" /> Back to Legal
+            </Link>
+          }
+        />
       </div>
     </div>
   );

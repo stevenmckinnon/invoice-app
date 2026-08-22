@@ -103,8 +103,8 @@ export default function InvoiceDetailPage({ params }: Props) {
     params.then((p) => setInvoiceId(p.id));
   }, [params]);
 
-  const handleStatusChange = async (newStatus: string) => {
-    if (!invoice) return;
+  const handleStatusChange = async (newStatus: string | null) => {
+    if (!invoice || !newStatus) return;
 
     updateInvoiceStatusMutation.mutate({
       id: invoice.id,
@@ -168,11 +168,14 @@ export default function InvoiceDetailPage({ params }: Props) {
               ? error.message
               : "The invoice you're looking for doesn't exist or you don't have permission to view it."}
           </p>
-          <Button asChild>
-            <Link href="/invoices" transitionTypes={["back"]}>
-              Back to Invoices
-            </Link>
-          </Button>
+          <Button
+            nativeButton={false}
+            render={
+              <Link href="/invoices" transitionTypes={["back"]}>
+                Back to Invoices
+              </Link>
+            }
+          />
         </div>
       </div>
     );
@@ -257,14 +260,18 @@ export default function InvoiceDetailPage({ params }: Props) {
                   ))}
                 </SelectContent>
               </Select>
-              <Button asChild variant="outline">
-                <Link
-                  href={`/invoices/${invoice.id}/edit`}
-                  transitionTypes={["forward"]}
-                >
-                  <HugeiconsIcon icon={PencilIcon} /> Edit
-                </Link>
-              </Button>
+              <Button
+                variant="outline"
+                nativeButton={false}
+                render={
+                  <Link
+                    href={`/invoices/${invoice.id}/edit`}
+                    transitionTypes={["forward"]}
+                  >
+                    <HugeiconsIcon icon={PencilIcon} /> Edit
+                  </Link>
+                }
+              />
               <PdfPreviewDialog
                 variant="outline"
                 invoiceId={invoice.id}

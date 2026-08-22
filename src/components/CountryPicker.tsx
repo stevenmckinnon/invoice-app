@@ -52,24 +52,26 @@ export function CountryPicker({
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger asChild>
-        <Button
-          variant="outline"
-          role="combobox"
-          aria-expanded={open}
-          className="w-full justify-between bg-transparent"
-          disabled={disabled}
-        >
-          {selectedCountry ? (
-            <span className="flex items-center gap-2">
-              <span className="text-lg">{selectedCountry.flag}</span>
-              {selectedCountry.label}
-            </span>
-          ) : (
-            "Select country..."
-          )}
-          <HugeiconsIcon icon={ArrowUpDownIcon} className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-        </Button>
+      <PopoverTrigger
+        render={
+          <Button
+            variant="outline"
+            role="combobox"
+            aria-expanded={open}
+            className="w-full justify-between bg-transparent"
+            disabled={disabled}
+          />
+        }
+      >
+        {selectedCountry ? (
+          <span className="flex items-center gap-2">
+            <span className="text-lg">{selectedCountry.flag}</span>
+            {selectedCountry.label}
+          </span>
+        ) : (
+          "Select country..."
+        )}
+        <HugeiconsIcon icon={ArrowUpDownIcon} className="ml-2 h-4 w-4 shrink-0 opacity-50" />
       </PopoverTrigger>
       <PopoverContent className="w-full p-0" align="start">
         <Command>

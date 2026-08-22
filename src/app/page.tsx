@@ -569,7 +569,7 @@ export default function Home() {
             </h2>
           </div>
 
-          <Accordion type="single" collapsible className="w-full">
+          <Accordion className="w-full">
             {[
               {
                 q: "What can the AI assistant do?",
@@ -623,12 +623,11 @@ export default function Home() {
           </p>
           <div className="flex justify-center">
             <Button
-              asChild
               size="lg"
               className="h-12 rounded-lg px-8 text-base"
-            >
-              <Link href="/auth/signup">Create your first invoice</Link>
-            </Button>
+              nativeButton={false}
+              render={<Link href="/auth/signup">Create your first invoice</Link>}
+            />
           </div>
         </SectionReveal>
       </section>

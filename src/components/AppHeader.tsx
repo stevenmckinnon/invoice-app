@@ -18,6 +18,7 @@ import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
@@ -184,67 +185,69 @@ export const AppHeader = () => {
           {!isPending &&
             (session ? (
               <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className="h-9 gap-2 px-2">
-                    <Avatar className="h-7 w-7">
-                      <AvatarImage
-                        src={session.user.image || undefined}
-                        alt="Profile photo"
-                      />
-                      <AvatarFallback className="text-foreground text-xs">
-                        {(
-                          session.user.name?.[0] ||
-                          session.user.email?.[0] ||
-                          "U"
-                        ).toUpperCase()}
-                      </AvatarFallback>
-                    </Avatar>
-                    <span className="hidden text-sm sm:inline-block">
-                      {session.user.name?.split(" ")[0] || session.user.email}
-                    </span>
-                  </Button>
+                <DropdownMenuTrigger
+                  render={<Button variant="ghost" className="h-9 gap-2 px-2" />}
+                >
+                  <Avatar className="h-7 w-7">
+                    <AvatarImage
+                      src={session.user.image || undefined}
+                      alt="Profile photo"
+                    />
+                    <AvatarFallback className="text-foreground text-xs">
+                      {(
+                        session.user.name?.[0] ||
+                        session.user.email?.[0] ||
+                        "U"
+                      ).toUpperCase()}
+                    </AvatarFallback>
+                  </Avatar>
+                  <span className="hidden text-sm sm:inline-block">
+                    {session.user.name?.split(" ")[0] || session.user.email}
+                  </span>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-56">
-                  <DropdownMenuLabel>
-                    <div className="flex items-center gap-2">
-                      <Avatar className="size-7">
-                        <AvatarImage
-                          src={session.user.image || undefined}
-                          alt="Profile photo"
-                        />
-                        <AvatarFallback className="text-foreground text-xs">
-                          {(
-                            session.user.name?.[0] ||
-                            session.user.email?.[0] ||
-                            "U"
-                          ).toUpperCase()}
-                        </AvatarFallback>
-                      </Avatar>
-                      <div className="flex flex-col space-y-1">
-                        <p className="text-sm font-medium">
-                          {session.user.name || "User"}
-                        </p>
-                        <p className="text-muted-foreground text-xs">
-                          {session.user.email}
-                        </p>
+                  <DropdownMenuGroup>
+                    <DropdownMenuLabel>
+                      <div className="flex items-center gap-2">
+                        <Avatar className="size-7">
+                          <AvatarImage
+                            src={session.user.image || undefined}
+                            alt="Profile photo"
+                          />
+                          <AvatarFallback className="text-foreground text-xs">
+                            {(
+                              session.user.name?.[0] ||
+                              session.user.email?.[0] ||
+                              "U"
+                            ).toUpperCase()}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="flex flex-col space-y-1">
+                          <p className="text-sm font-medium">
+                            {session.user.name || "User"}
+                          </p>
+                          <p className="text-muted-foreground text-xs">
+                            {session.user.email}
+                          </p>
+                        </div>
                       </div>
-                    </div>
-                  </DropdownMenuLabel>
+                    </DropdownMenuLabel>
+                  </DropdownMenuGroup>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem asChild>
-                    <Link href="/profile" className="cursor-pointer">
-                      <HugeiconsIcon icon={UserIcon} className="mr-2 h-4 w-4" />
-                      Profile Settings
-                    </Link>
+                  <DropdownMenuItem
+                    render={<Link href="/profile" className="cursor-pointer" />}
+                  >
+                    <HugeiconsIcon icon={UserIcon} className="mr-2 h-4 w-4" />
+                    Profile Settings
                   </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <Link href="/settings" className="cursor-pointer">
-                      <HugeiconsIcon
-                        icon={Settings01Icon}
-                        className="mr-2 h-4 w-4"
-                      />
-                      Account Settings
-                    </Link>
+                  <DropdownMenuItem
+                    render={<Link href="/settings" className="cursor-pointer" />}
+                  >
+                    <HugeiconsIcon
+                      icon={Settings01Icon}
+                      className="mr-2 h-4 w-4"
+                    />
+                    Account Settings
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem
@@ -260,9 +263,11 @@ export const AppHeader = () => {
                 </DropdownMenuContent>
               </DropdownMenu>
             ) : (
-              <Button asChild variant="outline">
-                <Link href="/auth/signin">Sign in</Link>
-              </Button>
+              <Button
+                variant="outline"
+                nativeButton={false}
+                render={<Link href="/auth/signin">Sign in</Link>}
+              />
             ))}
         </div>
       </div>

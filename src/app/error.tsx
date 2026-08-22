@@ -51,12 +51,16 @@ export default function Error({
               <HugeiconsIcon icon={Refresh01Icon} />
               Try again
             </Button>
-            <Button asChild variant="outline">
-              <Link href="/">
-                <HugeiconsIcon icon={Home01Icon} />
-                Back to home
-              </Link>
-            </Button>
+            <Button
+              variant="outline"
+              nativeButton={false}
+              render={
+                <Link href="/">
+                  <HugeiconsIcon icon={Home01Icon} />
+                  Back to home
+                </Link>
+              }
+            />
           </div>
         </CardContent>
       </Card>

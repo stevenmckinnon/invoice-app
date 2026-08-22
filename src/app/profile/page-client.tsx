@@ -480,9 +480,12 @@ export default function ProfilePage() {
           </Card>
 
           <div className="flex justify-end gap-2">
-            <Button asChild type="button" variant="outline">
-              <Link href="/dashboard">Cancel</Link>
-            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              nativeButton={false}
+              render={<Link href="/dashboard">Cancel</Link>}
+            />
             <Button type="submit" disabled={saving}>
               {saving ? "Saving..." : "Save Profile"}
             </Button>

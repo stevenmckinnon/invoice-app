@@ -52,25 +52,35 @@ export default function LegalPage() {
               <strong>Steve McKinnon</strong>, a freelance software developer.
             </p>
             <div className="space-y-2">
-              <Button asChild variant="outline" className="w-full">
-                <Link
-                  href="https://stevemckinnon.co.uk"
-                  target="_blank"
-                  className="flex items-center justify-center gap-2"
-                >
-                  Visit Portfolio
-                  <HugeiconsIcon icon={LinkSquare01Icon} className="h-4 w-4" />
-                </Link>
-              </Button>
-              <Button asChild variant="outline" className="w-full">
-                <Link
-                  href="mailto:hello@stevenmckinnon.co.uk"
-                  className="flex items-center justify-center gap-2"
-                >
-                  <HugeiconsIcon icon={Mail01Icon} className="h-4 w-4" />
-                  Contact Me
-                </Link>
-              </Button>
+              <Button
+                variant="outline"
+                className="w-full"
+                nativeButton={false}
+                render={
+                  <Link
+                    href="https://stevemckinnon.co.uk"
+                    target="_blank"
+                    className="flex items-center justify-center gap-2"
+                  >
+                    Visit Portfolio
+                    <HugeiconsIcon icon={LinkSquare01Icon} className="h-4 w-4" />
+                  </Link>
+                }
+              />
+              <Button
+                variant="outline"
+                className="w-full"
+                nativeButton={false}
+                render={
+                  <Link
+                    href="mailto:hello@stevenmckinnon.co.uk"
+                    className="flex items-center justify-center gap-2"
+                  >
+                    <HugeiconsIcon icon={Mail01Icon} className="h-4 w-4" />
+                    Contact Me
+                  </Link>
+                }
+              />
             </div>
           </CardContent>
         </Card>
@@ -181,20 +191,29 @@ export default function LegalPage() {
 
       {/* Quick Links */}
       <div className="flex justify-center gap-4">
-        <Button asChild variant="outline">
-          <Link href="/cookies">
-            <HugeiconsIcon icon={CookieIcon} className="h-4 w-4" /> Cookie Policy
-          </Link>
-        </Button>
+        <Button
+          variant="outline"
+          nativeButton={false}
+          render={
+            <Link href="/cookies">
+              <HugeiconsIcon icon={CookieIcon} className="h-4 w-4" /> Cookie Policy
+            </Link>
+          }
+        />
       </div>
 
       {/* Back to Home */}
       <div className="pt-4 text-center">
-        <Button asChild size="lg" variant="outline">
-          <Link href="/">
-            <HugeiconsIcon icon={ArrowLeft01Icon} className="h-4 w-4" /> Back to Home
-          </Link>
-        </Button>
+        <Button
+          size="lg"
+          variant="outline"
+          nativeButton={false}
+          render={
+            <Link href="/">
+              <HugeiconsIcon icon={ArrowLeft01Icon} className="h-4 w-4" /> Back to Home
+            </Link>
+          }
+        />
       </div>
     </div>
   );
