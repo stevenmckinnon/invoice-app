@@ -100,7 +100,7 @@ export const MobileBottomNav = () => {
                           onClick={() => hapticLight()}
                           onTouchStart={prefetchByHref[item.href]}
                           className={cn(
-                            "relative flex w-16 items-center justify-center gap-2 rounded-full py-2 transition-colors duration-200",
+                            "relative flex w-24 items-center justify-center gap-2 rounded-full py-2 transition-colors duration-200",
                             !isActive &&
                               "text-muted-foreground hover:bg-muted hover:text-foreground",
                             isActive && "text-background",
@@ -138,7 +138,7 @@ export const MobileBottomNav = () => {
                       href="/chat"
                       onClick={() => hapticLight()}
                       className={cn(
-                        "relative flex w-16 flex-col items-center justify-center gap-1 rounded-full py-2 transition-colors duration-200",
+                        "relative flex w-24 flex-col items-center justify-center gap-1 rounded-full py-2 transition-colors duration-200",
                         pathname === "/chat"
                           ? "text-background"
                           : "text-muted-foreground hover:bg-muted hover:text-foreground",
@@ -177,7 +177,7 @@ export const MobileBottomNav = () => {
                           onClick={() => hapticLight()}
                           onTouchStart={prefetchByHref[item.href]}
                           className={cn(
-                            "relative flex w-16 items-center justify-center gap-2 rounded-full py-2 transition-colors duration-200",
+                            "relative flex w-24 items-center justify-center gap-2 rounded-full py-2 transition-colors duration-200",
                             !isActive &&
                               "text-muted-foreground hover:bg-muted hover:text-foreground",
                             isActive && "text-background",
