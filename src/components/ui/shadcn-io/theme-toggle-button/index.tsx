@@ -239,10 +239,12 @@ export const ThemeToggleButton = ({
             transition={{ type: "spring", duration: 0.3, bounce: 0 }}
             className="absolute inset-0 flex items-center justify-center"
           >
+            {/* Icon shows the destination theme (what clicking does), so it
+                always agrees with the aria-label above. */}
             {theme === "light" ? (
-              <HugeiconsIcon icon={Sun01Icon} className="size-[1.2rem]" />
-            ) : (
               <HugeiconsIcon icon={MoonIcon} className="size-[1.2rem]" />
+            ) : (
+              <HugeiconsIcon icon={Sun01Icon} className="size-[1.2rem]" />
             )}
           </motion.span>
         </AnimatePresence>

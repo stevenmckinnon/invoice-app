@@ -3,6 +3,7 @@ import {
   Add01Icon,
   AnalyticsDownIcon,
   AnalyticsUpIcon,
+  CursorPointer02Icon,
 } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { motion, useReducedMotion } from "motion/react";
@@ -164,10 +165,65 @@ export const DemoDashboard = () => {
               })}
             </p>
           </div>
-          <Button className="w-fit">
-            <HugeiconsIcon icon={Add01Icon} />
-            Create Invoice
-          </Button>
+          {/* A single scripted gesture, once per load: a cursor arrives,
+              "presses" the button, then fades. Ties the hero's own CTA
+              copy to the one click that matters in the mockup below it. */}
+          <div className="relative w-fit">
+            <motion.div
+              animate={
+                reduceMotion
+                  ? undefined
+                  : { scale: [1, 1, 0.96, 1] }
+              }
+              transition={
+                reduceMotion
+                  ? undefined
+                  : { duration: 0.5, delay: 1.9, times: [0, 0.4, 0.6, 1] }
+              }
+            >
+              <Button className="w-fit">
+                <HugeiconsIcon icon={Add01Icon} />
+                Create Invoice
+              </Button>
+            </motion.div>
+
+            {!reduceMotion && (
+              <>
+                <motion.span
+                  aria-hidden
+                  className="border-primary pointer-events-none absolute top-1/2 left-1/2 h-9 w-9 -translate-x-1/2 -translate-y-1/2 rounded-full border-2"
+                  initial={{ opacity: 0, scale: 0.6 }}
+                  animate={{
+                    opacity: [0, 0, 0.7, 0],
+                    scale: [0.6, 0.6, 1.6, 1.9],
+                  }}
+                  transition={{ duration: 0.5, delay: 1.9, times: [0, 0.4, 0.6, 1] }}
+                />
+                <motion.div
+                  aria-hidden
+                  className="text-foreground pointer-events-none absolute top-1/2 left-1/2 z-20 drop-shadow-md"
+                  initial={{ opacity: 0, x: 46, y: -34, scale: 0.85 }}
+                  animate={{
+                    opacity: [0, 1, 1, 0],
+                    x: [46, 2, 2, 2],
+                    y: [-34, -6, -6, -6],
+                    scale: [0.85, 1, 1, 1],
+                  }}
+                  transition={{
+                    duration: 1.4,
+                    delay: 1.2,
+                    times: [0, 0.45, 0.8, 1],
+                    ease: "easeOut",
+                  }}
+                >
+                  <HugeiconsIcon
+                    icon={CursorPointer02Icon}
+                    className="h-5 w-5"
+                  />
+                </motion.div>
+              </>
+            )}
+          </div>
         </div>
 
         {/* Revenue hero — the one number the page is actually about */}
