@@ -23,6 +23,104 @@ export default function Home() {
       {/* Hero Section */}
       <Hero />
 
+      {/* Problem Section — names the friction before the walkthrough proves
+          the fix. Mobile/tablet get a plain numbered list; lg+ gets one
+          expanded card among three collapsed ones, same numbering either way. */}
+      <section className="py-24">
+        <SectionReveal className="mx-auto max-w-7xl px-6">
+          <div className="mx-auto mb-16 max-w-2xl text-center">
+            <div className="border-border text-muted-foreground mb-6 inline-flex items-center rounded-full border px-4 py-1.5 text-sm font-medium">
+              The problem
+            </div>
+            <h2 className="mb-4 text-4xl font-bold tracking-tight text-balance sm:text-5xl">
+              Freelance invoicing wasn&apos;t built for how film crew get
+              paid.
+            </h2>
+            <p className="text-muted-foreground text-lg">
+              Generic invoice templates assume one rate and one client. A
+              shoot never works that way.
+            </p>
+          </div>
+
+          {(() => {
+            const problems = [
+              {
+                title: "Every show pays differently",
+                body: "Day rate, per diem, and overtime terms change from client to client, sometimes show to show.",
+              },
+              {
+                title: "Overtime has two rates, not one",
+                body: "1.5× and 2× need separate tracking — a flat hourly rate gets the maths wrong.",
+              },
+              {
+                title: "Work and travel per diems aren't the same line",
+                body: "Lump them together and the total stops matching what was agreed.",
+              },
+              {
+                title: "Nothing chases a late client",
+                body: "A generic template doesn't know an invoice has gone quiet.",
+              },
+            ];
+            const expanded = 2;
+
+            return (
+              <>
+                {/* Mobile / tablet: a plain numbered list, same pattern as
+                    the walkthrough steps below */}
+                <ol className="space-y-8 lg:hidden">
+                  {problems.map((problem, i) => (
+                    <li key={problem.title} className="flex gap-5">
+                      <span className="bg-card text-muted-foreground dark:border-border flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-transparent font-mono text-xs shadow-xs">
+                        {i + 1}
+                      </span>
+                      <div>
+                        <h3 className="mb-1.5 text-lg font-bold">
+                          {problem.title}
+                        </h3>
+                        <p className="text-muted-foreground text-sm leading-relaxed">
+                          {problem.body}
+                        </p>
+                      </div>
+                    </li>
+                  ))}
+                </ol>
+
+                {/* Desktop: one expanded, three collapsed */}
+                <div className="hidden h-72 gap-4 lg:flex">
+                  {problems.map((problem, i) =>
+                    i === expanded ? (
+                      <div
+                        key={problem.title}
+                        className="bg-ink text-ink-foreground dark:border-border flex flex-1 flex-col justify-center rounded-2xl border border-transparent p-9"
+                      >
+                        <span className="bg-primary text-primary-foreground mb-5 flex h-8 w-8 items-center justify-center rounded-lg font-mono text-xs">
+                          {i + 1}
+                        </span>
+                        <h3 className="mb-2.5 max-w-[32ch] text-2xl font-bold text-balance">
+                          {problem.title}
+                        </h3>
+                        <p className="text-ink-muted max-w-[42ch] text-sm leading-relaxed">
+                          {problem.body}
+                        </p>
+                      </div>
+                    ) : (
+                      <div
+                        key={problem.title}
+                        className="border-border flex w-24 shrink-0 justify-center rounded-2xl border pt-6"
+                      >
+                        <span className="bg-card text-muted-foreground dark:border-border flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-transparent font-mono text-xs shadow-xs">
+                          {i + 1}
+                        </span>
+                      </div>
+                    ),
+                  )}
+                </div>
+              </>
+            );
+          })()}
+        </SectionReveal>
+      </section>
+
       {/* Walkthrough — one real invoice, start to finish */}
       <section className="py-24">
         <SectionReveal className="mx-auto max-w-7xl px-6">
@@ -285,22 +383,24 @@ export default function Home() {
         </SectionReveal>
       </section>
 
-      {/* AI Assistant Section */}
-      <section className="relative overflow-hidden py-32">
-        <div className="bg-primary/5 absolute inset-0 -z-10" />
+      {/* AI Assistant Section — the assistant's own dark, full-bleed moment,
+          echoing the closing CTA section rather than sharing a light section
+          with the pitch copy above it */}
+      <section className="bg-ink text-ink-foreground relative overflow-hidden py-32">
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(74,143,231,0.18)_0,transparent_70%)]" />
 
-        <SectionReveal className="mx-auto max-w-7xl px-6">
+        <SectionReveal className="relative mx-auto max-w-7xl px-6">
           <div className="grid grid-cols-1 items-center gap-16 lg:grid-cols-2">
             {/* Text */}
             <div>
-              <div className="text-primary bg-primary/10 mb-6 inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-sm font-medium">
-                <HugeiconsIcon icon={BotIcon} className="h-4 w-4" />
+              <div className="border-white/15 bg-white/5 text-ink-muted mb-6 inline-flex items-center gap-2 rounded-full border px-4 py-1.5 text-sm font-medium">
+                <HugeiconsIcon icon={BotIcon} className="text-primary h-4 w-4" />
                 Built-in assistant
               </div>
               <h2 className="mb-6 text-4xl font-bold tracking-tight sm:text-5xl">
                 Skip the forms.
               </h2>
-              <p className="text-muted-foreground mb-8 text-lg leading-relaxed">
+              <p className="text-ink-muted mb-8 text-lg leading-relaxed">
                 Tell Caley what you did on the job. It drafts the invoice, runs
                 the maths, and hands it back for you to check.
               </p>
@@ -312,129 +412,133 @@ export default function Home() {
                   "Runs on Claude, from Anthropic",
                 ].map((item) => (
                   <li key={item} className="flex items-start gap-3">
-                    <div className="bg-primary/10 text-primary mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full">
+                    <div className="bg-white/10 text-primary mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full">
                       <HugeiconsIcon icon={Tick01Icon} className="h-3 w-3" strokeWidth={2.5} />
                     </div>
-                    <span className="text-muted-foreground">{item}</span>
+                    <span className="text-ink-muted">{item}</span>
                   </li>
                 ))}
               </ul>
             </div>
 
-            {/* Chat mockup */}
-            <div className="bg-card dark:border-border relative overflow-hidden rounded-2xl border border-transparent shadow-xl">
-              {/* Header */}
-              <div className="border-border/60 flex items-center gap-3 border-b px-5 py-3.5">
-                <div className="bg-primary/10 flex h-8 w-8 items-center justify-center rounded-full">
-                  <HugeiconsIcon icon={BotIcon} className="text-primary h-4 w-4" />
-                </div>
-                <div>
-                  <p className="text-sm font-semibold">Caley Assistant</p>
-                  <p className="text-muted-foreground text-xs">
-                    Powered by Claude
-                  </p>
-                </div>
-              </div>
-
-              {/* Messages */}
-              <div className="space-y-5 p-5">
-                {/* User message */}
-                <SectionReveal delay={0.1} y={10} duration={0.35}>
-                  <div className="flex justify-end">
-                    <div className="bg-primary text-primary-foreground max-w-[80%] rounded-2xl rounded-br-sm px-4 py-2.5 text-sm">
-                      Invoice Netflix Studios for The Crown: 5 shoot days plus 3
-                      hours overtime
-                    </div>
+            {/* Chat mockup — tilted in space rather than framed, so it reads
+                as a live screen without borrowing a device-mockup bezel */}
+            <div className="perspective-[1400px] relative">
+              <div className="bg-radial from-primary/25 to-transparent absolute -inset-[14%] -z-10 rounded-full blur-xl" />
+              <div className="bg-card dark:border-border relative rotate-y-[-9deg] rotate-z-[0.6deg] overflow-hidden rounded-2xl border border-transparent [box-shadow:var(--shadow-xl),28px_34px_60px_-20px_color-mix(in_oklab,var(--primary)_25%,transparent)]">
+                {/* Header */}
+                <div className="border-border/60 flex items-center gap-3 border-b px-5 py-3.5">
+                  <div className="bg-primary/10 flex h-8 w-8 items-center justify-center rounded-full">
+                    <HugeiconsIcon icon={BotIcon} className="text-primary h-4 w-4" />
                   </div>
-                </SectionReveal>
+                  <div>
+                    <p className="text-sm font-semibold">Caley Assistant</p>
+                    <p className="text-muted-foreground text-xs">
+                      Powered by Claude
+                    </p>
+                  </div>
+                </div>
 
-                {/* AI response with nested invoice card */}
-                <SectionReveal delay={0.45} y={10} duration={0.35}>
-                  <div className="flex gap-3">
-                    <div className="bg-primary/10 flex h-7 w-7 shrink-0 items-center justify-center rounded-full">
-                      <HugeiconsIcon icon={BotIcon} className="text-primary h-3.5 w-3.5" />
+                {/* Messages */}
+                <div className="space-y-5 p-5">
+                  {/* User message */}
+                  <SectionReveal delay={0.1} y={10} duration={0.35}>
+                    <div className="flex justify-end">
+                      <div className="bg-primary text-primary-foreground max-w-[80%] rounded-2xl rounded-br-sm px-4 py-2.5 text-sm">
+                        Invoice Netflix Studios for The Crown: 5 shoot days plus 3
+                        hours overtime
+                      </div>
                     </div>
-                    <div className="bg-muted max-w-[85%] rounded-2xl rounded-bl-sm px-4 py-3 text-sm">
-                      <p className="mb-3">
-                        Drafted for <strong>Netflix Studios</strong>: 5 days at
-                        your day rate, plus 3 overtime hours at 1.5×. Have a
-                        look before you send it.
-                      </p>
+                  </SectionReveal>
 
-                      {/* Nested invoice card */}
-                      <div className="border-border overflow-hidden rounded-lg border">
-                        <div className="bg-muted border-border flex items-center justify-between border-b px-3 py-2">
-                          <span className="font-mono text-xs font-semibold">
-                            INV-2025-043 · Draft
-                          </span>
-                          <span className="border-border bg-card rounded-full border px-2 py-0.5 text-xs">
-                            Net 30
-                          </span>
-                        </div>
-                        <div className="bg-card space-y-2 p-3">
-                          <div className="flex items-center justify-between text-xs">
-                            <span className="text-muted-foreground">
-                              5 shoot days
+                  {/* AI response with nested invoice card */}
+                  <SectionReveal delay={0.45} y={10} duration={0.35}>
+                    <div className="flex gap-3">
+                      <div className="bg-primary/10 flex h-7 w-7 shrink-0 items-center justify-center rounded-full">
+                        <HugeiconsIcon icon={BotIcon} className="text-primary h-3.5 w-3.5" />
+                      </div>
+                      <div className="bg-muted max-w-[85%] rounded-2xl rounded-bl-sm px-4 py-3 text-sm">
+                        <p className="mb-3">
+                          Drafted for <strong>Netflix Studios</strong>: 5 days at
+                          your day rate, plus 3 overtime hours at 1.5×. Have a
+                          look before you send it.
+                        </p>
+
+                        {/* Nested invoice card */}
+                        <div className="border-border overflow-hidden rounded-lg border">
+                          <div className="bg-muted border-border flex items-center justify-between border-b px-3 py-2">
+                            <span className="font-mono text-xs font-semibold">
+                              INV-2025-043 · Draft
                             </span>
-                            <span className="font-mono font-medium tabular-nums">
-                              £2,500.00
-                            </span>
-                          </div>
-                          <div className="flex items-center justify-between text-xs">
-                            <span className="text-muted-foreground">
-                              3h overtime (1.5×)
-                            </span>
-                            <span className="font-mono font-medium tabular-nums">
-                              £225.00
+                            <span className="border-border bg-card rounded-full border px-2 py-0.5 text-xs">
+                              Net 30
                             </span>
                           </div>
-                          <div className="border-border border-t pt-2">
-                            <div className="flex items-center justify-between text-xs font-semibold">
-                              <span>Total</span>
-                              <span className="text-primary font-mono tabular-nums">
-                                £2,725.00
+                          <div className="bg-card space-y-2 p-3">
+                            <div className="flex items-center justify-between text-xs">
+                              <span className="text-muted-foreground">
+                                5 shoot days
                               </span>
+                              <span className="font-mono font-medium tabular-nums">
+                                £2,500.00
+                              </span>
+                            </div>
+                            <div className="flex items-center justify-between text-xs">
+                              <span className="text-muted-foreground">
+                                3h overtime (1.5×)
+                              </span>
+                              <span className="font-mono font-medium tabular-nums">
+                                £225.00
+                              </span>
+                            </div>
+                            <div className="border-border border-t pt-2">
+                              <div className="flex items-center justify-between text-xs font-semibold">
+                                <span>Total</span>
+                                <span className="text-primary font-mono tabular-nums">
+                                  £2,725.00
+                                </span>
+                              </div>
                             </div>
                           </div>
                         </div>
                       </div>
                     </div>
-                  </div>
-                </SectionReveal>
+                  </SectionReveal>
 
-                {/* Second user message */}
-                <SectionReveal delay={0.8} y={10} duration={0.35}>
-                  <div className="flex justify-end">
-                    <div className="bg-primary text-primary-foreground max-w-[80%] rounded-2xl rounded-br-sm px-4 py-2.5 text-sm">
-                      Add £86.40 for the train and parking.
+                  {/* Second user message */}
+                  <SectionReveal delay={0.8} y={10} duration={0.35}>
+                    <div className="flex justify-end">
+                      <div className="bg-primary text-primary-foreground max-w-[80%] rounded-2xl rounded-br-sm px-4 py-2.5 text-sm">
+                        Add £86.40 for the train and parking.
+                      </div>
                     </div>
-                  </div>
-                </SectionReveal>
+                  </SectionReveal>
 
-                {/* Assistant closes the loop */}
-                <SectionReveal delay={1.05} y={10} duration={0.35}>
-                  <div className="flex gap-3">
-                    <div className="bg-primary/10 flex h-7 w-7 shrink-0 items-center justify-center rounded-full">
-                      <HugeiconsIcon icon={BotIcon} className="text-primary h-3.5 w-3.5" />
+                  {/* Assistant closes the loop */}
+                  <SectionReveal delay={1.05} y={10} duration={0.35}>
+                    <div className="flex gap-3">
+                      <div className="bg-primary/10 flex h-7 w-7 shrink-0 items-center justify-center rounded-full">
+                        <HugeiconsIcon icon={BotIcon} className="text-primary h-3.5 w-3.5" />
+                      </div>
+                      <div className="bg-muted max-w-[85%] rounded-2xl rounded-bl-sm px-4 py-3 text-sm">
+                        Added as an expense line. The draft is now{" "}
+                        <strong className="font-mono tabular-nums">
+                          £2,811.40
+                        </strong>
+                        .
+                      </div>
                     </div>
-                    <div className="bg-muted max-w-[85%] rounded-2xl rounded-bl-sm px-4 py-3 text-sm">
-                      Added as an expense line. The draft is now{" "}
-                      <strong className="font-mono tabular-nums">
-                        £2,811.40
-                      </strong>
-                      .
-                    </div>
-                  </div>
-                </SectionReveal>
-              </div>
-
-              {/* Input */}
-              <div className="border-border/60 flex items-center gap-3 border-t px-4 py-3">
-                <div className="bg-muted text-muted-foreground flex-1 rounded-lg px-4 py-2 text-sm">
-                  Ask anything about your invoices…
+                  </SectionReveal>
                 </div>
-                <div className="bg-primary text-primary-foreground flex h-8 w-8 items-center justify-center rounded-lg">
-                  <HugeiconsIcon icon={ArrowUp01Icon} className="h-4 w-4" />
+
+                {/* Input */}
+                <div className="border-border/60 flex items-center gap-3 border-t px-4 py-3">
+                  <div className="bg-muted text-muted-foreground flex-1 rounded-lg px-4 py-2 text-sm">
+                    Ask anything about your invoices…
+                  </div>
+                  <div className="bg-primary text-primary-foreground flex h-8 w-8 items-center justify-center rounded-lg">
+                    <HugeiconsIcon icon={ArrowUp01Icon} className="h-4 w-4" />
+                  </div>
                 </div>
               </div>
             </div>
