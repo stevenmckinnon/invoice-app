@@ -1,8 +1,14 @@
-import { AnalyticsUpIcon, ArrowUp01Icon, BotIcon, Clock01Icon, LinkSquare01Icon, Tick01Icon, UserGroupIcon } from "@hugeicons/core-free-icons";
-import { HugeiconsIcon } from "@hugeicons/react";
 import {
-  DollarSign
-} from "lucide-react";
+  AnalyticsUpIcon,
+  ArrowUp01Icon,
+  BotIcon,
+  Clock01Icon,
+  LinkSquare01Icon,
+  Tick01Icon,
+  UserGroupIcon,
+} from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { DollarSign } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -24,8 +30,10 @@ export default function Home() {
       <Hero />
 
       {/* Problem Section — names the friction before the walkthrough proves
-          the fix. Mobile/tablet get a plain numbered list; lg+ gets one
-          expanded card among three collapsed ones, same numbering either way. */}
+          the fix. Every card shows its own title and body at every width;
+          the dark card is just an accent, not the only one with content —
+          a collapsed-vs-expanded carousel only earns its place when hovering
+          or clicking actually reveals something, which a static page can't do. */}
       <section className="py-24">
         <SectionReveal className="mx-auto max-w-7xl px-6">
           <div className="mx-auto mb-16 max-w-2xl text-center">
@@ -33,12 +41,11 @@ export default function Home() {
               The problem
             </div>
             <h2 className="mb-4 text-4xl font-bold tracking-tight text-balance sm:text-5xl">
-              Freelance invoicing wasn&apos;t built for how film crew get
-              paid.
+              Freelance invoicing wasn&apos;t built for how film crew get paid.
             </h2>
             <p className="text-muted-foreground text-lg">
-              Generic invoice templates assume one rate and one client. A
-              shoot never works that way.
+              Generic invoice templates assume one rate and one client. A shoot
+              never works that way.
             </p>
           </div>
 
@@ -61,7 +68,6 @@ export default function Home() {
                 body: "A generic template doesn't know an invoice has gone quiet.",
               },
             ];
-            const expanded = 2;
 
             return (
               <>
@@ -85,35 +91,25 @@ export default function Home() {
                   ))}
                 </ol>
 
-                {/* Desktop: one expanded, three collapsed */}
-                <div className="hidden h-72 gap-4 lg:flex">
-                  {problems.map((problem, i) =>
-                    i === expanded ? (
-                      <div
-                        key={problem.title}
-                        className="bg-ink text-ink-foreground dark:border-border flex flex-1 flex-col justify-center rounded-2xl border border-transparent p-9"
-                      >
-                        <span className="bg-primary text-primary-foreground mb-5 flex h-8 w-8 items-center justify-center rounded-lg font-mono text-xs">
-                          {i + 1}
-                        </span>
-                        <h3 className="mb-2.5 max-w-[32ch] text-2xl font-bold text-balance">
-                          {problem.title}
-                        </h3>
-                        <p className="text-ink-muted max-w-[42ch] text-sm leading-relaxed">
-                          {problem.body}
-                        </p>
-                      </div>
-                    ) : (
-                      <div
-                        key={problem.title}
-                        className="border-border flex w-24 shrink-0 justify-center rounded-2xl border pt-6"
-                      >
-                        <span className="bg-card text-muted-foreground dark:border-border flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-transparent font-mono text-xs shadow-xs">
-                          {i + 1}
-                        </span>
-                      </div>
-                    ),
-                  )}
+                {/* Desktop: a plain 4-up grid — no card singled out, since
+                    nothing in the copy ranks one problem over another */}
+                <div className="hidden gap-5 lg:grid lg:grid-cols-4">
+                  {problems.map((problem, i) => (
+                    <div
+                      key={problem.title}
+                      className="bg-card dark:border-border flex flex-col rounded-2xl border border-transparent p-7 shadow-sm"
+                    >
+                      <span className="bg-muted text-muted-foreground mb-5 flex h-8 w-8 items-center justify-center rounded-lg font-mono text-xs">
+                        {i + 1}
+                      </span>
+                      <h3 className="mb-2 text-lg font-bold text-balance">
+                        {problem.title}
+                      </h3>
+                      <p className="text-muted-foreground text-sm leading-relaxed">
+                        {problem.body}
+                      </p>
+                    </div>
+                  ))}
                 </div>
               </>
             );
@@ -160,9 +156,7 @@ export default function Home() {
                     {i + 1}
                   </span>
                   <div>
-                    <h3 className="mb-1.5 text-lg font-bold">
-                      {step.title}
-                    </h3>
+                    <h3 className="mb-1.5 text-lg font-bold">{step.title}</h3>
                     <p className="text-muted-foreground text-sm leading-relaxed">
                       {step.body}
                     </p>
@@ -243,7 +237,7 @@ export default function Home() {
             {/* Dark hero card — Professional PDFs */}
             <div className="group bg-ink dark:border-border relative col-span-1 overflow-hidden rounded-2xl border border-transparent p-8 shadow-md md:col-span-4 md:row-span-2 lg:p-12">
               {/* Blue ambient glow */}
-              <div className="pointer-events-none absolute top-0 right-[-10%] h-[120%] w-[80%] bg-gradient-to-l from-primary/25 to-transparent blur-3xl" />
+              <div className="from-primary/25 pointer-events-none absolute top-0 right-[-10%] h-[120%] w-[80%] bg-gradient-to-l to-transparent blur-3xl" />
 
               <div className="relative z-10 mb-8 max-w-sm">
                 <h3 className="text-ink-foreground mb-3 text-3xl font-bold">
@@ -254,16 +248,18 @@ export default function Home() {
                   branded PDF worth paying on time.
                 </p>
                 <div className="mt-6 flex flex-wrap gap-2">
-                  {["Custom branding", "Instant download", "Auto-calculation"].map(
-                    (tag) => (
-                      <span
-                        key={tag}
-                        className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs font-medium text-white/70"
-                      >
-                        {tag}
-                      </span>
-                    ),
-                  )}
+                  {[
+                    "Custom branding",
+                    "Instant download",
+                    "Auto-calculation",
+                  ].map((tag) => (
+                    <span
+                      key={tag}
+                      className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs font-medium text-white/70"
+                    >
+                      {tag}
+                    </span>
+                  ))}
                 </div>
               </div>
 
@@ -307,9 +303,7 @@ export default function Home() {
               <div className="bg-primary/10 text-primary mb-3 w-fit rounded-lg p-3">
                 <HugeiconsIcon icon={AnalyticsUpIcon} className="h-5 w-5" />
               </div>
-              <h3 className="mb-2 text-xl font-bold">
-                What you&apos;re owed
-              </h3>
+              <h3 className="mb-2 text-xl font-bold">What you&apos;re owed</h3>
               <p className="text-muted-foreground mb-5 text-sm leading-relaxed">
                 Billed, paid, and outstanding across every show, on the
                 dashboard.
@@ -393,8 +387,11 @@ export default function Home() {
           <div className="grid grid-cols-1 items-center gap-16 lg:grid-cols-2">
             {/* Text */}
             <div>
-              <div className="border-white/15 bg-white/5 text-ink-muted mb-6 inline-flex items-center gap-2 rounded-full border px-4 py-1.5 text-sm font-medium">
-                <HugeiconsIcon icon={BotIcon} className="text-primary h-4 w-4" />
+              <div className="text-ink-muted mb-6 inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-4 py-1.5 text-sm font-medium">
+                <HugeiconsIcon
+                  icon={BotIcon}
+                  className="text-primary h-4 w-4"
+                />
                 Built-in assistant
               </div>
               <h2 className="mb-6 text-4xl font-bold tracking-tight sm:text-5xl">
@@ -412,8 +409,12 @@ export default function Home() {
                   "Runs on Claude, from Anthropic",
                 ].map((item) => (
                   <li key={item} className="flex items-start gap-3">
-                    <div className="bg-white/10 text-primary mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full">
-                      <HugeiconsIcon icon={Tick01Icon} className="h-3 w-3" strokeWidth={2.5} />
+                    <div className="text-primary mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-white/10">
+                      <HugeiconsIcon
+                        icon={Tick01Icon}
+                        className="h-3 w-3"
+                        strokeWidth={2.5}
+                      />
                     </div>
                     <span className="text-ink-muted">{item}</span>
                   </li>
@@ -426,15 +427,20 @@ export default function Home() {
                 Flat below lg: stacked under the text at that width, a tilt
                 there just reads as crooked rather than "floating". */}
             <div className="relative lg:perspective-[1400px]">
-              <div className="bg-radial from-primary/25 to-transparent absolute -inset-[14%] -z-10 rounded-full blur-xl" />
+              <div className="from-primary/25 absolute -inset-[14%] -z-10 rounded-full bg-radial to-transparent blur-xl" />
               <div className="bg-card dark:border-border relative overflow-hidden rounded-2xl border border-transparent shadow-xl lg:rotate-y-[-9deg] lg:rotate-z-[0.6deg] lg:[box-shadow:var(--shadow-xl),28px_34px_60px_-20px_color-mix(in_oklab,var(--primary)_25%,transparent)]">
                 {/* Header */}
                 <div className="border-border/60 flex items-center gap-3 border-b px-5 py-3.5">
                   <div className="bg-primary/10 flex h-8 w-8 items-center justify-center rounded-full">
-                    <HugeiconsIcon icon={BotIcon} className="text-primary h-4 w-4" />
+                    <HugeiconsIcon
+                      icon={BotIcon}
+                      className="text-primary h-4 w-4"
+                    />
                   </div>
                   <div>
-                    <p className="text-sm font-semibold">Caley Assistant</p>
+                    <p className="text-card-foreground text-sm font-semibold">
+                      Caley Assistant
+                    </p>
                     <p className="text-muted-foreground text-xs">
                       Powered by Claude
                     </p>
@@ -447,8 +453,8 @@ export default function Home() {
                   <SectionReveal delay={0.1} y={10} duration={0.35}>
                     <div className="flex justify-end">
                       <div className="bg-primary text-primary-foreground max-w-[80%] rounded-2xl rounded-br-sm px-4 py-2.5 text-sm">
-                        Invoice Netflix Studios for The Crown: 5 shoot days plus 3
-                        hours overtime
+                        Invoice Netflix Studios for The Crown: 5 shoot days plus
+                        3 hours overtime
                       </div>
                     </div>
                   </SectionReveal>
@@ -457,17 +463,20 @@ export default function Home() {
                   <SectionReveal delay={0.45} y={10} duration={0.35}>
                     <div className="flex gap-3">
                       <div className="bg-primary/10 flex h-7 w-7 shrink-0 items-center justify-center rounded-full">
-                        <HugeiconsIcon icon={BotIcon} className="text-primary h-3.5 w-3.5" />
+                        <HugeiconsIcon
+                          icon={BotIcon}
+                          className="text-primary h-3.5 w-3.5"
+                        />
                       </div>
                       <div className="bg-muted max-w-[85%] rounded-2xl rounded-bl-sm px-4 py-3 text-sm">
-                        <p className="mb-3">
-                          Drafted for <strong>Netflix Studios</strong>: 5 days at
-                          your day rate, plus 3 overtime hours at 1.5×. Have a
-                          look before you send it.
+                        <p className="text-card-foreground mb-3">
+                          Drafted for <strong>Netflix Studios</strong>: 5 days
+                          at your day rate, plus 3 overtime hours at 1.5×. Have
+                          a look before you send it.
                         </p>
 
                         {/* Nested invoice card */}
-                        <div className="border-border overflow-hidden rounded-lg border">
+                        <div className="border-border text-card-foreground overflow-hidden rounded-lg border">
                           <div className="bg-muted border-border flex items-center justify-between border-b px-3 py-2">
                             <span className="font-mono text-xs font-semibold">
                               INV-2025-043 · Draft
@@ -520,9 +529,12 @@ export default function Home() {
                   <SectionReveal delay={1.05} y={10} duration={0.35}>
                     <div className="flex gap-3">
                       <div className="bg-primary/10 flex h-7 w-7 shrink-0 items-center justify-center rounded-full">
-                        <HugeiconsIcon icon={BotIcon} className="text-primary h-3.5 w-3.5" />
+                        <HugeiconsIcon
+                          icon={BotIcon}
+                          className="text-primary h-3.5 w-3.5"
+                        />
                       </div>
-                      <div className="bg-muted max-w-[85%] rounded-2xl rounded-bl-sm px-4 py-3 text-sm">
+                      <div className="text-card-foreground bg-muted max-w-[85%] rounded-2xl rounded-bl-sm px-4 py-3 text-sm">
                         Added as an expense line. The draft is now{" "}
                         <strong className="font-mono tabular-nums">
                           £2,811.40

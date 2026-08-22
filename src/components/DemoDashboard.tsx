@@ -3,9 +3,9 @@ import {
   Add01Icon,
   AnalyticsDownIcon,
   AnalyticsUpIcon,
-  CursorPointer02Icon,
 } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
+import { MousePointer2 } from "lucide-react";
 import { motion, useReducedMotion } from "motion/react";
 
 import { AnimatedCounter } from "@/components/AnimatedCounter";
@@ -151,7 +151,7 @@ export const DemoDashboard = () => {
         <div className="flex flex-col justify-between gap-4 md:flex-row md:items-start">
           <div>
             <h1 className="text-2xl font-bold tracking-tight md:text-3xl">
-              Afternoon, Ellie
+              Afternoon, Tim
             </h1>
             <p
               className="text-muted-foreground mt-1 text-sm"
@@ -201,7 +201,7 @@ export const DemoDashboard = () => {
                 />
                 <motion.div
                   aria-hidden
-                  className="text-foreground pointer-events-none absolute top-1/2 left-1/2 z-20 drop-shadow-md"
+                  className="pointer-events-none absolute top-1/2 left-1/2 z-20"
                   initial={{ opacity: 0, x: 46, y: -34, scale: 0.85 }}
                   animate={{
                     opacity: [0, 1, 1, 0],
@@ -216,9 +216,9 @@ export const DemoDashboard = () => {
                     ease: "easeOut",
                   }}
                 >
-                  <HugeiconsIcon
-                    icon={CursorPointer02Icon}
-                    className="h-5 w-5"
+                  <MousePointer2
+                    className="h-6 w-6 fill-white stroke-black/50 drop-shadow-[0_2px_3px_rgba(0,0,0,0.35)]"
+                    strokeWidth={1}
                   />
                 </motion.div>
               </>

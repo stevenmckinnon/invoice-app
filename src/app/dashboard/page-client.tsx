@@ -563,8 +563,8 @@ export default function Home() {
                       fontWeight: "600",
                       marginBottom: "4px",
                     }}
-                    formatter={(value: number) => [
-                      formatCurrency(value, displayCurrency),
+                    formatter={(value) => [
+                      formatCurrency(Number(value ?? 0), displayCurrency),
                       "Revenue",
                     ]}
                   />

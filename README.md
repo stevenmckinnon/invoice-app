@@ -61,6 +61,7 @@ Open [http://localhost:3000](http://localhost:3000) and sign in with:
 
 ```
 dev@caley.test / devpassword123
+
 ```
 
 ## Local development database

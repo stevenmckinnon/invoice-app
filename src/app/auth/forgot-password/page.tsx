@@ -16,7 +16,7 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { forgetPassword } from "@/lib/auth-client";
+import { requestPasswordReset } from "@/lib/auth-client";
 
 
 
@@ -31,7 +31,7 @@ const ForgotPasswordPage = () => {
     setIsLoading(true);
 
     try {
-      const result = await forgetPassword({
+      const result = await requestPasswordReset({
         email,
         redirectTo: "/auth/reset-password",
       });
