@@ -72,7 +72,7 @@ export const MobileBottomNav = () => {
       {/* Spacer to prevent content from being hidden behind nav */}
       <div className="h-24 md:hidden" />
 
-      <div className="pointer-events-none fixed right-0 bottom-6 left-0 z-50 flex justify-center md:hidden">
+      <div className="pointer-events-none fixed right-0 bottom-[calc(1.5rem+env(safe-area-inset-bottom))] left-0 z-50 flex justify-center md:hidden">
         <AnimatePresence initial={false} mode="wait">
           {isVisible && (
             <motion.nav
