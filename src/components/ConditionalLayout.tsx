@@ -1,7 +1,5 @@
 "use client";
 
-import { ViewTransition } from "react";
-
 import { usePathname } from "next/navigation";
 
 import { AiChat } from "@/components/ai/AiChat";
@@ -27,21 +25,22 @@ export const ConditionalLayout = ({ children }: ConditionalLayoutProps) => {
   const isAuthRoute = authRoutes.some((route) => pathname.startsWith(route));
   const isChatPage = pathname === "/chat";
 
+  // Not wrapped in React's <ViewTransition>: ConditionalLayout returns a
+  // completely different element shape per route type (bare <main> here vs.
+  // <AppHeader> + <main> on the landing page vs. the full ChatProvider shell
+  // below), so switching between them unmounts one tree and mounts another
+  // rather than updating in place. Doing that while ViewTransition is mid
+  // native-snapshot throws "Cannot read properties of null (removeChild)"
+  // and forces React to silently tear down and rebuild the whole root.
   if (isAuthRoute) {
-    return (
-      <main className="min-h-dvh w-full">
-        <ViewTransition>{children}</ViewTransition>
-      </main>
-    );
+    return <main className="min-h-dvh w-full">{children}</main>;
   }
 
   if (isLandingPage) {
     return (
       <>
         <AppHeader />
-        <main className="mx-auto">
-          <ViewTransition>{children}</ViewTransition>
-        </main>
+        <main className="mx-auto">{children}</main>
       </>
     );
   }
@@ -50,10 +49,12 @@ export const ConditionalLayout = ({ children }: ConditionalLayoutProps) => {
     <ChatProvider>
       <AppHeader />
       <main className="mx-auto min-h-dvh pt-12 md:pt-24">
-        {/* update="none" keeps navigation enter/exit transitions but opts out
-            of animating in-place content changes — otherwise every streamed
-            chat chunk counts as an update and flashes the viewport */}
-        <ViewTransition update="none">{children}</ViewTransition>
+        {/* Bottom-nav taps go through here (dashboard/invoices/clients/chat).
+            Deliberately not wrapped in ViewTransition: it triggers a native
+            full-page snapshot on every navigation, which combined with the
+            backdrop-blur nav pill was making every tab switch feel sluggish
+            on iOS Safari/PWA. */}
+        {children}
       </main>
       {!isChatPage && <MobileBottomNav />}
       <AiChat />

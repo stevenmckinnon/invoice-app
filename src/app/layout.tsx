@@ -120,10 +120,12 @@ export const viewport: Viewport = {
   // Shrink the layout viewport when the on-screen keyboard opens so
   // bottom-pinned UI (chat input, drawer footer) stays visible on iPad/iOS
   interactiveWidget: "resizes-content",
-  themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#ffffff" },
-    { media: "(prefers-color-scheme: dark)", color: "#000000" },
-  ],
+  // No static themeColor here — ThemeColorMeta (rendered in Providers)
+  // renders the single live tag once next-themes resolves the actual
+  // theme. A static one here would always win over it: browsers apply the
+  // first matching theme-color tag in DOM order, and a prefers-color-scheme
+  // media query always matches one of the two, so it would never yield to
+  // a client-rendered tag added afterward.
   viewportFit: "cover", // Enable safe area insets for notched devices
 };
 
