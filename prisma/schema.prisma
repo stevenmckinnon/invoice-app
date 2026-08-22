@@ -62,6 +62,7 @@ model Account {
   id                    String    @id @default(cuid())
   accountId             String
   providerId            String
+  issuer                String
   userId                String
   accessToken           String?
   refreshToken          String?
