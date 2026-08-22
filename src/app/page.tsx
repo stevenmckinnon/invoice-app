@@ -422,10 +422,12 @@ export default function Home() {
             </div>
 
             {/* Chat mockup — tilted in space rather than framed, so it reads
-                as a live screen without borrowing a device-mockup bezel */}
-            <div className="perspective-[1400px] relative">
+                as a live screen without borrowing a device-mockup bezel.
+                Flat below lg: stacked under the text at that width, a tilt
+                there just reads as crooked rather than "floating". */}
+            <div className="relative lg:perspective-[1400px]">
               <div className="bg-radial from-primary/25 to-transparent absolute -inset-[14%] -z-10 rounded-full blur-xl" />
-              <div className="bg-card dark:border-border relative rotate-y-[-9deg] rotate-z-[0.6deg] overflow-hidden rounded-2xl border border-transparent [box-shadow:var(--shadow-xl),28px_34px_60px_-20px_color-mix(in_oklab,var(--primary)_25%,transparent)]">
+              <div className="bg-card dark:border-border relative overflow-hidden rounded-2xl border border-transparent shadow-xl lg:rotate-y-[-9deg] lg:rotate-z-[0.6deg] lg:[box-shadow:var(--shadow-xl),28px_34px_60px_-20px_color-mix(in_oklab,var(--primary)_25%,transparent)]">
                 {/* Header */}
                 <div className="border-border/60 flex items-center gap-3 border-b px-5 py-3.5">
                   <div className="bg-primary/10 flex h-8 w-8 items-center justify-center rounded-full">
