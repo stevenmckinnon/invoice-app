@@ -29,6 +29,10 @@ export default function Home() {
       {/* Hero Section */}
       <Hero />
 
+      {/* Section rhythm: canvas sections are `py-24`, the two full-bleed ink
+          bands are `py-32`. The extra 32px is what makes them read as moments
+          rather than just another section — it is the only reason to deviate. */}
+
       {/* Problem Section — names the friction before the walkthrough proves
           the fix. Every card shows its own title and body at every width;
           the dark card is just an accent, not the only one with content —
@@ -36,14 +40,14 @@ export default function Home() {
           or clicking actually reveals something, which a static page can't do. */}
       <section className="py-24">
         <SectionReveal className="mx-auto max-w-7xl px-6">
-          <div className="mx-auto mb-16 max-w-2xl text-center">
+          <div className="mb-16 max-w-2xl">
             <div className="border-border text-muted-foreground mb-6 inline-flex items-center rounded-full border px-4 py-1.5 text-sm font-medium">
               The problem
             </div>
             <h2 className="mb-4 text-4xl font-bold tracking-tight text-balance sm:text-5xl">
               Freelance invoicing wasn&apos;t built for how film crew get paid.
             </h2>
-            <p className="text-muted-foreground text-lg">
+            <p className="text-muted-foreground text-lg text-pretty">
               Generic invoice templates assume one rate and one client. A shoot
               never works that way.
             </p>
@@ -218,8 +222,55 @@ export default function Home() {
         </SectionReveal>
       </section>
 
+      {/* Atmosphere band — the page's one photograph, and the only section
+          that is not explaining a feature. It sits here because the walkthrough
+          and the bento either side of it are both dense, card-heavy blocks, and
+          the page had nothing between them to break the rhythm.
+
+          Full-bleed, so it deliberately escapes the `max-w-7xl` every other
+          section is measured to. It carries no theme variants: the photograph is
+          dark throughout, which is what lets one image hold against both the
+          cream canvas and the near-black one — the same trick `bg-ink` uses.
+
+          The line sits in the frame's own negative space (the left ~40% is clean
+          shadow), so it needs no scrim over the image to stay legible.
+
+          Height comes from `min-h`, not the `py-24`/`py-32` rhythm the other
+          sections follow — a band sized by its padding would collapse to the
+          height of one line of type. */}
+      <section className="relative isolate flex min-h-[22rem] items-center overflow-hidden md:min-h-[30rem]">
+        <Image
+          src="/set-crew.jpg"
+          alt="Two crew members adjusting a lighting rig on a film set."
+          fill
+          sizes="100vw"
+          className="-z-10 object-cover object-[68%_center] md:object-center"
+          quality={85}
+        />
+        {/* Two different scrims, because the frame's negative space only exists
+            at desktop widths.
+
+            From `md` up the type sits in the photograph's own left shadow, so a
+            horizontal gradient is enough to guarantee it — measured worst case
+            under the text is well past 4.5:1 and the image stays clean.
+
+            Below `md` the crop is a narrow vertical slice and the practical
+            light through the doorway runs top to bottom through it: every
+            full-width strip peaks around 200/255, so there is no safe band for
+            white type anywhere in the frame. A flat 50% scrim is the honest fix
+            — it costs some richness on a phone-sized crop but takes the worst
+            case from 1.72:1 to comfortably over 4.5:1. */}
+        <div className="pointer-events-none absolute inset-0 -z-10 bg-black/50 md:bg-transparent md:bg-gradient-to-r md:from-black/70 md:via-black/20 md:to-transparent" />
+
+        <SectionReveal className="mx-auto w-full max-w-7xl px-6">
+          <p className="max-w-md text-3xl font-bold tracking-tight text-balance text-white sm:text-4xl md:max-w-lg md:text-5xl">
+            Twelve hours on set. Ten minutes on the invoice.
+          </p>
+        </SectionReveal>
+      </section>
+
       {/* Features Section - Bento Grid */}
-      <section className="relative overflow-hidden py-32" id="features">
+      <section className="relative overflow-hidden py-24" id="features">
         <SectionReveal className="mx-auto max-w-7xl px-6">
           <div className="mb-16">
             <h2 className="mb-4 text-4xl font-bold tracking-tight sm:text-5xl">
@@ -390,7 +441,7 @@ export default function Home() {
               <div className="text-ink-muted mb-6 inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-4 py-1.5 text-sm font-medium">
                 <HugeiconsIcon
                   icon={BotIcon}
-                  className="text-primary h-4 w-4"
+                  className="text-ink-accent h-4 w-4"
                 />
                 Built-in assistant
               </div>
@@ -409,7 +460,7 @@ export default function Home() {
                   "Runs on Claude, from Anthropic",
                 ].map((item) => (
                   <li key={item} className="flex items-start gap-3">
-                    <div className="text-primary mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-white/10">
+                    <div className="text-ink-accent mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-white/10">
                       <HugeiconsIcon
                         icon={Tick01Icon}
                         className="h-3 w-3"
@@ -561,7 +612,12 @@ export default function Home() {
       </section>
 
       {/* FAQ Section */}
-      <section className="bg-muted py-24" id="faq">
+      {/* FAQ sits on the page canvas, not `bg-muted`. That token is the inset
+          surface for tiles *inside* cards (see globals.css); stretched across a
+          full-bleed band it measured CIE L* 16.6 against a 4.3 canvas in dark
+          mode, making the FAQ the brightest thing on the page while the two ink
+          sections either side of it sat 1.5 L* below the canvas. */}
+      <section className="py-24" id="faq">
         <SectionReveal className="mx-auto max-w-4xl px-6">
           <div className="mb-16 max-w-2xl">
             <h2 className="text-4xl font-bold tracking-tight sm:text-5xl">

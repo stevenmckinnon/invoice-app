@@ -56,6 +56,11 @@ export const AppHeader = () => {
     "/clients": prefetchClients,
   };
 
+  // The landing page is the one place the wordmark has to hold at every width:
+  // it is a visitor's first sight of the name, and the reason the app hides it
+  // below `sm` — the nav needs the room — does not apply there.
+  const isLandingPage = pathname === "/";
+
   const isNavLinkActive = (href: string) =>
     href === "/dashboard"
       ? pathname === "/dashboard"
@@ -104,7 +109,12 @@ export const AppHeader = () => {
           className="flex items-center gap-2 transition-opacity hover:opacity-80"
         >
           <CaleyLogo className="h-8 w-8" />
-          <span className="hidden text-xl font-bold sm:inline-block">
+          <span
+            className={cn(
+              "text-xl font-bold",
+              isLandingPage ? "inline-block" : "hidden sm:inline-block",
+            )}
+          >
             Caley
           </span>
         </Link>

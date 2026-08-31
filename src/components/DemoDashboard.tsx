@@ -137,22 +137,25 @@ export const DemoDashboard = () => {
     .slice(0, 5)
     .map(([show, revenue]) => ({ show, revenue }));
 
+  // No entrance of its own: the hero wraps this in the `rise-in` CSS animation,
+  // and a second JS-driven fade on top of it only meant the mockup stayed
+  // invisible until hydration.
   return (
-    <motion.div
-      initial={reduceMotion ? false : { opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={reduceMotion ? { duration: 0 } : { duration: 0.5 }}
-      className="glossy-frame p-0"
-    >
+    <div className="glossy-frame p-0">
       <div className="zoom bg-background grid w-full grid-cols-1 gap-4 rounded-lg p-4 pb-6 md:gap-6 md:p-12 md:pb-8">
         {/* Header — mirrors the app, where the nav pill already says
-            "Dashboard", so the heading carries the greeting instead */}
+            "Dashboard", so the greeting sits where the heading would.
+            Deliberately *not* an <h1>: this whole component is a decorative
+            mockup inside the landing page's hero, and a real heading here gave
+            the page a second <h1> ("Afternoon, Tim") competing with the actual
+            one. The hero marks the mockup `inert`, so none of it reaches the
+            accessibility tree or the tab order either way. */}
         {/* Same shape as the app's PageHeader: stacked below md, row above. */}
         <div className="flex flex-col justify-between gap-4 md:flex-row md:items-start">
           <div>
-            <h1 className="text-2xl font-bold tracking-tight md:text-3xl">
+            <p className="text-2xl font-bold tracking-tight md:text-3xl">
               Afternoon, Tim
-            </h1>
+            </p>
             <p
               className="text-muted-foreground mt-1 text-sm"
               suppressHydrationWarning
@@ -346,9 +349,9 @@ export const DemoDashboard = () => {
         {/* The demoted analytics pair. Held back below md: at 301px of frame
             it doubles the mockup's height to 1.5 viewports, and it is the
             least load-bearing part of the dashboard to lose. */}
-        <h2 className="text-muted-foreground -mb-2 hidden text-xs font-semibold tracking-wider uppercase md:block">
+        <p className="text-muted-foreground -mb-2 hidden text-xs font-semibold tracking-wider uppercase md:block">
           Breakdown
-        </h2>
+        </p>
 
         <div className="hidden grid-cols-1 gap-4 md:grid md:grid-cols-2">
           <Card>
@@ -419,6 +422,6 @@ export const DemoDashboard = () => {
           </Card>
         </div>
       </div>
-    </motion.div>
+    </div>
   );
 };

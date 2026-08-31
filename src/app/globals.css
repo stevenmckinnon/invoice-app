@@ -12,21 +12,26 @@
   --card-foreground: oklch(0.1884 0.0128 248.5103);
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.1884 0.0128 248.5103);
-  --primary: oklch(0.6723 0.1606 244.9955);
+  /* L 0.51, not the brighter 0.67 this used to be: at 0.67 white-on-blue
+     measured 2.97:1 and blue-as-text on the cream canvas 2.47:1, so both the
+     primary button's label and every `text-primary` figure failed AA. 0.51 is
+     the point where the blue clears 4.5:1 in both directions *and* on the
+     `--muted` inset tiles, which are the darkest surface it lands on. */
+  --primary: oklch(0.51 0.1606 245);
   --primary-foreground: oklch(1 0 0);
   --secondary: oklch(0.1884 0.0128 248.5103);
   --secondary-foreground: oklch(1 0 0);
   --muted: oklch(0.9418 0.0098 83);
-  --muted-foreground: oklch(0.5498 0.0138 250);
+  --muted-foreground: oklch(0.51 0.0138 250);
   --accent: oklch(0.9392 0.0166 250.8453);
-  --accent-foreground: oklch(0.6723 0.1606 244.9955);
+  --accent-foreground: oklch(0.5 0.1606 245);
   --destructive: oklch(0.6188 0.2376 25.7658);
   --destructive-foreground: oklch(1 0 0);
-  --success: oklch(0.5921 0.1287 152.5);
-  --warning: oklch(0.6742 0.1533 58);
+  --success: oklch(0.5 0.1287 152.5);
+  --warning: oklch(0.53 0.1533 58);
   --border: oklch(0.9166 0.0102 83);
   --input: oklch(0.8981 0.0113 83);
-  --ring: oklch(0.6818 0.1584 243.354);
+  --ring: oklch(0.51 0.1606 245);
   --chart-1: oklch(0.6723 0.1606 244.9955);
   --chart-2: oklch(0.6907 0.1554 160.3454);
   --chart-3: oklch(0.8214 0.16 82.5337);
@@ -34,12 +39,12 @@
   --chart-5: oklch(0.5919 0.2186 10.5826);
   --sidebar: oklch(0.9801 0.0089 83);
   --sidebar-foreground: oklch(0.1884 0.0128 248.5103);
-  --sidebar-primary: oklch(0.6723 0.1606 244.9955);
+  --sidebar-primary: oklch(0.51 0.1606 245);
   --sidebar-primary-foreground: oklch(1 0 0);
   --sidebar-accent: oklch(0.9392 0.0166 250.8453);
-  --sidebar-accent-foreground: oklch(0.6723 0.1606 244.9955);
+  --sidebar-accent-foreground: oklch(0.5 0.1606 245);
   --sidebar-border: oklch(0.9166 0.0102 83);
-  --sidebar-ring: oklch(0.6818 0.1584 243.354);
+  --sidebar-ring: oklch(0.51 0.1606 245);
   --font-sans:
     var(--font-satoshi), ui-sans-serif, system-ui, -apple-system, Segoe UI,
     Roboto, Noto Sans, Ubuntu, Cantarell, Helvetica Neue, Arial,
@@ -91,6 +96,11 @@
   --ink: oklch(0.145 0.008 83);
   --ink-foreground: oklch(1 0 0);
   --ink-muted: oklch(0.708 0.014 83);
+  /* Ink surfaces are dark in *both* themes, so they need the dark-mode blue.
+     `text-primary` there follows the active theme, and in light mode that is
+     now the deep L 0.51 blue, which drops icons on ink to 3.55:1 — passing,
+     but visibly dulled. This is the same blue `.dark` uses: 6.65:1 on ink. */
+  --ink-accent: oklch(0.6692 0.1607 245.011);
 }
 
 .dark {
@@ -100,14 +110,19 @@
   --card-foreground: oklch(0.8853 0 0);
   --popover: oklch(0.228 0.0055 83);
   --popover-foreground: oklch(0.9328 0.0025 228.7857);
+  /* Dark keeps the bright blue — as text it already clears 4.5:1 on every dark
+     surface, and darkening it to fix the button would have broken that. The
+     fill is fixed from the other side instead: an ink label on blue, 6.65:1.
+     Every `text-primary-foreground` in the app sits on `bg-primary`, so this
+     only ever lands where it is meant to. */
   --primary: oklch(0.6692 0.1607 245.011);
-  --primary-foreground: oklch(1 0 0);
+  --primary-foreground: oklch(0.145 0.008 83);
   --secondary: oklch(0.9622 0.0035 219.5331);
   --secondary-foreground: oklch(0.1884 0.0128 248.5103);
   /* Must stay clearly lighter than --card: this is the inset surface used for
      tiles *inside* cards, and at equal lightness they disappear. */
   --muted: oklch(0.28 0.0055 83);
-  --muted-foreground: oklch(0.5637 0.0078 247.9662);
+  --muted-foreground: oklch(0.65 0.0078 248);
   --accent: oklch(0.278 0.045 243);
   --accent-foreground: oklch(0.6692 0.1607 245.011);
   --destructive: oklch(0.6188 0.2376 25.7658);
@@ -125,7 +140,7 @@
   --sidebar: oklch(0.228 0.0055 83);
   --sidebar-foreground: oklch(0.8853 0 0);
   --sidebar-primary: oklch(0.6818 0.1584 243.354);
-  --sidebar-primary-foreground: oklch(1 0 0);
+  --sidebar-primary-foreground: oklch(0.145 0.008 83);
   --sidebar-accent: oklch(0.278 0.045 243);
   --sidebar-accent-foreground: oklch(0.6692 0.1607 245.011);
   --sidebar-border: oklch(0.312 0.006 83);
@@ -201,6 +216,7 @@
   --color-ink: var(--ink);
   --color-ink-foreground: var(--ink-foreground);
   --color-ink-muted: var(--ink-muted);
+  --color-ink-accent: var(--ink-accent);
 
   --font-sans: var(--font-sans);
   --font-mono: var(--font-mono);
@@ -252,6 +268,34 @@
 
 button {
   cursor: pointer;
+}
+
+/* Hero entrance.
+   This runs in CSS rather than as a Framer Motion `initial`, because as a
+   motion prop it shipped `opacity: 0` in the *server* HTML: the headline,
+   subhead and both CTAs — the LCP element — stayed blank until the bundle
+   hydrated, and stayed blank permanently if it never did. In CSS the markup
+   paints on the first frame and the entrance is pure enhancement. */
+@keyframes rise-in {
+  from {
+    opacity: 0;
+    transform: translateY(var(--rise-distance, 20px));
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@utility rise-in {
+  animation: rise-in var(--rise-duration, 0.8s) cubic-bezier(0.16, 1, 0.3, 1)
+    var(--rise-delay, 0s) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rise-in {
+    animation: none;
+  }
 }
 
 /* Page transitions via View Transitions API */
