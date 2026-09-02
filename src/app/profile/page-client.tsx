@@ -2,6 +2,9 @@
 import { useEffect } from "react";
 
 import { zodResolver } from "@hookform/resolvers/zod";
+import { Calendar01Icon } from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { format, parseISO } from "date-fns";
 import Link from "next/link";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -9,6 +12,7 @@ import { z } from "zod";
 import { CountryPicker } from "@/components/CountryPicker";
 import { PageHeader } from "@/components/PageHeader";
 import { Button } from "@/components/ui/button";
+import { Calendar } from "@/components/ui/calendar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Form,
@@ -20,6 +24,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import {
   Select,
   SelectContent,
@@ -243,11 +248,41 @@ export default function ProfilePage() {
                 control={form.control}
                 name="dateOfBirth"
                 render={({ field }) => (
-                  <FormItem>
+                  <FormItem className="flex flex-col">
                     <FormLabel>Date of Birth</FormLabel>
-                    <FormControl>
-                      <Input type="date" {...field} />
-                    </FormControl>
+                    <Popover>
+                      <PopoverTrigger
+                        render={
+                          <FormControl>
+                            <Button
+                              variant="outline"
+                              className="w-full justify-start bg-transparent text-left font-normal"
+                            >
+                              <HugeiconsIcon icon={Calendar01Icon} className="mr-1 h-4 w-4" />
+                              {field.value ? (
+                                format(parseISO(field.value), "PPP")
+                              ) : (
+                                <span>Select date</span>
+                              )}
+                            </Button>
+                          </FormControl>
+                        }
+                      />
+                      <PopoverContent className="w-auto p-0">
+                        <Calendar
+                          mode="single"
+                          captionLayout="dropdown"
+                          startMonth={new Date(new Date().getFullYear() - 100, 0)}
+                          endMonth={new Date()}
+                          disabled={{ after: new Date() }}
+                          selected={field.value ? parseISO(field.value) : undefined}
+                          onSelect={(date) =>
+                            field.onChange(date ? format(date, "yyyy-MM-dd") : "")
+                          }
+                          autoFocus
+                        />
+                      </PopoverContent>
+                    </Popover>
                     <FormDescription>
                       Optional: Some clients require this for international
                       payments
