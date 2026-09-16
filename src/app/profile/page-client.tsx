@@ -35,6 +35,14 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { useProfile, useUpdateProfile } from "@/hooks/use-profile";
 
+const CURRENCY_ITEMS = [
+  { value: "GBP", label: "GBP (£)" },
+  { value: "USD", label: "USD ($)" },
+  { value: "EUR", label: "EUR (€)" },
+  { value: "CAD", label: "CAD ($)" },
+  { value: "AUD", label: "AUD ($)" },
+];
+
 const profileSchema = z.object({
   firstName: z.string().min(1, "First name is required"),
   lastName: z.string().min(1, "Last name is required"),
@@ -406,6 +414,7 @@ export default function ProfilePage() {
                   <FormItem>
                     <FormLabel>Currency *</FormLabel>
                     <Select
+                      items={CURRENCY_ITEMS}
                       onValueChange={field.onChange}
                       defaultValue={field.value}
                       value={field.value}
@@ -416,11 +425,11 @@ export default function ProfilePage() {
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="GBP">GBP (£)</SelectItem>
-                        <SelectItem value="USD">USD ($)</SelectItem>
-                        <SelectItem value="EUR">EUR (€)</SelectItem>
-                        <SelectItem value="CAD">CAD ($)</SelectItem>
-                        <SelectItem value="AUD">AUD ($)</SelectItem>
+                        {CURRENCY_ITEMS.map(({ value, label }) => (
+                          <SelectItem key={value} value={value}>
+                            {label}
+                          </SelectItem>
+                        ))}
                       </SelectContent>
                     </Select>
                     <FormMessage />

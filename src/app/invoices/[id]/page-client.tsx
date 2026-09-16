@@ -240,6 +240,7 @@ export default function InvoiceDetailPage({ params }: Props) {
           actions={
             <>
               <Select
+                items={INVOICE_STATUSES}
                 value={invoice.status}
                 onValueChange={handleStatusChange}
                 disabled={updateInvoiceStatusMutation.isPending}

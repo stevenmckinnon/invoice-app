@@ -382,7 +382,11 @@ export function InvoiceForm({
               render={({ field }) => (
                 <FormItem className="md:col-span-2">
                   <FormLabel>Status</FormLabel>
-                  <Select onValueChange={field.onChange} value={field.value}>
+                  <Select
+                    items={INVOICE_STATUSES}
+                    onValueChange={field.onChange}
+                    value={field.value}
+                  >
                     <FormControl>
                       <SelectTrigger>
                         <SelectValue placeholder="Select status" />

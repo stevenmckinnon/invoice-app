@@ -178,7 +178,7 @@ export const OvertimeManager = ({
       </CardHeader>
       <CardContent className="space-y-4">
         {/* Add new overtime entry */}
-        <div className="bg-muted/60 grid grid-cols-1 gap-4 rounded-xl p-4 md:grid-cols-5">
+        <div className="bg-muted/60 grid grid-cols-2 gap-4 rounded-xl p-4 md:grid-cols-5">
           <FormField
             control={form.control as any}
             name="date"
@@ -243,7 +243,11 @@ export const OvertimeManager = ({
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Rate</FormLabel>
-                <Select onValueChange={field.onChange} value={field.value}>
+                <Select
+                  items={{ auto: "Auto", "1.5x": "1.5x", "2x": "2x" }}
+                  onValueChange={field.onChange}
+                  value={field.value}
+                >
                   <FormControl>
                     <SelectTrigger className="w-full">
                       <SelectValue placeholder="Select rate" />
@@ -264,7 +268,7 @@ export const OvertimeManager = ({
             )}
           />
 
-          <div className="flex items-end">
+          <div className="col-span-2 flex items-end md:col-span-1">
             <Button
               type="button"
               className="w-full"
@@ -276,7 +280,7 @@ export const OvertimeManager = ({
           </div>
 
           {tierRule && (
-            <p className="text-muted-foreground text-sm md:col-span-5">
+            <p className="text-muted-foreground col-span-2 text-sm md:col-span-5">
               Auto splits each day at this client&apos;s tier: the first{" "}
               {tierRule.tierHours}h at {tierRule.firstRate}, then{" "}
               {tierRule.afterRate}.

@@ -358,7 +358,9 @@ export default function Home() {
               onValueChange={(val) => setSelectedFy(Number(val))}
             >
               <SelectTrigger className="w-[110px]">
-                <SelectValue />
+                <SelectValue>
+                  {(value: string) => formatFy(Number(value))}
+                </SelectValue>
               </SelectTrigger>
               <SelectContent>
                 {availableFys.map((fy) => (
