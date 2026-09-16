@@ -25,6 +25,12 @@ import { Spinner } from "@/components/ui/spinner";
 
 type PdfTemplate = "classic" | "modern" | "minimal";
 
+const TEMPLATE_ITEMS: { value: PdfTemplate; label: string }[] = [
+  { value: "classic", label: "Classic Template" },
+  { value: "modern", label: "Modern Template" },
+  { value: "minimal", label: "Minimal Template" },
+];
+
 interface PdfPreviewDialogProps {
   invoiceId: string;
   invoiceNumber: string;
@@ -100,6 +106,7 @@ export const PdfPreviewDialog = ({
               </DialogDescription>
             </div>
             <Select
+              items={TEMPLATE_ITEMS}
               value={template}
               onValueChange={(value) => {
                 setPdfLoading(true);
@@ -110,9 +117,11 @@ export const PdfPreviewDialog = ({
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="classic">Classic Template</SelectItem>
-                <SelectItem value="modern">Modern Template</SelectItem>
-                <SelectItem value="minimal">Minimal Template</SelectItem>
+                {TEMPLATE_ITEMS.map(({ value, label }) => (
+                  <SelectItem key={value} value={value}>
+                    {label}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </div>

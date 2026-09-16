@@ -30,10 +30,18 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { useInvoices } from "@/hooks/use-invoices";
-import { getInvoiceStatusConfig } from "@/lib/invoice-status";
+import {
+  getInvoiceStatusConfig,
+  INVOICE_STATUSES,
+} from "@/lib/invoice-status";
 import { cn, formatCurrency, formatDate } from "@/lib/utils";
 
 const ITEMS_PER_PAGE = 10;
+
+const STATUS_FILTER_ITEMS = [
+  { value: "all", label: "All Statuses" },
+  ...INVOICE_STATUSES.map(({ value, label }) => ({ value, label })),
+];
 
 export default function AllInvoicesPage() {
   const router = useRouter();
@@ -147,6 +155,7 @@ export default function AllInvoicesPage() {
               />
             </div>
             <Select
+              items={STATUS_FILTER_ITEMS}
               value={statusFilter}
               onValueChange={handleStatusFilterChange}
             >
@@ -154,11 +163,11 @@ export default function AllInvoicesPage() {
                 <SelectValue placeholder="Filter by status" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Statuses</SelectItem>
-                <SelectItem value="draft">Draft</SelectItem>
-                <SelectItem value="sent">Sent</SelectItem>
-                <SelectItem value="paid">Paid</SelectItem>
-                <SelectItem value="overdue">Overdue</SelectItem>
+                {STATUS_FILTER_ITEMS.map(({ value, label }) => (
+                  <SelectItem key={value} value={value}>
+                    {label}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </div>
