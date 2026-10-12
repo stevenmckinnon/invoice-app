@@ -1,10 +1,13 @@
 "use client";
 
+import { useEffect, useRef } from "react";
+
 import { usePathname } from "next/navigation";
 
 import { AiChat } from "@/components/ai/AiChat";
 import { ChatProvider } from "@/components/ai/ChatProvider";
 import { AppHeader } from "@/components/AppHeader";
+import { AppRail } from "@/components/AppRail";
 import { MobileBottomNav } from "@/components/MobileBottomNav";
 
 interface ConditionalLayoutProps {
@@ -13,6 +16,13 @@ interface ConditionalLayoutProps {
 
 export const ConditionalLayout = ({ children }: ConditionalLayoutProps) => {
   const pathname = usePathname();
+  const panelRef = useRef<HTMLElement>(null);
+
+  // From md up the content panel is its own scroll container, so Next's
+  // scroll-to-top on navigation (which targets the document) never reaches it
+  useEffect(() => {
+    panelRef.current?.scrollTo({ top: 0 });
+  }, [pathname]);
 
   const authRoutes = [
     "/auth/signin",
@@ -47,8 +57,16 @@ export const ConditionalLayout = ({ children }: ConditionalLayoutProps) => {
 
   return (
     <ChatProvider>
-      <AppHeader />
-      <main className="mx-auto min-h-dvh pt-12 md:pt-24">
+      {/* From md up the rail carries navigation; the header is mobile chrome */}
+      <AppHeader className="md:hidden" />
+      <div className="bg-sidebar fixed inset-0 hidden md:block" />
+      <AppRail />
+      {/* Inset panel: the frame is bg-sidebar and the panel is the usual
+          canvas, so white cards inside it keep their surface contrast */}
+      <main
+        ref={panelRef}
+        className="md:bg-background dark:md:border-border mx-auto min-h-dvh pt-12 md:fixed md:inset-y-2 md:right-2 md:left-16 rail-expanded:left-56 md:transition-[left] md:duration-200 md:ease-out motion-reduce:transition-none md:min-h-0 md:overflow-y-auto md:rounded-2xl md:border md:border-transparent md:pt-0 md:shadow-sm dark:md:shadow-none"
+      >
         {/* Bottom-nav taps go through here (dashboard/invoices/clients/chat).
             Deliberately not wrapped in ViewTransition: it triggers a native
             full-page snapshot on every navigation, which combined with the

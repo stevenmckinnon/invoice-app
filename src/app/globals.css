@@ -3,6 +3,17 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/* The desktop rail is icons by default and shows labels only when the user
+   expands it (see useRailExpanded) — and only from lg up, because a 224px
+   sidebar leaves too little room for the invoice table below that. */
+@custom-variant rail-expanded {
+  @media (width >= 64rem) {
+    :root[data-rail="expanded"] & {
+      @slot;
+    }
+  }
+}
+
 :root {
   /* Warm cream canvas with pure-white cards floating on top: separation comes
      from surface contrast and soft shadow rather than hairline borders. */
@@ -37,7 +48,8 @@
   --chart-3: oklch(0.8214 0.16 82.5337);
   --chart-4: oklch(0.7064 0.1822 151.7125);
   --chart-5: oklch(0.5919 0.2186 10.5826);
-  --sidebar: oklch(0.9801 0.0089 83);
+  /* The frame around the inset content panel: one step deeper than the canvas */
+  --sidebar: oklch(0.948 0.0105 83);
   --sidebar-foreground: oklch(0.1884 0.0128 248.5103);
   --sidebar-primary: oklch(0.51 0.1606 245);
   --sidebar-primary-foreground: oklch(1 0 0);
@@ -137,7 +149,7 @@
   --chart-3: oklch(0.8214 0.16 82.5337);
   --chart-4: oklch(0.7064 0.1822 151.7125);
   --chart-5: oklch(0.5919 0.2186 10.5826);
-  --sidebar: oklch(0.228 0.0055 83);
+  --sidebar: oklch(0.125 0.004 83);
   --sidebar-foreground: oklch(0.8853 0 0);
   --sidebar-primary: oklch(0.6818 0.1584 243.354);
   --sidebar-primary-foreground: oklch(0.145 0.008 83);

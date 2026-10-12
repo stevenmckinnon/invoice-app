@@ -28,7 +28,7 @@ interface NavItem {
  * five labelled items overflowed a 375px viewport, clipping the first and
  * last. Labels also match page titles, so "Dashboard" rather than "Home".
  */
-const navItems: NavItem[] = [
+export const navItems: NavItem[] = [
   {
     href: "/dashboard",
     label: "Dashboard",

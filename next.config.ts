@@ -2,6 +2,8 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   reactCompiler: true,
+  // The default bottom-left sits on top of the rail's account menu
+  devIndicators: { position: "bottom-right" },
   // @formepdf/core loads a WASM binary relative to its own __dirname at
   // runtime (wasm-pack's Node target) — bundling breaks that lookup. And
   // @formepdf/react must be external too: @formepdf/core dynamically

@@ -1,10 +1,5 @@
 "use client";
-import {
-  Logout01Icon,
-  BubbleChatSpark01Icon,
-  Settings01Icon,
-  UserIcon,
-} from "@hugeicons/core-free-icons";
+import { BubbleChatSpark01Icon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { LayoutGroup, motion } from "motion/react";
 import Link from "next/link";
@@ -13,20 +8,11 @@ import { useTheme } from "next-themes";
 
 import { useChatSessionOptional } from "@/components/ai/ChatProvider";
 import CaleyLogo from "@/components/CaleyLogo";
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuGroup,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import { UserMenu } from "@/components/UserMenu";
 import { useHideOnScroll } from "@/hooks/use-hide-on-scroll";
 import { usePrefetchAppData } from "@/hooks/use-prefetch";
-import { useSession, signOut } from "@/lib/auth-client";
+import { useSession } from "@/lib/auth-client";
 import { cn } from "@/lib/utils";
 
 import {
@@ -41,7 +27,7 @@ const navLinks = [
   { href: "/clients", label: "Clients" },
 ];
 
-export const AppHeader = () => {
+export const AppHeader = ({ className }: { className?: string }) => {
   const { data: session, isPending } = useSession();
   const { theme, setTheme } = useTheme();
   const pathname = usePathname();
@@ -66,18 +52,6 @@ export const AppHeader = () => {
       ? pathname === "/dashboard"
       : pathname.startsWith(href) && pathname !== "/invoices/new";
 
-  const handleSignOut = async () => {
-    try {
-      await signOut();
-      // Use window.location for a hard redirect to ensure session is cleared
-      window.location.href = "/auth/signin";
-    } catch (error) {
-      console.error("Error signing out:", error);
-      // Even if signOut fails, redirect to signin
-      window.location.href = "/auth/signin";
-    }
-  };
-
   const handleThemeToggle = () => {
     startTransition(() => {
       setTheme(theme === "dark" ? "light" : "dark");
@@ -95,6 +69,7 @@ export const AppHeader = () => {
         isVisible
           ? "translate-y-0"
           : "-translate-y-full md:-translate-y-[calc(100%+20px)]",
+        className,
       )}
     >
       <div
@@ -194,84 +169,7 @@ export const AppHeader = () => {
           {/* User Menu or Auth Buttons */}
           {!isPending &&
             (session ? (
-              <DropdownMenu>
-                <DropdownMenuTrigger
-                  render={<Button variant="ghost" className="h-9 gap-2 px-2" />}
-                >
-                  <Avatar className="h-7 w-7">
-                    <AvatarImage
-                      src={session.user.image || undefined}
-                      alt="Profile photo"
-                    />
-                    <AvatarFallback className="text-foreground text-xs">
-                      {(
-                        session.user.name?.[0] ||
-                        session.user.email?.[0] ||
-                        "U"
-                      ).toUpperCase()}
-                    </AvatarFallback>
-                  </Avatar>
-                  <span className="hidden text-sm sm:inline-block">
-                    {session.user.name?.split(" ")[0] || session.user.email}
-                  </span>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-56">
-                  <DropdownMenuGroup>
-                    <DropdownMenuLabel>
-                      <div className="flex items-center gap-2">
-                        <Avatar className="size-7">
-                          <AvatarImage
-                            src={session.user.image || undefined}
-                            alt="Profile photo"
-                          />
-                          <AvatarFallback className="text-foreground text-xs">
-                            {(
-                              session.user.name?.[0] ||
-                              session.user.email?.[0] ||
-                              "U"
-                            ).toUpperCase()}
-                          </AvatarFallback>
-                        </Avatar>
-                        <div className="flex flex-col space-y-1">
-                          <p className="text-sm font-medium">
-                            {session.user.name || "User"}
-                          </p>
-                          <p className="text-muted-foreground text-xs">
-                            {session.user.email}
-                          </p>
-                        </div>
-                      </div>
-                    </DropdownMenuLabel>
-                  </DropdownMenuGroup>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem
-                    render={<Link href="/profile" className="cursor-pointer" />}
-                  >
-                    <HugeiconsIcon icon={UserIcon} className="mr-2 h-4 w-4" />
-                    Profile Settings
-                  </DropdownMenuItem>
-                  <DropdownMenuItem
-                    render={<Link href="/settings" className="cursor-pointer" />}
-                  >
-                    <HugeiconsIcon
-                      icon={Settings01Icon}
-                      className="mr-2 h-4 w-4"
-                    />
-                    Account Settings
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem
-                    onClick={handleSignOut}
-                    className="cursor-pointer text-red-600 dark:text-red-400"
-                  >
-                    <HugeiconsIcon
-                      icon={Logout01Icon}
-                      className="mr-2 h-4 w-4"
-                    />
-                    Sign Out
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
+              <UserMenu user={session.user} />
             ) : (
               <Button
                 variant="outline"

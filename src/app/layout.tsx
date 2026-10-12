@@ -145,6 +145,14 @@ export default function RootLayout({
       data-scroll-behavior="smooth"
     >
       <body className="font-sans antialiased">
+        {/* Applies the saved rail width before first paint; without it an
+            expanded rail loads collapsed and then animates open. Key and
+            attribute mirror useRailExpanded. */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `try{if(localStorage.getItem("caley-rail-expanded")==="1")document.documentElement.dataset.rail="expanded"}catch(e){}`,
+          }}
+        />
         <Analytics />
         <SpeedInsights />
         <Providers>

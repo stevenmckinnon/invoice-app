@@ -17,7 +17,7 @@ export const ChatPageView = () => {
     // Full-bleed on mobile; on desktop it becomes a card inside the app's
     // container, like every other page.
     <div className="mx-auto w-full max-w-6xl md:p-6 md:py-10">
-      <div className="bg-card dark:md:border-border fixed inset-0 z-50 flex flex-col overflow-hidden pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)] md:static md:inset-auto md:z-auto md:h-[calc(100dvh-10rem)] md:rounded-2xl md:pt-0 md:pb-0 md:shadow-sm dark:md:border">
+      <div className="bg-card dark:md:border-border fixed inset-0 z-50 flex flex-col overflow-hidden pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)] md:static md:inset-auto md:z-auto md:h-[calc(100dvh-6rem)] md:rounded-2xl md:pt-0 md:pb-0 md:shadow-sm dark:md:border">
         <ChatSurface
           leading={
             <Button
