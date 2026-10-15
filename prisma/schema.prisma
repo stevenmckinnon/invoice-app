@@ -166,9 +166,45 @@ model Invoice {
   status             String   @default("draft") // draft, sent, paid, overdue
   notes              String?
 
+  // Snapshot of the client's billing terms when the invoice was created
+  // (day rate, per diems, overtime tier, travel + work rule). Bills are worked
+  // out from these, never from the live client, so raising a client's rate
+  // later can't re-price a sent invoice: the same reason the client's
+  // address is copied above. Null on invoices that predate days.
+  terms              Json?
+
   items              InvoiceLineItem[]
   overtimeEntries    OvertimeEntry[]
   customExpenseEntries CustomExpenseEntry[]
+  // The dated days of the job. Empty on count-based invoices made before
+  // days existed; those keep their stored lines and are never converted.
+  days               InvoiceDay[]
+}
+
+// One billed date of a job. A day off is the absence of a row, never a row.
+// The line items, overtime entries and total stay the stored billing output:
+// they're worked out from these days and the invoice's terms on every save.
+model InvoiceDay {
+  id            String   @id @default(cuid())
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  date          DateTime @db.Date
+  type          String   // 'work' | 'travel' | 'dark'
+  // Work days only: travel that day too. 'out' = flew in before work,
+  // 'home' = flew home after wrap. How it bills is the client's rule.
+  alsoTravel    String?
+  // Travel days only: 'out' | 'home'. Null means work it out from the days
+  // around it; set when that guess is wrong.
+  direction     String?
+  // Hours past a 10-hour day, work days only. Split 1.5x / 2x by the tier,
+  // per day, at bill time.
+  overtimeHours Decimal?
+
+  invoiceId     String
+  invoice       Invoice  @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+
+  @@unique([invoiceId, date])
 }
 
 model InvoiceLineItem {
@@ -242,6 +278,12 @@ model Client {
   overtimeTierHours Decimal? // Hours at the first rate, per day (e.g. 2)
   overtimeFirstRate String?  // '1.5x' or '2x'
   overtimeAfterRate String?  // '1.5x' or '2x'
+
+  // A work day that also had travel (flew in, or flew home after wrap).
+  // travelWorkBill: 'both' (a work day and a travel day), 'work' or 'travel'.
+  // travelWorkPerDiem: which per diem that day gets, 'travel' or 'work'.
+  travelWorkBill    String @default("both")
+  travelWorkPerDiem String @default("travel")
 
   // Relations
   invoices    Invoice[]
