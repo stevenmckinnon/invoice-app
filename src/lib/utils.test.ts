@@ -22,6 +22,9 @@ describe("safeCallbackUrl", () => {
       "https://evil.example",
       "javascript:alert(1)",
       "/\\evil.example",
+      "/\t/evil.example",
+      "/\n/evil.example",
+      "/\r/evil.example",
     ]) {
       assert.equal(safeCallbackUrl(url), "/dashboard", url);
     }
