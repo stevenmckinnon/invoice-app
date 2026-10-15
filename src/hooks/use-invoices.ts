@@ -363,3 +363,40 @@ export const useUpdateInvoiceStatus = () => {
   });
 };
 
+
+export const useBulkUpdateInvoiceStatus = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({
+      ids,
+      status,
+    }: {
+      ids: string[];
+      status: "draft" | "sent" | "paid" | "overdue";
+    }): Promise<{ count: number }> => {
+      const res = await fetch("/api/invoices", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ids, status }),
+      });
+
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({ error: "Request failed" }));
+        throw new Error(err.error ?? "Failed to update invoices");
+      }
+
+      return res.json();
+    },
+    onSuccess: ({ count }, { ids }) => {
+      queryClient.invalidateQueries({ queryKey: ["invoices"] });
+      for (const id of ids) {
+        queryClient.invalidateQueries({ queryKey: ["invoice", id] });
+      }
+      toast.success(`${count} invoice${count !== 1 ? "s" : ""} updated`);
+    },
+    onError: (error: Error) => {
+      toast.error(error.message || "Failed to update invoices");
+    },
+  });
+};

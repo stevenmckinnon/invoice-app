@@ -207,3 +207,32 @@ export const GET = async () => {
   });
   return NextResponse.json(items);
 };
+
+const bulkStatusSchema = z.object({
+  ids: z.array(z.string().min(1)).min(1).max(200),
+  status: z.enum(["draft", "sent", "paid", "overdue"]),
+});
+
+/**
+ * Set the status of several invoices at once (the list's "Mark as paid").
+ * One query, scoped to the session user, so ids belonging to someone else
+ * are simply not matched rather than needing a check per invoice.
+ */
+export const PATCH = async (req: NextRequest) => {
+  const session = await auth.api.getSession({ headers: await headers() });
+  if (!session?.user?.id) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const parsed = bulkStatusSchema.safeParse(await req.json().catch(() => null));
+  if (!parsed.success) {
+    return NextResponse.json({ error: "Invalid request" }, { status: 400 });
+  }
+
+  const { count } = await prisma.invoice.updateMany({
+    where: { id: { in: parsed.data.ids }, userId: session.user.id },
+    data: { status: parsed.data.status },
+  });
+
+  return NextResponse.json({ count });
+};
