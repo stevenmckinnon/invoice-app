@@ -1,5 +1,7 @@
+
 import { betterAuth } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
+import { networkInterfaces } from "node:os";
 import { Resend } from "resend";
 
 import { prisma } from "@/lib/db";
@@ -21,6 +23,20 @@ const secret =
 if (!secret && process.env.NODE_ENV === "production") {
   throw new Error("BETTER_AUTH_SECRET must be set in production");
 }
+
+/**
+ * In development, also trust this machine's own LAN addresses, so the app can
+ * be signed into from a phone on the same Wi-Fi (`pnpm dev` binds 0.0.0.0).
+ * Read from the interfaces rather than hard-coded, since DHCP moves them.
+ */
+const lanDevOrigins = () => {
+  if (process.env.NODE_ENV !== "development") return [];
+  const port = process.env.PORT ?? "3000";
+  return Object.values(networkInterfaces())
+    .flat()
+    .filter((net) => net && net.family === "IPv4" && !net.internal)
+    .map((net) => `http://${net!.address}:${port}`);
+};
 
 export const auth = betterAuth({
   database: prismaAdapter(prisma, {
@@ -106,6 +122,7 @@ export const auth = betterAuth({
     process.env.BETTER_AUTH_URL,
     process.env.NEXT_PUBLIC_APP_URL,
     process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : undefined,
+    ...lanDevOrigins(),
   ].filter(Boolean) as string[],
   advanced: {
     useSecureCookies: process.env.NODE_ENV === "production",
