@@ -6,6 +6,10 @@ const nextConfig: NextConfig = {
   reactCompiler: true,
   // The default bottom-left sits on top of the rail's account menu
   devIndicators: { position: "bottom-right" },
+  // Lets a phone on the same Wi-Fi load dev assets (pnpm dev binds 0.0.0.0).
+  // Without it /_next requests from the LAN address are blocked and the page
+  // never hydrates: a black screen. Wildcards survive DHCP handing out a new IP.
+  allowedDevOrigins: ["192.168.*.*", "10.*.*.*", "*.local"],
   // @formepdf/core loads a WASM binary relative to its own __dirname at
   // runtime (wasm-pack's Node target) — bundling breaks that lookup. And
   // @formepdf/react must be external too: @formepdf/core dynamically
