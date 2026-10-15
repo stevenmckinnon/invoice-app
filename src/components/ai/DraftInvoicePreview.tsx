@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
-import { LinkSquare01Icon } from "@hugeicons/core-free-icons";
+import { ArrowDown01Icon, LinkSquare01Icon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
@@ -33,6 +33,34 @@ export const DraftInvoicePreview = ({
 }: DraftInvoicePreviewProps) => {
   const queryClient = useQueryClient();
   const { data: invoice, isLoading, isError } = useInvoice(invoiceId);
+
+  // Below lg the panel is height-capped and the rows scroll inside it. Rows
+  // past the fold still count toward the total, so a clipped list made the
+  // total look wrong. Count what's hidden and say so.
+  const listRef = useRef<HTMLDivElement>(null);
+  const [hiddenBelow, setHiddenBelow] = useState(0);
+  const measureHidden = useCallback(() => {
+    const list = listRef.current;
+    if (!list) return;
+    const fold = list.scrollTop + list.clientHeight;
+    const rows = list.querySelectorAll<HTMLElement>("[data-preview-row]");
+    let count = 0;
+    rows.forEach((row) => {
+      // Half a row showing still reads as "there's more"; a row is hidden
+      // once its midpoint is past the fold
+      if (row.offsetTop + row.offsetHeight / 2 > fold) count++;
+    });
+    setHiddenBelow(count);
+  }, []);
+
+  useEffect(() => {
+    const list = listRef.current;
+    if (!list) return;
+    measureHidden();
+    const observer = new ResizeObserver(measureHidden);
+    observer.observe(list);
+    return () => observer.disconnect();
+  }, [measureHidden, invoice]);
 
   // Tool calls write straight to the DB, so the cached copy goes stale the
   // moment a turn finishes. Refetch on the generating -> idle edge.
@@ -107,7 +135,12 @@ export const DraftInvoicePreview = ({
         <InvoiceStatusBadge status={invoice.status} />
       </div>
 
-      <div className="min-h-0 flex-1 overflow-y-auto">
+      <div
+        ref={listRef}
+        onScroll={measureHidden}
+        // offsetTop is measured against the nearest positioned ancestor
+        className="relative min-h-0 flex-1 overflow-y-auto overscroll-contain"
+      >
         {rows.length === 0 ? (
           <p className="text-muted-foreground p-4 text-xs">
             No line items yet.
@@ -117,6 +150,7 @@ export const DraftInvoicePreview = ({
             {rows.map((row, i) => (
               <div
                 key={`${row.label}-${i}`}
+                data-preview-row
                 className="flex items-baseline justify-between gap-3 px-4 py-2.5"
               >
                 <div className="min-w-0">
@@ -137,6 +171,21 @@ export const DraftInvoicePreview = ({
       </div>
 
       <div className="shrink-0">
+        {hiddenBelow > 0 && (
+          <button
+            type="button"
+            onClick={() =>
+              listRef.current?.scrollTo({
+                top: listRef.current.scrollHeight,
+                behavior: "smooth",
+              })
+            }
+            className="text-muted-foreground hover:text-foreground border-border/40 flex w-full items-center justify-center gap-1 border-t py-1.5 text-[11px] font-medium transition-colors"
+          >
+            {hiddenBelow} more {hiddenBelow === 1 ? "item" : "items"}
+            <HugeiconsIcon icon={ArrowDown01Icon} className="size-3" />
+          </button>
+        )}
         <div className="flex items-baseline justify-between px-4 py-3">
           <span className="text-xs font-semibold tracking-wide uppercase">
             Total

@@ -43,6 +43,8 @@ import { useThemeTransition } from "@/components/ui/shadcn-io/theme-toggle-butto
 import { Switch } from "@/components/ui/switch";
 import { useRevokeSession, useSessions } from "@/hooks/use-sessions";
 import { changePassword, signOut, useSession } from "@/lib/auth-client";
+import { AVATAR_TINT_CLASS, avatarTintStyle } from "@/lib/avatar";
+import { cn } from "@/lib/utils";
 
 const SettingsPage = () => {
   const { startTransition } = useThemeTransition();
@@ -377,7 +379,10 @@ const SettingsPage = () => {
                   src={session.user.image || undefined}
                   alt="Profile photo"
                 />
-                <AvatarFallback className="text-xl">
+                <AvatarFallback
+                  className={cn("text-xl font-semibold", AVATAR_TINT_CLASS)}
+                  style={avatarTintStyle(session.user.id)}
+                >
                   {(session.user.name ||
                     session.user.email ||
                     "U")[0].toUpperCase()}

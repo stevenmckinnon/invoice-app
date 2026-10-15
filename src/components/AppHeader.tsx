@@ -61,7 +61,9 @@ export const AppHeader = ({ className }: { className?: string }) => {
   return (
     <motion.header
       layout
-      initial={{ opacity: 0, y: -100 }}
+      // Only the landing page earns an entrance. On app routes the header is
+      // chrome, and dropping it in on every hard load reads as a layout shift.
+      initial={isLandingPage ? { opacity: 0, y: -100 } : false}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, ease: "easeOut" }}
       className={cn(

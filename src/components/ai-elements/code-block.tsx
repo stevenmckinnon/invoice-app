@@ -13,7 +13,9 @@ import {
   useState,
 } from "react";
 
-import { CheckIcon, CopyIcon } from "lucide-react";
+import { Copy01Icon, Tick02Icon } from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { AnimatePresence, motion } from "motion/react";
 import { createHighlighter } from "shiki";
 
 import { Button } from "@/components/ui/button";
@@ -500,8 +502,6 @@ export const CodeBlockCopyButton = ({
     [],
   );
 
-  const Icon = isCopied ? CheckIcon : CopyIcon;
-
   return (
     <Button
       className={cn("shrink-0", className)}
@@ -510,7 +510,23 @@ export const CodeBlockCopyButton = ({
       variant="ghost"
       {...props}
     >
-      {children ?? <Icon size={14} />}
+      {children ?? (
+        <AnimatePresence initial={false} mode="popLayout">
+          <motion.span
+            key={isCopied ? "copied" : "copy"}
+            initial={{ scale: 0.25, opacity: 0, filter: "blur(4px)" }}
+            animate={{ scale: 1, opacity: 1, filter: "blur(0px)" }}
+            exit={{ scale: 0.25, opacity: 0, filter: "blur(4px)" }}
+            transition={{ type: "spring", duration: 0.3, bounce: 0 }}
+            className="flex"
+          >
+            <HugeiconsIcon
+              icon={isCopied ? Tick02Icon : Copy01Icon}
+              size={14}
+            />
+          </motion.span>
+        </AnimatePresence>
+      )}
     </Button>
   );
 };

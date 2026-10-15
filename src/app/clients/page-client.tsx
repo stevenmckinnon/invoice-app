@@ -68,17 +68,13 @@ export default function ClientsPage() {
     [prefersReducedMotion],
   );
 
-  const getRowTransition = (index: number) =>
-    prefersReducedMotion
-      ? { duration: 0 }
-      : ({
-          type: "spring" as const,
-          stiffness: 380,
-          damping: 30,
-          mass: 0.3,
-          // Cap the stagger so long client lists don't take seconds to appear
-          delay: 0.04 + Math.min(index, 8) * 0.06,
-        } as const);
+  // Rows present on first render skip their entrance (AnimatePresence
+  // initial={false}), so this only runs for a client added or removed while
+  // the list is on screen. No per-index delay: a new row lands at the end,
+  // and an index stagger would hold it back by up to half a second.
+  const rowTransition = prefersReducedMotion
+    ? { duration: 0 }
+    : ({ type: "spring", duration: 0.3, bounce: 0 } as const);
 
   const handleConfirmDelete = () => {
     if (!clientToDelete) return;
@@ -198,18 +194,18 @@ export default function ClientsPage() {
                   </TableHeader>
                   <TableBody>
                     <AnimatePresence initial={false}>
-                      {clients.map((client, idx) => (
+                      {clients.map((client) => (
                         <motion.tr
                           key={client.id}
                           variants={rowVariants}
                           initial="hidden"
                           animate="show"
                           exit="exit"
-                          transition={getRowTransition(idx)}
+                          transition={rowTransition}
                           onClick={() =>
                             router.push(`/clients/${client.id}/edit`)
                           }
-                          className="hover:bg-muted/40 cursor-pointer border-b transition-colors"
+                          className="hover:bg-muted/40 active:bg-muted/60 cursor-pointer border-b transition-colors"
                         >
                           <TableCell className="font-medium">
                             <Link

@@ -1,11 +1,11 @@
-import { Loading02Icon } from "@hugeicons/core-free-icons";
-import { HugeiconsIcon } from "@hugeicons/react";
-
+// Every app route is a client page that draws its own skeleton, shaped like the
+// page, once it mounts. A visible fallback here would show a different loading
+// state first and flash spinner → skeleton → content. So the boundary stays
+// (navigation commits instantly), but it only announces itself to screen readers.
 export default function Loading() {
   return (
-    <div className="flex min-h-[100dvh] flex-col items-center justify-center gap-4">
-      <HugeiconsIcon icon={Loading02Icon} className="text-primary h-12 w-12 animate-spin" />
-      <p className="text-muted-foreground text-sm">Loading...</p>
-    </div>
+    <p role="status" className="sr-only">
+      Loading
+    </p>
   );
 }
