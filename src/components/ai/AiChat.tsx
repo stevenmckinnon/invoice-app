@@ -1,5 +1,5 @@
 "use client";
-import { ArrowTurnBackwardIcon } from "@hugeicons/core-free-icons";
+import { Close } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 
 import { useChatSession } from "@/components/ai/ChatProvider";
@@ -71,10 +71,7 @@ export const AiChat = () => {
                   />
                 }
               >
-                <HugeiconsIcon
-                  icon={ArrowTurnBackwardIcon}
-                  className="size-4"
-                />
+                <HugeiconsIcon icon={Close} className="size-4" />
               </SheetClose>
             }
             onNavigate={() => setOpen(false)}
