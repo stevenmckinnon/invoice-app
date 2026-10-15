@@ -407,7 +407,7 @@ export default function AllInvoicesPage() {
                       <TableRow
                         key={invoice.id}
                         onClick={() => router.push(`/invoices/${invoice.id}`)}
-                        className="cursor-pointer"
+                        className="cursor-pointer active:bg-muted/60"
                         data-state={
                           selectedIds.has(invoice.id) ? "selected" : undefined
                         }
@@ -474,7 +474,6 @@ export default function AllInvoicesPage() {
               <div className="flex flex-col gap-2 md:hidden">
                 {paginatedInvoices.map((invoice) => {
                   const status = getInvoiceStatusConfig(invoice.status);
-                  const StatusIcon = status.icon;
 
                   return (
                     <Link
@@ -490,7 +489,7 @@ export default function AllInvoicesPage() {
                         )}
                         aria-hidden="true"
                       >
-                        <StatusIcon className="size-5" />
+                        <HugeiconsIcon icon={status.icon} className="size-5" />
                       </div>
 
                       <div className="min-w-0 flex-1">

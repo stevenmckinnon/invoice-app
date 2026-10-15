@@ -5,7 +5,6 @@ import {
   AnalyticsUpIcon,
 } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
-import { MousePointer2 } from "lucide-react";
 import { motion, useReducedMotion } from "motion/react";
 
 import { AnimatedCounter } from "@/components/AnimatedCounter";
@@ -219,10 +218,17 @@ export const DemoDashboard = () => {
                     ease: "easeOut",
                   }}
                 >
-                  <MousePointer2
+                  {/* A drawn cursor, not an icon: it stands in for the visitor's
+                      own pointer, so it takes the OS arrow shape. */}
+                  <svg
+                    viewBox="0 0 24 24"
                     className="h-6 w-6 fill-white stroke-black/50 drop-shadow-[0_2px_3px_rgba(0,0,0,0.35)]"
                     strokeWidth={1}
-                  />
+                    strokeLinejoin="round"
+                    aria-hidden="true"
+                  >
+                    <path d="M5.5 3.2v16.3l4.1-3.9 2.8 6 2.6-1.2-2.7-5.8H18z" />
+                  </svg>
                 </motion.div>
               </>
             )}

@@ -3,12 +3,12 @@ import {
   ArrowUp01Icon,
   BotIcon,
   Clock01Icon,
+  DollarSignIcon,
   LinkSquare01Icon,
   Tick01Icon,
   UserGroupIcon,
 } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
-import { DollarSign } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -410,7 +410,7 @@ export default function Home() {
             {/* Custom Expenses */}
             <div className="bg-card dark:border-border relative overflow-hidden rounded-2xl border border-transparent p-6 shadow-sm transition-[translate,box-shadow] duration-200 ease-out hover:-translate-y-1 hover:shadow-lg md:col-span-2">
               <div className="bg-primary/10 text-primary mb-3 w-fit rounded-lg p-3">
-                <DollarSign className="h-5 w-5" />
+                <HugeiconsIcon icon={DollarSignIcon} className="h-5 w-5" />
               </div>
               <h3 className="mb-2 text-xl font-bold">Expenses</h3>
               <p className="text-muted-foreground text-sm leading-relaxed">

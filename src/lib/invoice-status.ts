@@ -1,10 +1,11 @@
 import {
-  CircleAlert,
-  CircleCheck,
-  FilePen,
-  Send,
-  type LucideIcon,
-} from "lucide-react";
+  AlertCircleIcon,
+  CheckmarkCircle02Icon,
+  FileEditIcon,
+  SentIcon,
+} from "@hugeicons/core-free-icons";
+
+import type { IconSvgElement } from "@hugeicons/react";
 
 export type InvoiceStatus = "draft" | "sent" | "paid" | "overdue";
 
@@ -16,7 +17,7 @@ interface InvoiceStatusConfig {
   /** Tinted pill styling for the status badge */
   badgeClass: string;
   /** Leading icon for list rows */
-  icon: LucideIcon;
+  icon: IconSvgElement;
   /** Tinted square behind the row icon — colour always means the status */
   tileClass: string;
 }
@@ -32,7 +33,7 @@ export const INVOICE_STATUSES: InvoiceStatusConfig[] = [
     dotClass: "bg-gray-500",
     badgeClass:
       "bg-gray-100 text-gray-700 border-gray-200 dark:bg-gray-900 dark:text-gray-400 dark:border-gray-700",
-    icon: FilePen,
+    icon: FileEditIcon,
     tileClass: "bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-300",
   },
   {
@@ -41,7 +42,7 @@ export const INVOICE_STATUSES: InvoiceStatusConfig[] = [
     dotClass: "bg-blue-500",
     badgeClass:
       "bg-blue-100 text-blue-700 border-blue-200 dark:bg-blue-950 dark:text-blue-400 dark:border-blue-800",
-    icon: Send,
+    icon: SentIcon,
     tileClass: "bg-blue-100 text-blue-600 dark:bg-blue-950 dark:text-blue-300",
   },
   {
@@ -50,7 +51,7 @@ export const INVOICE_STATUSES: InvoiceStatusConfig[] = [
     dotClass: "bg-green-500",
     badgeClass:
       "bg-green-100 text-green-700 border-green-200 dark:bg-green-950 dark:text-green-400 dark:border-green-800",
-    icon: CircleCheck,
+    icon: CheckmarkCircle02Icon,
     tileClass:
       "bg-green-100 text-green-600 dark:bg-green-950 dark:text-green-300",
   },
@@ -60,7 +61,7 @@ export const INVOICE_STATUSES: InvoiceStatusConfig[] = [
     dotClass: "bg-red-500",
     badgeClass:
       "bg-red-100 text-red-700 border-red-200 dark:bg-red-950 dark:text-red-400 dark:border-red-800",
-    icon: CircleAlert,
+    icon: AlertCircleIcon,
     tileClass: "bg-red-100 text-red-600 dark:bg-red-950 dark:text-red-300",
   },
 ];
@@ -72,6 +73,6 @@ export const getInvoiceStatusConfig = (status: string): InvoiceStatusConfig =>
     dotClass: "bg-gray-500",
     badgeClass:
       "bg-gray-100 text-gray-700 border-gray-200 dark:bg-gray-900 dark:text-gray-400 dark:border-gray-700",
-    icon: FilePen,
+    icon: FileEditIcon,
     tileClass: "bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-300",
   };
