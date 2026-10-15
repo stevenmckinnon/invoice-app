@@ -1,0 +1,64 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+# A newer push to the same branch makes the older run pointless
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    services:
+      # Same image and credentials as compose.yaml, on the same host port, so
+      # the committed .env.development (which the test script loads) points
+      # straight at it. The database-backed tests create and delete their own
+      # throwaway user.
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: caley
+          POSTGRES_PASSWORD: caley
+          POSTGRES_DB: caley_dev
+        ports:
+          - 55432:5432
+        options: >-
+          --health-cmd "pg_isready -U caley -d caley_dev"
+          --health-interval 2s
+          --health-timeout 3s
+          --health-retries 15
+
+    env:
+      DATABASE_URL: postgresql://caley:caley@localhost:55432/caley_dev
+      TEST_DATABASE_URL: postgresql://caley:caley@localhost:55432/caley_dev
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # Version comes from package.json's packageManager field
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Generate Prisma client
+        run: pnpm prisma generate
+
+      # db push, not migrate deploy: the migration history can't be replayed
+      # onto an empty database (see CLAUDE.md)
+      - name: Create schema
+        run: pnpm prisma db push
+
+      - run: pnpm lint
+      - run: pnpm typecheck
+      - run: pnpm test

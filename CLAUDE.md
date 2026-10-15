@@ -12,6 +12,7 @@ pnpm build        # Production build (runs prisma generate first)
 pnpm lint         # ESLint check
 pnpm lint:fix     # ESLint auto-fix
 pnpm test         # Node's test runner via tsx
+pnpm typecheck    # tsc --noEmit
 
 pnpm db:migrate   # Run pending migrations (prisma migrate deploy)
 pnpm db:push      # Push schema changes without migration (dev only)
@@ -110,6 +111,11 @@ Uses **AI SDK v7** (`ai` 7.x, `@ai-sdk/react` 4.x, `@ai-sdk/anthropic` 4.x). v7 
 
 The API route at `src/app/api/chat/route.ts` loads user profile, clients, and invoice stats as instructions context, then provides two tools: `createInvoiceDraft` and `updateInvoiceDraft`.
 
+### CI and production safeguards
+
+- **CI** (`.github/workflows/ci.yml`) runs lint, typecheck and the full test suite on every push to `main` and every PR, against a throwaway `postgres:17` service on the same port as `compose.yaml`, so the database-backed tests run rather than skip.
+- **Rate limiting** — `/api/chat` allows 20 requests per 10 minutes and 200 per day per user (`CHAT_RATE_LIMITS` in the route). Counters live in the `RateLimit` table (`src/lib/rate-limit.ts`), one atomic upsert per window, so they hold across serverless instances. A 429 returns JSON that `ChatContent` shows as a plain notice instead of the error box.
+
 ### Environment Variables
 
 - `ANTHROPIC_API_KEY` — Anthropic API key for the AI chat feature
@@ -118,3 +124,5 @@ The API route at `src/app/api/chat/route.ts` loads user profile, clients, and in
 - `BETTER_AUTH_URL` / `NEXT_PUBLIC_APP_URL` — canonical app URL
 - `RESEND_API_KEY` — email sending (password reset); optional in dev (link logged to console)
 - `EMAIL_FROM` — sender address (`onboarding@resend.dev` works for dev)
+- `NEXT_PUBLIC_SENTRY_DSN` — Sentry error reporting. Optional: without it Sentry is inert, and it only ever reports from production builds. Options live in `src/lib/sentry-options.ts`; Session Replay is deliberately off because invoice views show banking details
+- `SENTRY_ORG` / `SENTRY_PROJECT` / `SENTRY_AUTH_TOKEN` — build-time only, for uploading source maps. Without the token the upload is skipped

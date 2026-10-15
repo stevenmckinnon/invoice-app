@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 
-import { Alert01Icon, Copy01Icon, Refresh01Icon, Tick01Icon } from "@hugeicons/core-free-icons";
+import { Alert01Icon, Clock01Icon, Copy01Icon, Refresh01Icon, Tick01Icon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { isTextUIPart, type ToolUIPart, type UIMessage } from "ai";
 
@@ -55,6 +55,22 @@ const THINKING_MESSAGES = [
   "Reading the ledger…",
   "Doing the maths…",
 ];
+
+/**
+ * The chat transport turns a failed response's body into the error message,
+ * so a 429 from /api/chat arrives as its JSON. Anything else is a real fault.
+ */
+const getRateLimitMessage = (error: Error | undefined): string | null => {
+  if (!error) return null;
+  try {
+    const body = JSON.parse(error.message);
+    return body?.error === "rate_limited" && typeof body.message === "string"
+      ? body.message
+      : null;
+  } catch {
+    return null;
+  }
+};
 
 const getMessageText = (message: UIMessage): string =>
   message.parts
@@ -203,6 +219,8 @@ export const ChatContent = ({
     regenerate();
   };
 
+  const rateLimitMessage = getRateLimitMessage(error);
+
   const visibleMessages = messages.filter(
     (m) => m.role === "user" || m.role === "assistant",
   );
@@ -327,26 +345,34 @@ export const ChatContent = ({
           {/* Without this the request just vanishes: the thinking indicator
               stops and nothing replaces it, leaving the user staring at their
               own message with no idea whether it is still working. */}
-          {error && (
-            <div className="bg-destructive/10 flex flex-col gap-2 rounded-xl px-4 py-3">
-              <div className="text-destructive flex items-start gap-2 text-sm">
-                <HugeiconsIcon icon={Alert01Icon} className="mt-0.5 size-4 shrink-0" />
-                <p className="min-w-0">
-                  Something went wrong reaching the assistant. Your message
-                  wasn&apos;t lost — try again.
-                </p>
+          {error &&
+            (rateLimitMessage ? (
+              // Not a fault, so not red, and no retry button — retrying is
+              // exactly what won't work until the window resets
+              <div className="bg-muted/60 text-muted-foreground flex items-start gap-2 rounded-xl px-4 py-3 text-sm">
+                <HugeiconsIcon icon={Clock01Icon} className="mt-0.5 size-4 shrink-0" />
+                <p className="min-w-0">{rateLimitMessage}</p>
               </div>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleRetry}
-                className="self-start"
-              >
-                <HugeiconsIcon icon={Refresh01Icon} className="size-3.5" />
-                Try again
-              </Button>
-            </div>
-          )}
+            ) : (
+              <div className="bg-destructive/10 flex flex-col gap-2 rounded-xl px-4 py-3">
+                <div className="text-destructive flex items-start gap-2 text-sm">
+                  <HugeiconsIcon icon={Alert01Icon} className="mt-0.5 size-4 shrink-0" />
+                  <p className="min-w-0">
+                    Something went wrong reaching the assistant. Your message
+                    wasn&apos;t lost — try again.
+                  </p>
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleRetry}
+                  className="self-start"
+                >
+                  <HugeiconsIcon icon={Refresh01Icon} className="size-3.5" />
+                  Try again
+                </Button>
+              </div>
+            ))}
         </ConversationContent>
         <ConversationScrollButton />
       </Conversation>

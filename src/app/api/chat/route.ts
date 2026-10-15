@@ -13,12 +13,41 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { buildInvoiceTools } from "@/lib/invoice-tools";
 import { clientOvertimeRule } from "@/lib/overtime";
+import { checkRateLimit, type RateLimitWindow } from "@/lib/rate-limit";
 import { formatCurrency } from "@/lib/utils";
+
+const CHAT_RATE_LIMITS: RateLimitWindow[] = [
+  { name: "chat:burst", limit: 20, windowMs: 10 * 60 * 1000 },
+  { name: "chat:day", limit: 200, windowMs: 24 * 60 * 60 * 1000 },
+];
 
 export const POST = async (req: Request) => {
   const session = await auth.api.getSession({ headers: await headers() });
   if (!session?.user?.id) {
     return new Response("Unauthorized", { status: 401 });
+  }
+
+  // Every request spends Anthropic credit, up to five model steps each, so
+  // a signed-in account can't be left to loop it. Generous for real use: a
+  // long invoice conversation is a dozen or so messages.
+  const limit = await checkRateLimit(session.user.id, CHAT_RATE_LIMITS);
+  if (!limit.ok) {
+    const minutes = Math.ceil(limit.retryAfterSeconds / 60);
+    const wait =
+      minutes >= 60
+        ? `in about ${Math.ceil(minutes / 60)} hour${minutes >= 120 ? "s" : ""}`
+        : `in ${minutes} minute${minutes !== 1 ? "s" : ""}`;
+    return Response.json(
+      {
+        error: "rate_limited",
+        message: `You've sent a lot of messages in a short time. You can carry on ${wait}.`,
+        retryAfterSeconds: limit.retryAfterSeconds,
+      },
+      {
+        status: 429,
+        headers: { "Retry-After": String(limit.retryAfterSeconds) },
+      },
+    );
   }
 
   const body = await req.json();
