@@ -69,6 +69,10 @@ const invoiceUpdateSchema = z.object({
   notes: z.string().optional(),
 });
 
+const statusUpdateSchema = z.object({
+  status: z.enum(["draft", "sent", "paid", "overdue"]),
+});
+
 type RouteContext = {
   params: Promise<{ id: string }>;
 };
@@ -263,7 +267,11 @@ export const PATCH = async (req: NextRequest, context: RouteContext) => {
 
     const params = await context.params;
     const { id } = params;
-    const body = await req.json();
+    // Unvalidated, any string was written straight into status
+    const parsed = statusUpdateSchema.safeParse(await req.json());
+    if (!parsed.success) {
+      return NextResponse.json({ error: "Invalid status" }, { status: 400 });
+    }
 
     // Verify ownership
     const invoice = await prisma.invoice.findUnique({ where: { id } });
@@ -274,14 +282,14 @@ export const PATCH = async (req: NextRequest, context: RouteContext) => {
     // Update only the status
     const updated = await prisma.invoice.update({
       where: { id },
-      data: { status: body.status },
+      data: { status: parsed.data.status },
       select: { id: true, status: true },
     });
 
     return NextResponse.json(updated);
-  } catch (err: any) {
+  } catch {
     return NextResponse.json(
-      { error: err.message ?? "Failed to update invoice status" },
+      { error: "Failed to update invoice status" },
       { status: 400 },
     );
   }

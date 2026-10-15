@@ -759,7 +759,7 @@ const SettingsPage = () => {
             <AlertDialogAction
               onClick={handleDeleteAccount}
               disabled={deletingAccount}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90 dark:bg-destructive/60 dark:hover:bg-destructive/70"
             >
               {deletingAccount ? (
                 <>

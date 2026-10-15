@@ -389,7 +389,7 @@ export default function ClientsPage() {
                 handleConfirmDelete();
               }}
               disabled={deleteClientMutation.isPending}
-              className="bg-destructive hover:bg-destructive/90 text-white"
+              className="bg-destructive hover:bg-destructive/90 text-white dark:bg-destructive/60 dark:hover:bg-destructive/70"
             >
               {deleteClientMutation.isPending ? "Deleting..." : "Delete"}
             </AlertDialogAction>

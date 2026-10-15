@@ -14,6 +14,39 @@ const nextConfig: NextConfig = {
   // own copy — a second, bundled copy of @formepdf/react here would never
   // match, silently dropping everything below <Document>.
   serverExternalPackages: ["@formepdf/core", "@formepdf/react"],
+  async headers() {
+    return [
+      {
+        source: "/:path*",
+        headers: [
+          // Same-origin rather than 'none': PdfPreviewDialog shows
+          // /api/invoices/[id]/pdf in an iframe on our own pages. This still
+          // stops any other site framing Caley for clickjacking.
+          // Not a full CSP — scripts and styles are unrestricted for now.
+          {
+            key: "Content-Security-Policy",
+            value: "frame-ancestors 'self'; base-uri 'self'; object-src 'none'",
+          },
+          { key: "X-Frame-Options", value: "SAMEORIGIN" },
+          { key: "X-Content-Type-Options", value: "nosniff" },
+          { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+          // Nothing uses these. display-capture stays allowed for our own
+          // origin: the chat's PromptInput supports screenshots.
+          {
+            key: "Permissions-Policy",
+            value:
+              "camera=(), microphone=(), geolocation=(), payment=(), usb=(), display-capture=(self)",
+          },
+          // No includeSubDomains or preload: both reach beyond this app,
+          // and preload is hard to undo.
+          {
+            key: "Strict-Transport-Security",
+            value: "max-age=63072000",
+          },
+        ],
+      },
+    ];
+  },
 };
 
 // Uploads source maps at build time so stack traces in Sentry point at real

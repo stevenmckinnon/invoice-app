@@ -149,7 +149,11 @@ export const POST = async (req: Request) => {
   const countOf = (rows: typeof totalsByStatus) =>
     rows.reduce((n, row) => n + row._count._all, 0);
   const paidRows = totalsByStatus.filter((r) => r.status === "paid");
-  const unpaidRows = totalsByStatus.filter((r) => r.status !== "paid");
+  // Outstanding = sent and not yet paid; drafts haven't been sent
+  const unpaidRows = totalsByStatus.filter(
+    (r) => r.status === "sent" || r.status === "overdue",
+  );
+  const draftRows = totalsByStatus.filter((r) => r.status === "draft");
   const statusCount = (status: string) =>
     countOf(totalsByStatus.filter((r) => r.status === status));
 
@@ -208,7 +212,8 @@ ${clientsList}
 - Total revenue: ${formatTotals(totalsByStatus)}
 - Paid: ${formatTotals(paidRows)} (${countOf(paidRows)} invoices)
 - Outstanding: ${formatTotals(unpaidRows)} (${countOf(unpaidRows)} invoices)
-- Draft: ${statusCount("draft")} | Overdue: ${statusCount("overdue")}
+- Drafts (not yet sent, so not owed): ${formatTotals(draftRows)} (${countOf(draftRows)} invoices)
+- Overdue: ${statusCount("overdue")} invoices
 - Amounts in different currencies are listed separately. Never add them together or convert between them.
 
 ## Recent Invoices

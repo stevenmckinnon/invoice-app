@@ -12,6 +12,7 @@ import { PageHeader } from "@/components/PageHeader";
 import { PdfPreviewDialog } from "@/components/PdfPreviewDialog";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -29,7 +30,10 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { useInvoices } from "@/hooks/use-invoices";
+import {
+  useBulkUpdateInvoiceStatus,
+  useInvoices,
+} from "@/hooks/use-invoices";
 import {
   getInvoiceStatusConfig,
   INVOICE_STATUSES,
@@ -39,7 +43,7 @@ import { cn, formatCurrency, formatCurrencyTotals, formatDate } from "@/lib/util
 const ITEMS_PER_PAGE = 10;
 
 const STATUS_FILTER_ITEMS = [
-  { value: "all", label: "All Statuses" },
+  { value: "all", label: "All statuses" },
   ...INVOICE_STATUSES.map(({ value, label }) => ({ value, label })),
 ];
 
@@ -48,7 +52,17 @@ export default function AllInvoicesPage() {
   const { data: invoices = [], isLoading, error } = useInvoices();
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [clientFilter, setClientFilter] = useState<string>("all");
   const [currentPage, setCurrentPage] = useState(1);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const bulkUpdate = useBulkUpdateInvoiceStatus();
+
+  const clientFilterItems = [
+    { value: "all", label: "All clients" },
+    ...[...new Set(invoices.map((inv) => inv.clientName).filter(Boolean))]
+      .sort((a, b) => a!.localeCompare(b!))
+      .map((name) => ({ value: name!, label: name! })),
+  ];
 
   // Filter and search
   const filteredInvoices = invoices
@@ -62,7 +76,10 @@ export default function AllInvoicesPage() {
       const matchesStatus =
         statusFilter === "all" || invoice.status === statusFilter;
 
-      return matchesSearch && matchesStatus;
+      const matchesClient =
+        clientFilter === "all" || invoice.clientName === clientFilter;
+
+      return matchesSearch && matchesStatus && matchesClient;
     })
     .sort(
       (a, b) =>
@@ -75,16 +92,61 @@ export default function AllInvoicesPage() {
   const endIndex = startIndex + ITEMS_PER_PAGE;
   const paginatedInvoices = filteredInvoices.slice(startIndex, endIndex);
 
-  // Reset to page 1 when filters change
+  // A filter change resets the page, and drops the selection so nothing
+  // hidden by the new filter can be acted on by mistake
+  const resetView = () => {
+    setCurrentPage(1);
+    setSelectedIds(new Set());
+  };
+
   const handleSearchChange = (value: string) => {
     setSearchQuery(value);
-    setCurrentPage(1);
+    resetView();
   };
 
   const handleStatusFilterChange = (value: string | null) => {
     if (!value) return;
     setStatusFilter(value);
-    setCurrentPage(1);
+    resetView();
+  };
+
+  const handleClientFilterChange = (value: string | null) => {
+    if (!value) return;
+    setClientFilter(value);
+    resetView();
+  };
+
+  const isFiltered =
+    Boolean(searchQuery) || statusFilter !== "all" || clientFilter !== "all";
+
+  const pageIds = paginatedInvoices.map((inv) => inv.id);
+  const selectedOnPage = pageIds.filter((id) => selectedIds.has(id)).length;
+
+  const toggleRow = (id: string, checked: boolean) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (checked) next.add(id);
+      else next.delete(id);
+      return next;
+    });
+  };
+
+  const togglePage = (checked: boolean) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      for (const id of pageIds) {
+        if (checked) next.add(id);
+        else next.delete(id);
+      }
+      return next;
+    });
+  };
+
+  const markSelectedPaid = () => {
+    bulkUpdate.mutate(
+      { ids: [...selectedIds], status: "paid" },
+      { onSuccess: () => setSelectedIds(new Set()) },
+    );
   };
 
   if (error) {
@@ -105,13 +167,6 @@ export default function AllInvoicesPage() {
     <div className="mx-auto grid w-full max-w-6xl grid-cols-1 gap-6 p-6 py-10 md:pb-8">
       <PageHeader
         title="Invoices"
-        subtitle={
-          <>
-            {filteredInvoices.length} invoice
-            {filteredInvoices.length !== 1 ? "s" : ""} • Total:{" "}
-            {formatCurrencyTotals(filteredInvoices)}
-          </>
-        }
         actions={
           <Button
             nativeButton={false}
@@ -125,42 +180,105 @@ export default function AllInvoicesPage() {
         }
       />
 
-      {/* Filters */}
-      <Card>
-        <CardContent className="pt-0">
-          <div className="flex flex-col gap-4 md:flex-row">
-            <div className="relative flex-1">
-              <HugeiconsIcon icon={Search01Icon} className="text-muted-foreground absolute top-3 left-3 h-4 w-4" />
-              <Input
-                placeholder="Search by invoice number, show name, or client..."
-                value={searchQuery}
-                onChange={(e) => handleSearchChange(e.target.value)}
-                className="pl-10"
-              />
-            </div>
-            <Select
-              items={STATUS_FILTER_ITEMS}
-              value={statusFilter}
-              onValueChange={handleStatusFilterChange}
-            >
-              <SelectTrigger className="w-full md:w-[180px]">
-                <SelectValue placeholder="Filter by status" />
-              </SelectTrigger>
-              <SelectContent>
-                {STATUS_FILTER_ITEMS.map(({ value, label }) => (
-                  <SelectItem key={value} value={value}>
-                    {label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Invoices Table */}
+      {/* Invoices: one card, with the toolbar on top. The count and total
+          sit beside the filters because they're what the filters change. */}
       <Card>
         <CardContent className="px-3 md:px-6">
+          <div className="mb-4 flex flex-col gap-3 lg:flex-row lg:items-center">
+            {selectedIds.size > 0 ? (
+              <div
+                className="flex min-h-9 items-center gap-2"
+                role="status"
+                aria-live="polite"
+              >
+                <span className="text-sm font-semibold tabular-nums">
+                  {selectedIds.size} selected
+                </span>
+                <Button
+                  size="sm"
+                  onClick={markSelectedPaid}
+                  disabled={bulkUpdate.isPending}
+                >
+                  Mark as paid
+                </Button>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  onClick={() => setSelectedIds(new Set())}
+                >
+                  Clear
+                </Button>
+              </div>
+            ) : (
+              <p className="flex min-h-9 items-center gap-1.5 text-sm">
+                <span className="font-semibold tabular-nums">
+                  {filteredInvoices.length} invoice
+                  {filteredInvoices.length !== 1 ? "s" : ""}
+                </span>
+                <span className="text-muted-foreground tabular-nums">
+                  · {formatCurrencyTotals(filteredInvoices)}
+                </span>
+              </p>
+            )}
+
+            <div className="flex flex-col gap-2 sm:flex-row lg:ml-auto">
+              {clientFilterItems.length > 2 && (
+                <Select
+                  items={clientFilterItems}
+                  value={clientFilter}
+                  onValueChange={handleClientFilterChange}
+                >
+                  <SelectTrigger
+                    className="w-full sm:w-[190px]"
+                    aria-label="Filter by client"
+                  >
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {clientFilterItems.map(({ value, label }) => (
+                      <SelectItem key={value} value={value}>
+                        {label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
+              <Select
+                items={STATUS_FILTER_ITEMS}
+                value={statusFilter}
+                onValueChange={handleStatusFilterChange}
+              >
+                <SelectTrigger
+                  className="w-full sm:w-[150px]"
+                  aria-label="Filter by status"
+                >
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {STATUS_FILTER_ITEMS.map(({ value, label }) => (
+                    <SelectItem key={value} value={value}>
+                      {label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <div className="relative sm:w-64">
+                <HugeiconsIcon
+                  icon={Search01Icon}
+                  className="text-muted-foreground pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2"
+                />
+                <Input
+                  type="search"
+                  placeholder="Search invoices"
+                  aria-label="Search by invoice number, project or client"
+                  value={searchQuery}
+                  onChange={(e) => handleSearchChange(e.target.value)}
+                  className="pl-9"
+                />
+              </div>
+            </div>
+          </div>
+
           {isLoading ? (
             <>
               {/* Desktop skeleton */}
@@ -168,6 +286,7 @@ export default function AllInvoicesPage() {
                 <Table>
                   <TableHeader>
                     <TableRow>
+                      <TableHead className="w-10" />
                       <TableHead>Invoice #</TableHead>
                       <TableHead>Show/Project</TableHead>
                       <TableHead>Client</TableHead>
@@ -180,6 +299,9 @@ export default function AllInvoicesPage() {
                   <TableBody>
                     {[...Array(5)].map((_, i) => (
                       <TableRow key={i}>
+                        <TableCell>
+                          <Skeleton className="size-4 rounded-[5px]" />
+                        </TableCell>
                         <TableCell>
                           <Skeleton className="h-4 w-24" />
                         </TableCell>
@@ -227,18 +349,17 @@ export default function AllInvoicesPage() {
             <EmptyState
               icon={FileAttachmentIcon}
               title={
-                searchQuery || statusFilter !== "all"
+                isFiltered
                   ? "No invoices match your filters"
                   : "No invoices yet"
               }
               description={
-                searchQuery || statusFilter !== "all"
+                isFiltered
                   ? "Try adjusting your search or filter."
                   : "Get started by creating your first invoice."
               }
               action={
-                !searchQuery &&
-                statusFilter === "all" && (
+                !isFiltered && (
                   <Button
                     nativeButton={false}
                     render={
@@ -258,6 +379,20 @@ export default function AllInvoicesPage() {
                 <Table>
                   <TableHeader>
                     <TableRow>
+                      <TableHead className="w-10">
+                        <Checkbox
+                          aria-label="Select all invoices on this page"
+                          checked={
+                            pageIds.length > 0 &&
+                            selectedOnPage === pageIds.length
+                          }
+                          indeterminate={
+                            selectedOnPage > 0 &&
+                            selectedOnPage < pageIds.length
+                          }
+                          onCheckedChange={togglePage}
+                        />
+                      </TableHead>
                       <TableHead>Invoice #</TableHead>
                       <TableHead>Show/Project</TableHead>
                       <TableHead>Client</TableHead>
@@ -273,7 +408,19 @@ export default function AllInvoicesPage() {
                         key={invoice.id}
                         onClick={() => router.push(`/invoices/${invoice.id}`)}
                         className="cursor-pointer"
+                        data-state={
+                          selectedIds.has(invoice.id) ? "selected" : undefined
+                        }
                       >
+                        <TableCell onClick={(e) => e.stopPropagation()}>
+                          <Checkbox
+                            aria-label={`Select ${invoice.invoiceNumber}`}
+                            checked={selectedIds.has(invoice.id)}
+                            onCheckedChange={(checked) =>
+                              toggleRow(invoice.id, checked)
+                            }
+                          />
+                        </TableCell>
                         <TableCell className="font-medium">
                           <Link
                             href={`/invoices/${invoice.id}`}

@@ -36,7 +36,9 @@
   --muted-foreground: oklch(0.51 0.0138 250);
   --accent: oklch(0.9392 0.0166 250.8453);
   --accent-foreground: oklch(0.5 0.1606 245);
-  --destructive: oklch(0.6188 0.2376 25.7658);
+  /* L 0.53 clears 4.5:1 as text on --muted, the darkest surface it lands on,
+     and as a fill behind white. Was 0.62, which failed both (3.5 and 4.1). */
+  --destructive: oklch(0.53 0.2 25.77);
   --destructive-foreground: oklch(1 0 0);
   --success: oklch(0.5 0.1287 152.5);
   --warning: oklch(0.53 0.1533 58);
@@ -137,7 +139,9 @@
   --muted-foreground: oklch(0.65 0.0078 248);
   --accent: oklch(0.278 0.045 243);
   --accent-foreground: oklch(0.6692 0.1607 245.011);
-  --destructive: oklch(0.6188 0.2376 25.7658);
+  /* Bright enough to read as text on every dark surface (4.6:1 on --muted).
+     Fills stay at /60 over the card so white labels keep 6:1+. */
+  --destructive: oklch(0.68 0.2 25.77);
   --destructive-foreground: oklch(1 0 0);
   --success: oklch(0.7226 0.1548 152.5);
   --warning: oklch(0.7684 0.1533 62);
