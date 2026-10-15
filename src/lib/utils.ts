@@ -1,6 +1,21 @@
 export { cn } from "cn";
 
 // Helper to parse date strings without timezone shift
+/**
+ * Where to send the user after sign-in. Only same-origin paths are allowed —
+ * "//host" and "/\\host" are protocol-relative to browsers, and anything
+ * absolute could be another site or a javascript: URL.
+ */
+export const safeCallbackUrl = (
+  value: string | null | undefined,
+  fallback = "/dashboard",
+): string => {
+  if (!value || !value.startsWith("/") || value.startsWith("//")) {
+    return fallback;
+  }
+  return value.includes("\\") ? fallback : value;
+};
+
 export const parseDate = (date: string | Date): Date => {
   if (date instanceof Date) return date;
   return new Date(date + "T12:00:00");

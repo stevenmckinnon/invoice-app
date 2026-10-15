@@ -28,13 +28,29 @@ const load = async () => {
   mock.module("next/headers", {
     namedExports: { headers: async () => requestHeaders },
   });
-  const [{ prisma }, { auth }, pdfRoute, invoiceRoute] = await Promise.all([
+  const [
+    { prisma },
+    { auth },
+    pdfRoute,
+    invoiceRoute,
+    invoicesRoute,
+    deleteAccountRoute,
+  ] = await Promise.all([
     import("@/lib/db"),
     import("@/lib/auth"),
     import("@/app/api/invoices/[id]/pdf/route"),
     import("@/app/api/invoices/[id]/route"),
+    import("@/app/api/invoices/route"),
+    import("@/app/api/account/delete/route"),
   ]);
-  return { prisma, auth, pdfRoute, invoiceRoute };
+  return {
+    prisma,
+    auth,
+    pdfRoute,
+    invoiceRoute,
+    invoicesRoute,
+    deleteAccountRoute,
+  };
 };
 
 const params = (id: string) => ({ params: Promise.resolve({ id }) });
@@ -65,6 +81,7 @@ describe(
     let victimCookie: string;
     let attackerCookie: string;
     let victimInvoiceId: string;
+    let victimClientId: string;
 
     /** Signs a user up through better-auth and returns their cookie header */
     const signUp = async (label: string) => {
@@ -98,14 +115,34 @@ describe(
       );
     };
 
-    const putInvoice = (cookie: string) => {
+    const putInvoice = (cookie: string, body: object = invoiceBody) => {
       requestHeaders = new Headers({ cookie });
       return mod.invoiceRoute.PUT(
         new NextRequest(`http://localhost/api/invoices/${victimInvoiceId}`, {
           method: "PUT",
-          body: JSON.stringify(invoiceBody),
+          body: JSON.stringify(body),
         }),
         params(victimInvoiceId),
+      );
+    };
+
+    const postInvoice = (cookie: string, body: object) => {
+      requestHeaders = new Headers({ cookie });
+      return mod.invoicesRoute.POST(
+        new NextRequest("http://localhost/api/invoices", {
+          method: "POST",
+          body: JSON.stringify(body),
+        }),
+      );
+    };
+
+    const deleteAccount = (cookie: string, password: string) => {
+      requestHeaders = new Headers({ cookie });
+      return mod.deleteAccountRoute.POST(
+        new NextRequest("http://localhost/api/account/delete", {
+          method: "POST",
+          body: JSON.stringify({ password, confirmation: "DELETE MY ACCOUNT" }),
+        }),
       );
     };
 
@@ -162,6 +199,11 @@ describe(
         },
       });
       victimInvoiceId = invoice.id;
+
+      const client = await mod.prisma.client.create({
+        data: { userId: victim.userId, name: "Victim's Client" },
+      });
+      victimClientId = client.id;
     });
 
     after(async () => {
@@ -213,6 +255,73 @@ describe(
         overtime: 0,
         expenses: 0,
       });
+    });
+
+    it("refuses to create an invoice against another user's client", async () => {
+      const res = await postInvoice(attackerCookie, {
+        ...invoiceBody,
+        invoiceNumber: `ATTACK-POST-${Date.now()}`,
+        clientId: victimClientId,
+      });
+      assert.equal(res.status, 400);
+      assert.deepEqual(await res.json(), { error: "Client not found" });
+      assert.equal(
+        await mod.prisma.invoice.count({ where: { clientId: victimClientId } }),
+        0,
+      );
+    });
+
+    it("refuses to move an invoice onto another user's client", async () => {
+      const attacker = await signUp("client-mover");
+      const ownBody = {
+        ...invoiceBody,
+        invoiceNumber: `ATTACK-OWN-${Date.now()}`,
+      };
+      const own = await postInvoice(attacker.cookie, ownBody);
+      assert.equal(own.status, 201);
+      const { id } = await own.json();
+
+      requestHeaders = new Headers({ cookie: attacker.cookie });
+      const res = await mod.invoiceRoute.PUT(
+        new NextRequest(`http://localhost/api/invoices/${id}`, {
+          method: "PUT",
+          body: JSON.stringify({ ...ownBody, clientId: victimClientId }),
+        }),
+        params(id),
+      );
+      assert.equal(res.status, 400);
+      assert.deepEqual(await res.json(), { error: "Client not found" });
+      const invoice = await mod.prisma.invoice.findUniqueOrThrow({
+        where: { id },
+      });
+      assert.equal(invoice.clientId, null);
+    });
+
+    it("lets the owner attach their own client", async () => {
+      const res = await putInvoice(victimCookie, {
+        ...invoiceBody,
+        clientId: victimClientId,
+      });
+      assert.equal(res.status, 200);
+    });
+
+    it("deletes an account only with the right password", async () => {
+      // The route verified with bcrypt against better-auth's scrypt hashes,
+      // so the right password was always rejected
+      const user = await signUp("deleter");
+
+      const wrong = await deleteAccount(user.cookie, "not-the-password");
+      assert.equal(wrong.status, 401);
+      assert.ok(
+        await mod.prisma.user.findUnique({ where: { id: user.userId } }),
+      );
+
+      const right = await deleteAccount(user.cookie, "test-password-123");
+      assert.equal(right.status, 200);
+      assert.equal(
+        await mod.prisma.user.findUnique({ where: { id: user.userId } }),
+        null,
+      );
     });
   },
 );

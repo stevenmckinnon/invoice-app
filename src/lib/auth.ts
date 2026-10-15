@@ -73,11 +73,17 @@ export const auth = betterAuth({
           console.error("Error sending password reset email:", error);
           throw error;
         }
+      } else if (process.env.NODE_ENV === "production") {
+        // Never log the link here: anyone with log access could use it
+        console.error(
+          "RESEND_API_KEY not configured. Password reset email not sent.",
+        );
+        throw new Error("Password reset email is not configured");
       } else {
+        // The link itself is logged above in development
         console.warn(
           "⚠️ RESEND_API_KEY not configured. Password reset email not sent.",
         );
-        console.log("Password reset link (copy this for testing):", url);
       }
     },
   },

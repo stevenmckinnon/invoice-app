@@ -108,6 +108,17 @@ export const PUT = async (req: NextRequest, context: RouteContext) => {
       return NextResponse.json({ error: "Not found" }, { status: 404 });
     }
 
+    // A clientId from another user would link their client to this invoice
+    if (
+      parsed.clientId &&
+      !(await prisma.client.findFirst({
+        where: { id: parsed.clientId, userId: session.user.id },
+        select: { id: true },
+      }))
+    ) {
+      return NextResponse.json({ error: "Client not found" }, { status: 400 });
+    }
+
     // Replace the related records and update the invoice atomically, so a
     // failed update can't leave the invoice with its children deleted
     const [, , , updated] = await prisma.$transaction([

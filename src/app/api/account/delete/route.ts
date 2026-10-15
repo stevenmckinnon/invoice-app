@@ -40,9 +40,11 @@ export const POST = async (req: NextRequest) => {
       );
     }
 
-    // Verify password using better-auth
-    const bcrypt = require("bcryptjs");
-    const isValid = await bcrypt.compare(password, account.password);
+    // better-auth hashes with scrypt, so verify with its own hasher
+    const { password: hasher } = await auth.$context;
+    const isValid =
+      typeof password === "string" &&
+      (await hasher.verify({ hash: account.password, password }));
 
     if (!isValid) {
       return NextResponse.json({ error: "Invalid password" }, { status: 401 });
