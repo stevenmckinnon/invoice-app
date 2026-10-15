@@ -5,7 +5,37 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 
-import { formatCurrencyTotals, sumByCurrency } from "@/lib/utils";
+import {
+  formatCurrencyTotals,
+  safeCallbackUrl,
+  sumByCurrency,
+} from "@/lib/utils";
+
+describe("safeCallbackUrl", () => {
+  it("keeps a same-origin path", () => {
+    assert.equal(safeCallbackUrl("/invoices/x"), "/invoices/x");
+  });
+
+  it("rejects anything that could leave the site", () => {
+    for (const url of [
+      "//evil.example",
+      "https://evil.example",
+      "javascript:alert(1)",
+      "/\\evil.example",
+      "/\t/evil.example",
+      "/\n/evil.example",
+      "/\r/evil.example",
+    ]) {
+      assert.equal(safeCallbackUrl(url), "/dashboard", url);
+    }
+  });
+
+  it("falls back when there is no value", () => {
+    assert.equal(safeCallbackUrl(""), "/dashboard");
+    assert.equal(safeCallbackUrl(null), "/dashboard");
+    assert.equal(safeCallbackUrl(undefined), "/dashboard");
+  });
+});
 
 describe("sumByCurrency", () => {
   it("keeps each currency separate", () => {

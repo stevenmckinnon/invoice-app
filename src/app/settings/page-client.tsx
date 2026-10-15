@@ -284,7 +284,7 @@ const SettingsPage = () => {
     }
   };
 
-  const currentSessionToken = session?.session?.token;
+  const currentSessionId = session?.session?.id;
 
   if (!session?.user) {
     return (
@@ -490,7 +490,7 @@ const SettingsPage = () => {
           ) : (
             <div className="space-y-3">
               {sessions.map((sess) => {
-                const isCurrentSession = sess.token === currentSessionToken;
+                const isCurrentSession = sess.id === currentSessionId;
                 return (
                   <div
                     key={sess.id}

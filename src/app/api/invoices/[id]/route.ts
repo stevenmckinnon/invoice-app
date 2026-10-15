@@ -1,4 +1,3 @@
- 
 import { headers } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
@@ -99,84 +98,101 @@ export const PUT = async (req: NextRequest, context: RouteContext) => {
 
     const totals = calculateInvoiceTotals(pdfInput);
 
-    // Delete existing related records
-    await prisma.invoiceLineItem.deleteMany({ where: { invoiceId: id } });
-    await prisma.overtimeEntry.deleteMany({ where: { invoiceId: id } });
-    await prisma.customExpenseEntry.deleteMany({ where: { invoiceId: id } });
-
-    // Verify ownership
-    const existing = await prisma.invoice.findUnique({ where: { id } });
-    if (!existing || existing.userId !== session.user.id) {
+    // Verify ownership before touching anything — the child rows are keyed
+    // only by invoiceId, so deleting first wiped other users' line items
+    const existing = await prisma.invoice.findFirst({
+      where: { id, userId: session.user.id },
+      select: { id: true },
+    });
+    if (!existing) {
       return NextResponse.json({ error: "Not found" }, { status: 404 });
     }
 
-    const updated = await prisma.invoice.update({
-      where: { id },
-      data: {
-        invoiceNumber: pdfInput.invoiceNumber,
-        invoiceDate: pdfInput.invoiceDate,
-        showName: pdfInput.showName,
-        fullName: pdfInput.fullName,
-        email: pdfInput.email,
-        addressLine1: pdfInput.addressLine1,
-        addressLine2: pdfInput.addressLine2,
-        city: pdfInput.city,
-        state: pdfInput.state,
-        postalCode: pdfInput.postalCode,
-        country: pdfInput.country,
-        clientId: parsed.clientId,
-        clientName: pdfInput.clientName,
-        clientAddress1: pdfInput.clientAddress1,
-        clientAddress2: pdfInput.clientAddress2,
-        clientCity: pdfInput.clientCity,
-        clientState: pdfInput.clientState,
-        clientPostalCode: pdfInput.clientPostalCode,
-        clientCountry: pdfInput.clientCountry,
-        attentionTo: pdfInput.attentionTo,
-        iban: pdfInput.iban,
-        swiftBic: pdfInput.swiftBic,
-        accountNumber: pdfInput.accountNumber,
-        sortCode: pdfInput.sortCode,
-        bankAddress: pdfInput.bankAddress,
-        dateOfBirth: pdfInput.dateOfBirth
-          ? parseDate(pdfInput.dateOfBirth as any)
-          : null,
-        currency: pdfInput.currency ?? "GBP",
-        totalAmount: totals.totalAmount as unknown as any,
-        status: parsed.status || "draft",
-        notes: pdfInput.notes,
-        items: {
-          createMany: {
-            data: parsed.items.map((i) => ({
-              description: i.description,
-              quantity: i.quantity,
-              unitPrice: i.unitPrice as unknown as any,
-              cost: (i.cost ?? i.quantity * i.unitPrice) as unknown as any,
-            })),
+    // A clientId from another user would link their client to this invoice
+    if (
+      parsed.clientId &&
+      !(await prisma.client.findFirst({
+        where: { id: parsed.clientId, userId: session.user.id },
+        select: { id: true },
+      }))
+    ) {
+      return NextResponse.json({ error: "Client not found" }, { status: 400 });
+    }
+
+    // Replace the related records and update the invoice atomically, so a
+    // failed update can't leave the invoice with its children deleted
+    const [, , , updated] = await prisma.$transaction([
+      prisma.invoiceLineItem.deleteMany({ where: { invoiceId: id } }),
+      prisma.overtimeEntry.deleteMany({ where: { invoiceId: id } }),
+      prisma.customExpenseEntry.deleteMany({ where: { invoiceId: id } }),
+      prisma.invoice.update({
+        where: { id, userId: session.user.id },
+        data: {
+          invoiceNumber: pdfInput.invoiceNumber,
+          invoiceDate: pdfInput.invoiceDate,
+          showName: pdfInput.showName,
+          fullName: pdfInput.fullName,
+          email: pdfInput.email,
+          addressLine1: pdfInput.addressLine1,
+          addressLine2: pdfInput.addressLine2,
+          city: pdfInput.city,
+          state: pdfInput.state,
+          postalCode: pdfInput.postalCode,
+          country: pdfInput.country,
+          clientId: parsed.clientId,
+          clientName: pdfInput.clientName,
+          clientAddress1: pdfInput.clientAddress1,
+          clientAddress2: pdfInput.clientAddress2,
+          clientCity: pdfInput.clientCity,
+          clientState: pdfInput.clientState,
+          clientPostalCode: pdfInput.clientPostalCode,
+          clientCountry: pdfInput.clientCountry,
+          attentionTo: pdfInput.attentionTo,
+          iban: pdfInput.iban,
+          swiftBic: pdfInput.swiftBic,
+          accountNumber: pdfInput.accountNumber,
+          sortCode: pdfInput.sortCode,
+          bankAddress: pdfInput.bankAddress,
+          dateOfBirth: pdfInput.dateOfBirth
+            ? parseDate(pdfInput.dateOfBirth as any)
+            : null,
+          currency: pdfInput.currency ?? "GBP",
+          totalAmount: totals.totalAmount as unknown as any,
+          status: parsed.status || "draft",
+          notes: pdfInput.notes,
+          items: {
+            createMany: {
+              data: parsed.items.map((i) => ({
+                description: i.description,
+                quantity: i.quantity,
+                unitPrice: i.unitPrice as unknown as any,
+                cost: (i.cost ?? i.quantity * i.unitPrice) as unknown as any,
+              })),
+            },
+          },
+          overtimeEntries: {
+            createMany: {
+              data: parsed.overtimeEntries.map((entry) => ({
+                date: parseDate(entry.date),
+                hours: entry.hours as unknown as any,
+                rateType: entry.rateType,
+              })),
+            },
+          },
+          customExpenseEntries: {
+            createMany: {
+              data: parsed.customExpenseEntries.map((entry) => ({
+                description: entry.description,
+                quantity: entry.quantity,
+                unitPrice: entry.unitPrice as unknown as any,
+                cost: entry.cost as unknown as any,
+              })),
+            },
           },
         },
-        overtimeEntries: {
-          createMany: {
-            data: parsed.overtimeEntries.map((entry) => ({
-              date: parseDate(entry.date),
-              hours: entry.hours as unknown as any,
-              rateType: entry.rateType,
-            })),
-          },
-        },
-        customExpenseEntries: {
-          createMany: {
-            data: parsed.customExpenseEntries.map((entry) => ({
-              description: entry.description,
-              quantity: entry.quantity,
-              unitPrice: entry.unitPrice as unknown as any,
-              cost: entry.cost as unknown as any,
-            })),
-          },
-        },
-      },
-      select: { id: true, invoiceNumber: true },
-    });
+        select: { id: true, invoiceNumber: true },
+      }),
+    ]);
 
     return NextResponse.json(
       { id: updated.id, invoiceNumber: updated.invoiceNumber },

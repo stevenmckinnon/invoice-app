@@ -14,6 +14,14 @@ const resend = process.env.RESEND_API_KEY
   ? new Resend(process.env.RESEND_API_KEY)
   : null;
 
+// A known fallback secret would let anyone forge session cookies, so it is
+// only ever allowed outside production
+const secret =
+  process.env.BETTER_AUTH_SECRET || process.env.NEXTAUTH_SECRET || undefined;
+if (!secret && process.env.NODE_ENV === "production") {
+  throw new Error("BETTER_AUTH_SECRET must be set in production");
+}
+
 export const auth = betterAuth({
   database: prismaAdapter(prisma, {
     provider: "postgresql",
@@ -21,6 +29,8 @@ export const auth = betterAuth({
   emailAndPassword: {
     enabled: true,
     requireEmailVerification: false, // Set to true in production
+    // A reset is how a user locks out whoever has their password
+    revokeSessionsOnPasswordReset: true,
     sendResetPassword: async ({ user, url }) => {
       // Always log in development
       if (process.env.NODE_ENV === "development") {
@@ -63,11 +73,17 @@ export const auth = betterAuth({
           console.error("Error sending password reset email:", error);
           throw error;
         }
+      } else if (process.env.NODE_ENV === "production") {
+        // Never log the link here: anyone with log access could use it
+        console.error(
+          "RESEND_API_KEY not configured. Password reset email not sent.",
+        );
+        throw new Error("Password reset email is not configured");
       } else {
+        // The link itself is logged above in development
         console.warn(
           "⚠️ RESEND_API_KEY not configured. Password reset email not sent.",
         );
-        console.log("Password reset link (copy this for testing):", url);
       }
     },
   },
@@ -79,10 +95,7 @@ export const auth = betterAuth({
       maxAge: 5 * 60,
     },
   },
-  secret:
-    process.env.BETTER_AUTH_SECRET ||
-    process.env.NEXTAUTH_SECRET ||
-    "secret-for-development-only",
+  secret: secret ?? "secret-for-development-only",
   baseURL:
     process.env.BETTER_AUTH_URL ||
     process.env.NEXT_PUBLIC_APP_URL ||

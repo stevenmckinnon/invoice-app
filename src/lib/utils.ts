@@ -1,5 +1,22 @@
 export { cn } from "cn";
 
+/**
+ * Where to send the user after sign-in. Only same-origin paths are allowed —
+ * "//host" and "/\host" are protocol-relative to browsers, and anything
+ * absolute could be another site or a javascript: URL. Control characters are
+ * refused too, since browsers drop some of them before parsing.
+ */
+export const safeCallbackUrl = (
+  value: string | null | undefined,
+  fallback = "/dashboard",
+): string => {
+  if (!value || !value.startsWith("/") || value.startsWith("//")) {
+    return fallback;
+  }
+  // Browsers strip tab, CR and LF from URLs, so "/\t/host" becomes "//host"
+  return /[\\\u0000-\u001F\u007F]/.test(value) ? fallback : value;
+};
+
 // Helper to parse date strings without timezone shift
 export const parseDate = (date: string | Date): Date => {
   if (date instanceof Date) return date;

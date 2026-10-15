@@ -81,6 +81,17 @@ export const POST = async (req: NextRequest) => {
     const json = await req.json();
     const parsed = invoiceInputSchema.parse(json);
 
+    // A clientId from another user would link their client to this invoice
+    if (
+      parsed.clientId &&
+      !(await prisma.client.findFirst({
+        where: { id: parsed.clientId, userId: session.user.id },
+        select: { id: true },
+      }))
+    ) {
+      return NextResponse.json({ error: "Client not found" }, { status: 400 });
+    }
+
     const pdfInput: InvoicePdfInput = {
       ...parsed,
       invoiceDate: parseDate(parsed.invoiceDate),
