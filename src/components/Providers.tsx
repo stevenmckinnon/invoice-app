@@ -19,19 +19,74 @@ const queryClient = new QueryClient({
   },
 });
 
+/**
+ * A pull only means "refresh the page" when it starts on the page itself. A
+ * touch inside a scroll container or a fixed layer (the chat overlay, sheets,
+ * dialogs, the bottom nav) belongs to that element, even at its scroll top.
+ */
+const canPullFrom = (target: EventTarget | null): boolean => {
+  let el = target instanceof Element ? target : null;
+  while (el && el !== document.body && el !== document.documentElement) {
+    const style = getComputedStyle(el);
+    if (style.position === "fixed") return false;
+    if (
+      /(auto|scroll)/.test(style.overflowY) &&
+      el.scrollHeight > el.clientHeight
+    ) {
+      return false;
+    }
+    el = el.parentElement;
+  }
+  return true;
+};
+
 export const Providers = ({ children }: { children: React.ReactNode }) => {
   useEffect(() => {
     // @ts-expect-error: 'standalone' is a non-standard property used on iOS Safari
-    if (window.navigator.standalone === true) {
-      import("pulltorefreshjs").then(({ default: PullToRefresh }) => {
-        PullToRefresh.init({
-          mainElement: "body",
-          onRefresh() {
-            window.location.reload();
-          },
-        });
+    if (window.navigator.standalone !== true) return;
+
+    // The library's own test is just `!window.scrollY`. That is true for the
+    // whole of /chat (a fixed overlay, so the window never scrolls) and inside
+    // any sheet, dialog or inner scroller while the page behind is at the top,
+    // so dragging a conversation back up reloaded the app. Decide once per
+    // gesture, from where the finger landed, before the library sees it.
+    let pullAllowed = false;
+    const onGestureStart = (event: Event) => {
+      pullAllowed = window.scrollY === 0 && canPullFrom(event.target);
+    };
+    window.addEventListener("touchstart", onGestureStart, {
+      capture: true,
+      passive: true,
+    });
+    window.addEventListener("pointerdown", onGestureStart, {
+      capture: true,
+      passive: true,
+    });
+
+    let destroy: (() => void) | undefined;
+    let cancelled = false;
+    import("pulltorefreshjs").then(({ default: PullToRefresh }) => {
+      if (cancelled) return;
+      const instance = PullToRefresh.init({
+        mainElement: "body",
+        shouldPullToRefresh: () => pullAllowed && window.scrollY === 0,
+        onRefresh() {
+          window.location.reload();
+        },
       });
-    }
+      destroy = () => instance.destroy();
+    });
+
+    return () => {
+      cancelled = true;
+      destroy?.();
+      window.removeEventListener("touchstart", onGestureStart, {
+        capture: true,
+      });
+      window.removeEventListener("pointerdown", onGestureStart, {
+        capture: true,
+      });
+    };
   }, []);
 
   return (
