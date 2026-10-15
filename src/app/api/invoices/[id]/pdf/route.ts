@@ -1,5 +1,7 @@
-import { NextRequest } from "next/server";
+import { headers } from "next/headers";
+import { NextRequest, NextResponse } from "next/server";
 
+import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import {
   generateInvoicePdf,
@@ -12,11 +14,19 @@ export const GET = async (
   req: NextRequest,
   context: { params: Promise<{ id: string }> },
 ) => {
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  });
+
+  if (!session?.user?.id) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   const { id } = await context.params;
   const { searchParams } = new URL(req.url);
   const template = (searchParams.get("template") || "classic") as PdfTemplate;
-  const invoice = await prisma.invoice.findUnique({
-    where: { id },
+  const invoice = await prisma.invoice.findFirst({
+    where: { id, userId: session.user.id },
     include: {
       items: true,
       overtimeEntries: true,
@@ -25,7 +35,7 @@ export const GET = async (
   });
 
   if (!invoice) {
-    return new Response("Not found", { status: 404 });
+    return NextResponse.json({ error: "Invoice not found" }, { status: 404 });
   }
 
   // Transform database data to PDF input format

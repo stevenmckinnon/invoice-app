@@ -7,7 +7,6 @@ export type AuthSession = {
   expiresAt: string;
   ipAddress: string | null;
   userAgent: string | null;
-  token: string;
 };
 
 export const fetchSessions = async (): Promise<AuthSession[]> => {

@@ -27,7 +27,6 @@ export const GET = async () => {
         expiresAt: true,
         ipAddress: true,
         userAgent: true,
-        token: true,
       },
     });
 
