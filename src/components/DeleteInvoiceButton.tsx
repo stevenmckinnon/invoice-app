@@ -71,7 +71,7 @@ export const DeleteInvoiceButton = ({
               handleDelete();
             }}
             disabled={deleteInvoiceMutation.isPending}
-            className="bg-destructive text-white hover:bg-destructive/90"
+            className="bg-destructive text-white hover:bg-destructive/90 dark:bg-destructive/60 dark:hover:bg-destructive/70"
           >
             {deleteInvoiceMutation.isPending ? "Deleting..." : "Delete"}
           </AlertDialogAction>

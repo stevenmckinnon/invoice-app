@@ -199,12 +199,37 @@ export default function Home() {
     .filter((inv) => inv.status === "paid")
     .reduce((sum, inv) => sum + Number(inv.totalAmount), 0);
 
-  const outstandingRevenue = fyInvoices
-    .filter((inv) => inv.status !== "paid")
+  const now = new Date();
+
+  // Outstanding means sent and not yet paid. A draft hasn't been sent, so
+  // nobody owes anything on it yet — it's counted separately.
+  const outstandingInvoices = fyInvoices.filter(
+    (inv) => inv.status === "sent" || inv.status === "overdue",
+  );
+  const outstandingRevenue = outstandingInvoices.reduce(
+    (sum, inv) => sum + Number(inv.totalAmount),
+    0,
+  );
+  const draftRevenue = fyInvoices
+    .filter((inv) => inv.status === "draft")
     .reduce((sum, inv) => sum + Number(inv.totalAmount), 0);
+  const overdueCount = outstandingInvoices.filter(
+    (inv) => inv.status === "overdue",
+  ).length;
+  // Age from the invoice date: the only date we hold. There's no due date
+  // or sent date, so this is "days since invoiced", not "days late".
+  const oldestOutstandingDays = outstandingInvoices.reduce(
+    (max, inv) =>
+      Math.max(
+        max,
+        Math.floor(
+          (now.getTime() - new Date(inv.invoiceDate).getTime()) / 86_400_000,
+        ),
+      ),
+    0,
+  );
 
   // Calculate monthly revenue for trend
-  const now = new Date();
   const currentMonth = now.getMonth();
 
   // "This Month" card: only meaningful when viewing the current financial year
@@ -494,19 +519,34 @@ export default function Home() {
 
           {totalRevenue > 0 && (
             <div className="space-y-2">
+              {/* Paid, then owed, with drafts as the unfilled remainder */}
               <div className="bg-card flex h-2 overflow-hidden rounded-full">
                 <div
                   className="bg-success h-full"
                   style={{ width: `${(paidRevenue / totalRevenue) * 100}%` }}
                 />
+                <div
+                  className="bg-warning h-full"
+                  style={{
+                    width: `${(outstandingRevenue / totalRevenue) * 100}%`,
+                  }}
+                />
               </div>
-              <div className="flex items-center justify-between text-xs font-medium">
+              <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1 text-xs font-medium">
                 <span className="text-success">
                   {formatCurrency(paidRevenue, displayCurrency)} paid
                 </span>
                 <span className="text-muted-foreground">
-                  {formatCurrency(outstandingRevenue, displayCurrency)}{" "}
-                  outstanding
+                  <span className="text-warning">
+                    {formatCurrency(outstandingRevenue, displayCurrency)}{" "}
+                    outstanding
+                  </span>
+                  {draftRevenue > 0 && (
+                    <>
+                      {" · "}
+                      {formatCurrency(draftRevenue, displayCurrency)} in drafts
+                    </>
+                  )}
                 </span>
               </div>
             </div>
@@ -522,7 +562,7 @@ export default function Home() {
               Paid
             </CardTitle>
           </CardHeader>
-          <CardContent className="mt-auto">
+          <CardContent>
             <div className="text-success break-words text-xl font-bold tracking-tight tabular-nums sm:text-3xl">
               {formatCurrency(paidRevenue, displayCurrency)}
             </div>
@@ -539,13 +579,27 @@ export default function Home() {
               Outstanding
             </CardTitle>
           </CardHeader>
-          <CardContent className="mt-auto">
+          <CardContent>
             <div className="text-warning break-words text-xl font-bold tracking-tight tabular-nums sm:text-3xl">
               {formatCurrency(outstandingRevenue, displayCurrency)}
             </div>
             <p className="text-muted-foreground mt-2 text-xs font-medium">
-              {fyInvoices.filter((inv) => inv.status !== "paid").length} unpaid
+              {outstandingInvoices.length} unpaid
+              {overdueCount > 0 && (
+                <>
+                  {" · "}
+                  <span className="text-destructive">
+                    {overdueCount} overdue
+                  </span>
+                </>
+              )}
             </p>
+            {outstandingInvoices.length > 0 && (
+              <p className="text-muted-foreground text-xs font-medium">
+                Oldest invoiced {oldestOutstandingDays} day
+                {oldestOutstandingDays !== 1 ? "s" : ""} ago
+              </p>
+            )}
           </CardContent>
         </Card>
 
