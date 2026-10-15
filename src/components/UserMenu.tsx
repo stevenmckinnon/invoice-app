@@ -19,10 +19,16 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { signOut } from "@/lib/auth-client";
+import { AVATAR_TINT_CLASS, avatarTintStyle } from "@/lib/avatar";
 import { cn } from "@/lib/utils";
 
 interface UserMenuProps {
-  user: { name?: string | null; email?: string | null; image?: string | null };
+  user: {
+    id?: string;
+    name?: string | null;
+    email?: string | null;
+    image?: string | null;
+  };
   /** `header` shows the first name beside the avatar; `rail` is avatar-only
    *  until the rail expands, then a name + email row */
   variant?: "header" | "rail";
@@ -39,6 +45,8 @@ export const UserMenu = ({
 }: UserMenuProps) => {
   const isRail = variant === "rail";
   const initial = (user.name?.[0] || user.email?.[0] || "U").toUpperCase();
+  // Keyed on the id so renaming yourself keeps your colour
+  const tintStyle = avatarTintStyle(user.id || user.email || "");
 
   const handleSignOut = async () => {
     try {
@@ -69,7 +77,10 @@ export const UserMenu = ({
       >
         <Avatar className="h-7 w-7">
           <AvatarImage src={user.image || undefined} alt="Profile photo" />
-          <AvatarFallback className="text-foreground text-xs">
+          <AvatarFallback
+            className={cn("text-xs font-semibold", AVATAR_TINT_CLASS)}
+            style={tintStyle}
+          >
             {initial}
           </AvatarFallback>
         </Avatar>
@@ -97,7 +108,10 @@ export const UserMenu = ({
                   src={user.image || undefined}
                   alt="Profile photo"
                 />
-                <AvatarFallback className="text-foreground text-xs">
+                <AvatarFallback
+            className={cn("text-xs font-semibold", AVATAR_TINT_CLASS)}
+            style={tintStyle}
+          >
                   {initial}
                 </AvatarFallback>
               </Avatar>
