@@ -246,3 +246,12 @@ model Client {
   // Relations
   invoices    Invoice[]
 }
+
+// Fixed-window request counters, keyed by purpose and subject
+// (e.g. "chat:burst:<userId>"). Lives in Postgres so the count is shared
+// across serverless instances; see src/lib/rate-limit.ts.
+model RateLimit {
+  key         String   @id
+  count       Int
+  windowStart DateTime
+}

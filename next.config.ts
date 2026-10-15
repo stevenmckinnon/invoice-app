@@ -1,3 +1,5 @@
+import { withSentryConfig } from "@sentry/nextjs/config";
+
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
@@ -14,4 +16,14 @@ const nextConfig: NextConfig = {
   serverExternalPackages: ["@formepdf/core", "@formepdf/react"],
 };
 
-export default nextConfig;
+// Uploads source maps at build time so stack traces in Sentry point at real
+// source lines. Without SENTRY_AUTH_TOKEN (local builds, CI) the upload is
+// skipped and the build is otherwise unchanged.
+export default withSentryConfig(nextConfig, {
+  org: process.env.SENTRY_ORG,
+  project: process.env.SENTRY_PROJECT,
+  authToken: process.env.SENTRY_AUTH_TOKEN,
+  sourcemaps: { disable: !process.env.SENTRY_AUTH_TOKEN },
+  silent: !process.env.CI,
+  telemetry: false,
+});

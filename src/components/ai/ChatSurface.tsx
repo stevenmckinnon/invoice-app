@@ -2,7 +2,7 @@
 import { PanelRightIcon, SparklesIcon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 
-import { ChatContent } from "@/components/ai/ChatContent";
+import { ChatContent, type ChatSurfaceKind } from "@/components/ai/ChatContent";
 import { useChatSession } from "@/components/ai/ChatProvider";
 import { DraftInvoicePreview } from "@/components/ai/DraftInvoicePreview";
 import { Button } from "@/components/ui/button";
@@ -17,6 +17,8 @@ interface ChatSurfaceProps {
   trailing?: React.ReactNode;
   /** Called when a link inside the surface navigates away */
   onNavigate?: () => void;
+  /** See ChatContent — "canvas" drops the surrounding card on /chat */
+  surface?: ChatSurfaceKind;
 }
 
 /**
@@ -33,6 +35,7 @@ export const ChatSurface = ({
   leading,
   trailing,
   onNavigate,
+  surface = "card",
 }: ChatSurfaceProps) => {
   const {
     draftInvoiceId,
@@ -42,10 +45,16 @@ export const ChatSurface = ({
   } = useChatSession();
 
   const hasDraft = Boolean(draftInvoiceId);
+  const onCanvas = surface === "canvas";
 
   return (
     <>
-      <div className="flex shrink-0 items-center gap-2 px-4 py-3.5">
+      <div
+        className={cn(
+          "flex shrink-0 items-center gap-2 px-4 py-3.5",
+          onCanvas && "mx-auto w-full max-w-3xl",
+        )}
+      >
         {leading}
         <HugeiconsIcon icon={SparklesIcon} className="text-primary size-4 shrink-0" />
         {title}
@@ -75,7 +84,12 @@ export const ChatSurface = ({
           {/* A height-capped flex column, not an overflow-y-auto box: the
               preview scrolls its own line items so the total and "Open in
               editor" stay pinned instead of sitting below the fold. */}
-          <div className="bg-muted/40 flex max-h-[45vh] flex-col overflow-hidden rounded-xl">
+          <div
+            className={cn(
+              "flex max-h-[45vh] flex-col overflow-hidden rounded-xl",
+              onCanvas ? "bg-card shadow-sm dark:border" : "bg-muted/40",
+            )}
+          >
             <DraftInvoicePreview
               invoiceId={draftInvoiceId!}
               isGenerating={isGenerating}
@@ -86,10 +100,18 @@ export const ChatSurface = ({
       )}
 
       <div className="flex min-h-0 flex-1">
-        <ChatContent className="min-w-0 flex-1" />
+        <ChatContent className="min-w-0 flex-1" surface={surface} />
 
         {hasDraft && draftPanelOpen && (
-          <aside className="bg-muted/40 hidden w-[21rem] shrink-0 lg:flex lg:flex-col">
+          <aside
+            className={cn(
+              "hidden w-[21rem] shrink-0 lg:flex lg:flex-col",
+              // On the canvas the draft is its own object, so it gets a card
+              onCanvas
+                ? "bg-card mb-4 overflow-hidden rounded-2xl shadow-sm dark:border"
+                : "bg-muted/40",
+            )}
+          >
             <DraftInvoicePreview
               invoiceId={draftInvoiceId!}
               isGenerating={isGenerating}

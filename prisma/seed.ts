@@ -14,6 +14,7 @@
 import { auth } from "../src/lib/auth";
 import { prisma } from "../src/lib/db";
 import { calculateInvoiceTotals } from "../src/lib/pdf";
+import { formatCurrencyTotals } from "../src/lib/utils";
 
 const SEED_EMAIL = "dev@caley.test";
 const SEED_PASSWORD = "devpassword123";
@@ -89,6 +90,8 @@ const buildInvoice = (input: {
   invoiceDate: string;
   showName: string;
   status: string;
+  /** Defaults to GBP */
+  currency?: string;
   items: SeedItem[];
   overtime?: SeedOvertime[];
   expenses?: SeedExpense[];
@@ -104,8 +107,9 @@ const buildInvoice = (input: {
     cost: e.quantity * e.unitPrice,
   }));
 
+  const currency = input.currency ?? "GBP";
   const totals = calculateInvoiceTotals({
-    currency: "GBP",
+    currency,
     items,
     overtimeEntries,
     customExpenseEntries,
@@ -134,7 +138,7 @@ const buildInvoice = (input: {
     accountNumber: profile.accountNumber,
     sortCode: profile.sortCode,
     bankAddress: profile.bankAddress,
-    currency: "GBP",
+    currency,
     regularHours: 0,
     overtimeHours: 0,
     regularRate: 0,
@@ -307,16 +311,101 @@ const main = async () => {
         { date: "2026-07-29", hours: 3, rateType: "2x" },
       ],
     }),
+
+    // A US-dollar job, so the dashboard's currency picker and the
+    // per-currency totals have something to do
+    buildInvoice({
+      userId: user.id,
+      clientId: wwe.id,
+      client: wwe,
+      invoiceNumber: "INV-2606",
+      invoiceDate: "2026-09-20",
+      showName: "WWE Bad Blood 2026",
+      status: "sent",
+      currency: "USD",
+      items: [
+        { description: "Travel Days", quantity: 2, unitPrice: 650 },
+        { description: "Work Days", quantity: 3, unitPrice: 650 },
+        { description: "Per Diems Work Days", quantity: 3, unitPrice: 75 },
+      ],
+    }),
+
+    // The previous tax year (2025/26), all paid, so year-on-year comparisons
+    // have a baseline. Spread across the year so the chart's reference line
+    // has shape, and one in the 1–5 April window, which belongs to the year
+    // that's ending.
+    buildInvoice({
+      userId: user.id,
+      clientId: wwe.id,
+      client: wwe,
+      invoiceNumber: "INV-2501",
+      invoiceDate: "2025-05-12",
+      showName: "WWE Backlash 2025",
+      status: "paid",
+      items: [
+        { description: "Travel Days", quantity: 2, unitPrice: 500 },
+        { description: "Work Days", quantity: 4, unitPrice: 500 },
+        { description: "Per Diems Work Days", quantity: 4, unitPrice: 50 },
+      ],
+    }),
+    buildInvoice({
+      userId: user.id,
+      clientId: mallard.id,
+      client: mallard,
+      invoiceNumber: "INV-2502",
+      invoiceDate: "2025-07-21",
+      showName: "Riverside Sessions (Series 1)",
+      status: "paid",
+      items: [
+        { description: "Work Days", quantity: 8, unitPrice: 140 },
+        { description: "Per Diems Work Days", quantity: 8, unitPrice: 35 },
+      ],
+    }),
+    buildInvoice({
+      userId: user.id,
+      clientId: wwe.id,
+      client: wwe,
+      invoiceNumber: "INV-2503",
+      invoiceDate: "2025-09-08",
+      showName: "WWE Clash 2025",
+      status: "paid",
+      items: [
+        { description: "Travel Days", quantity: 2, unitPrice: 500 },
+        { description: "Work Days", quantity: 3, unitPrice: 500 },
+      ],
+    }),
+    buildInvoice({
+      userId: user.id,
+      clientId: wwe.id,
+      client: wwe,
+      invoiceNumber: "INV-2504",
+      invoiceDate: "2026-02-16",
+      showName: "WWE Elimination Chamber 2026",
+      status: "paid",
+      items: [
+        { description: "Travel Days", quantity: 2, unitPrice: 525 },
+        { description: "Work Days", quantity: 5, unitPrice: 525 },
+      ],
+    }),
+    buildInvoice({
+      userId: user.id,
+      clientId: mallard.id,
+      client: mallard,
+      invoiceNumber: "INV-2505",
+      invoiceDate: "2026-04-03",
+      showName: "Harbour Lights Read-through",
+      status: "paid",
+      items: [{ description: "Work Days", quantity: 2, unitPrice: 150 }],
+    }),
   ];
 
   for (const data of invoices) {
     await prisma.invoice.create({ data: data as never });
   }
 
-  const total = invoices.reduce((s, i) => s + Number(i.totalAmount), 0);
   console.log(`Seeded ${SEED_EMAIL} / ${SEED_PASSWORD}`);
   console.log(
-    `  3 clients (1 with tiered overtime), ${invoices.length} invoices, £${total.toFixed(2)} billed`,
+    `  3 clients (1 with tiered overtime), ${invoices.length} invoices across two tax years, ${formatCurrencyTotals(invoices)} billed`,
   );
 };
 

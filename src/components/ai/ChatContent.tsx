@@ -2,11 +2,15 @@
 
 import { useEffect, useState } from "react";
 
-import { Alert01Icon, Copy01Icon, Refresh01Icon, Tick01Icon } from "@hugeicons/core-free-icons";
+import { Alert01Icon, Clock01Icon, Copy01Icon, Refresh01Icon, Tick01Icon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { isTextUIPart, type ToolUIPart, type UIMessage } from "ai";
 
 import { useChatSession } from "@/components/ai/ChatProvider";
+import {
+  InvoiceToolProgress,
+  isInvoiceToolPart,
+} from "@/components/ai/InvoiceToolProgress";
 import {
   Conversation,
   ConversationContent,
@@ -52,9 +56,20 @@ const THINKING_MESSAGES = [
   "Doing the maths…",
 ];
 
-const TOOL_TITLES: Record<string, string> = {
-  "tool-createInvoiceDraft": "Create invoice draft",
-  "tool-updateInvoiceDraft": "Update invoice draft",
+/**
+ * The chat transport turns a failed response's body into the error message,
+ * so a 429 from /api/chat arrives as its JSON. Anything else is a real fault.
+ */
+const getRateLimitMessage = (error: Error | undefined): string | null => {
+  if (!error) return null;
+  try {
+    const body = JSON.parse(error.message);
+    return body?.error === "rate_limited" && typeof body.message === "string"
+      ? body.message
+      : null;
+  } catch {
+    return null;
+  }
 };
 
 const getMessageText = (message: UIMessage): string =>
@@ -65,20 +80,33 @@ const getMessageText = (message: UIMessage): string =>
 
 /** Mounts fresh for each pending turn, so the cycle always starts at the top */
 const ThinkingIndicator = () => {
-  const [index, setIndex] = useState(0);
+  // Elapsed tenths of a second; the label advances every 25 of them (2.5s).
+  // A ticking clock tells the user it's working, not stuck.
+  const [tenths, setTenths] = useState(0);
 
   useEffect(() => {
+    const start = performance.now();
     const interval = setInterval(
-      () => setIndex((i) => (i + 1) % THINKING_MESSAGES.length),
-      2500,
+      () => setTenths(Math.floor((performance.now() - start) / 100)),
+      100,
     );
     return () => clearInterval(interval);
   }, []);
 
+  const index = Math.floor(tenths / 25) % THINKING_MESSAGES.length;
+
   return (
-    <Shimmer className="text-muted-foreground text-sm">
-      {THINKING_MESSAGES[index]}
-    </Shimmer>
+    <div className="flex items-baseline gap-2">
+      <Shimmer className="text-muted-foreground text-sm">
+        {THINKING_MESSAGES[index]}
+      </Shimmer>
+      <span
+        className="text-muted-foreground font-mono text-xs tabular-nums"
+        aria-hidden
+      >
+        {(tenths / 10).toFixed(1)}s
+      </span>
+    </div>
   );
 };
 
@@ -146,7 +174,27 @@ const AssistantActions = ({
   );
 };
 
-export const ChatContent = ({ className }: { className?: string }) => {
+export type ChatSurfaceKind = "card" | "canvas";
+
+// On the canvas the composer is the one raised surface, so it takes the card
+// colour and a shadow instead of a border. Doubled with dark: because the
+// input group's own dark:bg-input/30 ties on specificity otherwise.
+const canvasComposer =
+  "[&_[data-slot=input-group]]:bg-card dark:[&_[data-slot=input-group]]:bg-card [&_[data-slot=input-group]]:rounded-2xl [&_[data-slot=input-group]]:border-transparent dark:[&_[data-slot=input-group]]:border-border [&_[data-slot=input-group]]:shadow-md";
+
+export const ChatContent = ({
+  className,
+  surface = "card",
+}: {
+  className?: string;
+  /**
+   * "card" when the chat sits on its own white surface (the drawer);
+   * "canvas" when it sits straight on the page background (/chat), where
+   * a card around it would be one layer too many.
+   */
+  surface?: ChatSurfaceKind;
+}) => {
+  const onCanvas = surface === "canvas";
   const {
     messages,
     sendMessage,
@@ -171,6 +219,8 @@ export const ChatContent = ({ className }: { className?: string }) => {
     regenerate();
   };
 
+  const rateLimitMessage = getRateLimitMessage(error);
+
   const visibleMessages = messages.filter(
     (m) => m.role === "user" || m.role === "assistant",
   );
@@ -187,7 +237,9 @@ export const ChatContent = ({ className }: { className?: string }) => {
   return (
     <div className={cn("flex min-h-0 flex-1 flex-col", className)}>
       <Conversation className="flex-1">
-        <ConversationContent>
+        <ConversationContent
+          className={cn(onCanvas && "mx-auto w-full max-w-3xl")}
+        >
           {mounted && visibleMessages.length === 0 ? (
             <div className="flex flex-col gap-4 pt-2">
               <p className="text-muted-foreground text-sm">
@@ -200,6 +252,10 @@ export const ChatContent = ({ className }: { className?: string }) => {
                     key={s}
                     suggestion={s}
                     onClick={(text) => sendMessage({ text })}
+                    className={cn(
+                      onCanvas &&
+                        "bg-card dark:bg-card dark:border-border border-transparent shadow-xs",
+                    )}
                   />
                 ))}
               </Suggestions>
@@ -219,12 +275,28 @@ export const ChatContent = ({ className }: { className?: string }) => {
                     }
                     if (part.type.startsWith("tool-")) {
                       const toolPart = part as ToolUIPart;
+                      if (isInvoiceToolPart(toolPart)) {
+                        return (
+                          <InvoiceToolProgress
+                            key={i}
+                            part={toolPart}
+                            live={
+                              isGenerating &&
+                              messageIndex === visibleMessages.length - 1
+                            }
+                            className={
+                              onCanvas
+                                ? "bg-card shadow-sm dark:border"
+                                : "bg-muted/50"
+                            }
+                          />
+                        );
+                      }
                       return (
                         <Tool key={i}>
                           <ToolHeader
                             type={toolPart.type}
                             state={toolPart.state}
-                            title={TOOL_TITLES[toolPart.type]}
                           />
                           <ToolContent>
                             <ToolInput input={toolPart.input} />
@@ -273,34 +345,52 @@ export const ChatContent = ({ className }: { className?: string }) => {
           {/* Without this the request just vanishes: the thinking indicator
               stops and nothing replaces it, leaving the user staring at their
               own message with no idea whether it is still working. */}
-          {error && (
-            <div className="bg-destructive/10 flex flex-col gap-2 rounded-xl px-4 py-3">
-              <div className="text-destructive flex items-start gap-2 text-sm">
-                <HugeiconsIcon icon={Alert01Icon} className="mt-0.5 size-4 shrink-0" />
-                <p className="min-w-0">
-                  Something went wrong reaching the assistant. Your message
-                  wasn&apos;t lost — try again.
-                </p>
+          {error &&
+            (rateLimitMessage ? (
+              // Not a fault, so not red, and no retry button — retrying is
+              // exactly what won't work until the window resets
+              <div className="bg-muted/60 text-muted-foreground flex items-start gap-2 rounded-xl px-4 py-3 text-sm">
+                <HugeiconsIcon icon={Clock01Icon} className="mt-0.5 size-4 shrink-0" />
+                <p className="min-w-0">{rateLimitMessage}</p>
               </div>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleRetry}
-                className="self-start"
-              >
-                <HugeiconsIcon icon={Refresh01Icon} className="size-3.5" />
-                Try again
-              </Button>
-            </div>
-          )}
+            ) : (
+              <div className="bg-destructive/10 flex flex-col gap-2 rounded-xl px-4 py-3">
+                <div className="text-destructive flex items-start gap-2 text-sm">
+                  <HugeiconsIcon icon={Alert01Icon} className="mt-0.5 size-4 shrink-0" />
+                  <p className="min-w-0">
+                    Something went wrong reaching the assistant. Your message
+                    wasn&apos;t lost — try again.
+                  </p>
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleRetry}
+                  className="self-start"
+                >
+                  <HugeiconsIcon icon={Refresh01Icon} className="size-3.5" />
+                  Try again
+                </Button>
+              </div>
+            ))}
         </ConversationContent>
         <ConversationScrollButton />
       </Conversation>
 
-      {/* Separated from the conversation by a lift rather than a hairline —
-          the same way cards separate from the canvas everywhere else. */}
-      <div className="shrink-0 px-4 pt-2 pb-4 shadow-[0_-8px_16px_-12px_var(--shadow-color)]">
-        <PromptInput onSubmit={handleSubmit}>
+      {/* In a card, separated from the conversation by a lift rather than a
+          hairline. On the canvas the composer floats on its own shadow. */}
+      <div
+        className={cn(
+          "shrink-0 px-4 pt-2 pb-4",
+          onCanvas
+            ? "mx-auto w-full max-w-3xl md:pb-6"
+            : "shadow-[0_-8px_16px_-12px_var(--shadow-color)]",
+        )}
+      >
+        <PromptInput
+          onSubmit={handleSubmit}
+          className={cn(onCanvas && canvasComposer)}
+        >
           <PromptInputTextarea
             placeholder="Ask anything about your invoices…"
             // 16px at every breakpoint — below 16px iOS/iPadOS Safari zooms

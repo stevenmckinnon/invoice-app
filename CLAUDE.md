@@ -12,6 +12,7 @@ pnpm build        # Production build (runs prisma generate first)
 pnpm lint         # ESLint check
 pnpm lint:fix     # ESLint auto-fix
 pnpm test         # Node's test runner via tsx
+pnpm typecheck    # tsc --noEmit
 
 pnpm db:migrate   # Run pending migrations (prisma migrate deploy)
 pnpm db:push      # Push schema changes without migration (dev only)
@@ -43,7 +44,7 @@ Reseeding replaces the user, but the Better Auth session cookie cache serves the
 
 Seed credentials: `dev@caley.test` / `devpassword123`. The seed (`prisma/seed.ts`) builds the user through better-auth so the password hash is one it can verify, computes invoice totals with `calculateInvoiceTotals` so seeded rows can't disagree with what the app renders, and **refuses to run against a non-local host** (override with `SEED_ALLOW_REMOTE=1`). Re-running is safe — the seeded user is deleted first and everything cascades.
 
-It seeds three clients (one with tiered overtime, one without, one with no rates at all) and five invoices across every status.
+It seeds three clients (one with tiered overtime, one without, one with no rates at all) and eleven invoices: six in the current tax year across every status (one billed in USD, so the dashboard currency picker appears) and five paid ones in the previous year, so year-on-year comparisons have a baseline. One of those is dated 3 April, inside the 1–5 April window that belongs to the year ending.
 
 ⚠️ **Use `db:push`, not `db:migrate`, on a fresh database.** `20250116000000_add_client_model` sorts before `20251014163218_init_postgres` but references `Invoice`, so replaying the migration history from empty fails at step one. The live database predates the divergence and is fine; `migrate deploy` still works there for new migrations.
 
@@ -110,6 +111,11 @@ Uses **AI SDK v7** (`ai` 7.x, `@ai-sdk/react` 4.x, `@ai-sdk/anthropic` 4.x). v7 
 
 The API route at `src/app/api/chat/route.ts` loads user profile, clients, and invoice stats as instructions context, then provides two tools: `createInvoiceDraft` and `updateInvoiceDraft`.
 
+### CI and production safeguards
+
+- **CI** (`.github/workflows/ci.yml`) runs lint, typecheck and the full test suite on every push to `main` and every PR, against a throwaway `postgres:17` service on the same port as `compose.yaml`, so the database-backed tests run rather than skip.
+- **Rate limiting** — `/api/chat` allows 20 requests per 10 minutes and 200 per day per user (`CHAT_RATE_LIMITS` in the route). Counters live in the `RateLimit` table (`src/lib/rate-limit.ts`), one atomic upsert per window, so they hold across serverless instances. A 429 returns JSON that `ChatContent` shows as a plain notice instead of the error box.
+
 ### Environment Variables
 
 - `ANTHROPIC_API_KEY` — Anthropic API key for the AI chat feature
@@ -118,3 +124,5 @@ The API route at `src/app/api/chat/route.ts` loads user profile, clients, and in
 - `BETTER_AUTH_URL` / `NEXT_PUBLIC_APP_URL` — canonical app URL
 - `RESEND_API_KEY` — email sending (password reset); optional in dev (link logged to console)
 - `EMAIL_FROM` — sender address (`onboarding@resend.dev` works for dev)
+- `NEXT_PUBLIC_SENTRY_DSN` — Sentry error reporting. Optional: without it Sentry is inert, and it only ever reports from production builds. Options live in `src/lib/sentry-options.ts`; Session Replay is deliberately off because invoice views show banking details
+- `SENTRY_ORG` / `SENTRY_PROJECT` / `SENTRY_AUTH_TOKEN` — build-time only, for uploading source maps. Without the token the upload is skipped

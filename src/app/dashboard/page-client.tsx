@@ -44,7 +44,8 @@ import {
 import { useInvoices } from "@/hooks/use-invoices";
 import { useSession } from "@/lib/auth-client";
 import { INVOICE_STATUSES } from "@/lib/invoice-status";
-import { formatCurrency, formatDate, getGreeting } from "@/lib/utils";
+import { formatFy, getFyMonthIndex, getFyStart } from "@/lib/tax-year";
+import { cn, formatCurrency, formatDate, getGreeting } from "@/lib/utils";
 
 // Aggregated stats need a single display currency — use the most common one
 const dominantCurrency = (invoices: { currency: string }[]): string => {
@@ -62,21 +63,15 @@ const dominantCurrency = (invoices: { currency: string }[]): string => {
   return best;
 };
 
-// UK financial (tax) year runs 6 April – 5 April. A date's FY is identified
-// by the calendar year it starts in (e.g. 1 Feb 2026 → FY 2025/26).
-const getFyStart = (date: Date): number => {
-  const month = date.getMonth();
-  const isBeforeApril6 = month < 3 || (month === 3 && date.getDate() < 6);
-  return isBeforeApril6 ? date.getFullYear() - 1 : date.getFullYear();
-};
-
-const formatFy = (fyStart: number): string =>
-  `${fyStart}/${String((fyStart + 1) % 100).padStart(2, "0")}`;
 
 export default function Home() {
   const { data: session, isPending } = useSession();
   const router = useRouter();
-  const { data: invoices = [], isLoading, error } = useInvoices();
+  const { data: allInvoices = [], isLoading, error } = useInvoices();
+  // null = follow the most common currency until the user picks one
+  const [selectedCurrency, setSelectedCurrency] = useState<string | null>(
+    null,
+  );
   const [chartColors, setChartColors] = useState({
     primary: "#3b82f6",
     muted: "#9ca3af",
@@ -161,23 +156,34 @@ export default function Home() {
 
   // Derive available financial years from invoice dates, always include current
   const availableFys =
-    invoices.length > 0
+    allInvoices.length > 0
       ? Array.from(
           new Set([
             currentFy,
-            ...invoices.map((inv) => getFyStart(new Date(inv.invoiceDate))),
+            ...allInvoices.map((inv) => getFyStart(new Date(inv.invoiceDate))),
           ]),
         ).sort((a, b) => b - a)
       : [currentFy];
+
+  // Every figure on this page is in one currency. Adding £ and $ together as
+  // if they were the same unit gives a total that means nothing, and
+  // converting needs a rate for each invoice's date, which we don't hold.
+  const currencies = [...new Set(allInvoices.map((inv) => inv.currency))];
+  const displayCurrency =
+    selectedCurrency && currencies.includes(selectedCurrency)
+      ? selectedCurrency
+      : dominantCurrency(allInvoices);
+  const invoices = allInvoices.filter(
+    (inv) => inv.currency === displayCurrency,
+  );
 
   // Filter invoices to the selected financial year
   const fyInvoices = invoices.filter(
     (inv) => getFyStart(new Date(inv.invoiceDate)) === selectedFy,
   );
 
-  const displayCurrency = dominantCurrency(fyInvoices);
-
-  const sortedInvoices = [...invoices]
+  // The recent list shows each invoice in its own currency, so it uses all
+  const sortedInvoices = [...allInvoices]
     .sort(
       (a, b) =>
         new Date(b.invoiceDate).getTime() - new Date(a.invoiceDate).getTime(),
@@ -198,40 +204,62 @@ export default function Home() {
     .reduce((sum, inv) => sum + Number(inv.totalAmount), 0);
 
   // Calculate monthly revenue for trend
-  const currentMonth = new Date().getMonth();
+  const now = new Date();
+  const currentMonth = now.getMonth();
 
   // "This Month" card: only meaningful when viewing the current financial year
   const isCurrentFy = selectedFy === currentFy;
 
+  const sumAmounts = (list: typeof invoices) =>
+    list.reduce((sum, inv) => sum + Number(inv.totalAmount), 0);
+
   const currentMonthRevenue = isCurrentFy
-    ? fyInvoices
-        .filter((inv) => new Date(inv.invoiceDate).getMonth() === currentMonth)
-        .reduce((sum, inv) => sum + Number(inv.totalAmount), 0)
+    ? sumAmounts(
+        fyInvoices.filter(
+          (inv) => new Date(inv.invoiceDate).getMonth() === currentMonth,
+        ),
+      )
     : 0;
 
-  const lastMonthRevenue = isCurrentFy
-    ? invoices
-        .filter((inv) => {
-          const invDate = new Date(inv.invoiceDate);
-          const lastMonth = currentMonth === 0 ? 11 : currentMonth - 1;
-          const lastMonthYear =
-            currentMonth === 0
-              ? new Date().getFullYear() - 1
-              : new Date().getFullYear();
-          return (
-            invDate.getMonth() === lastMonth &&
-            invDate.getFullYear() === lastMonthYear
-          );
-        })
-        .reduce((sum, inv) => sum + Number(inv.totalAmount), 0)
-    : 0;
+  // Month-to-date against the same day last month. Comparing a part-month to
+  // a whole one reads as a slump every month until about the 25th.
+  const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+  const lastMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+  const daysInLastMonth = new Date(
+    now.getFullYear(),
+    now.getMonth(),
+    0,
+  ).getDate();
+  const sameDayLastMonth = new Date(
+    lastMonthStart.getFullYear(),
+    lastMonthStart.getMonth(),
+    Math.min(now.getDate(), daysInLastMonth),
+    23,
+    59,
+    59,
+    999,
+  );
+  const revenueBetween = (from: Date, to: Date) =>
+    sumAmounts(
+      invoices.filter((inv) => {
+        const date = new Date(inv.invoiceDate);
+        return date >= from && date <= to;
+      }),
+    );
+  const monthToDateRevenue = revenueBetween(monthStart, now);
+  const lastMonthToDateRevenue = revenueBetween(
+    lastMonthStart,
+    sameDayLastMonth,
+  );
 
+  // null when last month had nothing by this point: any percentage against
+  // zero is made up, so the chip is hidden instead
   const monthlyChange =
-    lastMonthRevenue > 0
-      ? ((currentMonthRevenue - lastMonthRevenue) / lastMonthRevenue) * 100
-      : currentMonthRevenue > 0
-        ? 100
-        : 0;
+    isCurrentFy && lastMonthToDateRevenue > 0
+      ? ((monthToDateRevenue - lastMonthToDateRevenue) /
+          lastMonthToDateRevenue) *
+        100
+      : null;
 
   // Best month revenue for past years
   const bestMonthRevenue = !isCurrentFy
@@ -291,45 +319,69 @@ export default function Home() {
   const averageInvoice =
     fyInvoices.length > 0 ? totalRevenue / fyInvoices.length : 0;
 
-  // Revenue chart — financial-year order: April through March
-  const months = Array.from({ length: 12 }, (_, i) => {
+  // Revenue chart — financial-year order: April through March, with the
+  // previous year drawn behind it as a like-for-like reference
+  const monthlyTotals = (fyStart: number) => {
+    const totals = { revenue: Array<number>(12).fill(0), count: Array<number>(12).fill(0) };
+    for (const inv of invoices) {
+      const date = new Date(inv.invoiceDate);
+      if (getFyStart(date) !== fyStart) continue;
+      const i = getFyMonthIndex(date);
+      totals.revenue[i] += Number(inv.totalAmount);
+      totals.count[i] += 1;
+    }
+    return totals;
+  };
+
+  const selectedTotals = monthlyTotals(selectedFy);
+  const previousTotals = monthlyTotals(selectedFy - 1);
+  const hasPreviousFy = previousTotals.count.some((n) => n > 0);
+
+  // In the current year, months that haven't happened yet have no value
+  // rather than £0 — otherwise the line falls to the floor and reads as a
+  // collapse in income
+  const lastElapsedMonth = isCurrentFy ? getFyMonthIndex(now) : 11;
+
+  const revenueData = Array.from({ length: 12 }, (_, i) => {
     const calendarMonth = (i + 3) % 12;
     const calendarYear = calendarMonth < 3 ? selectedFy + 1 : selectedFy;
     return {
       month: new Date(calendarYear, calendarMonth).toLocaleDateString("en-GB", {
         month: "short",
       }),
-      monthIndex: calendarMonth,
+      revenue: i <= lastElapsedMonth ? selectedTotals.revenue[i] : null,
+      invoices: selectedTotals.count[i],
+      previous: hasPreviousFy ? previousTotals.revenue[i] : null,
     };
   });
 
-  const revenueData = months.map(({ month, monthIndex }) => {
-    const monthRevenue = fyInvoices
-      .filter((inv) => new Date(inv.invoiceDate).getMonth() === monthIndex)
-      .reduce((sum, inv) => sum + Number(inv.totalAmount), 0);
-
-    return {
-      month,
-      revenue: monthRevenue,
-      invoices: fyInvoices.filter(
-        (inv) => new Date(inv.invoiceDate).getMonth() === monthIndex,
-      ).length,
-    };
+  // Year-to-date against the same point last year. Comparing a part-year to
+  // a whole one always looks like a decline, so the current year is cut at
+  // today and last year at today's date a year ago.
+  const sameDayLastYear = new Date(now);
+  sameDayLastYear.setFullYear(now.getFullYear() - 1);
+  // Used by both the chart chip and the Year Performance card, so the two
+  // can never disagree about how this year is doing.
+  const revenueUpTo = (fyStart: number, cutoff: Date | null) =>
+    sumAmounts(
+      invoices.filter((inv) => {
+        const date = new Date(inv.invoiceDate);
+        return getFyStart(date) === fyStart && (!cutoff || date <= cutoff);
+      }),
+    );
+  const toDateRevenue = revenueUpTo(selectedFy, isCurrentFy ? now : null);
+  const previousToDateRevenue = revenueUpTo(
+    selectedFy - 1,
+    isCurrentFy ? sameDayLastYear : null,
+  );
+  const toDateChange =
+    previousToDateRevenue > 0
+      ? ((toDateRevenue - previousToDateRevenue) / previousToDateRevenue) * 100
+      : null;
+  const toDateLabel = now.toLocaleDateString("en-GB", {
+    day: "numeric",
+    month: "short",
   });
-
-  // Financial year comparison — selected FY vs previous FY
-  const selectedFyRevenue = totalRevenue;
-
-  const prevFyRevenue = invoices
-    .filter((inv) => getFyStart(new Date(inv.invoiceDate)) === selectedFy - 1)
-    .reduce((sum, inv) => sum + Number(inv.totalAmount), 0);
-
-  const fyChange =
-    prevFyRevenue > 0
-      ? ((selectedFyRevenue - prevFyRevenue) / prevFyRevenue) * 100
-      : selectedFyRevenue > 0
-        ? 100
-        : 0;
 
   return (
     <div className="mx-auto grid w-full max-w-6xl grid-cols-1 gap-6 p-6 py-10 md:pb-8">
@@ -370,6 +422,24 @@ export default function Home() {
                 ))}
               </SelectContent>
             </Select>
+            {/* Only when there's a choice to make — most users bill in one */}
+            {currencies.length > 1 && (
+              <Select
+                value={displayCurrency}
+                onValueChange={(val) => val && setSelectedCurrency(val)}
+              >
+                <SelectTrigger className="w-[90px]" aria-label="Currency">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {currencies.map((code) => (
+                    <SelectItem key={code} value={code}>
+                      {code}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
             <Button
               nativeButton={false}
               render={
@@ -395,7 +465,7 @@ export default function Home() {
             <div className="min-w-0 break-words text-4xl font-bold tracking-tight tabular-nums sm:text-5xl">
               {formatCurrency(totalRevenue, displayCurrency)}
             </div>
-            {isCurrentFy && lastMonthRevenue > 0 ? (
+            {monthlyChange !== null ? (
               <div className="bg-card flex items-center gap-1.5 rounded-full py-1.5 pr-3 pl-2.5 shadow-xs">
                 {monthlyChange >= 0 ? (
                   <HugeiconsIcon icon={AnalyticsUpIcon} className="text-success h-4 w-4" />
@@ -407,11 +477,11 @@ export default function Home() {
                     monthlyChange >= 0 ? "text-success" : "text-destructive"
                   }`}
                 >
-                  {monthlyChange >= 0 ? "+" : "-"}
+                  {monthlyChange >= 0 ? "+" : "−"}
                   {Math.abs(monthlyChange).toFixed(1)}%
                 </span>
                 <span className="text-muted-foreground text-xs font-medium">
-                  vs last month
+                  this month, vs this point last month
                 </span>
               </div>
             ) : (
@@ -496,20 +566,55 @@ export default function Home() {
         </Card>
       </div>
 
-      {/* Revenue Trend Chart */}
+      {/* Revenue by month — the hero already carries the total, so this
+          card's headline is the like-for-like comparison */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-xl">
-            {formatFy(selectedFy)} Revenue
-          </CardTitle>
+          <div className="flex flex-wrap items-start justify-between gap-x-6 gap-y-3">
+            <div className="space-y-2">
+              <CardTitle className="text-xl">Revenue by month</CardTitle>
+              {toDateChange !== null && (
+                <div className="flex flex-wrap items-center gap-2 text-xs font-medium">
+                  <span
+                    className={cn(
+                      "rounded-full px-2 py-0.5 font-semibold tabular-nums",
+                      toDateChange >= 0
+                        ? "bg-success/12 text-success"
+                        : "bg-destructive/10 text-destructive",
+                    )}
+                  >
+                    {toDateChange >= 0 ? "+" : "−"}
+                    {Math.abs(toDateChange).toFixed(1)}%
+                  </span>
+                  <span className="text-muted-foreground">
+                    {isCurrentFy
+                      ? "vs this point last year"
+                      : `vs ${formatFy(selectedFy - 1)}`}
+                  </span>
+                </div>
+              )}
+            </div>
+            {hasPreviousFy && fyInvoices.length > 0 && (
+              <ul className="text-muted-foreground flex items-center gap-4 text-xs font-medium">
+                <li className="flex items-center gap-1.5">
+                  <span className="bg-primary h-0.5 w-3 rounded-full" />
+                  {formatFy(selectedFy)}
+                </li>
+                <li className="flex items-center gap-1.5">
+                  <span className="border-muted-foreground h-0 w-3 border-t-2 border-dashed" />
+                  {formatFy(selectedFy - 1)}
+                </li>
+              </ul>
+            )}
+          </div>
         </CardHeader>
-        <CardContent className="px-0 py-6 md:px-4">
+        <CardContent className="px-0 pb-2 md:px-4">
           {fyInvoices.length > 0 ? (
-            <div className="h-[320px] w-full">
+            <div className="h-[300px] w-full">
               <ResponsiveContainer width="100%" height="100%">
                 <AreaChart
                   data={revenueData}
-                  margin={{ top: 20, right: 30, left: 20, bottom: 20 }}
+                  margin={{ top: 8, right: 24, left: 8, bottom: 8 }}
                 >
                   <defs>
                     <linearGradient
@@ -520,21 +625,21 @@ export default function Home() {
                       y2="1"
                     >
                       <stop
-                        offset="5%"
+                        offset="0%"
                         stopColor={chartColors.primary}
-                        stopOpacity={0.8}
+                        stopOpacity={0.28}
                       />
                       <stop
-                        offset="95%"
+                        offset="100%"
                         stopColor={chartColors.primary}
-                        stopOpacity={0.1}
+                        stopOpacity={0}
                       />
                     </linearGradient>
                   </defs>
                   <CartesianGrid
-                    strokeDasharray="1 3"
+                    vertical={false}
                     stroke={chartColors.grid}
-                    strokeOpacity={0.3}
+                    strokeOpacity={0.6}
                   />
                   <XAxis
                     dataKey="month"
@@ -542,7 +647,7 @@ export default function Home() {
                     tickLine={false}
                     axisLine={false}
                     tick={{ fill: chartColors.muted }}
-                    dy={5}
+                    dy={8}
                   />
                   <YAxis
                     fontSize={12}
@@ -552,30 +657,73 @@ export default function Home() {
                     tickFormatter={(value) =>
                       formatCurrency(value, displayCurrency, { decimals: 0 })
                     }
-                    dx={-5}
+                    width={64}
                   />
                   <RechartsTooltip
-                    contentStyle={{
-                      backgroundColor: chartColors.cardBg,
-                      border: `1px solid ${chartColors.border}`,
-                      borderRadius: "8px",
-                      boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.3)",
+                    cursor={{ stroke: chartColors.muted, strokeOpacity: 0.4 }}
+                    content={({ active, payload, label }) => {
+                      if (!active || !payload?.length) return null;
+                      const point = payload[0].payload as (typeof revenueData)[number];
+                      return (
+                        <div className="bg-popover text-popover-foreground dark:border-border min-w-40 rounded-xl px-3 py-2.5 text-xs shadow-lg dark:border">
+                          <p className="mb-1.5 font-semibold">{label}</p>
+                          {point.revenue !== null && (
+                            <div className="flex items-center justify-between gap-4">
+                              <span className="text-muted-foreground">
+                                {formatFy(selectedFy)}
+                              </span>
+                              <span className="font-semibold tabular-nums">
+                                {formatCurrency(point.revenue, displayCurrency)}
+                              </span>
+                            </div>
+                          )}
+                          {point.previous !== null && (
+                            <div className="flex items-center justify-between gap-4">
+                              <span className="text-muted-foreground">
+                                {formatFy(selectedFy - 1)}
+                              </span>
+                              <span className="text-muted-foreground tabular-nums">
+                                {formatCurrency(point.previous, displayCurrency)}
+                              </span>
+                            </div>
+                          )}
+                          {point.revenue !== null && point.invoices > 0 && (
+                            <p className="text-muted-foreground mt-1.5">
+                              {point.invoices} invoice
+                              {point.invoices !== 1 ? "s" : ""}
+                            </p>
+                          )}
+                        </div>
+                      );
                     }}
-                    labelStyle={{
-                      fontWeight: "600",
-                      marginBottom: "4px",
-                    }}
-                    formatter={(value) => [
-                      formatCurrency(Number(value ?? 0), displayCurrency),
-                      "Revenue",
-                    ]}
                   />
+                  {hasPreviousFy && (
+                    <Area
+                      type="monotone"
+                      dataKey="previous"
+                      stroke={chartColors.muted}
+                      strokeOpacity={0.7}
+                      strokeWidth={1.5}
+                      strokeDasharray="4 4"
+                      fill="none"
+                      dot={false}
+                      activeDot={false}
+                      animationDuration={600}
+                    />
+                  )}
                   <Area
                     type="monotone"
                     dataKey="revenue"
                     stroke={chartColors.primary}
                     strokeWidth={2}
                     fill="url(#colorRevenue)"
+                    dot={false}
+                    activeDot={{
+                      r: 4,
+                      fill: chartColors.primary,
+                      stroke: chartColors.cardBg,
+                      strokeWidth: 2,
+                    }}
                     animationDuration={800}
                   />
                 </AreaChart>
@@ -804,7 +952,7 @@ export default function Home() {
                     displayCurrency,
                   )}
                 </p>
-                {isCurrentFy && (
+                {monthlyChange !== null && (
                   <div className="flex items-center gap-1">
                     {monthlyChange >= 0 ? (
                       <HugeiconsIcon icon={AnalyticsUpIcon} className="text-success h-3 w-3" />
@@ -816,8 +964,9 @@ export default function Home() {
                         monthlyChange >= 0 ? "text-success" : "text-destructive"
                       }`}
                     >
-                      {monthlyChange >= 0 ? "+" : "-"}
-                      {Math.abs(monthlyChange).toFixed(1)}% from last month
+                      {monthlyChange >= 0 ? "+" : "−"}
+                      {Math.abs(monthlyChange).toFixed(1)}% vs this point last
+                      month
                     </p>
                   </div>
                 )}
@@ -874,76 +1023,70 @@ export default function Home() {
           <CardHeader>
             <CardTitle className="text-base">Year Performance</CardTitle>
             <p className="text-muted-foreground text-sm font-medium">
-              {formatFy(selectedFy)} vs {formatFy(selectedFy - 1)}
+              {isCurrentFy
+                ? `To ${toDateLabel}, vs the same point in ${formatFy(selectedFy - 1)}`
+                : `${formatFy(selectedFy)} vs ${formatFy(selectedFy - 1)}`}
             </p>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              <div>
-                <div className="mb-2 flex items-center justify-between">
-                  <span className="text-sm font-medium">
-                    {formatFy(selectedFy)}
-                  </span>
-                  <span className="text-sm font-bold tabular-nums">
-                    {formatCurrency(selectedFyRevenue, displayCurrency)}
-                  </span>
+              {[
+                {
+                  fy: selectedFy,
+                  revenue: toDateRevenue,
+                  barClass: "bg-primary",
+                },
+                {
+                  fy: selectedFy - 1,
+                  revenue: previousToDateRevenue,
+                  barClass: "bg-muted-foreground/50",
+                },
+              ].map(({ fy, revenue, barClass }) => (
+                <div key={fy}>
+                  <div className="mb-2 flex items-center justify-between">
+                    <span className="text-sm font-medium">{formatFy(fy)}</span>
+                    <span className="text-sm font-bold tabular-nums">
+                      {formatCurrency(revenue, displayCurrency)}
+                    </span>
+                  </div>
+                  <div className="bg-muted h-2 overflow-hidden rounded-full">
+                    <div
+                      className={cn("h-full rounded-full", barClass)}
+                      style={{
+                        width: `${
+                          (revenue /
+                            Math.max(toDateRevenue, previousToDateRevenue, 1)) *
+                          100
+                        }%`,
+                      }}
+                    />
+                  </div>
                 </div>
-                <div className="bg-muted h-2 overflow-hidden rounded-full">
-                  <div
-                    className="bg-primary h-full rounded-full"
-                    style={{
-                      width: `${Math.min(
-                        100,
-                        (selectedFyRevenue /
-                          Math.max(selectedFyRevenue, prevFyRevenue, 1)) *
-                          100,
-                      )}%`,
-                    }}
-                  />
-                </div>
-              </div>
-              <div>
-                <div className="mb-2 flex items-center justify-between">
-                  <span className="text-sm font-medium">
-                    {formatFy(selectedFy - 1)}
-                  </span>
-                  <span className="text-sm font-bold tabular-nums">
-                    {formatCurrency(prevFyRevenue, displayCurrency)}
-                  </span>
-                </div>
-                <div className="bg-muted h-2 overflow-hidden rounded-full">
-                  <div
-                    className="bg-muted-foreground/50 h-full rounded-full"
-                    style={{
-                      width: `${Math.min(
-                        100,
-                        (prevFyRevenue /
-                          Math.max(selectedFyRevenue, prevFyRevenue, 1)) *
-                          100,
-                      )}%`,
-                    }}
-                  />
-                </div>
-              </div>
-              {prevFyRevenue > 0 ? (
+              ))}
+              {toDateChange !== null ? (
                 <div className="flex items-center gap-2 pt-2">
-                  {fyChange >= 0 ? (
+                  {toDateChange >= 0 ? (
                     <HugeiconsIcon icon={AnalyticsUpIcon} className="text-success h-5 w-5" />
                   ) : (
                     <HugeiconsIcon icon={AnalyticsDownIcon} className="text-destructive h-5 w-5" />
                   )}
                   <span
                     className={`text-sm font-semibold ${
-                      fyChange >= 0 ? "text-success" : "text-destructive"
+                      toDateChange >= 0 ? "text-success" : "text-destructive"
                     }`}
                   >
-                    {fyChange >= 0 ? "+" : "-"}
-                    {Math.abs(fyChange).toFixed(1)}% vs last financial year
+                    {toDateChange >= 0 ? "+" : "−"}
+                    {Math.abs(toDateChange).toFixed(1)}%{" "}
+                    {isCurrentFy
+                      ? "vs this point last year"
+                      : "vs last financial year"}
                   </span>
                 </div>
               ) : (
                 <p className="text-muted-foreground pt-2 text-sm font-medium">
-                  No invoices in {formatFy(selectedFy - 1)} to compare against
+                  {isCurrentFy
+                    ? `Nothing invoiced by this point in ${formatFy(selectedFy - 1)} to compare against`
+                    : `No invoices in ${formatFy(selectedFy - 1)} to compare against`}
                 </p>
               )}
             </div>
