@@ -54,10 +54,16 @@ jobs:
       - name: Generate Prisma client
         run: pnpm prisma generate
 
-      # db push, not migrate deploy: the migration history can't be replayed
-      # onto an empty database (see CLAUDE.md)
-      - name: Create schema
-        run: pnpm prisma db push
+      # migrate deploy, not db push: every run proves the migration history
+      # still builds an empty database, so a broken migration fails here
+      # rather than on the next fresh environment
+      - name: Apply migrations
+        run: pnpm prisma migrate deploy
+
+      - name: Check schema matches migrations
+        run: |
+          pnpm prisma migrate diff --from-config-datasource \
+            --to-schema prisma/schema.prisma --exit-code
 
       - run: pnpm lint
       - run: pnpm typecheck

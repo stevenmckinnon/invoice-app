@@ -15,7 +15,8 @@ pnpm test         # Node's test runner via tsx
 pnpm typecheck    # tsc --noEmit
 
 pnpm db:migrate   # Run pending migrations (prisma migrate deploy)
-pnpm db:push      # Push schema changes without migration (dev only)
+pnpm db:push      # Push schema changes without migration (prototyping only)
+pnpm prisma migrate dev --name <name>   # Create a migration from schema changes
 pnpm db:studio    # Open Prisma Studio GUI
 
 pnpm db:local:up     # Start the local postgres container and push the schema
@@ -46,7 +47,7 @@ Seed credentials: `dev@caley.test` / `devpassword123`. The seed (`prisma/seed.ts
 
 It seeds three clients (one with tiered overtime, one without, one with no rates at all) and eleven invoices: six in the current tax year across every status (one billed in USD, so the dashboard currency picker appears) and five paid ones in the previous year, so year-on-year comparisons have a baseline. One of those is dated 3 April, inside the 1–5 April window that belongs to the year ending.
 
-⚠️ **Use `db:push`, not `db:migrate`, on a fresh database.** `20250116000000_add_client_model` sorts before `20251014163218_init_postgres` but references `Invoice`, so replaying the migration history from empty fails at step one. The live database predates the divergence and is fine; `migrate deploy` still works there for new migrations.
+**Migrations.** History was squashed into a single `0_init` baseline on 15 Oct 2026. The old history couldn't be replayed from empty: `20250116000000_add_client_model` sorted before the migration that created `Invoice`. A fresh database now builds with `migrate deploy`, and CI proves that on every run (`migrate deploy`, then `migrate diff --exit-code` against the schema). For schema changes, use `pnpm prisma migrate dev --name …` against the local container; it needs a local database built from migrations, so if yours predates the squash, run `pnpm db:local:reset` once.
 
 ## Architecture
 
