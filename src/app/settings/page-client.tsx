@@ -5,6 +5,7 @@ import { Alert01Icon, Camera01Icon, ComputerIcon, Delete02Icon, Key01Icon, Loadi
 import { HugeiconsIcon } from "@hugeicons/react";
 import { useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns";
+import { useRouter } from "next/navigation";
 import { useTheme } from "next-themes";
 import { toast } from "sonner";
 
@@ -47,6 +48,7 @@ const SettingsPage = () => {
   const { startTransition } = useThemeTransition();
   const { theme, setTheme } = useTheme();
   const { data: session } = useSession();
+  const router = useRouter();
   const queryClient = useQueryClient();
   const { data: sessions = [], isLoading: loadingSessions } = useSessions();
   const revokeSessionMutation = useRevokeSession();
@@ -154,9 +156,11 @@ const SettingsPage = () => {
             "Your account and all data have been permanently deleted.",
         });
 
-        // Sign out and redirect
+        // Sign out, drop the deleted account's cached queries, and leave
+        // settings out of history so Back can't return to it
         await signOut();
-        window.location.href = "/";
+        queryClient.clear();
+        router.replace("/");
       } else {
         const error = await response.json();
         toast.error("Failed to delete account", {
