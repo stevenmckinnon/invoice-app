@@ -44,7 +44,7 @@ import {
 import { useInvoices } from "@/hooks/use-invoices";
 import { useSession } from "@/lib/auth-client";
 import { INVOICE_STATUSES } from "@/lib/invoice-status";
-import { formatCurrency, formatDate, getGreeting } from "@/lib/utils";
+import { cn, formatCurrency, formatDate, getGreeting } from "@/lib/utils";
 
 // Aggregated stats need a single display currency — use the most common one
 const dominantCurrency = (invoices: { currency: string }[]): string => {
@@ -69,6 +69,13 @@ const getFyStart = (date: Date): number => {
   const isBeforeApril6 = month < 3 || (month === 3 && date.getDate() < 6);
   return isBeforeApril6 ? date.getFullYear() - 1 : date.getFullYear();
 };
+
+// Position within the financial year: 0 = April … 11 = March. 1–5 April
+// belongs to the year that's ending, so it lands in that year's last slot.
+const getFyMonthIndex = (date: Date): number =>
+  date.getMonth() === 3 && getFyStart(date) < date.getFullYear()
+    ? 11
+    : (date.getMonth() + 9) % 12;
 
 const formatFy = (fyStart: number): string =>
   `${fyStart}/${String((fyStart + 1) % 100).padStart(2, "0")}`;
@@ -291,31 +298,64 @@ export default function Home() {
   const averageInvoice =
     fyInvoices.length > 0 ? totalRevenue / fyInvoices.length : 0;
 
-  // Revenue chart — financial-year order: April through March
-  const months = Array.from({ length: 12 }, (_, i) => {
+  // Revenue chart — financial-year order: April through March, with the
+  // previous year drawn behind it as a like-for-like reference
+  const monthlyTotals = (fyStart: number) => {
+    const totals = { revenue: Array<number>(12).fill(0), count: Array<number>(12).fill(0) };
+    for (const inv of invoices) {
+      const date = new Date(inv.invoiceDate);
+      if (getFyStart(date) !== fyStart) continue;
+      const i = getFyMonthIndex(date);
+      totals.revenue[i] += Number(inv.totalAmount);
+      totals.count[i] += 1;
+    }
+    return totals;
+  };
+
+  const selectedTotals = monthlyTotals(selectedFy);
+  const previousTotals = monthlyTotals(selectedFy - 1);
+  const hasPreviousFy = previousTotals.count.some((n) => n > 0);
+
+  // In the current year, months that haven't happened yet have no value
+  // rather than £0 — otherwise the line falls to the floor and reads as a
+  // collapse in income
+  const now = new Date();
+  const lastElapsedMonth = isCurrentFy ? getFyMonthIndex(now) : 11;
+
+  const revenueData = Array.from({ length: 12 }, (_, i) => {
     const calendarMonth = (i + 3) % 12;
     const calendarYear = calendarMonth < 3 ? selectedFy + 1 : selectedFy;
     return {
       month: new Date(calendarYear, calendarMonth).toLocaleDateString("en-GB", {
         month: "short",
       }),
-      monthIndex: calendarMonth,
+      revenue: i <= lastElapsedMonth ? selectedTotals.revenue[i] : null,
+      invoices: selectedTotals.count[i],
+      previous: hasPreviousFy ? previousTotals.revenue[i] : null,
     };
   });
 
-  const revenueData = months.map(({ month, monthIndex }) => {
-    const monthRevenue = fyInvoices
-      .filter((inv) => new Date(inv.invoiceDate).getMonth() === monthIndex)
+  // Year-to-date against the same point last year. Comparing a part-year to
+  // a whole one always looks like a decline, so the current year is cut at
+  // today and last year at today's date a year ago.
+  const sameDayLastYear = new Date(now);
+  sameDayLastYear.setFullYear(now.getFullYear() - 1);
+  const revenueUpTo = (fyStart: number, cutoff: Date | null) =>
+    invoices
+      .filter((inv) => {
+        const date = new Date(inv.invoiceDate);
+        return getFyStart(date) === fyStart && (!cutoff || date <= cutoff);
+      })
       .reduce((sum, inv) => sum + Number(inv.totalAmount), 0);
-
-    return {
-      month,
-      revenue: monthRevenue,
-      invoices: fyInvoices.filter(
-        (inv) => new Date(inv.invoiceDate).getMonth() === monthIndex,
-      ).length,
-    };
-  });
+  const toDateRevenue = revenueUpTo(selectedFy, isCurrentFy ? now : null);
+  const previousToDateRevenue = revenueUpTo(
+    selectedFy - 1,
+    isCurrentFy ? sameDayLastYear : null,
+  );
+  const toDateChange =
+    previousToDateRevenue > 0
+      ? ((toDateRevenue - previousToDateRevenue) / previousToDateRevenue) * 100
+      : null;
 
   // Financial year comparison — selected FY vs previous FY
   const selectedFyRevenue = totalRevenue;
@@ -496,20 +536,55 @@ export default function Home() {
         </Card>
       </div>
 
-      {/* Revenue Trend Chart */}
+      {/* Revenue by month — the hero already carries the total, so this
+          card's headline is the like-for-like comparison */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-xl">
-            {formatFy(selectedFy)} Revenue
-          </CardTitle>
+          <div className="flex flex-wrap items-start justify-between gap-x-6 gap-y-3">
+            <div className="space-y-2">
+              <CardTitle className="text-xl">Revenue by month</CardTitle>
+              {toDateChange !== null && (
+                <div className="flex flex-wrap items-center gap-2 text-xs font-medium">
+                  <span
+                    className={cn(
+                      "rounded-full px-2 py-0.5 font-semibold tabular-nums",
+                      toDateChange >= 0
+                        ? "bg-success/12 text-success"
+                        : "bg-destructive/10 text-destructive",
+                    )}
+                  >
+                    {toDateChange >= 0 ? "+" : "−"}
+                    {Math.abs(toDateChange).toFixed(1)}%
+                  </span>
+                  <span className="text-muted-foreground">
+                    {isCurrentFy
+                      ? "vs this point last year"
+                      : `vs ${formatFy(selectedFy - 1)}`}
+                  </span>
+                </div>
+              )}
+            </div>
+            {hasPreviousFy && fyInvoices.length > 0 && (
+              <ul className="text-muted-foreground flex items-center gap-4 text-xs font-medium">
+                <li className="flex items-center gap-1.5">
+                  <span className="bg-primary h-0.5 w-3 rounded-full" />
+                  {formatFy(selectedFy)}
+                </li>
+                <li className="flex items-center gap-1.5">
+                  <span className="border-muted-foreground h-0 w-3 border-t-2 border-dashed" />
+                  {formatFy(selectedFy - 1)}
+                </li>
+              </ul>
+            )}
+          </div>
         </CardHeader>
-        <CardContent className="px-0 py-6 md:px-4">
+        <CardContent className="px-0 pb-2 md:px-4">
           {fyInvoices.length > 0 ? (
-            <div className="h-[320px] w-full">
+            <div className="h-[300px] w-full">
               <ResponsiveContainer width="100%" height="100%">
                 <AreaChart
                   data={revenueData}
-                  margin={{ top: 20, right: 30, left: 20, bottom: 20 }}
+                  margin={{ top: 8, right: 24, left: 8, bottom: 8 }}
                 >
                   <defs>
                     <linearGradient
@@ -520,21 +595,21 @@ export default function Home() {
                       y2="1"
                     >
                       <stop
-                        offset="5%"
+                        offset="0%"
                         stopColor={chartColors.primary}
-                        stopOpacity={0.8}
+                        stopOpacity={0.28}
                       />
                       <stop
-                        offset="95%"
+                        offset="100%"
                         stopColor={chartColors.primary}
-                        stopOpacity={0.1}
+                        stopOpacity={0}
                       />
                     </linearGradient>
                   </defs>
                   <CartesianGrid
-                    strokeDasharray="1 3"
+                    vertical={false}
                     stroke={chartColors.grid}
-                    strokeOpacity={0.3}
+                    strokeOpacity={0.6}
                   />
                   <XAxis
                     dataKey="month"
@@ -542,7 +617,7 @@ export default function Home() {
                     tickLine={false}
                     axisLine={false}
                     tick={{ fill: chartColors.muted }}
-                    dy={5}
+                    dy={8}
                   />
                   <YAxis
                     fontSize={12}
@@ -552,30 +627,73 @@ export default function Home() {
                     tickFormatter={(value) =>
                       formatCurrency(value, displayCurrency, { decimals: 0 })
                     }
-                    dx={-5}
+                    width={64}
                   />
                   <RechartsTooltip
-                    contentStyle={{
-                      backgroundColor: chartColors.cardBg,
-                      border: `1px solid ${chartColors.border}`,
-                      borderRadius: "8px",
-                      boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.3)",
+                    cursor={{ stroke: chartColors.muted, strokeOpacity: 0.4 }}
+                    content={({ active, payload, label }) => {
+                      if (!active || !payload?.length) return null;
+                      const point = payload[0].payload as (typeof revenueData)[number];
+                      return (
+                        <div className="bg-popover text-popover-foreground dark:border-border min-w-40 rounded-xl px-3 py-2.5 text-xs shadow-lg dark:border">
+                          <p className="mb-1.5 font-semibold">{label}</p>
+                          {point.revenue !== null && (
+                            <div className="flex items-center justify-between gap-4">
+                              <span className="text-muted-foreground">
+                                {formatFy(selectedFy)}
+                              </span>
+                              <span className="font-semibold tabular-nums">
+                                {formatCurrency(point.revenue, displayCurrency)}
+                              </span>
+                            </div>
+                          )}
+                          {point.previous !== null && (
+                            <div className="flex items-center justify-between gap-4">
+                              <span className="text-muted-foreground">
+                                {formatFy(selectedFy - 1)}
+                              </span>
+                              <span className="text-muted-foreground tabular-nums">
+                                {formatCurrency(point.previous, displayCurrency)}
+                              </span>
+                            </div>
+                          )}
+                          {point.revenue !== null && point.invoices > 0 && (
+                            <p className="text-muted-foreground mt-1.5">
+                              {point.invoices} invoice
+                              {point.invoices !== 1 ? "s" : ""}
+                            </p>
+                          )}
+                        </div>
+                      );
                     }}
-                    labelStyle={{
-                      fontWeight: "600",
-                      marginBottom: "4px",
-                    }}
-                    formatter={(value) => [
-                      formatCurrency(Number(value ?? 0), displayCurrency),
-                      "Revenue",
-                    ]}
                   />
+                  {hasPreviousFy && (
+                    <Area
+                      type="monotone"
+                      dataKey="previous"
+                      stroke={chartColors.muted}
+                      strokeOpacity={0.7}
+                      strokeWidth={1.5}
+                      strokeDasharray="4 4"
+                      fill="none"
+                      dot={false}
+                      activeDot={false}
+                      animationDuration={600}
+                    />
+                  )}
                   <Area
                     type="monotone"
                     dataKey="revenue"
                     stroke={chartColors.primary}
                     strokeWidth={2}
                     fill="url(#colorRevenue)"
+                    dot={false}
+                    activeDot={{
+                      r: 4,
+                      fill: chartColors.primary,
+                      stroke: chartColors.cardBg,
+                      strokeWidth: 2,
+                    }}
                     animationDuration={800}
                   />
                 </AreaChart>

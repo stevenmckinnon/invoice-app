@@ -24,7 +24,7 @@ import {
   useState,
 } from "react";
 
-import { Add01Icon, ArrowTurnDownIcon, Cancel01Icon, ComputerIcon, Image01Icon, SquareIcon } from "@hugeicons/core-free-icons";
+import { Add01Icon, ArrowUp02Icon, Cancel01Icon, ComputerIcon, Image01Icon, SquareIcon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { nanoid } from "nanoid";
 
@@ -1219,7 +1219,7 @@ export const PromptInputSubmit = ({
 }: PromptInputSubmitProps) => {
   const isGenerating = status === "submitted" || status === "streaming";
 
-  let Icon = <HugeiconsIcon icon={ArrowTurnDownIcon} className="size-4" />;
+  let Icon = <HugeiconsIcon icon={ArrowUp02Icon} strokeWidth={2} className="size-4" />;
 
   if (status === "submitted") {
     Icon = <Spinner />;
