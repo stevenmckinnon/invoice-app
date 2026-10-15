@@ -34,7 +34,7 @@ import {
   getInvoiceStatusConfig,
   INVOICE_STATUSES,
 } from "@/lib/invoice-status";
-import { cn, formatCurrency, formatDate } from "@/lib/utils";
+import { cn, formatCurrency, formatCurrencyTotals, formatDate } from "@/lib/utils";
 
 const ITEMS_PER_PAGE = 10;
 
@@ -87,22 +87,6 @@ export default function AllInvoicesPage() {
     setCurrentPage(1);
   };
 
-  const totalRevenue = filteredInvoices.reduce(
-    (sum, inv) => sum + Number(inv.totalAmount),
-    0,
-  );
-
-  // Aggregate total needs one display currency — use the list's most common
-  const currencyCounts = new Map<string, number>();
-  for (const inv of filteredInvoices) {
-    currencyCounts.set(
-      inv.currency,
-      (currencyCounts.get(inv.currency) ?? 0) + 1,
-    );
-  }
-  const displayCurrency =
-    [...currencyCounts.entries()].sort((a, b) => b[1] - a[1])[0]?.[0] ?? "GBP";
-
   if (error) {
     return (
       <div className="mx-auto grid w-full max-w-6xl grid-cols-1 gap-6 p-6 py-10 md:pb-8">
@@ -125,7 +109,7 @@ export default function AllInvoicesPage() {
           <>
             {filteredInvoices.length} invoice
             {filteredInvoices.length !== 1 ? "s" : ""} • Total:{" "}
-            {formatCurrency(totalRevenue, displayCurrency)}
+            {formatCurrencyTotals(filteredInvoices)}
           </>
         }
         actions={

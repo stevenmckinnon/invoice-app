@@ -30,6 +30,37 @@ export const formatCurrency = (
   { decimals = 2 }: { decimals?: number } = {},
 ): string => getCurrencyFormatter(currency, decimals).format(amount);
 
+/**
+ * Totals per currency, largest first. Amounts in different currencies are
+ * never added together — there's no rate that makes £ + $ one number.
+ */
+export const sumByCurrency = (
+  invoices: { currency: string; totalAmount: number | string }[],
+): { currency: string; amount: number }[] => {
+  const totals = new Map<string, number>();
+  for (const inv of invoices) {
+    totals.set(
+      inv.currency,
+      (totals.get(inv.currency) ?? 0) + Number(inv.totalAmount),
+    );
+  }
+  return [...totals.entries()]
+    .map(([currency, amount]) => ({ currency, amount }))
+    .sort((a, b) => b.amount - a.amount);
+};
+
+/** "£14,022.50 + $1,200.00", or a single amount when there's one currency */
+export const formatCurrencyTotals = (
+  invoices: { currency: string; totalAmount: number | string }[],
+  fallbackCurrency = "GBP",
+): string => {
+  const totals = sumByCurrency(invoices);
+  if (totals.length === 0) return formatCurrency(0, fallbackCurrency);
+  return totals
+    .map(({ currency, amount }) => formatCurrency(amount, currency))
+    .join(" + ");
+};
+
 export const formatDate = (date: Date | string): string => {
   const d = typeof date === "string" ? new Date(date) : date;
   if (isNaN(d.getTime())) return "Invalid date";

@@ -13,6 +13,7 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { buildInvoiceTools } from "@/lib/invoice-tools";
 import { clientOvertimeRule } from "@/lib/overtime";
+import { formatCurrency } from "@/lib/utils";
 
 export const POST = async (req: Request) => {
   const session = await auth.api.getSession({ headers: await headers() });
@@ -24,7 +25,7 @@ export const POST = async (req: Request) => {
   const messages: UIMessage[] = body.messages ?? [];
   const userId = session.user.id;
 
-  const [user, clients, invoices] = await Promise.all([
+  const [user, clients, invoices, totalsByStatus] = await Promise.all([
     prisma.user.findUnique({
       where: { id: userId },
       select: {
@@ -72,11 +73,21 @@ export const POST = async (req: Request) => {
         showName: true,
         clientName: true,
         totalAmount: true,
+        currency: true,
         status: true,
         invoiceDate: true,
       },
       orderBy: { createdAt: "desc" },
-      take: 50,
+      take: 5,
+    }),
+    // Totals come from the database, not from the recent list above —
+    // summing a capped list reported "total revenue" for only the latest
+    // invoices once a user had more than the cap.
+    prisma.invoice.groupBy({
+      by: ["currency", "status"],
+      where: { userId },
+      _sum: { totalAmount: true },
+      _count: { _all: true },
     }),
   ]);
 
@@ -90,13 +101,28 @@ export const POST = async (req: Request) => {
           ? "€"
           : currency;
 
-  const totalRevenue = invoices.reduce((s, i) => s + Number(i.totalAmount), 0);
-  const paidRevenue = invoices
-    .filter((i) => i.status === "paid")
-    .reduce((s, i) => s + Number(i.totalAmount), 0);
-  const outstandingRevenue = invoices
-    .filter((i) => i.status !== "paid")
-    .reduce((s, i) => s + Number(i.totalAmount), 0);
+  // One amount per currency, e.g. "£14,022.50 + $1,200.00". Never a single
+  // sum across currencies — that number would be meaningless.
+  const formatTotals = (rows: typeof totalsByStatus) => {
+    const byCurrency = new Map<string, number>();
+    for (const row of rows) {
+      byCurrency.set(
+        row.currency,
+        (byCurrency.get(row.currency) ?? 0) + Number(row._sum.totalAmount ?? 0),
+      );
+    }
+    if (byCurrency.size === 0) return formatCurrency(0, currency);
+    return [...byCurrency.entries()]
+      .sort((a, b) => b[1] - a[1])
+      .map(([code, amount]) => formatCurrency(amount, code))
+      .join(" + ");
+  };
+  const countOf = (rows: typeof totalsByStatus) =>
+    rows.reduce((n, row) => n + row._count._all, 0);
+  const paidRows = totalsByStatus.filter((r) => r.status === "paid");
+  const unpaidRows = totalsByStatus.filter((r) => r.status !== "paid");
+  const statusCount = (status: string) =>
+    countOf(totalsByStatus.filter((r) => r.status === status));
 
   const profileComplete = !!(
     user?.iban &&
@@ -133,7 +159,7 @@ export const POST = async (req: Request) => {
       .slice(0, 5)
       .map(
         (i) =>
-          `- #${i.invoiceNumber}: ${i.showName}${i.clientName ? ` (${i.clientName})` : ""} — ${sym}${Number(i.totalAmount).toFixed(2)} [${i.status}]`,
+          `- #${i.invoiceNumber}: ${i.showName}${i.clientName ? ` (${i.clientName})` : ""} — ${formatCurrency(Number(i.totalAmount), i.currency)} [${i.status}]`,
       )
       .join("\n") || "No invoices yet.";
 
@@ -149,11 +175,12 @@ export const POST = async (req: Request) => {
 ${clientsList}
 
 ## Invoice Summary
-- Total invoices: ${invoices.length}
-- Total revenue: ${sym}${totalRevenue.toFixed(2)}
-- Paid: ${sym}${paidRevenue.toFixed(2)} (${invoices.filter((i) => i.status === "paid").length} invoices)
-- Outstanding: ${sym}${outstandingRevenue.toFixed(2)} (${invoices.filter((i) => i.status !== "paid").length} invoices)
-- Draft: ${invoices.filter((i) => i.status === "draft").length} | Overdue: ${invoices.filter((i) => i.status === "overdue").length}
+- Total invoices: ${countOf(totalsByStatus)}
+- Total revenue: ${formatTotals(totalsByStatus)}
+- Paid: ${formatTotals(paidRows)} (${countOf(paidRows)} invoices)
+- Outstanding: ${formatTotals(unpaidRows)} (${countOf(unpaidRows)} invoices)
+- Draft: ${statusCount("draft")} | Overdue: ${statusCount("overdue")}
+- Amounts in different currencies are listed separately. Never add them together or convert between them.
 
 ## Recent Invoices
 ${recentInvoices}

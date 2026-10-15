@@ -43,7 +43,7 @@ Reseeding replaces the user, but the Better Auth session cookie cache serves the
 
 Seed credentials: `dev@caley.test` / `devpassword123`. The seed (`prisma/seed.ts`) builds the user through better-auth so the password hash is one it can verify, computes invoice totals with `calculateInvoiceTotals` so seeded rows can't disagree with what the app renders, and **refuses to run against a non-local host** (override with `SEED_ALLOW_REMOTE=1`). Re-running is safe — the seeded user is deleted first and everything cascades.
 
-It seeds three clients (one with tiered overtime, one without, one with no rates at all) and five invoices across every status.
+It seeds three clients (one with tiered overtime, one without, one with no rates at all) and eleven invoices: six in the current tax year across every status (one billed in USD, so the dashboard currency picker appears) and five paid ones in the previous year, so year-on-year comparisons have a baseline. One of those is dated 3 April, inside the 1–5 April window that belongs to the year ending.
 
 ⚠️ **Use `db:push`, not `db:migrate`, on a fresh database.** `20250116000000_add_client_model` sorts before `20251014163218_init_postgres` but references `Invoice`, so replaying the migration history from empty fails at step one. The live database predates the divergence and is fine; `migrate deploy` still works there for new migrations.
 

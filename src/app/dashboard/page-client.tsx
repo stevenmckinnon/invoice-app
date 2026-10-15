@@ -44,6 +44,7 @@ import {
 import { useInvoices } from "@/hooks/use-invoices";
 import { useSession } from "@/lib/auth-client";
 import { INVOICE_STATUSES } from "@/lib/invoice-status";
+import { formatFy, getFyMonthIndex, getFyStart } from "@/lib/tax-year";
 import { cn, formatCurrency, formatDate, getGreeting } from "@/lib/utils";
 
 // Aggregated stats need a single display currency — use the most common one
@@ -62,28 +63,15 @@ const dominantCurrency = (invoices: { currency: string }[]): string => {
   return best;
 };
 
-// UK financial (tax) year runs 6 April – 5 April. A date's FY is identified
-// by the calendar year it starts in (e.g. 1 Feb 2026 → FY 2025/26).
-const getFyStart = (date: Date): number => {
-  const month = date.getMonth();
-  const isBeforeApril6 = month < 3 || (month === 3 && date.getDate() < 6);
-  return isBeforeApril6 ? date.getFullYear() - 1 : date.getFullYear();
-};
-
-// Position within the financial year: 0 = April … 11 = March. 1–5 April
-// belongs to the year that's ending, so it lands in that year's last slot.
-const getFyMonthIndex = (date: Date): number =>
-  date.getMonth() === 3 && getFyStart(date) < date.getFullYear()
-    ? 11
-    : (date.getMonth() + 9) % 12;
-
-const formatFy = (fyStart: number): string =>
-  `${fyStart}/${String((fyStart + 1) % 100).padStart(2, "0")}`;
 
 export default function Home() {
   const { data: session, isPending } = useSession();
   const router = useRouter();
-  const { data: invoices = [], isLoading, error } = useInvoices();
+  const { data: allInvoices = [], isLoading, error } = useInvoices();
+  // null = follow the most common currency until the user picks one
+  const [selectedCurrency, setSelectedCurrency] = useState<string | null>(
+    null,
+  );
   const [chartColors, setChartColors] = useState({
     primary: "#3b82f6",
     muted: "#9ca3af",
@@ -168,23 +156,34 @@ export default function Home() {
 
   // Derive available financial years from invoice dates, always include current
   const availableFys =
-    invoices.length > 0
+    allInvoices.length > 0
       ? Array.from(
           new Set([
             currentFy,
-            ...invoices.map((inv) => getFyStart(new Date(inv.invoiceDate))),
+            ...allInvoices.map((inv) => getFyStart(new Date(inv.invoiceDate))),
           ]),
         ).sort((a, b) => b - a)
       : [currentFy];
+
+  // Every figure on this page is in one currency. Adding £ and $ together as
+  // if they were the same unit gives a total that means nothing, and
+  // converting needs a rate for each invoice's date, which we don't hold.
+  const currencies = [...new Set(allInvoices.map((inv) => inv.currency))];
+  const displayCurrency =
+    selectedCurrency && currencies.includes(selectedCurrency)
+      ? selectedCurrency
+      : dominantCurrency(allInvoices);
+  const invoices = allInvoices.filter(
+    (inv) => inv.currency === displayCurrency,
+  );
 
   // Filter invoices to the selected financial year
   const fyInvoices = invoices.filter(
     (inv) => getFyStart(new Date(inv.invoiceDate)) === selectedFy,
   );
 
-  const displayCurrency = dominantCurrency(fyInvoices);
-
-  const sortedInvoices = [...invoices]
+  // The recent list shows each invoice in its own currency, so it uses all
+  const sortedInvoices = [...allInvoices]
     .sort(
       (a, b) =>
         new Date(b.invoiceDate).getTime() - new Date(a.invoiceDate).getTime(),
@@ -205,40 +204,62 @@ export default function Home() {
     .reduce((sum, inv) => sum + Number(inv.totalAmount), 0);
 
   // Calculate monthly revenue for trend
-  const currentMonth = new Date().getMonth();
+  const now = new Date();
+  const currentMonth = now.getMonth();
 
   // "This Month" card: only meaningful when viewing the current financial year
   const isCurrentFy = selectedFy === currentFy;
 
+  const sumAmounts = (list: typeof invoices) =>
+    list.reduce((sum, inv) => sum + Number(inv.totalAmount), 0);
+
   const currentMonthRevenue = isCurrentFy
-    ? fyInvoices
-        .filter((inv) => new Date(inv.invoiceDate).getMonth() === currentMonth)
-        .reduce((sum, inv) => sum + Number(inv.totalAmount), 0)
+    ? sumAmounts(
+        fyInvoices.filter(
+          (inv) => new Date(inv.invoiceDate).getMonth() === currentMonth,
+        ),
+      )
     : 0;
 
-  const lastMonthRevenue = isCurrentFy
-    ? invoices
-        .filter((inv) => {
-          const invDate = new Date(inv.invoiceDate);
-          const lastMonth = currentMonth === 0 ? 11 : currentMonth - 1;
-          const lastMonthYear =
-            currentMonth === 0
-              ? new Date().getFullYear() - 1
-              : new Date().getFullYear();
-          return (
-            invDate.getMonth() === lastMonth &&
-            invDate.getFullYear() === lastMonthYear
-          );
-        })
-        .reduce((sum, inv) => sum + Number(inv.totalAmount), 0)
-    : 0;
+  // Month-to-date against the same day last month. Comparing a part-month to
+  // a whole one reads as a slump every month until about the 25th.
+  const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+  const lastMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+  const daysInLastMonth = new Date(
+    now.getFullYear(),
+    now.getMonth(),
+    0,
+  ).getDate();
+  const sameDayLastMonth = new Date(
+    lastMonthStart.getFullYear(),
+    lastMonthStart.getMonth(),
+    Math.min(now.getDate(), daysInLastMonth),
+    23,
+    59,
+    59,
+    999,
+  );
+  const revenueBetween = (from: Date, to: Date) =>
+    sumAmounts(
+      invoices.filter((inv) => {
+        const date = new Date(inv.invoiceDate);
+        return date >= from && date <= to;
+      }),
+    );
+  const monthToDateRevenue = revenueBetween(monthStart, now);
+  const lastMonthToDateRevenue = revenueBetween(
+    lastMonthStart,
+    sameDayLastMonth,
+  );
 
+  // null when last month had nothing by this point: any percentage against
+  // zero is made up, so the chip is hidden instead
   const monthlyChange =
-    lastMonthRevenue > 0
-      ? ((currentMonthRevenue - lastMonthRevenue) / lastMonthRevenue) * 100
-      : currentMonthRevenue > 0
-        ? 100
-        : 0;
+    isCurrentFy && lastMonthToDateRevenue > 0
+      ? ((monthToDateRevenue - lastMonthToDateRevenue) /
+          lastMonthToDateRevenue) *
+        100
+      : null;
 
   // Best month revenue for past years
   const bestMonthRevenue = !isCurrentFy
@@ -319,7 +340,6 @@ export default function Home() {
   // In the current year, months that haven't happened yet have no value
   // rather than £0 — otherwise the line falls to the floor and reads as a
   // collapse in income
-  const now = new Date();
   const lastElapsedMonth = isCurrentFy ? getFyMonthIndex(now) : 11;
 
   const revenueData = Array.from({ length: 12 }, (_, i) => {
@@ -340,13 +360,15 @@ export default function Home() {
   // today and last year at today's date a year ago.
   const sameDayLastYear = new Date(now);
   sameDayLastYear.setFullYear(now.getFullYear() - 1);
+  // Used by both the chart chip and the Year Performance card, so the two
+  // can never disagree about how this year is doing.
   const revenueUpTo = (fyStart: number, cutoff: Date | null) =>
-    invoices
-      .filter((inv) => {
+    sumAmounts(
+      invoices.filter((inv) => {
         const date = new Date(inv.invoiceDate);
         return getFyStart(date) === fyStart && (!cutoff || date <= cutoff);
-      })
-      .reduce((sum, inv) => sum + Number(inv.totalAmount), 0);
+      }),
+    );
   const toDateRevenue = revenueUpTo(selectedFy, isCurrentFy ? now : null);
   const previousToDateRevenue = revenueUpTo(
     selectedFy - 1,
@@ -356,20 +378,10 @@ export default function Home() {
     previousToDateRevenue > 0
       ? ((toDateRevenue - previousToDateRevenue) / previousToDateRevenue) * 100
       : null;
-
-  // Financial year comparison — selected FY vs previous FY
-  const selectedFyRevenue = totalRevenue;
-
-  const prevFyRevenue = invoices
-    .filter((inv) => getFyStart(new Date(inv.invoiceDate)) === selectedFy - 1)
-    .reduce((sum, inv) => sum + Number(inv.totalAmount), 0);
-
-  const fyChange =
-    prevFyRevenue > 0
-      ? ((selectedFyRevenue - prevFyRevenue) / prevFyRevenue) * 100
-      : selectedFyRevenue > 0
-        ? 100
-        : 0;
+  const toDateLabel = now.toLocaleDateString("en-GB", {
+    day: "numeric",
+    month: "short",
+  });
 
   return (
     <div className="mx-auto grid w-full max-w-6xl grid-cols-1 gap-6 p-6 py-10 md:pb-8">
@@ -410,6 +422,24 @@ export default function Home() {
                 ))}
               </SelectContent>
             </Select>
+            {/* Only when there's a choice to make — most users bill in one */}
+            {currencies.length > 1 && (
+              <Select
+                value={displayCurrency}
+                onValueChange={(val) => val && setSelectedCurrency(val)}
+              >
+                <SelectTrigger className="w-[90px]" aria-label="Currency">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {currencies.map((code) => (
+                    <SelectItem key={code} value={code}>
+                      {code}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
             <Button
               nativeButton={false}
               render={
@@ -435,7 +465,7 @@ export default function Home() {
             <div className="min-w-0 break-words text-4xl font-bold tracking-tight tabular-nums sm:text-5xl">
               {formatCurrency(totalRevenue, displayCurrency)}
             </div>
-            {isCurrentFy && lastMonthRevenue > 0 ? (
+            {monthlyChange !== null ? (
               <div className="bg-card flex items-center gap-1.5 rounded-full py-1.5 pr-3 pl-2.5 shadow-xs">
                 {monthlyChange >= 0 ? (
                   <HugeiconsIcon icon={AnalyticsUpIcon} className="text-success h-4 w-4" />
@@ -447,11 +477,11 @@ export default function Home() {
                     monthlyChange >= 0 ? "text-success" : "text-destructive"
                   }`}
                 >
-                  {monthlyChange >= 0 ? "+" : "-"}
+                  {monthlyChange >= 0 ? "+" : "−"}
                   {Math.abs(monthlyChange).toFixed(1)}%
                 </span>
                 <span className="text-muted-foreground text-xs font-medium">
-                  vs last month
+                  this month, vs this point last month
                 </span>
               </div>
             ) : (
@@ -922,7 +952,7 @@ export default function Home() {
                     displayCurrency,
                   )}
                 </p>
-                {isCurrentFy && (
+                {monthlyChange !== null && (
                   <div className="flex items-center gap-1">
                     {monthlyChange >= 0 ? (
                       <HugeiconsIcon icon={AnalyticsUpIcon} className="text-success h-3 w-3" />
@@ -934,8 +964,9 @@ export default function Home() {
                         monthlyChange >= 0 ? "text-success" : "text-destructive"
                       }`}
                     >
-                      {monthlyChange >= 0 ? "+" : "-"}
-                      {Math.abs(monthlyChange).toFixed(1)}% from last month
+                      {monthlyChange >= 0 ? "+" : "−"}
+                      {Math.abs(monthlyChange).toFixed(1)}% vs this point last
+                      month
                     </p>
                   </div>
                 )}
@@ -992,76 +1023,70 @@ export default function Home() {
           <CardHeader>
             <CardTitle className="text-base">Year Performance</CardTitle>
             <p className="text-muted-foreground text-sm font-medium">
-              {formatFy(selectedFy)} vs {formatFy(selectedFy - 1)}
+              {isCurrentFy
+                ? `To ${toDateLabel}, vs the same point in ${formatFy(selectedFy - 1)}`
+                : `${formatFy(selectedFy)} vs ${formatFy(selectedFy - 1)}`}
             </p>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              <div>
-                <div className="mb-2 flex items-center justify-between">
-                  <span className="text-sm font-medium">
-                    {formatFy(selectedFy)}
-                  </span>
-                  <span className="text-sm font-bold tabular-nums">
-                    {formatCurrency(selectedFyRevenue, displayCurrency)}
-                  </span>
+              {[
+                {
+                  fy: selectedFy,
+                  revenue: toDateRevenue,
+                  barClass: "bg-primary",
+                },
+                {
+                  fy: selectedFy - 1,
+                  revenue: previousToDateRevenue,
+                  barClass: "bg-muted-foreground/50",
+                },
+              ].map(({ fy, revenue, barClass }) => (
+                <div key={fy}>
+                  <div className="mb-2 flex items-center justify-between">
+                    <span className="text-sm font-medium">{formatFy(fy)}</span>
+                    <span className="text-sm font-bold tabular-nums">
+                      {formatCurrency(revenue, displayCurrency)}
+                    </span>
+                  </div>
+                  <div className="bg-muted h-2 overflow-hidden rounded-full">
+                    <div
+                      className={cn("h-full rounded-full", barClass)}
+                      style={{
+                        width: `${
+                          (revenue /
+                            Math.max(toDateRevenue, previousToDateRevenue, 1)) *
+                          100
+                        }%`,
+                      }}
+                    />
+                  </div>
                 </div>
-                <div className="bg-muted h-2 overflow-hidden rounded-full">
-                  <div
-                    className="bg-primary h-full rounded-full"
-                    style={{
-                      width: `${Math.min(
-                        100,
-                        (selectedFyRevenue /
-                          Math.max(selectedFyRevenue, prevFyRevenue, 1)) *
-                          100,
-                      )}%`,
-                    }}
-                  />
-                </div>
-              </div>
-              <div>
-                <div className="mb-2 flex items-center justify-between">
-                  <span className="text-sm font-medium">
-                    {formatFy(selectedFy - 1)}
-                  </span>
-                  <span className="text-sm font-bold tabular-nums">
-                    {formatCurrency(prevFyRevenue, displayCurrency)}
-                  </span>
-                </div>
-                <div className="bg-muted h-2 overflow-hidden rounded-full">
-                  <div
-                    className="bg-muted-foreground/50 h-full rounded-full"
-                    style={{
-                      width: `${Math.min(
-                        100,
-                        (prevFyRevenue /
-                          Math.max(selectedFyRevenue, prevFyRevenue, 1)) *
-                          100,
-                      )}%`,
-                    }}
-                  />
-                </div>
-              </div>
-              {prevFyRevenue > 0 ? (
+              ))}
+              {toDateChange !== null ? (
                 <div className="flex items-center gap-2 pt-2">
-                  {fyChange >= 0 ? (
+                  {toDateChange >= 0 ? (
                     <HugeiconsIcon icon={AnalyticsUpIcon} className="text-success h-5 w-5" />
                   ) : (
                     <HugeiconsIcon icon={AnalyticsDownIcon} className="text-destructive h-5 w-5" />
                   )}
                   <span
                     className={`text-sm font-semibold ${
-                      fyChange >= 0 ? "text-success" : "text-destructive"
+                      toDateChange >= 0 ? "text-success" : "text-destructive"
                     }`}
                   >
-                    {fyChange >= 0 ? "+" : "-"}
-                    {Math.abs(fyChange).toFixed(1)}% vs last financial year
+                    {toDateChange >= 0 ? "+" : "−"}
+                    {Math.abs(toDateChange).toFixed(1)}%{" "}
+                    {isCurrentFy
+                      ? "vs this point last year"
+                      : "vs last financial year"}
                   </span>
                 </div>
               ) : (
                 <p className="text-muted-foreground pt-2 text-sm font-medium">
-                  No invoices in {formatFy(selectedFy - 1)} to compare against
+                  {isCurrentFy
+                    ? `Nothing invoiced by this point in ${formatFy(selectedFy - 1)} to compare against`
+                    : `No invoices in ${formatFy(selectedFy - 1)} to compare against`}
                 </p>
               )}
             </div>
