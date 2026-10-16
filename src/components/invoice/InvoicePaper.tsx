@@ -5,9 +5,62 @@ import type { SummaryLine, summariseInvoice } from "@/lib/invoice-summary";
 import { cn, formatCurrency, formatDate } from "@/lib/utils";
 
 import { DARK_FILL, TRAVEL_FILL } from "./day-fills";
+import { EditableText } from "./EditableText";
 import { OvertimeCap } from "./OvertimeCap";
 
 type Summary = ReturnType<typeof summariseInvoice>;
+
+/** The fields the paper shows, so the editor can preview unsaved work */
+export type PaperInvoice = Pick<
+  InvoiceWithRelations,
+  | "invoiceNumber"
+  | "invoiceDate"
+  | "showName"
+  | "status"
+  | "currency"
+  | "totalAmount"
+  | "notes"
+  | "fullName"
+  | "email"
+  | "addressLine1"
+  | "addressLine2"
+  | "city"
+  | "state"
+  | "postalCode"
+  | "country"
+  | "clientName"
+  | "attentionTo"
+  | "clientAddress1"
+  | "clientAddress2"
+  | "clientCity"
+  | "clientState"
+  | "clientPostalCode"
+  | "clientCountry"
+  | "iban"
+  | "swiftBic"
+  | "accountNumber"
+  | "sortCode"
+  | "bankAddress"
+>;
+
+/** On the editor, the paper's job-specific text becomes tap-to-edit */
+export interface PaperEdit {
+  set: (
+    patch: Partial<
+      Pick<PaperInvoice, "invoiceNumber" | "showName" | "attentionTo" | "notes">
+    >,
+  ) => void;
+  /** yyyy-mm-dd */
+  invoiceDate: string;
+  setInvoiceDate: (value: string) => void;
+}
+
+/** Where an uneditable block comes from, shown only while editing */
+const Source = ({ children }: { children: React.ReactNode }) => (
+  <span className="text-muted-foreground mt-1 block text-[11px] italic">
+    {children}
+  </span>
+);
 
 const Eyebrow = ({ children }: { children: React.ReactNode }) => (
   <p className="text-muted-foreground mb-2 text-[10px] font-semibold tracking-[0.16em] uppercase">
@@ -162,11 +215,13 @@ export const InvoicePaper = ({
   summary,
   days,
   overtime,
+  edit,
 }: {
-  invoice: InvoiceWithRelations;
+  invoice: PaperInvoice;
   summary: Summary;
   days: StripDay[];
   overtime: Map<string, { at15: number; at2: number }>;
+  edit?: PaperEdit;
 }) => {
   const currency = invoice.currency;
   const payment = [
@@ -193,9 +248,22 @@ export const InvoicePaper = ({
             <p className="text-muted-foreground text-[10px] font-semibold tracking-[0.2em] uppercase">
               Invoice
             </p>
-            <p className="mt-1 font-mono text-2xl font-semibold tracking-tight">
-              {invoice.invoiceNumber}
-            </p>
+            <div className="mt-1 font-mono text-2xl font-semibold tracking-tight">
+              {edit ? (
+                <EditableText
+                  label="Invoice number"
+                  value={invoice.invoiceNumber}
+                  // An invoice always has a number; blanking it keeps the old one
+                  onChange={(invoiceNumber) =>
+                    edit.set({
+                      invoiceNumber: invoiceNumber || invoice.invoiceNumber,
+                    })
+                  }
+                />
+              ) : (
+                invoice.invoiceNumber
+              )}
+            </div>
             <div className="mt-3">
               <InvoiceStatusBadge status={invoice.status} />
             </div>
@@ -214,6 +282,7 @@ export const InvoicePaper = ({
                 invoice.country,
               ]}
             />
+            {edit && <Source>From your profile</Source>}
           </address>
         </header>
 
@@ -225,8 +294,20 @@ export const InvoicePaper = ({
                 <span className="text-foreground block font-semibold">
                   {invoice.clientName}
                 </span>
-                {invoice.attentionTo && (
-                  <span className="block">Attn: {invoice.attentionTo}</span>
+                {edit ? (
+                  <span className="block">
+                    Attn:{" "}
+                    <EditableText
+                      label="Attention"
+                      value={invoice.attentionTo ?? ""}
+                      placeholder="Add a name"
+                      onChange={(attentionTo) => edit.set({ attentionTo })}
+                    />
+                  </span>
+                ) : (
+                  invoice.attentionTo && (
+                    <span className="block">Attn: {invoice.attentionTo}</span>
+                  )
                 )}
                 <AddressLines
                   lines={[
@@ -239,6 +320,7 @@ export const InvoicePaper = ({
                     invoice.clientCountry,
                   ]}
                 />
+                {edit && <Source>Address from the client</Source>}
               </div>
             ) : (
               <p className="text-muted-foreground">No client on this invoice</p>
@@ -246,10 +328,36 @@ export const InvoicePaper = ({
           </div>
           <div>
             <Eyebrow>Job</Eyebrow>
-            <p className="font-semibold">{invoice.showName}</p>
-            <p className="text-muted-foreground" suppressHydrationWarning>
-              Issued {formatDate(invoice.invoiceDate)}
-            </p>
+            {edit ? (
+              <>
+                <div className="font-semibold">
+                  <EditableText
+                    label="Job name"
+                    value={invoice.showName}
+                    placeholder="Name the job"
+                    onChange={(showName) => edit.set({ showName })}
+                  />
+                </div>
+                <label className="text-muted-foreground flex items-center gap-1">
+                  Issued
+                  <input
+                    type="date"
+                    value={edit.invoiceDate}
+                    onChange={(e) =>
+                      e.target.value && edit.setInvoiceDate(e.target.value)
+                    }
+                    className="decoration-muted-foreground/50 hover:bg-muted/60 focus-visible:ring-ring -mx-0.5 rounded bg-transparent px-0.5 text-base underline decoration-dotted underline-offset-4 focus-visible:ring-2 focus-visible:outline-none sm:text-sm"
+                  />
+                </label>
+              </>
+            ) : (
+              <>
+                <p className="font-semibold">{invoice.showName}</p>
+                <p className="text-muted-foreground" suppressHydrationWarning>
+                  Issued {formatDate(invoice.invoiceDate)}
+                </p>
+              </>
+            )}
           </div>
           {days.length > 0 && <MiniSchedule days={days} overtime={overtime} />}
         </div>
@@ -300,10 +408,21 @@ export const InvoicePaper = ({
           </span>
         </div>
 
-        {invoice.notes && (
+        {(edit || invoice.notes) && (
           <div className="mt-8">
             <Eyebrow>Notes</Eyebrow>
-            <p className="whitespace-pre-wrap">{invoice.notes}</p>
+            {edit ? (
+              <EditableText
+                multiline
+                label="Notes"
+                value={invoice.notes ?? ""}
+                placeholder="Add a note, like a PO number or payment terms"
+                onChange={(notes) => edit.set({ notes })}
+                className="block w-full whitespace-pre-wrap"
+              />
+            ) : (
+              <p className="whitespace-pre-wrap">{invoice.notes}</p>
+            )}
           </div>
         )}
 
@@ -328,6 +447,11 @@ export const InvoicePaper = ({
                 </span>
               </div>
             ))}
+            {edit && (
+              <span className="@md:col-span-3">
+                <Source>From your profile</Source>
+              </span>
+            )}
           </footer>
         )}
       </article>

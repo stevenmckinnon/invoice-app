@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
-import type { InvoiceTerms } from "@/lib/billing";
+import type { BillableDay, InvoiceTerms } from "@/lib/billing";
 import type { StoredDay } from "@/lib/day-strip";
 
 export type Invoice = {
@@ -211,18 +211,21 @@ export type CreateInvoiceInput = {
   bankAddress?: string;
   dateOfBirth?: string;
   currency?: string;
-  items: Array<{
+  /** Count-based invoices (the old form) */
+  items?: Array<{
     description: string;
     quantity: number;
     unitPrice: number;
     cost?: number;
   }>;
-  overtimeEntries: Array<{
+  overtimeEntries?: Array<{
     id: string;
     date: string;
     hours: number;
     rateType: "1.5x" | "2x";
   }>;
+  /** Day-based invoices: the server prices these from the client's terms */
+  days?: BillableDay[];
   customExpenseEntries: Array<{
     id: string;
     description: string;
