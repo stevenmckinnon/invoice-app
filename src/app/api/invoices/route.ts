@@ -10,6 +10,10 @@ import {
   invoiceDaysSchema,
 } from "@/lib/day-invoice";
 import { prisma } from "@/lib/db";
+import {
+  duplicateInvoiceNumberMessage,
+  isDuplicateInvoiceNumberError,
+} from "@/lib/invoice-number";
 import { calculateInvoiceTotals, type InvoicePdfInput } from "@/lib/pdf";
 import { parseDate } from "@/lib/utils";
 
@@ -83,6 +87,8 @@ const invoiceInputSchema = z
   });
 
 export const POST = async (req: NextRequest) => {
+  // Kept outside the try so a duplicate-number failure can name it
+  let invoiceNumber = "";
   try {
     const session = await auth.api.getSession({
       headers: await headers(),
@@ -94,6 +100,7 @@ export const POST = async (req: NextRequest) => {
 
     const json = await req.json();
     const parsed = invoiceInputSchema.parse(json);
+    invoiceNumber = parsed.invoiceNumber;
 
     // A clientId from another user would link their client to this invoice
     const client = parsed.clientId
@@ -227,6 +234,12 @@ export const POST = async (req: NextRequest) => {
       { status: 201 },
     );
   } catch (err: any) {
+    if (isDuplicateInvoiceNumberError(err)) {
+      return NextResponse.json(
+        { error: duplicateInvoiceNumberMessage(invoiceNumber) },
+        { status: 400 },
+      );
+    }
     return NextResponse.json(
       { error: err.message ?? "Unexpected error" },
       { status: 400 },

@@ -7,7 +7,10 @@ import {
   STANDARD_LINE_ITEMS,
   type StandardLineItem,
 } from "@/lib/invoice-items";
-import { generateNextInvoiceNumber } from "@/lib/invoice-number";
+import {
+  generateNextInvoiceNumber,
+  isDuplicateInvoiceNumberError,
+} from "@/lib/invoice-number";
 import {
   clientOvertimeRule,
   deriveOvertimeHourlyRate,
@@ -403,8 +406,6 @@ export const buildInvoiceTools = ({
         };
       }
 
-      const invoiceNumber = await generateNextInvoiceNumber(userId);
-
       const overtimeTotal = resolvedOvertime.reduce(
         (s, e) => s + overtimeEntryCost(e, regularRate),
         0,
@@ -429,82 +430,96 @@ export const buildInvoiceTools = ({
       const itemsTotal = lineItems.reduce((s, i) => s + i.cost, 0);
       const totalAmount = itemsTotal + overtimeTotal + expensesTotal;
 
-      const invoice = await prisma.invoice.create({
-        data: {
-          userId,
-          clientId: resolvedClient?.id ?? null,
-          invoiceNumber,
-          invoiceDate: new Date(invoiceDate),
-          showName,
-          fullName: user!.fullName ?? user!.name ?? "",
-          email: email,
-          addressLine1: user!.addressLine1!,
-          addressLine2: user?.addressLine2 ?? undefined,
-          city: user!.city!,
-          state: user?.state ?? undefined,
-          postalCode: user!.postalCode!,
-          country: user!.country!,
-          clientName: resolvedClient?.name ?? clientName ?? undefined,
-          clientAddress1:
-            resolvedClient?.addressLine1 ?? clientAddress1 ?? undefined,
-          clientCity: resolvedClient?.city ?? clientCity ?? undefined,
-          clientPostalCode:
-            resolvedClient?.postalCode ?? clientPostalCode ?? undefined,
-          clientCountry: resolvedClient?.country ?? clientCountry ?? undefined,
-          attentionTo: resolvedClient?.attentionTo ?? attentionTo ?? undefined,
-          iban: user!.iban!,
-          swiftBic: user!.swiftBic!,
-          accountNumber: user?.accountNumber ?? undefined,
-          sortCode: user?.sortCode ?? undefined,
-          bankAddress: user?.bankAddress ?? undefined,
-          currency,
-          regularHours: 0,
-          overtimeHours: 0,
-          perDiemDays: 0,
-          travelDays: 0,
-          regularRate: 0 as unknown as any,
-          overtimeRate: 0 as unknown as any,
-          perDiemRate: 0 as unknown as any,
-          travelDayRate: 0 as unknown as any,
-          subtotalLabor: totalAmount as unknown as any,
-          subtotalPerDiem: 0 as unknown as any,
-          subtotalTravel: 0 as unknown as any,
-          totalAmount: totalAmount as unknown as any,
-          status: "draft",
-          notes: notes ?? undefined,
-          items: {
-            createMany: {
-              data: lineItems.map((i) => ({
-                description: i.description,
-                quantity: i.quantity,
-                unitPrice: i.unitPrice as unknown as any,
-                cost: i.cost as unknown as any,
-              })),
+      const createDraft = (invoiceNumber: string) =>
+        prisma.invoice.create({
+          data: {
+            userId,
+            clientId: resolvedClient?.id ?? null,
+            invoiceNumber,
+            invoiceDate: new Date(invoiceDate),
+            showName,
+            fullName: user!.fullName ?? user!.name ?? "",
+            email: email,
+            addressLine1: user!.addressLine1!,
+            addressLine2: user?.addressLine2 ?? undefined,
+            city: user!.city!,
+            state: user?.state ?? undefined,
+            postalCode: user!.postalCode!,
+            country: user!.country!,
+            clientName: resolvedClient?.name ?? clientName ?? undefined,
+            clientAddress1:
+              resolvedClient?.addressLine1 ?? clientAddress1 ?? undefined,
+            clientCity: resolvedClient?.city ?? clientCity ?? undefined,
+            clientPostalCode:
+              resolvedClient?.postalCode ?? clientPostalCode ?? undefined,
+            clientCountry:
+              resolvedClient?.country ?? clientCountry ?? undefined,
+            attentionTo:
+              resolvedClient?.attentionTo ?? attentionTo ?? undefined,
+            iban: user!.iban!,
+            swiftBic: user!.swiftBic!,
+            accountNumber: user?.accountNumber ?? undefined,
+            sortCode: user?.sortCode ?? undefined,
+            bankAddress: user?.bankAddress ?? undefined,
+            currency,
+            regularHours: 0,
+            overtimeHours: 0,
+            perDiemDays: 0,
+            travelDays: 0,
+            regularRate: 0 as unknown as any,
+            overtimeRate: 0 as unknown as any,
+            perDiemRate: 0 as unknown as any,
+            travelDayRate: 0 as unknown as any,
+            subtotalLabor: totalAmount as unknown as any,
+            subtotalPerDiem: 0 as unknown as any,
+            subtotalTravel: 0 as unknown as any,
+            totalAmount: totalAmount as unknown as any,
+            status: "draft",
+            notes: notes ?? undefined,
+            items: {
+              createMany: {
+                data: lineItems.map((i) => ({
+                  description: i.description,
+                  quantity: i.quantity,
+                  unitPrice: i.unitPrice as unknown as any,
+                  cost: i.cost as unknown as any,
+                })),
+              },
+            },
+            overtimeEntries: {
+              createMany: {
+                data: resolvedOvertime.map((e) => ({
+                  date: new Date(e.date),
+                  hours: e.hours as unknown as any,
+                  rateType: e.rateType,
+                  description: e.description ?? undefined,
+                })),
+              },
+            },
+            customExpenseEntries: {
+              createMany: {
+                data: expenseItems.map((e) => ({
+                  description: e.description,
+                  quantity: e.quantity,
+                  unitPrice: e.unitPrice as unknown as any,
+                  cost: e.cost as unknown as any,
+                })),
+              },
             },
           },
-          overtimeEntries: {
-            createMany: {
-              data: resolvedOvertime.map((e) => ({
-                date: new Date(e.date),
-                hours: e.hours as unknown as any,
-                rateType: e.rateType,
-                description: e.description ?? undefined,
-              })),
-            },
-          },
-          customExpenseEntries: {
-            createMany: {
-              data: expenseItems.map((e) => ({
-                description: e.description,
-                quantity: e.quantity,
-                unitPrice: e.unitPrice as unknown as any,
-                cost: e.cost as unknown as any,
-              })),
-            },
-          },
-        },
-        select: { id: true, invoiceNumber: true, totalAmount: true },
-      });
+          select: { id: true, invoiceNumber: true, totalAmount: true },
+        });
+
+      // The next number is picked before the insert, so another draft created
+      // in the same moment can take it first; pick again rather than fail
+      let invoice: Awaited<ReturnType<typeof createDraft>> | undefined;
+      for (let attempt = 0; !invoice; attempt++) {
+        try {
+          invoice = await createDraft(await generateNextInvoiceNumber(userId));
+        } catch (err) {
+          if (!isDuplicateInvoiceNumberError(err) || attempt >= 2) throw err;
+        }
+      }
 
       return {
         success: true,
