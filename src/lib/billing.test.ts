@@ -218,6 +218,21 @@ describe("billDays: rules", () => {
     assert.equal(total({ bill: "travel", perDiem: "travel" }), 450 + 60);
   });
 
+  it("passes on only the billed fields of an expense", () => {
+    // The form sends temporary ids; written through, they became primary
+    // keys and the next invoice reusing "e1" failed to save
+    const bill = billDays({
+      days: [],
+      terms: mallard,
+      expenses: [
+        { id: "e1", description: "Taxi", quantity: 1, unitPrice: 12 },
+      ] as never,
+    });
+    assert.deepEqual(bill.customExpenseEntries, [
+      { description: "Taxi", quantity: 1, unitPrice: 12, cost: 12 },
+    ]);
+  });
+
   it("bills only expenses when there are no days", () => {
     const bill = billDays({
       days: [],
