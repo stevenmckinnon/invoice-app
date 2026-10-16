@@ -49,9 +49,7 @@ export const useCreateClient = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (
-      clientData: Omit<Client, "id" | "createdAt" | "updatedAt">,
-    ) => {
+    mutationFn: async (clientData: Omit<Client, "id" | "createdAt" | "updatedAt">) => {
       const res = await fetch("/api/clients", {
         method: "POST",
         headers: {
@@ -77,3 +75,4 @@ export const useCreateClient = () => {
     },
   });
 };
+
