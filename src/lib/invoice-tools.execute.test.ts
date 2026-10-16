@@ -380,6 +380,40 @@ describe(
       );
     });
 
+    it("refuses to edit an invoice built from days", async () => {
+      const created = await createDraft({
+        showName: "Day Job",
+        invoiceDate: "2026-09-10",
+        clientId: tieredClientId,
+        items: [{ description: "Work Days", quantity: 2 }],
+      });
+      assert.equal(created.success, true, created.error ?? "");
+      // What the day editor stores: once an invoice has terms, its lines only
+      // ever come from its days, so a count edit here would desync them
+      await mod.prisma.invoice.update({
+        where: { id: created.invoiceId! },
+        data: {
+          terms: {
+            dayRate: 525,
+            perDiem: { work: 0, travel: 0 },
+            overtimeTier: null,
+            travelWork: { bill: "both", perDiem: "travel" },
+          },
+        },
+      });
+
+      const result = await updateDraft({
+        invoiceId: created.invoiceId,
+        items: [{ description: "Work Days", quantity: 5 }],
+      });
+      assert.match(result.error ?? "", /built from dated days/);
+
+      const workDays = await mod.prisma.invoiceLineItem.findFirst({
+        where: { invoiceId: created.invoiceId!, description: "Work Days" },
+      });
+      assert.equal(workDays?.quantity, 2);
+    });
+
     it("refuses to update someone else's invoice", async () => {
       const result = await updateDraft({
         invoiceId: "not-a-real-invoice",

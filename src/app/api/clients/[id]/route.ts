@@ -22,6 +22,9 @@ const clientInputSchema = z.object({
   // The edit form sends "" for "no tiering", which is not a valid rate
   overtimeFirstRate: z.enum(["1.5x", "2x"]).or(z.literal("")).optional(),
   overtimeAfterRate: z.enum(["1.5x", "2x"]).or(z.literal("")).optional(),
+  // How a work day that also had travel bills; omitted leaves it as it is
+  travelWorkBill: z.enum(["both", "work", "travel"]).optional(),
+  travelWorkPerDiem: z.enum(["travel", "work"]).optional(),
 });
 
 const clientSelect = {
@@ -40,6 +43,8 @@ const clientSelect = {
   overtimeTierHours: true,
   overtimeFirstRate: true,
   overtimeAfterRate: true,
+  travelWorkBill: true,
+  travelWorkPerDiem: true,
   createdAt: true,
   updatedAt: true,
 } as const;
@@ -88,6 +93,8 @@ export const PUT = async (
           ? Number(parsed.perDiemTravel)
           : null,
         ...overtimeRuleData(parsed),
+        travelWorkBill: parsed.travelWorkBill,
+        travelWorkPerDiem: parsed.travelWorkPerDiem,
       },
       select: clientSelect,
     });

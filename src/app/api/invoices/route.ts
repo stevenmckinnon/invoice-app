@@ -3,6 +3,12 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
 import { auth } from "@/lib/auth";
+import { termsFromClient } from "@/lib/billing";
+import {
+  clientTermsSelect,
+  dayBillingWrites,
+  invoiceDaysSchema,
+} from "@/lib/day-invoice";
 import { prisma } from "@/lib/db";
 import { calculateInvoiceTotals, type InvoicePdfInput } from "@/lib/pdf";
 import { parseDate } from "@/lib/utils";
@@ -29,44 +35,52 @@ const customExpenseEntrySchema = z.object({
   cost: z.number().nonnegative(),
 });
 
-const invoiceInputSchema = z.object({
-  invoiceNumber: z.string().min(1),
-  invoiceDate: z.string().transform((s) => new Date(s)),
-  showName: z.string().min(1),
+const invoiceInputSchema = z
+  .object({
+    invoiceNumber: z.string().min(1),
+    invoiceDate: z.string().transform((s) => new Date(s)),
+    showName: z.string().min(1),
 
-  fullName: z.string().min(1),
-  email: z.email(),
-  addressLine1: z.string().min(1),
-  addressLine2: z.string().optional(),
-  city: z.string().min(1),
-  state: z.string().optional(),
-  postalCode: z.string().min(1),
-  country: z.string().min(1),
+    fullName: z.string().min(1),
+    email: z.email(),
+    addressLine1: z.string().min(1),
+    addressLine2: z.string().optional(),
+    city: z.string().min(1),
+    state: z.string().optional(),
+    postalCode: z.string().min(1),
+    country: z.string().min(1),
 
-  clientId: z.string().optional(),
-  clientName: z.string().optional(),
-  clientAddress1: z.string().optional(),
-  clientAddress2: z.string().optional(),
-  clientCity: z.string().optional(),
-  clientState: z.string().optional(),
-  clientPostalCode: z.string().optional(),
-  clientCountry: z.string().optional(),
-  attentionTo: z.string().optional(),
+    clientId: z.string().optional(),
+    clientName: z.string().optional(),
+    clientAddress1: z.string().optional(),
+    clientAddress2: z.string().optional(),
+    clientCity: z.string().optional(),
+    clientState: z.string().optional(),
+    clientPostalCode: z.string().optional(),
+    clientCountry: z.string().optional(),
+    attentionTo: z.string().optional(),
 
-  iban: z.string().min(1),
-  swiftBic: z.string().min(1),
-  accountNumber: z.string().optional(),
-  sortCode: z.string().optional(),
-  bankAddress: z.string().optional(),
-  dateOfBirth: z.string().optional(),
-  currency: z.string().optional(),
+    iban: z.string().min(1),
+    swiftBic: z.string().min(1),
+    accountNumber: z.string().optional(),
+    sortCode: z.string().optional(),
+    bankAddress: z.string().optional(),
+    dateOfBirth: z.string().optional(),
+    currency: z.string().optional(),
 
-  items: z.array(lineItemSchema).min(1),
-  overtimeEntries: z.array(overtimeEntrySchema),
-  customExpenseEntries: z.array(customExpenseEntrySchema),
-  status: z.enum(["draft", "sent", "paid", "overdue"]).optional(),
-  notes: z.string().optional(),
-});
+    // Count-based (the old form): line items and overtime are sent as typed.
+    // Day-based: send `days` instead, and the server prices them from the
+    // client's terms; any items or overtime sent alongside are ignored.
+    items: z.array(lineItemSchema).optional(),
+    overtimeEntries: z.array(overtimeEntrySchema).default([]),
+    days: invoiceDaysSchema.optional(),
+    customExpenseEntries: z.array(customExpenseEntrySchema),
+    status: z.enum(["draft", "sent", "paid", "overdue"]).optional(),
+    notes: z.string().optional(),
+  })
+  .refine((v) => v.days || v.items?.length, {
+    message: "Send the invoice's days, or at least one line item.",
+  });
 
 export const POST = async (req: NextRequest) => {
   try {
@@ -82,14 +96,41 @@ export const POST = async (req: NextRequest) => {
     const parsed = invoiceInputSchema.parse(json);
 
     // A clientId from another user would link their client to this invoice
-    if (
-      parsed.clientId &&
-      !(await prisma.client.findFirst({
-        where: { id: parsed.clientId, userId: session.user.id },
-        select: { id: true },
-      }))
-    ) {
+    const client = parsed.clientId
+      ? await prisma.client.findFirst({
+          where: { id: parsed.clientId, userId: session.user.id },
+          select: clientTermsSelect,
+        })
+      : null;
+    if (parsed.clientId && !client) {
       return NextResponse.json({ error: "Client not found" }, { status: 400 });
+    }
+
+    // Days are priced at the client's rates, so they need a client with a
+    // day rate; the terms are copied onto the invoice as it's created
+    let dayBilling: ReturnType<typeof dayBillingWrites> | null = null;
+    if (parsed.days) {
+      if (!client) {
+        return NextResponse.json(
+          { error: "Pick a client: days are billed at the client's rates." },
+          { status: 400 },
+        );
+      }
+      const terms = termsFromClient(client);
+      if (!terms) {
+        return NextResponse.json(
+          {
+            error:
+              "This client has no day rate yet. Add one to the client first.",
+          },
+          { status: 400 },
+        );
+      }
+      dayBilling = dayBillingWrites(
+        parsed.days,
+        terms,
+        parsed.customExpenseEntries,
+      );
     }
 
     const pdfInput: InvoicePdfInput = {
@@ -97,7 +138,7 @@ export const POST = async (req: NextRequest) => {
       invoiceDate: parseDate(parsed.invoiceDate),
     } as any;
 
-    const totals = calculateInvoiceTotals(pdfInput);
+    const totals = dayBilling ? null : calculateInvoiceTotals(pdfInput);
 
     const created = await prisma.invoice.create({
       data: {
@@ -140,41 +181,43 @@ export const POST = async (req: NextRequest) => {
           ? parseDate(pdfInput.dateOfBirth as any)
           : null,
         currency: pdfInput.currency ?? "GBP",
-        subtotalLabor: totals.subtotalLabor as unknown as any,
-        subtotalPerDiem: totals.subtotalPerDiem as unknown as any,
-        subtotalTravel: totals.subtotalTravel as unknown as any,
-        totalAmount: totals.totalAmount as unknown as any,
         status: parsed.status || "draft",
         notes: pdfInput.notes,
-        items: {
-          createMany: {
-            data: parsed.items.map((i) => ({
-              description: i.description,
-              quantity: i.quantity,
-              unitPrice: i.unitPrice as unknown as any,
-              cost: (i.cost ?? i.quantity * i.unitPrice) as unknown as any,
-            })),
+        ...(dayBilling ?? {
+          subtotalLabor: totals!.subtotalLabor as unknown as any,
+          subtotalPerDiem: totals!.subtotalPerDiem as unknown as any,
+          subtotalTravel: totals!.subtotalTravel as unknown as any,
+          totalAmount: totals!.totalAmount as unknown as any,
+          items: {
+            createMany: {
+              data: parsed.items!.map((i) => ({
+                description: i.description,
+                quantity: i.quantity,
+                unitPrice: i.unitPrice as unknown as any,
+                cost: (i.cost ?? i.quantity * i.unitPrice) as unknown as any,
+              })),
+            },
           },
-        },
-        overtimeEntries: {
-          createMany: {
-            data: parsed.overtimeEntries.map((entry) => ({
-              date: parseDate(entry.date),
-              hours: entry.hours as unknown as any,
-              rateType: entry.rateType,
-            })),
+          overtimeEntries: {
+            createMany: {
+              data: parsed.overtimeEntries.map((entry) => ({
+                date: parseDate(entry.date),
+                hours: entry.hours as unknown as any,
+                rateType: entry.rateType,
+              })),
+            },
           },
-        },
-        customExpenseEntries: {
-          createMany: {
-            data: parsed.customExpenseEntries.map((entry) => ({
-              description: entry.description,
-              quantity: entry.quantity,
-              unitPrice: entry.unitPrice as unknown as any,
-              cost: entry.cost as unknown as any,
-            })),
+          customExpenseEntries: {
+            createMany: {
+              data: parsed.customExpenseEntries.map((entry) => ({
+                description: entry.description,
+                quantity: entry.quantity,
+                unitPrice: entry.unitPrice as unknown as any,
+                cost: entry.cost as unknown as any,
+              })),
+            },
           },
-        },
+        }),
       },
       select: { id: true, invoiceNumber: true },
     });

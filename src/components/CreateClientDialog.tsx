@@ -26,6 +26,7 @@ import { OVERTIME_RATE_TYPES } from "@/lib/overtime";
 
 import { type Client } from "./ClientSelector";
 import { OvertimeTierFields } from "./OvertimeTierFields";
+import { TravelWorkFields } from "./TravelWorkFields";
 
 const clientSchema = z.object({
   name: z.string().min(1, "Name is required"),
@@ -42,6 +43,8 @@ const clientSchema = z.object({
   overtimeTierHours: z.union([z.string(), z.number()]).optional(),
   overtimeFirstRate: z.enum(OVERTIME_RATE_TYPES),
   overtimeAfterRate: z.enum(OVERTIME_RATE_TYPES),
+  travelWorkBill: z.enum(["both", "work", "travel"]),
+  travelWorkPerDiem: z.enum(["travel", "work"]),
 });
 
 interface CreateClientDialogProps {
@@ -74,6 +77,8 @@ export const CreateClientDialog = ({
       overtimeTierHours: "",
       overtimeFirstRate: "1.5x",
       overtimeAfterRate: "2x",
+      travelWorkBill: "both",
+      travelWorkPerDiem: "travel",
     },
   });
 
@@ -302,6 +307,8 @@ export const CreateClientDialog = ({
             </div>
 
             <OvertimeTierFields control={form.control} />
+
+            <TravelWorkFields control={form.control} />
 
             <div className="flex justify-end gap-2 pt-4">
               <Button

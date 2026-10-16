@@ -532,11 +532,20 @@ export const buildInvoiceTools = ({
     }) => {
       const existing = await prisma.invoice.findFirst({
         where: { id: invoiceId, userId },
-        select: { id: true, totalAmount: true, client: true },
+        select: { id: true, totalAmount: true, client: true, terms: true },
       });
 
       if (!existing) {
         return { error: "Invoice not found or does not belong to you." };
+      }
+
+      // A day-built invoice's lines are always worked out from its days.
+      // This tool still edits counts, so it must not touch one.
+      if (existing.terms != null) {
+        return {
+          error:
+            "This invoice is built from dated days, which this tool can't edit yet. Ask the user to change it in the invoice editor.",
+        };
       }
 
       // Same deal as createInvoiceDraft: unpriced entries are the client's

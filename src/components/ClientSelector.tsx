@@ -39,6 +39,9 @@ export interface Client {
   overtimeTierHours?: number | string | null;
   overtimeFirstRate?: string | null;
   overtimeAfterRate?: string | null;
+  /** How a work day that also had travel bills — see `termsFromClient` */
+  travelWorkBill?: "both" | "work" | "travel";
+  travelWorkPerDiem?: "travel" | "work";
 }
 
 interface ClientSelectorProps {

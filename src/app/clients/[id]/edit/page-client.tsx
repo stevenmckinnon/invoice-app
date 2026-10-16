@@ -10,6 +10,7 @@ import { z } from "zod";
 import { CountryPicker } from "@/components/CountryPicker";
 import { OvertimeTierFields } from "@/components/OvertimeTierFields";
 import { PageHeader } from "@/components/PageHeader";
+import { TravelWorkFields } from "@/components/TravelWorkFields";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -39,6 +40,8 @@ const clientSchema = z.object({
   overtimeTierHours: z.string().optional(),
   overtimeFirstRate: z.enum(OVERTIME_RATE_TYPES),
   overtimeAfterRate: z.enum(OVERTIME_RATE_TYPES),
+  travelWorkBill: z.enum(["both", "work", "travel"]),
+  travelWorkPerDiem: z.enum(["travel", "work"]),
 });
 
 export default function EditClientPage({
@@ -68,6 +71,8 @@ export default function EditClientPage({
       overtimeTierHours: "",
       overtimeFirstRate: "1.5x",
       overtimeAfterRate: "2x",
+      travelWorkBill: "both",
+      travelWorkPerDiem: "travel",
     },
   });
 
@@ -107,6 +112,8 @@ export default function EditClientPage({
                 // read sensibly for a client with no rule set yet
                 overtimeFirstRate: client.overtimeFirstRate || "1.5x",
                 overtimeAfterRate: client.overtimeAfterRate || "2x",
+                travelWorkBill: client.travelWorkBill ?? "both",
+                travelWorkPerDiem: client.travelWorkPerDiem ?? "travel",
               });
             } else {
               alert("Client not found");
@@ -379,6 +386,8 @@ export default function EditClientPage({
               </div>
 
               <OvertimeTierFields control={form.control} />
+
+              <TravelWorkFields control={form.control} />
             </CardContent>
           </Card>
 
