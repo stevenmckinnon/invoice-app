@@ -114,7 +114,8 @@ model Invoice {
   client             Client?  @relation(fields: [clientId], references: [id], onDelete: SetNull)
 
   // Identification
-  invoiceNumber      String   @unique
+  // Unique per user, not globally: two freelancers can both have INV-2601
+  invoiceNumber      String
   invoiceDate        DateTime
   showName           String
 
@@ -179,6 +180,8 @@ model Invoice {
   // The dated days of the job. Empty on count-based invoices made before
   // days existed; those keep their stored lines and are never converted.
   days               InvoiceDay[]
+
+  @@unique([userId, invoiceNumber])
 }
 
 // One billed date of a job. A day off is the absence of a row, never a row.

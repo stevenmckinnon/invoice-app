@@ -11,6 +11,10 @@ import {
   parseStoredTerms,
 } from "@/lib/day-invoice";
 import { prisma } from "@/lib/db";
+import {
+  duplicateInvoiceNumberMessage,
+  isDuplicateInvoiceNumberError,
+} from "@/lib/invoice-number";
 import { calculateInvoiceTotals, type InvoicePdfInput } from "@/lib/pdf";
 import { parseDate } from "@/lib/utils";
 
@@ -91,6 +95,8 @@ type RouteContext = {
 };
 
 export const PUT = async (req: NextRequest, context: RouteContext) => {
+  // Kept outside the try so a duplicate-number failure can name it
+  let invoiceNumber = "";
   try {
     const session = await auth.api.getSession({
       headers: await headers(),
@@ -104,6 +110,7 @@ export const PUT = async (req: NextRequest, context: RouteContext) => {
     const { id } = params;
     const json = await req.json();
     const parsed = invoiceUpdateSchema.parse(json);
+    invoiceNumber = parsed.invoiceNumber;
 
     const pdfInput: InvoicePdfInput = {
       ...parsed,
@@ -263,6 +270,12 @@ export const PUT = async (req: NextRequest, context: RouteContext) => {
       { status: 200 },
     );
   } catch (err: any) {
+    if (isDuplicateInvoiceNumberError(err)) {
+      return NextResponse.json(
+        { error: duplicateInvoiceNumberMessage(invoiceNumber) },
+        { status: 400 },
+      );
+    }
     return NextResponse.json(
       { error: err.message ?? "Failed to update invoice" },
       { status: 400 },
