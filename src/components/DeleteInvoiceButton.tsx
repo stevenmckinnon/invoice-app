@@ -23,6 +23,12 @@ interface DeleteInvoiceButtonProps {
   invoiceNumber?: string;
   onDeleted?: () => void;
   size?: "default" | "sm" | "lg" | "icon";
+  /**
+   * Control the confirmation from outside, e.g. a "Delete" item in an
+   * overflow menu. With these set, no trigger button is rendered.
+   */
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
 }
 
 export const DeleteInvoiceButton = ({
@@ -30,8 +36,14 @@ export const DeleteInvoiceButton = ({
   invoiceNumber,
   onDeleted,
   size = "default",
+  open: controlledOpen,
+  onOpenChange,
 }: DeleteInvoiceButtonProps) => {
-  const [open, setOpen] = useState(false);
+  const [uncontrolledOpen, setUncontrolledOpen] = useState(false);
+  const controlled = controlledOpen !== undefined;
+  const open = controlled ? controlledOpen : uncontrolledOpen;
+  const setOpen = (next: boolean) =>
+    controlled ? onOpenChange?.(next) : setUncontrolledOpen(next);
   const deleteInvoiceMutation = useDeleteInvoice();
 
   const handleDelete = () => {
@@ -48,11 +60,11 @@ export const DeleteInvoiceButton = ({
 
   return (
     <AlertDialog open={open} onOpenChange={setOpen}>
-      <AlertDialogTrigger
-        render={<Button variant="outline" size={size} />}
-      >
-        <HugeiconsIcon icon={Delete01Icon} className="h-4 w-4" /> Delete
-      </AlertDialogTrigger>
+      {!controlled && (
+        <AlertDialogTrigger render={<Button variant="outline" size={size} />}>
+          <HugeiconsIcon icon={Delete01Icon} className="h-4 w-4" /> Delete
+        </AlertDialogTrigger>
+      )}
       <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle>Delete Invoice</AlertDialogTitle>
@@ -71,7 +83,7 @@ export const DeleteInvoiceButton = ({
               handleDelete();
             }}
             disabled={deleteInvoiceMutation.isPending}
-            className="bg-destructive text-white hover:bg-destructive/90 dark:bg-destructive/60 dark:hover:bg-destructive/70"
+            className="bg-destructive hover:bg-destructive/90 dark:bg-destructive/60 dark:hover:bg-destructive/70 text-white"
           >
             {deleteInvoiceMutation.isPending ? "Deleting..." : "Delete"}
           </AlertDialogAction>

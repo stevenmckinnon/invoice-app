@@ -1,17 +1,28 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
-import { PencilIcon } from "@hugeicons/core-free-icons";
+import {
+  ArrowLeft01Icon,
+  Delete02Icon,
+  MoreHorizontalIcon,
+  PencilEdit02Icon,
+} from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
 import { DeleteInvoiceButton } from "@/components/DeleteInvoiceButton";
-import { InvoiceStatusBadge } from "@/components/InvoiceStatusBadge";
-import { PageHeader } from "@/components/PageHeader";
+import { DayStrip } from "@/components/invoice/DayStrip";
+import { InvoicePaper } from "@/components/invoice/InvoicePaper";
+import { overtimeByDate } from "@/components/invoice/OvertimeCap";
 import { PdfPreviewDialog } from "@/components/PdfPreviewDialog";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import {
   Select,
   SelectContent,
@@ -20,147 +31,75 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableFooter,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import { useInvoice, useUpdateInvoiceStatus } from "@/hooks/use-invoices";
+import { toStripDays } from "@/lib/day-strip";
 import { INVOICE_STATUSES } from "@/lib/invoice-status";
-import { deriveOvertimeHourlyRate, overtimeMultiplier } from "@/lib/overtime";
-import { formatCurrency, formatDate } from "@/lib/utils";
+import { summariseInvoice } from "@/lib/invoice-summary";
 
 type Props = { params: Promise<{ id: string }> };
 
-/** Renders a set of address lines, skipping any empty parts. */
-function AddressLines({ lines }: { lines: (string | null | undefined)[] }) {
-  const clean = lines
-    .map((l) => (typeof l === "string" ? l.trim() : l))
-    .filter((l): l is string => !!l);
-
-  if (clean.length === 0) {
-    return <p className="text-muted-foreground text-sm">—</p>;
-  }
-
-  return (
-    <div className="text-sm leading-relaxed">
-      {clean.map((line, i) => (
-        <p key={i}>{line}</p>
-      ))}
-    </div>
-  );
-}
-
-/** A labelled payment field, hidden entirely when there's no value. */
-function PaymentField({
-  label,
-  value,
-}: {
-  label: string;
-  value?: string | null;
-}) {
-  if (!value) return null;
-  return (
-    <div>
-      <dt className="text-muted-foreground text-xs font-semibold tracking-wider uppercase">
-        {label}
-      </dt>
-      <dd className="mt-0.5 text-sm font-medium break-words">{value}</dd>
-    </div>
-  );
-}
-
-/** A labelled summary stat used in the invoice meta band. */
-function MetaStat({
-  label,
-  children,
-}: {
-  label: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <div>
-      <p className="text-muted-foreground text-xs font-semibold tracking-wider uppercase">
-        {label}
-      </p>
-      <div className="mt-1">{children}</div>
-    </div>
-  );
-}
+/*
+ * One column at the paper's width, in reading order: what the job was, then
+ * the invoice itself. Header, strip and paper share both edges. Invoices
+ * made before days were recorded have no strip, since there are no dates to
+ * draw, and their paper reads from the same stored lines as every other.
+ */
+const COLUMN = "mx-auto w-full max-w-4xl px-4 pt-6 pb-32 md:px-6 md:pt-10";
 
 export default function InvoiceDetailPage({ params }: Props) {
   const router = useRouter();
   const updateInvoiceStatusMutation = useUpdateInvoiceStatus();
   const [invoiceId, setInvoiceId] = useState<string | undefined>(undefined);
+  const [deleteOpen, setDeleteOpen] = useState(false);
   const { data: invoice, isLoading: loading, error } = useInvoice(invoiceId);
 
-  // Extract invoice ID from params
   useEffect(() => {
     params.then((p) => setInvoiceId(p.id));
   }, [params]);
 
-  const handleStatusChange = async (newStatus: string | null) => {
-    if (!invoice || !newStatus) return;
+  const view = useMemo(() => {
+    if (!invoice) return null;
+    return {
+      days: toStripDays(invoice.days),
+      overtime: overtimeByDate(invoice.overtimeEntries),
+      summary: summariseInvoice(invoice),
+    };
+  }, [invoice]);
 
+  const handleStatusChange = (newStatus: string | null) => {
+    if (!invoice || !newStatus) return;
     updateInvoiceStatusMutation.mutate({
       id: invoice.id,
       status: newStatus as "draft" | "sent" | "paid" | "overdue",
     });
   };
 
-  if (loading) {
+  if (loading || (!error && !invoice)) {
+    // Shaped like the page: header, then the paper
     return (
-      <div className="mx-auto max-w-6xl px-6 py-4">
-        <Skeleton className="mb-4 h-10 w-24" />
-        <div className="grid gap-4">
-          <div className="flex flex-col items-start justify-between gap-2 md:flex-row">
-            <div className="space-y-2">
-              <Skeleton className="h-8 w-48" />
-              <Skeleton className="h-4 w-32" />
-              <Skeleton className="h-8 w-40" />
-            </div>
-            <div className="flex gap-2">
-              <Skeleton className="h-10 w-24" />
-              <Skeleton className="h-10 w-32" />
-              <Skeleton className="h-10 w-24" />
-            </div>
+      <div className={COLUMN} aria-busy="true">
+        <Skeleton className="mb-3 h-8 w-24" />
+        <Skeleton className="h-10 w-72 max-w-full" />
+        <Skeleton className="mt-2 h-4 w-56" />
+        <div className="bg-card mt-8 space-y-6 rounded-md p-8 shadow-sm dark:border">
+          <div className="flex justify-between">
+            <Skeleton className="h-8 w-36" />
+            <Skeleton className="h-16 w-32" />
           </div>
-          <Card>
-            <CardHeader>
-              <div className="flex gap-4">
-                <Skeleton className="h-4 w-24" />
-                <Skeleton className="h-4 w-16" />
-                <Skeleton className="h-4 w-20" />
-                <Skeleton className="h-4 w-20" />
-                <Skeleton className="h-4 w-16" />
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                {[...Array(5)].map((_, i) => (
-                  <div key={i} className="flex gap-4">
-                    <Skeleton className="h-4 flex-1" />
-                    <Skeleton className="h-4 w-16" />
-                    <Skeleton className="h-4 w-16" />
-                    <Skeleton className="h-4 w-20" />
-                    <Skeleton className="h-4 w-20" />
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
+          <Skeleton className="h-20 w-full" />
+          <div className="space-y-3">
+            {[...Array(5)].map((_, i) => (
+              <Skeleton key={i} className="h-5 w-full" />
+            ))}
+          </div>
         </div>
       </div>
     );
   }
 
-  if (error || !invoice) {
+  if (error || !invoice || !view) {
     return (
-      <div className="mx-auto flex min-h-[calc(100dvh-10rem)] max-w-6xl items-center justify-center py-8">
+      <div className="mx-auto flex min-h-[calc(100dvh-10rem)] max-w-4xl items-center justify-center px-4 py-8">
         <div className="space-y-4 text-center">
           <p className="text-2xl font-semibold">Invoice not found</p>
           <p className="text-muted-foreground">
@@ -181,297 +120,142 @@ export default function InvoiceDetailPage({ params }: Props) {
     );
   }
 
-  // Calculate overtime costs
-  const overtimeEntries = invoice.overtimeEntries || [];
-  const customExpenses = invoice.customExpenseEntries || [];
-
-  const regularRate = deriveOvertimeHourlyRate(invoice.items);
-
-  // Combine all items into one array
-  type CombinedItem = {
-    id: string;
-    description: string;
-    quantity: number;
-    unitPrice: number;
-    cost: number;
-    type: "item" | "overtime" | "expense";
-  };
-
-  const allItems: CombinedItem[] = [
-    ...invoice.items
-      .filter((item) => item.quantity > 0)
-      .map((item) => ({
-        id: item.id,
-        description: item.description,
-        quantity: item.quantity,
-        unitPrice: Number(item.unitPrice),
-        cost: Number(item.cost),
-        type: "item" as const,
-      })),
-    ...overtimeEntries.map((ot) => {
-      const hourlyRate = regularRate * overtimeMultiplier(ot.rateType);
-      const hours = Number(ot.hours);
-      return {
-        id: ot.id,
-        description: `Overtime (${ot.rateType}) - ${formatDate(ot.date)}`,
-        quantity: hours,
-        unitPrice: hourlyRate,
-        cost: hours * hourlyRate,
-        type: "overtime" as const,
-      };
-    }),
-    ...customExpenses.map((exp) => ({
-      id: exp.id,
-      description: exp.description,
-      quantity: exp.quantity,
-      unitPrice: Number(exp.unitPrice),
-      cost: Number(exp.cost),
-      type: "expense" as const,
-    })),
-  ];
-
   return (
-    <div className="mx-auto w-full max-w-6xl overflow-x-hidden p-6 py-10 md:px-6 md:pb-8">
-      <div className="grid gap-6">
-        <PageHeader
-          title={`Invoice ${invoice.invoiceNumber}`}
-          subtitle={invoice.showName}
-          backHref="/invoices"
-          actions={
-            <>
-              <Select
-                items={INVOICE_STATUSES}
-                value={invoice.status}
-                onValueChange={handleStatusChange}
-                disabled={updateInvoiceStatusMutation.isPending}
-              >
-                <SelectTrigger className="h-9 w-[130px]">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {INVOICE_STATUSES.map(({ value, label, dotClass }) => (
-                    <SelectItem key={value} value={value}>
-                      <div className="flex items-center gap-2">
-                        <div
-                          className={`h-2.5 w-2.5 rounded-full ${dotClass}`}
-                        />
-                        <span>{label}</span>
-                      </div>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <Button
-                variant="outline"
-                nativeButton={false}
-                render={
-                  <Link
-                    href={`/invoices/${invoice.id}/edit`}
-                    transitionTypes={["forward"]}
-                  >
-                    <HugeiconsIcon icon={PencilIcon} /> Edit
-                  </Link>
-                }
-              />
-              <PdfPreviewDialog
-                variant="outline"
-                invoiceId={invoice.id}
-                invoiceNumber={invoice.invoiceNumber}
-                invoiceDate={
-                  typeof invoice.invoiceDate === "string"
-                    ? new Date(invoice.invoiceDate)
-                    : invoice.invoiceDate
-                }
-                showName={invoice.showName}
-                fullName={invoice.fullName}
-              />
-              <DeleteInvoiceButton
-                invoiceId={invoice.id}
-                invoiceNumber={invoice.invoiceNumber}
-                onDeleted={() => router.push("/invoices")}
-              />
-            </>
-          }
-        />
-        {/* Meta band */}
-        <Card>
-          <CardContent className="grid grid-cols-2 gap-4 pt-6 md:grid-cols-4">
-            <MetaStat label="Invoice">
-              <p className="text-sm font-semibold">{invoice.invoiceNumber}</p>
-            </MetaStat>
-            <MetaStat label="Issued">
-              <p className="text-sm font-medium" suppressHydrationWarning>
-                {formatDate(invoice.invoiceDate)}
-              </p>
-            </MetaStat>
-            <MetaStat label="Status">
-              <InvoiceStatusBadge status={invoice.status} />
-            </MetaStat>
-            <MetaStat label="Total">
-              <p className="text-lg font-bold tabular-nums">
-                {formatCurrency(Number(invoice.totalAmount), invoice.currency)}
-              </p>
-            </MetaStat>
-          </CardContent>
-        </Card>
+    <div className={COLUMN}>
+      <Button
+        variant="ghost"
+        size="sm"
+        className="mb-2 -ml-2"
+        nativeButton={false}
+        render={
+          <Link href="/invoices" transitionTypes={["back"]}>
+            <HugeiconsIcon icon={ArrowLeft01Icon} />
+            Invoices
+          </Link>
+        }
+      />
 
-        {/* From / Bill To */}
-        <div className="grid gap-6 md:grid-cols-2">
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-base">From</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-1">
-              <p className="font-medium">{invoice.fullName}</p>
-              {invoice.email && (
-                <p className="text-muted-foreground text-sm">{invoice.email}</p>
-              )}
-              <AddressLines
-                lines={[
-                  invoice.addressLine1,
-                  invoice.addressLine2,
-                  [invoice.city, invoice.state].filter(Boolean).join(", "),
-                  invoice.postalCode,
-                  invoice.country,
-                ]}
-              />
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-base">Bill To</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-1">
-              {invoice.clientName ? (
-                <>
-                  <p className="font-medium">{invoice.clientName}</p>
-                  {invoice.attentionTo && (
-                    <p className="text-muted-foreground text-sm">
-                      Attn: {invoice.attentionTo}
-                    </p>
-                  )}
-                  <AddressLines
-                    lines={[
-                      invoice.clientAddress1,
-                      invoice.clientAddress2,
-                      [invoice.clientCity, invoice.clientState]
-                        .filter(Boolean)
-                        .join(", "),
-                      invoice.clientPostalCode,
-                      invoice.clientCountry,
-                    ]}
-                  />
-                </>
-              ) : (
-                <p className="text-muted-foreground text-sm">
-                  No client on this invoice.
-                </p>
-              )}
-            </CardContent>
-          </Card>
+      <div className="mb-8 flex flex-col justify-between gap-4 md:flex-row md:items-end">
+        {/* The job is the title; the number, which the paper shows large,
+            is the subtitle rather than a second headline */}
+        <div className="min-w-0">
+          <h1 className="text-3xl font-bold tracking-tight text-balance md:text-4xl">
+            {invoice.showName}
+          </h1>
+          <p className="text-muted-foreground mt-1 text-sm">
+            <span className="font-mono">{invoice.invoiceNumber}</span>
+            {invoice.clientName ? ` · ${invoice.clientName}` : ""}
+          </p>
         </div>
 
-        {/* Line items */}
-        <Card className="overflow-hidden">
-          <CardHeader>
-            <CardTitle className="text-base">Line Items</CardTitle>
-          </CardHeader>
-          <CardContent className="overflow-x-auto">
-            <div className="min-w-full">
-              <Table className="w-full min-w-[600px]">
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Description</TableHead>
-                    <TableHead>Type</TableHead>
-                    <TableHead className="text-right">Qty</TableHead>
-                    <TableHead className="text-right">Unit Price</TableHead>
-                    <TableHead className="text-right">Cost</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {allItems.length === 0 ? (
-                    <TableRow>
-                      <TableCell
-                        colSpan={5}
-                        className="text-muted-foreground py-8 text-center text-sm"
-                      >
-                        No line items on this invoice yet.
-                      </TableCell>
-                    </TableRow>
-                  ) : (
-                    allItems.map((item) => (
-                      <TableRow key={item.id}>
-                        <TableCell className="min-w-[200px]">
-                          {item.description}
-                        </TableCell>
-                        <TableCell className="text-muted-foreground capitalize">
-                          {item.type}
-                        </TableCell>
-                        <TableCell className="text-right">
-                          {item.quantity}
-                        </TableCell>
-                        <TableCell className="text-right">
-                          {formatCurrency(item.unitPrice, invoice.currency)}
-                        </TableCell>
-                        <TableCell className="text-right font-medium">
-                          {formatCurrency(item.cost, invoice.currency)}
-                        </TableCell>
-                      </TableRow>
-                    ))
-                  )}
-                </TableBody>
-                <TableFooter>
-                  <TableRow>
-                    <TableCell
-                      colSpan={4}
-                      className="text-right text-base font-semibold"
-                    >
-                      Total
-                    </TableCell>
-                    <TableCell className="text-right text-base font-semibold">
-                      {formatCurrency(
-                        Number(invoice.totalAmount),
-                        invoice.currency,
-                      )}
-                    </TableCell>
-                  </TableRow>
-                </TableFooter>
-              </Table>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Payment details */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base">Payment Details</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <dl className="grid grid-cols-2 gap-4 sm:grid-cols-3">
-              <PaymentField label="IBAN" value={invoice.iban} />
-              <PaymentField label="SWIFT / BIC" value={invoice.swiftBic} />
-              <PaymentField label="Account No." value={invoice.accountNumber} />
-              <PaymentField label="Sort Code" value={invoice.sortCode} />
-              <PaymentField label="Bank Address" value={invoice.bankAddress} />
-            </dl>
-          </CardContent>
-        </Card>
-
-        {/* Notes */}
-        {invoice.notes && (
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-base">Notes</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-muted-foreground text-sm whitespace-pre-wrap">
-                {invoice.notes}
-              </p>
-            </CardContent>
-          </Card>
-        )}
+        {/* Phones get two deliberate rows (status and the menu, then Edit
+            and PDF side by side) rather than four buttons wrapping into an
+            orphan. From md the wrappers dissolve (md:contents) into one row,
+            the menu moved last with md:order-last. */}
+        <div className="flex flex-col gap-2 md:flex-row md:items-center">
+          <div className="flex gap-2 md:contents">
+            <Select
+              items={INVOICE_STATUSES}
+              value={invoice.status}
+              onValueChange={handleStatusChange}
+              disabled={updateInvoiceStatusMutation.isPending}
+            >
+              <SelectTrigger
+                className="h-9 flex-1 md:w-[130px] md:flex-none"
+                aria-label="Status"
+              >
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {INVOICE_STATUSES.map(({ value, label, dotClass }) => (
+                  <SelectItem key={value} value={value}>
+                    <div className="flex items-center gap-2">
+                      <div className={`h-2.5 w-2.5 rounded-full ${dotClass}`} />
+                      <span>{label}</span>
+                    </div>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            {/* Delete is rare and destructive, so it sits behind a menu
+                rather than beside the everyday actions */}
+            <DropdownMenu>
+              <DropdownMenuTrigger
+                render={
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    aria-label="More actions"
+                    className="md:order-last"
+                  />
+                }
+              >
+                <HugeiconsIcon icon={MoreHorizontalIcon} />
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem
+                  variant="destructive"
+                  onClick={() => setDeleteOpen(true)}
+                >
+                  <HugeiconsIcon icon={Delete02Icon} />
+                  Delete invoice
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+          <div className="grid grid-cols-2 gap-2 md:contents">
+            <Button
+              variant="outline"
+              nativeButton={false}
+              render={
+                <Link
+                  href={`/invoices/${invoice.id}/edit`}
+                  transitionTypes={["forward"]}
+                >
+                  <HugeiconsIcon icon={PencilEdit02Icon} /> Edit
+                </Link>
+              }
+            />
+            <PdfPreviewDialog
+              invoiceId={invoice.id}
+              invoiceNumber={invoice.invoiceNumber}
+              invoiceDate={
+                typeof invoice.invoiceDate === "string"
+                  ? new Date(invoice.invoiceDate)
+                  : invoice.invoiceDate
+              }
+              showName={invoice.showName}
+              fullName={invoice.fullName}
+            />
+          </div>
+          <DeleteInvoiceButton
+            invoiceId={invoice.id}
+            invoiceNumber={invoice.invoiceNumber}
+            open={deleteOpen}
+            onOpenChange={setDeleteOpen}
+            onDeleted={() => router.push("/invoices")}
+          />
+        </div>
       </div>
+
+      {view.days.length > 0 && (
+        <div className="mb-10">
+          <DayStrip
+            days={view.days}
+            overtime={view.overtime}
+            summary={view.summary}
+            terms={invoice.terms}
+            currency={invoice.currency}
+          />
+        </div>
+      )}
+
+      <InvoicePaper
+        invoice={invoice}
+        summary={view.summary}
+        days={view.days}
+        overtime={view.overtime}
+      />
     </div>
   );
 }
