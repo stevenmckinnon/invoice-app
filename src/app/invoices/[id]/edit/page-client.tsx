@@ -6,6 +6,7 @@ import { useParams, useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 
+import { InvoiceEditor } from "@/components/invoice-editor/InvoiceEditor";
 import {
   InvoiceForm,
   invoiceFormDefaults,
@@ -15,13 +16,48 @@ import {
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useClients } from "@/hooks/use-clients";
-import { useUpdateInvoice } from "@/hooks/use-invoices";
+import { useInvoice, useUpdateInvoice } from "@/hooks/use-invoices";
 import { clientOvertimeRule } from "@/lib/overtime";
 
+/**
+ * Day-based invoices open in the calendar editor. Count-based invoices made
+ * before days existed keep the old form until the assistant creates day
+ * invoices too; then that form goes and their billing is locked.
+ */
 export default function EditInvoicePage() {
-  const router = useRouter();
   const params = useParams();
   const invoiceId = params.id as string;
+  const { data: invoice, isLoading, error } = useInvoice(invoiceId);
+
+  if (error) {
+    return (
+      <div className="mx-auto flex min-h-[calc(100dvh-10rem)] max-w-4xl items-center justify-center px-4">
+        <p className="text-muted-foreground">
+          {error instanceof Error ? error.message : "Invoice not found"}
+        </p>
+      </div>
+    );
+  }
+  if (isLoading || !invoice) return <EditSkeleton />;
+  if (invoice.terms) return <InvoiceEditor invoice={invoice} />;
+  return <LegacyEditInvoice invoiceId={invoiceId} />;
+}
+
+const EditSkeleton = () => (
+  <div
+    className="mx-auto w-full max-w-4xl px-4 pt-6 md:px-6 md:pt-10"
+    aria-busy="true"
+  >
+    <Skeleton className="mb-3 h-8 w-24" />
+    <Skeleton className="h-10 w-56" />
+    <Skeleton className="mt-8 h-32 w-full rounded-2xl" />
+    <Skeleton className="mt-4 h-80 w-full rounded-2xl" />
+  </div>
+);
+
+/** The old count-based form, for invoices made before days were recorded */
+function LegacyEditInvoice({ invoiceId }: { invoiceId: string }) {
+  const router = useRouter();
   const updateInvoiceMutation = useUpdateInvoice();
   const [isLoading, setIsLoading] = useState(true);
   const [clientId, setClientId] = useState<string | null>(null);
