@@ -12,6 +12,8 @@
 // than dotenv in here: static imports are hoisted, so db.ts would read
 // DATABASE_URL before any in-file config() call could set it.
 import { auth } from "../src/lib/auth";
+import { termsFromClient } from "../src/lib/billing";
+import { dayBillingWrites } from "../src/lib/day-invoice";
 import { prisma } from "../src/lib/db";
 import { calculateInvoiceTotals } from "../src/lib/pdf";
 import { formatCurrencyTotals } from "../src/lib/utils";
@@ -399,13 +401,44 @@ const main = async () => {
     }),
   ];
 
+  // One invoice built from dated days, the way new invoices are made, so the
+  // day strip, the calendar editor and the paper's schedule have something to
+  // show. Priced by the same code as the app, at WWE's terms.
+  invoices.push({
+    ...buildInvoice({
+      userId: user.id,
+      clientId: wwe.id,
+      client: wwe,
+      invoiceNumber: "INV-2607",
+      invoiceDate: "2026-09-14",
+      showName: "Triplemania 34",
+      status: "sent",
+      items: [],
+    }),
+    ...dayBillingWrites(
+      [
+        { date: "2026-09-08", type: "travel" },
+        { date: "2026-09-09", type: "travel" },
+        { date: "2026-09-10", type: "work" },
+        { date: "2026-09-11", type: "work", overtimeHours: 3 },
+        { date: "2026-09-12", type: "dark" },
+        { date: "2026-09-13", type: "work", alsoTravel: "home" },
+      ],
+      termsFromClient(wwe)!,
+      [
+        { description: "Uber", quantity: 1, unitPrice: 32.97 },
+        { description: "Uber", quantity: 1, unitPrice: 27.66 },
+      ],
+    ),
+  } as (typeof invoices)[number]);
+
   for (const data of invoices) {
     await prisma.invoice.create({ data: data as never });
   }
 
   console.log(`Seeded ${SEED_EMAIL} / ${SEED_PASSWORD}`);
   console.log(
-    `  3 clients (1 with tiered overtime), ${invoices.length} invoices across two tax years, ${formatCurrencyTotals(invoices)} billed`,
+    `  3 clients (1 with tiered overtime), ${invoices.length} invoices across two tax years (1 built from days), ${formatCurrencyTotals(invoices)} billed`,
   );
 };
 

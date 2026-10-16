@@ -7,10 +7,13 @@ import { HugeiconsIcon } from "@hugeicons/react";
 import { useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
 
+import { MiniSchedule } from "@/components/invoice/InvoicePaper";
+import { overtimeByDate } from "@/components/invoice/OvertimeCap";
 import { InvoiceStatusBadge } from "@/components/InvoiceStatusBadge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useInvoice } from "@/hooks/use-invoices";
+import { toStripDays } from "@/lib/day-strip";
 import { deriveOvertimeHourlyRate, overtimeEntryCost } from "@/lib/overtime";
 import { formatCurrency } from "@/lib/utils";
 
@@ -134,6 +137,17 @@ export const DraftInvoicePreview = ({
         </div>
         <InvoiceStatusBadge status={invoice.status} />
       </div>
+
+      {/* The job's days at a glance, as on the paper: the draft taking shape
+          as the assistant adds them */}
+      {invoice.days.length > 0 && (
+        <div className="shrink-0 px-4 pb-3">
+          <MiniSchedule
+            days={toStripDays(invoice.days)}
+            overtime={overtimeByDate(invoice.overtimeEntries)}
+          />
+        </div>
+      )}
 
       <div
         ref={listRef}

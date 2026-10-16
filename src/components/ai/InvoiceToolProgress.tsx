@@ -9,7 +9,6 @@ import {
 } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 
-
 import { Shimmer } from "@/components/ai-elements/shimmer";
 import {
   Collapsible,
@@ -17,7 +16,6 @@ import {
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
 import { Spinner } from "@/components/ui/spinner";
-import type { StandardLineItem } from "@/lib/invoice-items";
 import { cn, formatDate } from "@/lib/utils";
 
 import type { ToolUIPart } from "ai";
@@ -48,10 +46,8 @@ interface ToolInputShape {
   showName?: string;
   invoiceDate?: string;
   clientName?: string;
-  items?: { description?: string; quantity?: number }[];
-  extraItems?: unknown[];
-  overtimeEntries?: { hours?: number }[];
-  customExpenseEntries?: unknown[];
+  days?: { type?: string; alsoTravel?: string; overtimeHours?: number }[];
+  expenses?: unknown[];
 }
 
 interface ToolOutputShape {
@@ -61,42 +57,33 @@ interface ToolOutputShape {
   total?: string;
 }
 
-const ITEM_NOUNS: Record<StandardLineItem, [string, string]> = {
-  "Work Days": ["work day", "work days"],
-  "Travel Days": ["travel day", "travel days"],
-  "Dark days": ["dark day", "dark days"],
-  "Per Diems Work Days": ["per diem", "per diems"],
-  "Per Diems Travel Days": ["per diem", "per diems"],
+const DAY_NOUNS: Record<string, [string, string]> = {
+  work: ["work day", "work days"],
+  travel: ["travel day", "travel days"],
+  dark: ["dark day", "dark days"],
 };
 
 const plural = (n: number, [one, many]: [string, string]) =>
   `${n} ${n === 1 ? one : many}`;
 
-/** "3 work days, 2 per diems, 4h overtime, 1 expense" — from whatever has arrived */
+/** "4 travel days, 2 work days, 2h overtime, 1 expense" — from whatever has arrived */
 const summariseCharges = (input: ToolInputShape): string | undefined => {
-  const counts = new Map<string, { n: number; nouns: [string, string] }>();
-  for (const item of input.items ?? []) {
-    const nouns = ITEM_NOUNS[item.description as StandardLineItem];
-    if (!nouns || !item.quantity) continue;
-    // Both per-diem kinds share a noun, so they add up into one count
-    const entry = counts.get(nouns[0]) ?? { n: 0, nouns };
-    entry.n += item.quantity;
-    counts.set(nouns[0], entry);
-  }
+  const days = input.days ?? [];
+  const parts = ["travel", "work", "dark"]
+    .map((type) => {
+      const n = days.filter((d) => d.type === type).length;
+      return n ? plural(n, DAY_NOUNS[type]) : null;
+    })
+    .filter((part): part is string => Boolean(part));
 
-  const parts = [...counts.values()].map(({ n, nouns }) => plural(n, nouns));
-
-  const overtimeHours = (input.overtimeEntries ?? []).reduce(
-    (sum, e) => sum + (e.hours ?? 0),
+  const overtimeHours = days.reduce(
+    (sum, d) => sum + (d.overtimeHours ?? 0),
     0,
   );
   if (overtimeHours > 0) parts.push(`${overtimeHours}h overtime`);
 
-  const expenses = input.customExpenseEntries?.length ?? 0;
+  const expenses = input.expenses?.length ?? 0;
   if (expenses > 0) parts.push(plural(expenses, ["expense", "expenses"]));
-
-  const extras = input.extraItems?.length ?? 0;
-  if (extras > 0) parts.push(plural(extras, ["other item", "other items"]));
 
   return parts.length > 0 ? parts.join(", ") : undefined;
 };
@@ -115,9 +102,9 @@ const formatIsoDate = (value?: string) => {
  */
 const buildSteps = (part: ToolUIPart & { type: InvoiceToolType }): Step[] => {
   const input = (part.input ?? {}) as ToolInputShape;
-  const output = (part.state === "output-available"
-    ? part.output
-    : undefined) as ToolOutputShape | undefined;
+  const output = (
+    part.state === "output-available" ? part.output : undefined
+  ) as ToolOutputShape | undefined;
   const isCreate = part.type === "tool-createInvoiceDraft";
 
   const inputComplete = part.state !== "input-streaming";
@@ -151,7 +138,7 @@ const buildSteps = (part: ToolUIPart & { type: InvoiceToolType }): Step[] => {
       status: detailsDone ? "done" : "active",
     },
     {
-      label: isCreate ? "Build line items" : "Work out the changes",
+      label: isCreate ? "Lay out the days" : "Work out the changes",
       detail: isCreate
         ? charges
         : [...changedFields, charges].filter(Boolean).join(", ") || undefined,
@@ -181,10 +168,19 @@ const STEP_STATUS_TEXT: Record<StepStatus, string> = {
 const StepIcon = ({ status }: { status: StepStatus }) => (
   <span className="flex size-5 shrink-0 items-center justify-center">
     {status === "done" && (
-      <HugeiconsIcon icon={Tick02Icon} strokeWidth={2} className="text-success size-4" />
+      <HugeiconsIcon
+        icon={Tick02Icon}
+        strokeWidth={2}
+        className="text-success size-4"
+      />
     )}
     {status === "active" && (
-      <Spinner aria-hidden role={undefined} aria-label={undefined} className="text-primary size-4" />
+      <Spinner
+        aria-hidden
+        role={undefined}
+        aria-label={undefined}
+        className="text-primary size-4"
+      />
     )}
     {status === "pending" && (
       <span className="border-muted-foreground/40 size-3.5 rounded-full border border-dashed" />
@@ -215,9 +211,9 @@ export const InvoiceToolProgress = ({
   className?: string;
 }) => {
   const isCreate = part.type === "tool-createInvoiceDraft";
-  const output = (part.state === "output-available"
-    ? part.output
-    : undefined) as ToolOutputShape | undefined;
+  const output = (
+    part.state === "output-available" ? part.output : undefined
+  ) as ToolOutputShape | undefined;
 
   const built = buildSteps(part);
   const failed = built.some((s) => s.status === "error");
@@ -241,16 +237,16 @@ export const InvoiceToolProgress = ({
   const heading = stopped
     ? "Stopped before saving"
     : failed
-    ? "Draft not saved"
-    : saved
-      ? !isCreate
-        ? "Draft updated"
-        : output?.invoiceNumber
-          ? `Draft ${output.invoiceNumber} created`
-          : "Draft created"
-      : isCreate
-        ? "Creating draft"
-        : "Updating draft";
+      ? "Draft not saved"
+      : saved
+        ? !isCreate
+          ? "Draft updated"
+          : output?.invoiceNumber
+            ? `Draft ${output.invoiceNumber} created`
+            : "Draft created"
+        : isCreate
+          ? "Creating draft"
+          : "Updating draft";
 
   return (
     <Collapsible
@@ -263,19 +259,30 @@ export const InvoiceToolProgress = ({
           {stopped ? (
             <span className="border-muted-foreground size-3.5 rounded-full border-[1.5px]" />
           ) : failed ? (
-            <HugeiconsIcon icon={Alert01Icon} className="text-destructive size-4" />
+            <HugeiconsIcon
+              icon={Alert01Icon}
+              className="text-destructive size-4"
+            />
           ) : saved ? (
-            <HugeiconsIcon icon={Tick02Icon} strokeWidth={2} className="text-success size-4" />
+            <HugeiconsIcon
+              icon={Tick02Icon}
+              strokeWidth={2}
+              className="text-success size-4"
+            />
           ) : (
-            <Spinner aria-hidden role={undefined} aria-label={undefined} className="text-primary size-4" />
+            <Spinner
+              aria-hidden
+              role={undefined}
+              aria-label={undefined}
+              className="text-primary size-4"
+            />
           )}
         </span>
-        <span className="min-w-0 flex-1 truncate font-medium" aria-live="polite">
-          {settled ? (
-            heading
-          ) : (
-            <Shimmer as="span">{heading}</Shimmer>
-          )}
+        <span
+          className="min-w-0 flex-1 truncate font-medium"
+          aria-live="polite"
+        >
+          {settled ? heading : <Shimmer as="span">{heading}</Shimmer>}
         </span>
         {saved && output?.total ? (
           <span className="font-semibold tabular-nums">{output.total}</span>

@@ -133,7 +133,7 @@ const LineGroup = ({
   ) : null;
 
 /** The job's days at a glance, on the paper itself */
-const MiniSchedule = ({
+export const MiniSchedule = ({
   days,
   overtime,
 }: {
