@@ -288,8 +288,8 @@ export default function AllInvoicesPage() {
                     <TableRow>
                       <TableHead className="w-10" />
                       <TableHead>Invoice #</TableHead>
-                      <TableHead>Show/Project</TableHead>
-                      <TableHead>Client</TableHead>
+                      <TableHead className="w-full">Show/Project</TableHead>
+                      <TableHead className="hidden xl:table-cell">Client</TableHead>
                       <TableHead>Date</TableHead>
                       <TableHead>Status</TableHead>
                       <TableHead className="text-right">Amount</TableHead>
@@ -308,7 +308,7 @@ export default function AllInvoicesPage() {
                         <TableCell>
                           <Skeleton className="h-4 w-32" />
                         </TableCell>
-                        <TableCell>
+                        <TableCell className="hidden xl:table-cell">
                           <Skeleton className="h-4 w-28" />
                         </TableCell>
                         <TableCell>
@@ -394,8 +394,8 @@ export default function AllInvoicesPage() {
                         />
                       </TableHead>
                       <TableHead>Invoice #</TableHead>
-                      <TableHead>Show/Project</TableHead>
-                      <TableHead>Client</TableHead>
+                      <TableHead className="w-full">Show/Project</TableHead>
+                      <TableHead className="hidden xl:table-cell">Client</TableHead>
                       <TableHead>Date</TableHead>
                       <TableHead>Status</TableHead>
                       <TableHead className="text-right">Amount</TableHead>
@@ -431,8 +431,15 @@ export default function AllInvoicesPage() {
                             {invoice.invoiceNumber}
                           </Link>
                         </TableCell>
-                        <TableCell>{invoice.showName}</TableCell>
-                        <TableCell>{invoice.clientName || "—"}</TableCell>
+                        <TableCell className="max-w-0 truncate" title={invoice.showName}>
+                          {invoice.showName}
+                        </TableCell>
+                        <TableCell
+                          className="hidden max-w-[14rem] truncate xl:table-cell"
+                          title={invoice.clientName || undefined}
+                        >
+                          {invoice.clientName || "—"}
+                        </TableCell>
                         <TableCell suppressHydrationWarning>
                           {formatDate(invoice.invoiceDate)}
                         </TableCell>
