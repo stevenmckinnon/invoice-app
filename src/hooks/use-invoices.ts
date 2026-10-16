@@ -1,6 +1,9 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
+import type { InvoiceTerms } from "@/lib/billing";
+import type { StoredDay } from "@/lib/day-strip";
+
 export type Invoice = {
   id: string;
   invoiceNumber: string;
@@ -50,6 +53,15 @@ const normalizeInvoiceWithRelations = (
     unitPrice: toNumber(entry.unitPrice),
     cost: toNumber(entry.cost),
   })),
+  // A date column arrives as an ISO timestamp at midnight UTC; the day is
+  // all that's meant, so keep just yyyy-mm-dd
+  days: (invoice.days ?? []).map((day) => ({
+    ...day,
+    date: String(day.date).slice(0, 10),
+    overtimeHours:
+      day.overtimeHours == null ? null : toNumber(day.overtimeHours),
+  })),
+  terms: invoice.terms ?? null,
 });
 
 export const fetchInvoices = async (): Promise<Invoice[]> => {
@@ -145,6 +157,10 @@ export type InvoiceWithRelations = {
     createdAt: Date | string;
     updatedAt: Date | string;
   }>;
+  /** The job's dated days, in date order. Empty on count-based invoices. */
+  days: Array<StoredDay & { id: string }>;
+  /** The terms its days were priced under; null on count-based invoices */
+  terms: InvoiceTerms | null;
 };
 
 const fetchInvoice = async (id: string): Promise<InvoiceWithRelations> => {
@@ -232,7 +248,9 @@ export const useCreateInvoice = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (data: CreateInvoiceInput): Promise<CreateInvoiceResponse> => {
+    mutationFn: async (
+      data: CreateInvoiceInput,
+    ): Promise<CreateInvoiceResponse> => {
       const res = await fetch("/api/invoices", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -362,7 +380,6 @@ export const useUpdateInvoiceStatus = () => {
     },
   });
 };
-
 
 export const useBulkUpdateInvoiceStatus = () => {
   const queryClient = useQueryClient();
