@@ -1,28 +1,27 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useParams, useRouter } from "next/navigation";
-import { useForm } from "react-hook-form";
-import { toast } from "sonner";
+import { ArrowLeft01Icon, LockIcon } from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
+import Link from "next/link";
+import { useParams } from "next/navigation";
 
 import { InvoiceEditor } from "@/components/invoice-editor/InvoiceEditor";
-import {
-  InvoiceForm,
-  invoiceFormDefaults,
-  invoiceFormSchema,
-  type InvoiceFormValues,
-} from "@/components/InvoiceForm";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useClients } from "@/hooks/use-clients";
-import { useInvoice, useUpdateInvoice } from "@/hooks/use-invoices";
-import { clientOvertimeRule } from "@/lib/overtime";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  type InvoiceWithRelations,
+  useInvoice,
+  useUpdateInvoiceNotes,
+} from "@/hooks/use-invoices";
 
 /**
  * Day-based invoices open in the calendar editor. Count-based invoices made
- * before days existed keep the old form until the assistant creates day
- * invoices too; then that form goes and their billing is locked.
+ * before days were recorded are never converted, so their billing is locked:
+ * only their notes change here, and a mistake is fixed with a corrected
+ * invoice.
  */
 export default function EditInvoicePage() {
   const params = useParams();
@@ -40,7 +39,7 @@ export default function EditInvoicePage() {
   }
   if (isLoading || !invoice) return <EditSkeleton />;
   if (invoice.terms) return <InvoiceEditor invoice={invoice} />;
-  return <LegacyEditInvoice invoiceId={invoiceId} />;
+  return <LockedInvoice invoice={invoice} />;
 }
 
 const EditSkeleton = () => (
@@ -55,165 +54,79 @@ const EditSkeleton = () => (
   </div>
 );
 
-/** The old count-based form, for invoices made before days were recorded */
-function LegacyEditInvoice({ invoiceId }: { invoiceId: string }) {
-  const router = useRouter();
-  const updateInvoiceMutation = useUpdateInvoice();
-  const [isLoading, setIsLoading] = useState(true);
-  const [clientId, setClientId] = useState<string | null>(null);
-
-  // The invoice stores the client's details, but the tier rule lives on the
-  // client itself so it stays current if their terms change
-  const { data: clients = [] } = useClients();
-  const overtimeTierRule = clientOvertimeRule(
-    clients.find((c) => c.id === clientId) ?? null,
-  );
-
-  const form = useForm<InvoiceFormValues>({
-    resolver: zodResolver(invoiceFormSchema),
-    defaultValues: { ...invoiceFormDefaults, items: [] },
-  });
-
-  useEffect(() => {
-    const fetchInvoice = async () => {
-      try {
-        const res = await fetch(`/api/invoices/${invoiceId}`);
-        if (!res.ok) throw new Error("Failed to fetch invoice");
-
-        const invoice = await res.json();
-        setClientId(invoice.clientId ?? null);
-
-        // Transform the data to match form structure
-        form.reset({
-          invoiceNumber: invoice.invoiceNumber,
-          invoiceDate: new Date(invoice.invoiceDate).toISOString().slice(0, 10),
-          showName: invoice.showName,
-          fullName: invoice.fullName,
-          email: invoice.email,
-          addressLine1: invoice.addressLine1,
-          addressLine2: invoice.addressLine2 || "",
-          city: invoice.city,
-          state: invoice.state || "",
-          postalCode: invoice.postalCode,
-          country: invoice.country,
-          clientName: invoice.clientName || "",
-          clientAddress1: invoice.clientAddress1 || "",
-          clientAddress2: invoice.clientAddress2 || "",
-          clientCity: invoice.clientCity || "",
-          clientState: invoice.clientState || "",
-          clientPostalCode: invoice.clientPostalCode || "",
-          clientCountry: invoice.clientCountry || "",
-          attentionTo: invoice.attentionTo || "",
-          iban: invoice.iban,
-          swiftBic: invoice.swiftBic,
-          accountNumber: invoice.accountNumber || "",
-          sortCode: invoice.sortCode || "",
-          bankAddress: invoice.bankAddress || "",
-          dateOfBirth: invoice.dateOfBirth
-            ? new Date(invoice.dateOfBirth).toISOString().slice(0, 10)
-            : "",
-          currency: invoice.currency || "GBP",
-          items: invoice.items.map((item: any) => ({
-            description: item.description,
-            quantity: Number(item.quantity),
-            unitPrice: Number(item.unitPrice),
-            cost: Number(item.cost),
-          })),
-          overtimeEntries: invoice.overtimeEntries.map((entry: any) => ({
-            id: entry.id,
-            date: new Date(entry.date),
-            hours: Number(entry.hours),
-            rateType: entry.rateType,
-          })),
-          customExpenseEntries: invoice.customExpenseEntries.map(
-            (entry: any) => ({
-              id: entry.id,
-              description: entry.description,
-              quantity: Number(entry.quantity),
-              unitPrice: Number(entry.unitPrice),
-              cost: Number(entry.cost),
-            }),
-          ),
-          status: invoice.status || "draft",
-          notes: invoice.notes || "",
-        });
-
-        setIsLoading(false);
-      } catch (error) {
-        toast.error("Failed to load invoice");
-        console.error(error);
-        router.push("/invoices");
-      }
-    };
-
-    fetchInvoice();
-  }, [invoiceId, router, form]);
-
-  const onSubmit = (values: InvoiceFormValues) => {
-    // Convert Date objects to ISO strings for the API
-    const payload = {
-      ...values,
-      overtimeEntries: values.overtimeEntries.map((entry) => ({
-        ...entry,
-        date:
-          entry.date instanceof Date ? entry.date.toISOString() : entry.date,
-      })),
-    };
-
-    updateInvoiceMutation.mutate(
-      {
-        id: invoiceId,
-        data: payload,
-      },
-      {
-        onSuccess: (data) => {
-          router.push(`/invoices/${data.id}`);
-        },
-      },
-    );
-  };
-
-  if (isLoading) {
-    return (
-      <div className="mx-auto grid w-full max-w-6xl gap-6 p-6 py-10 md:pb-8">
-        <div className="flex items-center gap-4">
-          <Skeleton className="h-8 w-20" />
-          <Skeleton className="h-9 w-44" />
-        </div>
-        {[0, 1, 2].map((card) => (
-          <Card key={card}>
-            <CardHeader>
-              <Skeleton className="h-6 w-32" />
-            </CardHeader>
-            <CardContent className="grid grid-cols-1 gap-4 md:grid-cols-2">
-              {[0, 1, 2, 3].map((field) => (
-                <div key={field} className="flex flex-col gap-2">
-                  <Skeleton className="h-4 w-28" />
-                  <Skeleton className="h-10 w-full" />
-                </div>
-              ))}
-            </CardContent>
-          </Card>
-        ))}
-        <div className="flex justify-end gap-2">
-          <Skeleton className="h-10 w-24" />
-          <Skeleton className="h-10 w-32" />
-        </div>
-      </div>
-    );
-  }
+/** An invoice made before days were recorded: notes only */
+function LockedInvoice({ invoice }: { invoice: InvoiceWithRelations }) {
+  const updateNotes = useUpdateInvoiceNotes();
+  const [notes, setNotes] = useState(invoice.notes ?? "");
+  const changed = notes.trim() !== (invoice.notes ?? "").trim();
 
   return (
-    <InvoiceForm
-      form={form}
-      onSubmit={onSubmit}
-      isPending={updateInvoiceMutation.isPending}
-      submitLabel="Update Invoice"
-      pendingLabel="Updating..."
-      title="Edit Invoice"
-      subtitle="Update invoice details"
-      overtimeTierRule={overtimeTierRule}
-      cancelHref="/invoices"
-    />
+    <div className="mx-auto w-full max-w-4xl px-4 pt-6 pb-32 md:px-6 md:pt-10">
+      <Button
+        variant="ghost"
+        size="sm"
+        className="mb-2 -ml-2"
+        nativeButton={false}
+        render={
+          <Link href={`/invoices/${invoice.id}`} transitionTypes={["back"]}>
+            <HugeiconsIcon icon={ArrowLeft01Icon} />
+            {invoice.showName}
+          </Link>
+        }
+      />
+      <h1 className="text-3xl font-bold tracking-tight md:text-4xl">
+        Edit notes
+      </h1>
+      <p className="text-muted-foreground mt-1 text-sm">
+        <span className="font-mono">{invoice.invoiceNumber}</span>
+        {invoice.clientName ? ` · ${invoice.clientName}` : ""}
+      </p>
+
+      <div className="bg-card mt-8 flex gap-3 rounded-2xl p-5 dark:border">
+        <HugeiconsIcon
+          icon={LockIcon}
+          className="text-muted-foreground mt-0.5 size-5 shrink-0"
+        />
+        <div className="space-y-3">
+          <p className="text-pretty">
+            This invoice was made before days were recorded, so its billing
+            can&apos;t change. If something on it is wrong, issue a corrected
+            invoice.
+          </p>
+          <Button
+            variant="outline"
+            size="sm"
+            nativeButton={false}
+            render={
+              <Link href="/invoices/new" transitionTypes={["forward"]}>
+                New invoice
+              </Link>
+            }
+          />
+        </div>
+      </div>
+
+      <form
+        className="bg-card mt-4 space-y-3 rounded-2xl p-5 dark:border"
+        onSubmit={(event) => {
+          event.preventDefault();
+          updateNotes.mutate({ id: invoice.id, notes });
+        }}
+      >
+        <Label htmlFor="invoice-notes">Notes</Label>
+        <Textarea
+          id="invoice-notes"
+          value={notes}
+          onChange={(event) => setNotes(event.target.value)}
+          placeholder="Add a note, like a PO number or payment terms"
+          className="min-h-28"
+        />
+        <div className="flex justify-end">
+          <Button type="submit" disabled={!changed || updateNotes.isPending}>
+            {updateNotes.isPending ? "Saving…" : "Save notes"}
+          </Button>
+        </div>
+      </form>
+    </div>
   );
 }

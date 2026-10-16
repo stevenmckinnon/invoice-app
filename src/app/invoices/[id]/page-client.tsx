@@ -212,7 +212,9 @@ export default function InvoiceDetailPage({ params }: Props) {
                   href={`/invoices/${invoice.id}/edit`}
                   transitionTypes={["forward"]}
                 >
-                  <HugeiconsIcon icon={PencilEdit02Icon} /> Edit
+                  <HugeiconsIcon icon={PencilEdit02Icon} />
+                  {/* Billing on invoices made before days is locked */}
+                  {invoice.terms ? "Edit" : "Edit notes"}
                 </Link>
               }
             />

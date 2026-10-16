@@ -14,22 +14,7 @@ import {
   duplicateInvoiceNumberMessage,
   isDuplicateInvoiceNumberError,
 } from "@/lib/invoice-number";
-import { calculateInvoiceTotals, type InvoicePdfInput } from "@/lib/pdf";
 import { parseDate } from "@/lib/utils";
-
-const lineItemSchema = z.object({
-  description: z.string().min(1),
-  quantity: z.number().int().nonnegative(),
-  unitPrice: z.number().nonnegative(),
-  cost: z.number().nonnegative().optional(),
-});
-
-const overtimeEntrySchema = z.object({
-  id: z.string(),
-  date: z.string().transform((s) => new Date(s)),
-  hours: z.number().positive(),
-  rateType: z.enum(["1.5x", "2x"]),
-});
 
 const customExpenseEntrySchema = z.object({
   id: z.string(),
@@ -39,52 +24,44 @@ const customExpenseEntrySchema = z.object({
   cost: z.number().nonnegative(),
 });
 
-const invoiceInputSchema = z
-  .object({
-    invoiceNumber: z.string().min(1),
-    invoiceDate: z.string().transform((s) => new Date(s)),
-    showName: z.string().min(1),
+const invoiceInputSchema = z.object({
+  invoiceNumber: z.string().min(1),
+  invoiceDate: z.string().transform((s) => new Date(s)),
+  showName: z.string().min(1),
 
-    fullName: z.string().min(1),
-    email: z.email(),
-    addressLine1: z.string().min(1),
-    addressLine2: z.string().optional(),
-    city: z.string().min(1),
-    state: z.string().optional(),
-    postalCode: z.string().min(1),
-    country: z.string().min(1),
+  fullName: z.string().min(1),
+  email: z.email(),
+  addressLine1: z.string().min(1),
+  addressLine2: z.string().optional(),
+  city: z.string().min(1),
+  state: z.string().optional(),
+  postalCode: z.string().min(1),
+  country: z.string().min(1),
 
-    clientId: z.string().optional(),
-    clientName: z.string().optional(),
-    clientAddress1: z.string().optional(),
-    clientAddress2: z.string().optional(),
-    clientCity: z.string().optional(),
-    clientState: z.string().optional(),
-    clientPostalCode: z.string().optional(),
-    clientCountry: z.string().optional(),
-    attentionTo: z.string().optional(),
+  clientId: z.string().optional(),
+  clientName: z.string().optional(),
+  clientAddress1: z.string().optional(),
+  clientAddress2: z.string().optional(),
+  clientCity: z.string().optional(),
+  clientState: z.string().optional(),
+  clientPostalCode: z.string().optional(),
+  clientCountry: z.string().optional(),
+  attentionTo: z.string().optional(),
 
-    iban: z.string().min(1),
-    swiftBic: z.string().min(1),
-    accountNumber: z.string().optional(),
-    sortCode: z.string().optional(),
-    bankAddress: z.string().optional(),
-    dateOfBirth: z.string().optional(),
-    currency: z.string().optional(),
+  iban: z.string().min(1),
+  swiftBic: z.string().min(1),
+  accountNumber: z.string().optional(),
+  sortCode: z.string().optional(),
+  bankAddress: z.string().optional(),
+  dateOfBirth: z.string().optional(),
+  currency: z.string().optional(),
 
-    // Count-based (the old form): line items and overtime are sent as typed.
-    // Day-based: send `days` instead, and the server prices them from the
-    // client's terms; any items or overtime sent alongside are ignored.
-    items: z.array(lineItemSchema).optional(),
-    overtimeEntries: z.array(overtimeEntrySchema).default([]),
-    days: invoiceDaysSchema.optional(),
-    customExpenseEntries: z.array(customExpenseEntrySchema),
-    status: z.enum(["draft", "sent", "paid", "overdue"]).optional(),
-    notes: z.string().optional(),
-  })
-  .refine((v) => v.days || v.items?.length, {
-    message: "Send the invoice's days, or at least one line item.",
-  });
+  // The server prices the days from the client's terms
+  days: invoiceDaysSchema,
+  customExpenseEntries: z.array(customExpenseEntrySchema),
+  status: z.enum(["draft", "sent", "paid", "overdue"]).optional(),
+  notes: z.string().optional(),
+});
 
 export const POST = async (req: NextRequest) => {
   // Kept outside the try so a duplicate-number failure can name it
@@ -115,37 +92,32 @@ export const POST = async (req: NextRequest) => {
 
     // Days are priced at the client's rates, so they need a client with a
     // day rate; the terms are copied onto the invoice as it's created
-    let dayBilling: ReturnType<typeof dayBillingWrites> | null = null;
-    if (parsed.days) {
-      if (!client) {
-        return NextResponse.json(
-          { error: "Pick a client: days are billed at the client's rates." },
-          { status: 400 },
-        );
-      }
-      const terms = termsFromClient(client);
-      if (!terms) {
-        return NextResponse.json(
-          {
-            error:
-              "This client has no day rate yet. Add one to the client first.",
-          },
-          { status: 400 },
-        );
-      }
-      dayBilling = dayBillingWrites(
-        parsed.days,
-        terms,
-        parsed.customExpenseEntries,
+    if (!client) {
+      return NextResponse.json(
+        { error: "Pick a client: days are billed at the client's rates." },
+        { status: 400 },
       );
     }
+    const terms = termsFromClient(client);
+    if (!terms) {
+      return NextResponse.json(
+        {
+          error:
+            "This client has no day rate yet. Add one to the client first.",
+        },
+        { status: 400 },
+      );
+    }
+    const dayBilling = dayBillingWrites(
+      parsed.days,
+      terms,
+      parsed.customExpenseEntries,
+    );
 
-    const pdfInput: InvoicePdfInput = {
+    const pdfInput = {
       ...parsed,
       invoiceDate: parseDate(parsed.invoiceDate),
-    } as any;
-
-    const totals = dayBilling ? null : calculateInvoiceTotals(pdfInput);
+    };
 
     const created = await prisma.invoice.create({
       data: {
@@ -190,41 +162,7 @@ export const POST = async (req: NextRequest) => {
         currency: pdfInput.currency ?? "GBP",
         status: parsed.status || "draft",
         notes: pdfInput.notes,
-        ...(dayBilling ?? {
-          subtotalLabor: totals!.subtotalLabor as unknown as any,
-          subtotalPerDiem: totals!.subtotalPerDiem as unknown as any,
-          subtotalTravel: totals!.subtotalTravel as unknown as any,
-          totalAmount: totals!.totalAmount as unknown as any,
-          items: {
-            createMany: {
-              data: parsed.items!.map((i) => ({
-                description: i.description,
-                quantity: i.quantity,
-                unitPrice: i.unitPrice as unknown as any,
-                cost: (i.cost ?? i.quantity * i.unitPrice) as unknown as any,
-              })),
-            },
-          },
-          overtimeEntries: {
-            createMany: {
-              data: parsed.overtimeEntries.map((entry) => ({
-                date: parseDate(entry.date),
-                hours: entry.hours as unknown as any,
-                rateType: entry.rateType,
-              })),
-            },
-          },
-          customExpenseEntries: {
-            createMany: {
-              data: parsed.customExpenseEntries.map((entry) => ({
-                description: entry.description,
-                quantity: entry.quantity,
-                unitPrice: entry.unitPrice as unknown as any,
-                cost: entry.cost as unknown as any,
-              })),
-            },
-          },
-        }),
+        ...dayBilling,
       },
       select: { id: true, invoiceNumber: true },
     });

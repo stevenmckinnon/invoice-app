@@ -211,21 +211,8 @@ export type CreateInvoiceInput = {
   bankAddress?: string;
   dateOfBirth?: string;
   currency?: string;
-  /** Count-based invoices (the old form) */
-  items?: Array<{
-    description: string;
-    quantity: number;
-    unitPrice: number;
-    cost?: number;
-  }>;
-  overtimeEntries?: Array<{
-    id: string;
-    date: string;
-    hours: number;
-    rateType: "1.5x" | "2x";
-  }>;
-  /** Day-based invoices: the server prices these from the client's terms */
-  days?: BillableDay[];
+  /** The server prices these from the client's terms */
+  days: BillableDay[];
   customExpenseEntries: Array<{
     id: string;
     description: string;
@@ -380,6 +367,41 @@ export const useUpdateInvoiceStatus = () => {
     },
     onError: (error: Error) => {
       toast.error(error.message || "Failed to update invoice status");
+    },
+  });
+};
+
+// Notes stay editable on every invoice, including one whose billing is locked
+export const useUpdateInvoiceNotes = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({
+      id,
+      notes,
+    }: {
+      id: string;
+      notes: string;
+    }): Promise<{ id: string; notes: string | null }> => {
+      const res = await fetch(`/api/invoices/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ notes }),
+      });
+
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({ error: "Request failed" }));
+        throw new Error(err.error ?? "Failed to save notes");
+      }
+
+      return res.json();
+    },
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ["invoice", variables.id] });
+      toast.success("Notes saved");
+    },
+    onError: (error: Error) => {
+      toast.error(error.message || "Failed to save notes");
     },
   });
 };

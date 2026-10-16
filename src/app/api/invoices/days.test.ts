@@ -1,8 +1,8 @@
 /**
  * Invoices built from dated days, end to end through the real route
  * handlers: the server prices the days from the client's terms, stores the
- * days, the terms snapshot and the billing output, and keeps day invoices
- * and old count invoices apart for life.
+ * days, the terms snapshot and the billing output. Old count invoices are
+ * never converted: their billing is locked, and only status and notes change.
  *
  * Needs a database, like authz.test.ts: set `TEST_DATABASE_URL`.
  */
@@ -266,7 +266,7 @@ describe(
       assert.equal((invoice.terms as { dayRate: number }).dayRate, 450);
     });
 
-    it("refuses line items for an invoice built from days", async () => {
+    it("refuses an update without days", async () => {
       const res = await put(
         dayInvoiceId,
         body({
@@ -275,29 +275,108 @@ describe(
         }),
       );
       assert.equal(res.status, 400);
-      assert.match((await res.json()).error, /built from days/);
+      assert.equal(Number((await stored(dayInvoiceId)).totalAmount), 3225.63);
     });
 
-    it("never converts an old count-based invoice to days", async () => {
-      const legacy = await post(
+    it("no longer creates count-based invoices", async () => {
+      const before = await mod.prisma.invoice.count({ where: { userId } });
+      const res = await post(
         body({
           days: undefined,
-          clientId: undefined,
           items: [{ description: "Work Days", quantity: 2, unitPrice: 500 }],
         }),
       );
-      assert.equal(legacy.status, 201, await legacy.clone().text());
-      const legacyId = (await legacy.json()).id;
-      const before = await stored(legacyId);
-      assert.equal(before.terms, null);
-      assert.equal(before.days.length, 0);
-
-      const res = await put(legacyId, body());
       assert.equal(res.status, 400);
-      assert.match((await res.json()).error, /corrected invoice/);
-      const after = await stored(legacyId);
-      assert.equal(Number(after.totalAmount), Number(before.totalAmount));
-      assert.equal(after.days.length, 0);
+      assert.equal(
+        await mod.prisma.invoice.count({ where: { userId } }),
+        before,
+      );
+    });
+
+    describe("an old count-based invoice", () => {
+      let legacyId: string;
+
+      before(async () => {
+        // Only the old form made these, so there's no route left to call
+        const legacy = await mod.prisma.invoice.create({
+          data: {
+            userId,
+            invoiceNumber: `LEGACY-${Date.now()}`,
+            invoiceDate: new Date("2026-03-02"),
+            showName: "Old Show",
+            fullName: "Test Person",
+            email: "days@example.test",
+            addressLine1: "1 Test Street",
+            city: "Glasgow",
+            postalCode: "G1 1AA",
+            country: "United Kingdom",
+            iban: "GB00TEST0000000000000",
+            swiftBic: "TESTGB2L",
+            regularRate: 0,
+            overtimeRate: 0,
+            perDiemRate: 0,
+            travelDayRate: 0,
+            subtotalLabor: 0,
+            subtotalPerDiem: 0,
+            subtotalTravel: 0,
+            totalAmount: 1000,
+            items: {
+              create: [
+                {
+                  description: "Work Days",
+                  quantity: 2,
+                  unitPrice: 500,
+                  cost: 1000,
+                },
+              ],
+            },
+          },
+        });
+        legacyId = legacy.id;
+      });
+
+      const patch = (payload: object) => {
+        requestHeaders = new Headers({ cookie });
+        return mod.invoiceRoute.PATCH(
+          new NextRequest(`http://localhost/api/invoices/${legacyId}`, {
+            method: "PATCH",
+            body: JSON.stringify(payload),
+          }),
+          params(legacyId),
+        );
+      };
+
+      it("is never converted to days", async () => {
+        const res = await put(legacyId, body());
+        assert.equal(res.status, 400);
+        assert.match((await res.json()).error, /corrected invoice/);
+        const after = await stored(legacyId);
+        assert.equal(after.terms, null);
+        assert.equal(after.days.length, 0);
+        assert.equal(Number(after.totalAmount), 1000);
+        assert.equal(after.showName, "Old Show");
+      });
+
+      it("still takes a new status and notes", async () => {
+        const res = await patch({ status: "paid", notes: "  PO 4471  " });
+        assert.equal(res.status, 200);
+        const after = await stored(legacyId);
+        assert.equal(after.status, "paid");
+        assert.equal(after.notes, "PO 4471");
+        assert.equal(Number(after.totalAmount), 1000);
+      });
+
+      it("clears emptied notes, leaving the status alone", async () => {
+        const res = await patch({ notes: "   " });
+        assert.equal(res.status, 200);
+        const after = await stored(legacyId);
+        assert.equal(after.notes, null);
+        assert.equal(after.status, "paid");
+      });
+
+      it("refuses an empty patch", async () => {
+        assert.equal((await patch({})).status, 400);
+      });
     });
 
     it("needs a client to price days", async () => {

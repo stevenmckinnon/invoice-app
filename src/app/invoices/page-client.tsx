@@ -1,7 +1,13 @@
 "use client";
 import { useState } from "react";
 
-import { Add01Icon, ArrowLeft01Icon, ArrowRight01Icon, FileAttachmentIcon, Search01Icon } from "@hugeicons/core-free-icons";
+import {
+  Add01Icon,
+  ArrowLeft01Icon,
+  ArrowRight01Icon,
+  FileAttachmentIcon,
+  Search01Icon,
+} from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -30,15 +36,14 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { useBulkUpdateInvoiceStatus, useInvoices } from "@/hooks/use-invoices";
+import { getInvoiceStatusConfig, INVOICE_STATUSES } from "@/lib/invoice-status";
 import {
-  useBulkUpdateInvoiceStatus,
-  useInvoices,
-} from "@/hooks/use-invoices";
-import {
-  getInvoiceStatusConfig,
-  INVOICE_STATUSES,
-} from "@/lib/invoice-status";
-import { cn, formatCurrency, formatCurrencyTotals, formatDate } from "@/lib/utils";
+  cn,
+  formatCurrency,
+  formatCurrencyTotals,
+  formatDate,
+} from "@/lib/utils";
 
 const ITEMS_PER_PAGE = 10;
 
@@ -289,7 +294,9 @@ export default function AllInvoicesPage() {
                       <TableHead className="w-10" />
                       <TableHead>Invoice #</TableHead>
                       <TableHead className="w-full">Show/Project</TableHead>
-                      <TableHead className="hidden xl:table-cell">Client</TableHead>
+                      <TableHead className="hidden xl:table-cell">
+                        Client
+                      </TableHead>
                       <TableHead>Date</TableHead>
                       <TableHead>Status</TableHead>
                       <TableHead className="text-right">Amount</TableHead>
@@ -395,7 +402,9 @@ export default function AllInvoicesPage() {
                       </TableHead>
                       <TableHead>Invoice #</TableHead>
                       <TableHead className="w-full">Show/Project</TableHead>
-                      <TableHead className="hidden xl:table-cell">Client</TableHead>
+                      <TableHead className="hidden xl:table-cell">
+                        Client
+                      </TableHead>
                       <TableHead>Date</TableHead>
                       <TableHead>Status</TableHead>
                       <TableHead className="text-right">Amount</TableHead>
@@ -407,7 +416,7 @@ export default function AllInvoicesPage() {
                       <TableRow
                         key={invoice.id}
                         onClick={() => router.push(`/invoices/${invoice.id}`)}
-                        className="cursor-pointer active:bg-muted/60"
+                        className="active:bg-muted/60 cursor-pointer"
                         data-state={
                           selectedIds.has(invoice.id) ? "selected" : undefined
                         }
@@ -431,7 +440,10 @@ export default function AllInvoicesPage() {
                             {invoice.invoiceNumber}
                           </Link>
                         </TableCell>
-                        <TableCell className="max-w-0 truncate" title={invoice.showName}>
+                        <TableCell
+                          className="max-w-0 truncate"
+                          title={invoice.showName}
+                        >
                           {invoice.showName}
                         </TableCell>
                         <TableCell
@@ -546,7 +558,10 @@ export default function AllInvoicesPage() {
                       onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
                       disabled={currentPage === 1}
                     >
-                      <HugeiconsIcon icon={ArrowLeft01Icon} className="h-4 w-4" />
+                      <HugeiconsIcon
+                        icon={ArrowLeft01Icon}
+                        className="h-4 w-4"
+                      />
                       Previous
                     </Button>
                     <div className="flex items-center gap-1">
@@ -602,7 +617,10 @@ export default function AllInvoicesPage() {
                       disabled={currentPage === totalPages}
                     >
                       Next
-                      <HugeiconsIcon icon={ArrowRight01Icon} className="h-4 w-4" />
+                      <HugeiconsIcon
+                        icon={ArrowRight01Icon}
+                        className="h-4 w-4"
+                      />
                     </Button>
                   </div>
                 </div>
