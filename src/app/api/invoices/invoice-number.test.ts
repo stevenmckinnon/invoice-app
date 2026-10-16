@@ -42,7 +42,7 @@ const params = (id: string) => ({ params: Promise.resolve({ id }) });
 const run = Date.now().toString().slice(-6);
 const shared = `SHARE-${run}-01`;
 
-const invoiceBody = (invoiceNumber: string) => ({
+const invoiceBody = (invoiceNumber: string, clientId: string) => ({
   invoiceNumber,
   invoiceDate: "2026-08-14",
   showName: "Show",
@@ -54,8 +54,8 @@ const invoiceBody = (invoiceNumber: string) => ({
   country: "United Kingdom",
   iban: "GB00TEST0000000000000",
   swiftBic: "TESTGB2L",
-  items: [{ description: "Work Days", quantity: 1, unitPrice: 500 }],
-  overtimeEntries: [],
+  clientId,
+  days: [{ date: "2026-08-14", type: "work" }],
   customExpenseEntries: [],
 });
 
@@ -67,6 +67,8 @@ describe(
     const userIds: string[] = [];
     let alice: { userId: string; cookie: string };
     let bob: { userId: string; cookie: string };
+    /** Each user's client, by their cookie: days are priced at its rate */
+    const clientIds = new Map<string, string>();
 
     const signUp = async (label: string) => {
       const email = `numbering-${label}-${Date.now()}@example.test`;
@@ -79,6 +81,10 @@ describe(
         .getSetCookie()
         .map((c) => c.split(";")[0])
         .join("; ");
+      const client = await mod.prisma.client.create({
+        data: { userId: response.user.id, name: label, dayRate: 500 },
+      });
+      clientIds.set(cookie, client.id);
       return { userId: response.user.id, cookie };
     };
 
@@ -87,7 +93,9 @@ describe(
       return mod.invoicesRoute.POST(
         new NextRequest("http://localhost/api/invoices", {
           method: "POST",
-          body: JSON.stringify(invoiceBody(invoiceNumber)),
+          body: JSON.stringify(
+            invoiceBody(invoiceNumber, clientIds.get(cookie)!),
+          ),
         }),
       );
     };
@@ -97,7 +105,9 @@ describe(
       return mod.invoiceRoute.PUT(
         new NextRequest(`http://localhost/api/invoices/${id}`, {
           method: "PUT",
-          body: JSON.stringify(invoiceBody(invoiceNumber)),
+          body: JSON.stringify(
+            invoiceBody(invoiceNumber, clientIds.get(cookie)!),
+          ),
         }),
         params(id),
       );
@@ -155,13 +165,15 @@ describe(
         error: `You already have an invoice numbered ${shared}.`,
       });
 
-      // The failed transaction must leave the invoice and its lines intact
+      // The failed transaction must leave the invoice, its days and its
+      // lines intact (a day invoice always has the five standard lines)
       const invoice = await mod.prisma.invoice.findUniqueOrThrow({
         where: { id },
-        include: { items: true },
+        include: { items: true, days: true },
       });
       assert.equal(invoice.invoiceNumber, other);
-      assert.equal(invoice.items.length, 1);
+      assert.equal(invoice.days.length, 1);
+      assert.equal(invoice.items.length, 5);
     });
 
     it("lets a user rename an invoice to a number only someone else has", async () => {

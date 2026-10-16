@@ -15,22 +15,7 @@ import {
   duplicateInvoiceNumberMessage,
   isDuplicateInvoiceNumberError,
 } from "@/lib/invoice-number";
-import { calculateInvoiceTotals, type InvoicePdfInput } from "@/lib/pdf";
 import { parseDate } from "@/lib/utils";
-
-const lineItemSchema = z.object({
-  description: z.string().min(1),
-  quantity: z.number().int().nonnegative(),
-  unitPrice: z.number().nonnegative(),
-  cost: z.number().nonnegative().optional(),
-});
-
-const overtimeEntrySchema = z.object({
-  id: z.string(),
-  date: z.string().transform((s) => new Date(s)),
-  hours: z.number().positive(),
-  rateType: z.enum(["1.5x", "2x"]),
-});
 
 const customExpenseEntrySchema = z.object({
   id: z.string(),
@@ -40,55 +25,55 @@ const customExpenseEntrySchema = z.object({
   cost: z.number().nonnegative(),
 });
 
-const invoiceUpdateSchema = z
-  .object({
-    invoiceNumber: z.string().min(1),
-    invoiceDate: z.string().transform((s) => new Date(s)),
-    showName: z.string().min(1),
+const invoiceUpdateSchema = z.object({
+  invoiceNumber: z.string().min(1),
+  invoiceDate: z.string().transform((s) => new Date(s)),
+  showName: z.string().min(1),
 
-    fullName: z.string().min(1),
-    email: z.email(),
-    addressLine1: z.string().min(1),
-    addressLine2: z.string().optional(),
-    city: z.string().min(1),
-    state: z.string().optional(),
-    postalCode: z.string().min(1),
-    country: z.string().min(1),
+  fullName: z.string().min(1),
+  email: z.email(),
+  addressLine1: z.string().min(1),
+  addressLine2: z.string().optional(),
+  city: z.string().min(1),
+  state: z.string().optional(),
+  postalCode: z.string().min(1),
+  country: z.string().min(1),
 
-    clientId: z.string().optional(),
-    clientName: z.string().optional(),
-    clientAddress1: z.string().optional(),
-    clientAddress2: z.string().optional(),
-    clientCity: z.string().optional(),
-    clientState: z.string().optional(),
-    clientPostalCode: z.string().optional(),
-    clientCountry: z.string().optional(),
-    attentionTo: z.string().optional(),
+  clientId: z.string().optional(),
+  clientName: z.string().optional(),
+  clientAddress1: z.string().optional(),
+  clientAddress2: z.string().optional(),
+  clientCity: z.string().optional(),
+  clientState: z.string().optional(),
+  clientPostalCode: z.string().optional(),
+  clientCountry: z.string().optional(),
+  attentionTo: z.string().optional(),
 
-    iban: z.string().min(1),
-    swiftBic: z.string().min(1),
-    accountNumber: z.string().optional(),
-    sortCode: z.string().optional(),
-    bankAddress: z.string().optional(),
-    dateOfBirth: z.string().optional(),
-    currency: z.string().optional(),
+  iban: z.string().min(1),
+  swiftBic: z.string().min(1),
+  accountNumber: z.string().optional(),
+  sortCode: z.string().optional(),
+  bankAddress: z.string().optional(),
+  dateOfBirth: z.string().optional(),
+  currency: z.string().optional(),
 
-    // As on create: count-based invoices send items and overtime, day-based
-    // invoices send `days` and the server prices them
-    items: z.array(lineItemSchema).optional(),
-    overtimeEntries: z.array(overtimeEntrySchema).default([]),
-    days: invoiceDaysSchema.optional(),
-    customExpenseEntries: z.array(customExpenseEntrySchema),
-    status: z.enum(["draft", "sent", "paid", "overdue"]).optional(),
-    notes: z.string().optional(),
-  })
-  .refine((v) => v.days || v.items?.length, {
-    message: "Send the invoice's days, or at least one line item.",
-  });
-
-const statusUpdateSchema = z.object({
-  status: z.enum(["draft", "sent", "paid", "overdue"]),
+  // The server prices the days from the client's terms
+  days: invoiceDaysSchema,
+  customExpenseEntries: z.array(customExpenseEntrySchema),
+  status: z.enum(["draft", "sent", "paid", "overdue"]).optional(),
+  notes: z.string().optional(),
 });
+
+// What still changes on any invoice, including one whose billing is locked
+const invoicePatchSchema = z
+  .object({
+    status: z.enum(["draft", "sent", "paid", "overdue"]),
+    notes: z.string().max(5000).nullable(),
+  })
+  .partial()
+  .refine((v) => v.status !== undefined || v.notes !== undefined, {
+    message: "Nothing to update",
+  });
 
 type RouteContext = {
   params: Promise<{ id: string }>;
@@ -112,10 +97,10 @@ export const PUT = async (req: NextRequest, context: RouteContext) => {
     const parsed = invoiceUpdateSchema.parse(json);
     invoiceNumber = parsed.invoiceNumber;
 
-    const pdfInput: InvoicePdfInput = {
+    const pdfInput = {
       ...parsed,
       invoiceDate: parseDate(parsed.invoiceDate),
-    } as any;
+    };
 
     // Verify ownership before touching anything — the child rows are keyed
     // only by invoiceId, so deleting first wiped other users' line items
@@ -138,11 +123,11 @@ export const PUT = async (req: NextRequest, context: RouteContext) => {
       return NextResponse.json({ error: "Client not found" }, { status: 400 });
     }
 
-    // An invoice is either built from days (it has stored terms) or from
-    // typed counts (it doesn't), for life. Old count invoices are never
-    // converted, and a day invoice's lines only ever come from its days.
+    // Invoices made before days were recorded are never converted, and
+    // their billing is locked: a mistake is fixed with a corrected invoice.
+    // Their status and notes still change, through PATCH.
     const storedTerms = parseStoredTerms(existing.terms);
-    if (parsed.days && !storedTerms) {
+    if (!storedTerms) {
       return NextResponse.json(
         {
           error:
@@ -151,41 +136,27 @@ export const PUT = async (req: NextRequest, context: RouteContext) => {
         { status: 400 },
       );
     }
-    if (!parsed.days && storedTerms) {
-      return NextResponse.json(
-        {
-          error:
-            "This invoice is built from days. Send its days, not line items.",
-        },
-        { status: 400 },
-      );
-    }
 
-    let dayBilling: ReturnType<typeof dayBillingWrites> | null = null;
-    if (parsed.days && storedTerms) {
-      // Keep the terms it was priced under; only switching client re-prices
-      let terms = storedTerms;
-      if (client && parsed.clientId !== existing.clientId) {
-        const clientTerms = termsFromClient(client);
-        if (!clientTerms) {
-          return NextResponse.json(
-            {
-              error:
-                "This client has no day rate yet. Add one to the client first.",
-            },
-            { status: 400 },
-          );
-        }
-        terms = clientTerms;
+    // Keep the terms it was priced under; only switching client re-prices
+    let terms = storedTerms;
+    if (client && parsed.clientId !== existing.clientId) {
+      const clientTerms = termsFromClient(client);
+      if (!clientTerms) {
+        return NextResponse.json(
+          {
+            error:
+              "This client has no day rate yet. Add one to the client first.",
+          },
+          { status: 400 },
+        );
       }
-      dayBilling = dayBillingWrites(
-        parsed.days,
-        terms,
-        parsed.customExpenseEntries,
-      );
+      terms = clientTerms;
     }
-
-    const totals = dayBilling ? null : calculateInvoiceTotals(pdfInput);
+    const dayBilling = dayBillingWrites(
+      parsed.days,
+      terms,
+      parsed.customExpenseEntries,
+    );
 
     // Replace the related records and update the invoice atomically, so a
     // failed update can't leave the invoice with its children deleted
@@ -228,38 +199,7 @@ export const PUT = async (req: NextRequest, context: RouteContext) => {
           currency: pdfInput.currency ?? "GBP",
           status: parsed.status || "draft",
           notes: pdfInput.notes,
-          ...(dayBilling ?? {
-            totalAmount: totals!.totalAmount as unknown as any,
-            items: {
-              createMany: {
-                data: parsed.items!.map((i) => ({
-                  description: i.description,
-                  quantity: i.quantity,
-                  unitPrice: i.unitPrice as unknown as any,
-                  cost: (i.cost ?? i.quantity * i.unitPrice) as unknown as any,
-                })),
-              },
-            },
-            overtimeEntries: {
-              createMany: {
-                data: parsed.overtimeEntries.map((entry) => ({
-                  date: parseDate(entry.date),
-                  hours: entry.hours as unknown as any,
-                  rateType: entry.rateType,
-                })),
-              },
-            },
-            customExpenseEntries: {
-              createMany: {
-                data: parsed.customExpenseEntries.map((entry) => ({
-                  description: entry.description,
-                  quantity: entry.quantity,
-                  unitPrice: entry.unitPrice as unknown as any,
-                  cost: entry.cost as unknown as any,
-                })),
-              },
-            },
-          }),
+          ...dayBilling,
         },
         select: { id: true, invoiceNumber: true },
       }),
@@ -362,9 +302,9 @@ export const PATCH = async (req: NextRequest, context: RouteContext) => {
     const params = await context.params;
     const { id } = params;
     // Unvalidated, any string was written straight into status
-    const parsed = statusUpdateSchema.safeParse(await req.json());
+    const parsed = invoicePatchSchema.safeParse(await req.json());
     if (!parsed.success) {
-      return NextResponse.json({ error: "Invalid status" }, { status: 400 });
+      return NextResponse.json({ error: "Invalid update" }, { status: 400 });
     }
 
     // Verify ownership
@@ -373,17 +313,22 @@ export const PATCH = async (req: NextRequest, context: RouteContext) => {
       return NextResponse.json({ error: "Not found" }, { status: 404 });
     }
 
-    // Update only the status
+    // Only the status and notes; billing goes through PUT
+    const { status, notes } = parsed.data;
     const updated = await prisma.invoice.update({
       where: { id },
-      data: { status: parsed.data.status },
-      select: { id: true, status: true },
+      data: {
+        status,
+        // An emptied note clears it rather than storing whitespace
+        notes: notes === undefined ? undefined : notes?.trim() || null,
+      },
+      select: { id: true, status: true, notes: true },
     });
 
     return NextResponse.json(updated);
   } catch {
     return NextResponse.json(
-      { error: "Failed to update invoice status" },
+      { error: "Failed to update invoice" },
       { status: 400 },
     );
   }

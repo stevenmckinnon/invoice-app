@@ -31,6 +31,8 @@ const load = async () => {
   const [
     { prisma },
     { auth },
+    { dayBillingWrites },
+    { termsFromClient },
     pdfRoute,
     invoiceRoute,
     invoicesRoute,
@@ -38,6 +40,8 @@ const load = async () => {
   ] = await Promise.all([
     import("@/lib/db"),
     import("@/lib/auth"),
+    import("@/lib/day-invoice"),
+    import("@/lib/billing"),
     import("@/app/api/invoices/[id]/pdf/route"),
     import("@/app/api/invoices/[id]/route"),
     import("@/app/api/invoices/route"),
@@ -46,6 +50,8 @@ const load = async () => {
   return {
     prisma,
     auth,
+    dayBillingWrites,
+    termsFromClient,
     pdfRoute,
     invoiceRoute,
     invoicesRoute,
@@ -67,8 +73,7 @@ const invoiceBody = {
   country: "United Kingdom",
   iban: "GB00ATTACK0000000000000",
   swiftBic: "ATTKGB2L",
-  items: [{ description: "Work Days", quantity: 1, unitPrice: 1 }],
-  overtimeEntries: [],
+  days: [{ date: "2026-08-14", type: "work" }],
   customExpenseEntries: [],
 };
 
@@ -153,6 +158,13 @@ describe(
       victimCookie = victim.cookie;
       attackerCookie = attacker.cookie;
 
+      const client = await mod.prisma.client.create({
+        data: { userId: victim.userId, name: "Victim's Client", dayRate: 500 },
+      });
+      victimClientId = client.id;
+
+      // Priced at the client's terms but not linked to it yet, so the owner
+      // attaching it later is a real change
       const invoice = await mod.prisma.invoice.create({
         data: {
           userId: victim.userId,
@@ -172,38 +184,14 @@ describe(
           overtimeRate: 0,
           perDiemRate: 0,
           travelDayRate: 0,
-          subtotalLabor: 0,
-          subtotalPerDiem: 0,
-          subtotalTravel: 0,
-          totalAmount: 600,
-          items: {
-            create: [
-              {
-                description: "Work Days",
-                quantity: 1,
-                unitPrice: 500,
-                cost: 500,
-              },
-            ],
-          },
-          overtimeEntries: {
-            create: [
-              { date: new Date("2026-08-14"), hours: 2, rateType: "1.5x" },
-            ],
-          },
-          customExpenseEntries: {
-            create: [
-              { description: "Parking", quantity: 1, unitPrice: 25, cost: 25 },
-            ],
-          },
+          ...mod.dayBillingWrites(
+            [{ date: "2026-08-14", type: "work", overtimeHours: 2 }],
+            mod.termsFromClient(client)!,
+            [{ description: "Parking", quantity: 1, unitPrice: 25 }],
+          ),
         },
       });
       victimInvoiceId = invoice.id;
-
-      const client = await mod.prisma.client.create({
-        data: { userId: victim.userId, name: "Victim's Client" },
-      });
-      victimClientId = client.id;
     });
 
     after(async () => {
@@ -234,7 +222,7 @@ describe(
 
     it("leaves the owner's invoice and its children alone on a non-owner PUT", async () => {
       const before = await childCounts(victimInvoiceId);
-      assert.deepEqual(before, { items: 1, overtime: 1, expenses: 1 });
+      assert.deepEqual(before, { items: 5, overtime: 1, expenses: 1 });
 
       const res = await putInvoice(attackerCookie);
       assert.equal(res.status, 404);
@@ -251,7 +239,7 @@ describe(
       const res = await putInvoice(victimCookie);
       assert.equal(res.status, 200);
       assert.deepEqual(await childCounts(victimInvoiceId), {
-        items: 1,
+        items: 5,
         overtime: 0,
         expenses: 0,
       });
@@ -273,9 +261,13 @@ describe(
 
     it("refuses to move an invoice onto another user's client", async () => {
       const attacker = await signUp("client-mover");
+      const ownClient = await mod.prisma.client.create({
+        data: { userId: attacker.userId, name: "Own Client", dayRate: 100 },
+      });
       const ownBody = {
         ...invoiceBody,
         invoiceNumber: `ATTACK-OWN-${Date.now()}`,
+        clientId: ownClient.id,
       };
       const own = await postInvoice(attacker.cookie, ownBody);
       assert.equal(own.status, 201);
@@ -294,7 +286,7 @@ describe(
       const invoice = await mod.prisma.invoice.findUniqueOrThrow({
         where: { id },
       });
-      assert.equal(invoice.clientId, null);
+      assert.equal(invoice.clientId, ownClient.id);
     });
 
     it("lets the owner attach their own client", async () => {
