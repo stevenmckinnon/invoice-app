@@ -173,8 +173,13 @@ export const billDays = ({
       ).map((row) => ({ date: day.date, ...row })),
     );
 
+  // Only the billed fields, never a spread: the API's expenses carry the
+  // browser's temporary ids, which would otherwise be written as primary
+  // keys and collide with the next invoice that reuses them
   const customExpenseEntries = expenses.map((expense) => ({
-    ...expense,
+    description: expense.description,
+    quantity: expense.quantity,
+    unitPrice: expense.unitPrice,
     cost: toPence(expense.quantity * expense.unitPrice),
   }));
 
