@@ -108,3 +108,24 @@ export const dayBillingWrites = (
     },
   };
 };
+
+/** Stored day rows (Prisma Decimals and Dates) back into billable days */
+export const storedToBillable = (
+  days: Array<{
+    date: Date;
+    type: string;
+    alsoTravel: string | null;
+    direction: string | null;
+    overtimeHours: unknown;
+  }>,
+): BillableDay[] =>
+  days
+    .map((day) => ({
+      date: day.date.toISOString().slice(0, 10),
+      type: day.type as BillableDay["type"],
+      alsoTravel: (day.alsoTravel as BillableDay["alsoTravel"]) ?? undefined,
+      direction: (day.direction as BillableDay["direction"]) ?? undefined,
+      overtimeHours:
+        day.overtimeHours == null ? undefined : Number(day.overtimeHours),
+    }))
+    .sort((a, b) => a.date.localeCompare(b.date));

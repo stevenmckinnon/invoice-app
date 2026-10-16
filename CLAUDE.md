@@ -45,9 +45,11 @@ Reseeding replaces the user, but the Better Auth session cookie cache serves the
 
 Seed credentials: `dev@caley.test` / `devpassword123`. The seed (`prisma/seed.ts`) builds the user through better-auth so the password hash is one it can verify, computes invoice totals with `calculateInvoiceTotals` so seeded rows can't disagree with what the app renders, and **refuses to run against a non-local host** (override with `SEED_ALLOW_REMOTE=1`). Re-running is safe — the seeded user is deleted first and everything cascades.
 
-It seeds three clients (one with tiered overtime, one without, one with no rates at all) and eleven invoices: six in the current tax year across every status (one billed in USD, so the dashboard currency picker appears) and five paid ones in the previous year, so year-on-year comparisons have a baseline. One of those is dated 3 April, inside the 1–5 April window that belongs to the year ending.
+It seeds three clients (one with tiered overtime, one without, one with no rates at all) and twelve invoices: seven in the current tax year across every status (one billed in USD, so the dashboard currency picker appears) and five paid ones in the previous year, so year-on-year comparisons have a baseline. One of those is dated 3 April, inside the 1–5 April window that belongs to the year ending. One current-year invoice (INV-2607, "Triplemania 34") is **built from days** and priced through `dayBillingWrites`, so the day strip and calendar editor have something to show; the other eleven are count-based.
 
 **Migrations.** History was squashed into a single `0_init` baseline on 15 Oct 2026. The old history couldn't be replayed from empty: `20250116000000_add_client_model` sorted before the migration that created `Invoice`. A fresh database now builds with `migrate deploy`, and CI proves that on every run (`migrate deploy`, then `migrate diff --exit-code` against the schema). For schema changes, use `pnpm prisma migrate dev --name …` against the local container; it needs a local database built from migrations, so if yours predates the squash, run `pnpm db:local:reset` once.
+
+**Deploys do not run migrations.** `build` only runs `prisma generate`; production (Neon) is migrated by hand with `DATABASE_URL=<neon> pnpm db:migrate`. Prisma selects every scalar column by default, so code that knows about a new column fails with "column does not exist" if it deploys first. Keep migrations additive (nullable columns, columns with defaults, new tables) so the old code runs against the migrated database, and **migrate production before merging**. Check with `prisma migrate status` against production (read-only); it also lists seven pre-squash migrations as "not found locally", which is expected.
 
 ## Architecture
 
@@ -78,10 +80,26 @@ In client components, use `useSession()` from `@/lib/auth-client`. All data is u
 Core models in `prisma/schema.prisma`:
 
 - `User` — extended with profile fields (address, banking details like IBAN/SWIFT) used to pre-fill invoices
-- `Invoice` — belongs to `User`, optionally to a `Client`. Has `InvoiceLineItem[]`, `OvertimeEntry[]`, `CustomExpenseEntry[]` relations. Status: `draft | sent | paid | overdue`
-- `Client` — belongs to `User`, stores address and rate defaults (`dayRate`, `perDiemWork`, `perDiemTravel`)
+- `Invoice` — belongs to `User`, optionally to a `Client`. Has `InvoiceLineItem[]`, `OvertimeEntry[]`, `CustomExpenseEntry[]` and `InvoiceDay[]` relations, plus `terms` (a JSON snapshot of the client's billing terms; null on count-based invoices). Status: `draft | sent | paid | overdue`. `invoiceNumber` is unique per user.
+- `InvoiceDay` — one billed date of a day-based invoice; see "Invoices built from days" below
+- `Client` — belongs to `User`, stores address and billing terms: `dayRate`, `perDiemWork`, `perDiemTravel`, the overtime tier (`overtimeTierHours`, `overtimeFirstRate`, `overtimeAfterRate`) and the travel + work rule (`travelWorkBill`, `travelWorkPerDiem`)
 
 Invoice totals (`subtotalLabor`, `subtotalPerDiem`, `subtotalTravel`, `totalAmount`) are calculated via `calculateInvoiceTotals()` before saving — they are stored denormalized in the DB.
+
+### Invoices built from days
+
+New invoices are built from the **dated days** of a job, not typed counts. Every invoice is one of two kinds, **for life**:
+
+- **Day-based** (`Invoice.terms` is set): its `InvoiceDay` rows (`work | travel | dark`, an optional `alsoTravel: out | home` for a work day that also had travel, `overtimeHours`) are the source of truth. A day off is the absence of a row. On every save, `billDays()` (`src/lib/billing.ts`) turns the days and the invoice's `terms` into the five standard line items, dated overtime entries and the total, written by `dayBillingWrites()` (`src/lib/day-invoice.ts`). The form, the API and the chat tools all go through it.
+- **Count-based** (`terms` is null): invoices made before days existed. They keep their stored lines and are **never converted**; the API refuses days for them, and refuses typed line items for a day-based invoice.
+
+The rules live in one place, `billDays`. Work, travel and dark days bill at the day rate. **Dark days take the travel per diem.** A work day with travel bills per the client's rule (`Client.travelWorkBill` / `travelWorkPerDiem`, default: both a work and a travel day, with the travel per diem). Overtime is day rate ÷ 10 an hour, split by the client's tier **per day**; no tier means all of it at 1.5×. Rates never vary by job for a client, so the form has no rate fields.
+
+`Invoice.terms` is a **snapshot** of the client's terms when the invoice was created. Editing an invoice keeps it; only switching client re-prices. A later change to a client's rates never re-prices a sent invoice.
+
+Pages read money from the **stored** rows (`summariseInvoice`, `src/lib/invoice-summary.ts`), never by re-billing in the browser, so they can't disagree with the PDF. INV-2605 (a real invoice, £3,748.13) is pinned in the tests: if a change moves it, the change is wrong.
+
+UI: the invoice page shows the paper document plus the day strip (`src/components/invoice/`); new and day-based invoices use the calendar editor (`src/components/invoice-editor/`), whose preview runs the same `billDays`.
 
 ### AI Chat (`src/components/ai/`)
 
@@ -110,7 +128,7 @@ Uses **AI SDK v7** (`ai` 7.x, `@ai-sdk/react` 4.x, `@ai-sdk/anthropic` 4.x). v7 
 - Tool parts use `part.type === "tool-{name}"` with `state`/`output` directly (no `toolInvocation` wrapper)
 - `convertToModelMessages(messages)` is async — must be awaited
 
-The API route at `src/app/api/chat/route.ts` loads user profile, clients, and invoice stats as instructions context, then provides two tools: `createInvoiceDraft` and `updateInvoiceDraft`.
+The API route at `src/app/api/chat/route.ts` loads user profile, clients, and invoice stats as instructions context, then provides two tools: `createInvoiceDraft` and `updateInvoiceDraft` (`src/lib/invoice-tools.ts`). Both take **dated days** (one entry per date, overtime as hours on the day) and price them with `billDays`, so their drafts are day-based and open in the calendar editor. A saved client's terms price the draft; an unsaved client needs explicit `rates`. Count-based drafts can't be updated by the tool.
 
 ### CI and production safeguards
 

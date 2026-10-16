@@ -171,17 +171,21 @@ export const POST = async (req: Request) => {
     clients.length > 0
       ? clients
           .map((c) => {
-            // Named only so the model knows not to pass a rateType — the split
-            // itself happens server-side
+            // Shown so the model can answer questions about a client's rates;
+            // the tools price everything from the client record themselves
             const tier = clientOvertimeRule(c);
             return (
               `- ${c.name} (ID: ${c.id})` +
-              (c.dayRate ? `, day rate: ${sym}${c.dayRate}` : "") +
+              (c.dayRate
+                ? `, day rate: ${sym}${c.dayRate}`
+                : ", NO DAY RATE SAVED") +
               (c.perDiemWork ? `, per diem work: ${sym}${c.perDiemWork}` : "") +
               (c.perDiemTravel
                 ? `, per diem travel: ${sym}${c.perDiemTravel}`
                 : "") +
-              (tier ? `, tiered overtime (omit rateType)` : "")
+              (tier
+                ? `, overtime ${tier.firstRate} for ${tier.tierHours}h then ${tier.afterRate}`
+                : ", overtime at 1.5x")
             );
           })
           .join("\n")
@@ -223,12 +227,15 @@ ${recentInvoices}
 - Be concise and friendly.
 - For invoice creation, use the user's saved profile details automatically for their personal/banking info. Only ask for what's specific to this invoice: project name, date, client, and the work done.
 - If a client ID matches a saved client, use that client's saved details.
-- Call createInvoiceDraft as soon as you have a project name, date, and at least one line item. Don't wait for every detail — the user can edit it afterwards. Let them know the draft is saved and they can open it in the editor.
+- Invoices are built from the dates of the job. Call createInvoiceDraft once you have a project name, a client and the days. Don't wait for every detail — the user can edit it afterwards. Let them know the draft is saved and they can open it in the editor.
 - For revenue/stats questions, calculate from the data above. Today's date: ${new Date().toISOString().split("T")[0]}.
 - When correcting an existing draft, use updateInvoiceDraft with the invoice ID.
-- Route each charge to the right field: days and per diems → items[]; overtime hours → overtimeEntries[]; fixed fees and expenses (kit rental, materials) → customExpenseEntries[].
-- Report overtime as the user states it — the date and the hours. For a client marked "tiered overtime", leave rateType out and the tiers are applied for you; never split the hours yourself. Pass rateType only when the user names a rate, or the client has no tiering.
-- Always pass clientId when the invoice is for a saved client, so their address and saved rates are applied. Leave a standard item's unitPrice out to use the saved rate — don't pass 0 for a rate you don't know.
+- Send one entry per date in days[]. Work out real dates from what the user says ("flew out Monday, worked Tuesday to Friday" is a travel day then four work days), using today's date for the year. A day off is simply left out.
+- Day types: work (a shoot or show day), travel, dark (a paid day with no work). When the user travelled and worked on the same day, it's a work day with alsoTravel "out" (flew in) or "home" (flew home after wrap); never add a separate travel day for it.
+- Overtime goes on the work day it happened, as overtimeHours. Report the hours as the user states them; never split them into rates or work out money, because the client's terms do that.
+- Per diems are added automatically from the days; never list them. Expenses and fixed fees (taxis, fuel, kit hire) go in expenses[].
+- Always pass clientId for a saved client, so their address and rates apply. For a client who isn't saved, pass clientName and the rates the user gives you; never guess a rate. If a saved client has no day rate, ask for it.
+- When correcting a draft, updateInvoiceDraft replaces days or expenses as a whole: send the full list, not only the change.
 - If a tool returns an error, read it and fix the call, or ask the user for what's missing. Don't retry the same arguments.`;
 
   const result = streamText({
