@@ -24,6 +24,21 @@ const WARNING_TINT = "#F6E3CC";
 const MARGIN = 44;
 const CELL = 20;
 
+const MONTHS = [
+  "Jan",
+  "Feb",
+  "Mar",
+  "Apr",
+  "May",
+  "Jun",
+  "Jul",
+  "Aug",
+  "Sep",
+  "Oct",
+  "Nov",
+  "Dec",
+];
+
 const dayMonth = (date: string) =>
   new Date(`${date}T00:00:00`).toLocaleDateString("en-GB", {
     day: "numeric",
@@ -76,10 +91,16 @@ const Block = ({
 const ScheduleDay = ({
   day,
   overtime,
+  first,
 }: {
   day: StripDay;
   overtime: number;
+  first: boolean;
 }) => {
+  // A long job crosses months, so the first of each one says which
+  const dayOfMonth = Number(day.date.slice(8, 10));
+  const month =
+    first || dayOfMonth === 1 ? MONTHS[Number(day.date.slice(5, 7)) - 1] : null;
   const fill =
     day.type === "work"
       ? { backgroundColor: PRIMARY }
@@ -125,8 +146,13 @@ const ScheduleDay = ({
           marginTop: 2,
         }}
       >
-        {Number(day.date.slice(8, 10))}
+        {dayOfMonth}
       </Text>
+      {month && (
+        <Text style={{ fontSize: 6.5, color: MUTED, textAlign: "center" }}>
+          {month}
+        </Text>
+      )}
     </View>
   );
 };
@@ -280,9 +306,10 @@ export const generateCaleyInvoicePdf = async (
     <View wrap={false}>
       <Eyebrow>Schedule</Eyebrow>
       <View style={{ flexDirection: "row", flexWrap: "wrap" }}>
-        {days.map((day) => (
+        {days.map((day, i) => (
           <ScheduleDay
             key={day.date}
+            first={i === 0}
             day={day}
             overtime={overtime.get(day.date) ?? 0}
           />
@@ -294,7 +321,7 @@ export const generateCaleyInvoicePdf = async (
 
   const doc = (
     <Document title={`Invoice ${input.invoiceNumber}`} author={input.fullName}>
-      <Page size="A4" margin={0}>
+      <Page size="A4" margin={{ top: 40, right: 0, bottom: 0, left: 0 }}>
         <Fixed position="footer">
           <View
             style={{
@@ -313,7 +340,7 @@ export const generateCaleyInvoicePdf = async (
           </View>
         </Fixed>
 
-        <View style={{ paddingHorizontal: MARGIN, paddingTop: MARGIN }}>
+        <View style={{ paddingHorizontal: MARGIN, paddingTop: 4 }}>
           <View
             style={{ flexDirection: "row", justifyContent: "space-between" }}
           >
