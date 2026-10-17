@@ -171,7 +171,20 @@ const generateModernInvoicePdf = async (
           </View>
         </Fixed>
 
-        <View style={{ flexDirection: "row", minHeight: 300 }}>
+        {/* The sidebar's tint carries on down the page from where its
+            content ends (absolute elements paint over their siblings, so it
+            can't start any higher without covering the text) */}
+        <View
+          style={{
+            position: "absolute",
+            top: 354,
+            left: 0,
+            width: 170,
+            height: 488,
+            backgroundColor: secondaryColor,
+          }}
+        />
+        <View style={{ flexDirection: "row", minHeight: 356 }}>
           <View style={{ width: 170, backgroundColor: secondaryColor }}>
             <View
               style={{
