@@ -276,6 +276,22 @@ export const generateCaleyInvoicePdf = async (
     summary.expenses,
   ];
 
+  const schedule = (
+    <View wrap={false}>
+      <Eyebrow>Schedule</Eyebrow>
+      <View style={{ flexDirection: "row", flexWrap: "wrap" }}>
+        {days.map((day) => (
+          <ScheduleDay
+            key={day.date}
+            day={day}
+            overtime={overtime.get(day.date) ?? 0}
+          />
+        ))}
+      </View>
+      <Legend />
+    </View>
+  );
+
   const doc = (
     <Document title={`Invoice ${input.invoiceNumber}`} author={input.fullName}>
       <Page size="A4" margin={0}>
@@ -336,7 +352,7 @@ export const generateCaleyInvoicePdf = async (
           </View>
 
           <View style={{ flexDirection: "row", marginTop: 20 }}>
-            <View style={{ flex: 1 }}>
+            <View style={{ flex: 1.2, paddingRight: 16 }}>
               <Eyebrow>Billed to</Eyebrow>
               {input.clientName ? (
                 <>
@@ -365,35 +381,26 @@ export const generateCaleyInvoicePdf = async (
                 <Text style={{ fontSize: 9, color: MUTED }}>—</Text>
               )}
             </View>
-            <View style={{ flex: 1 }}>
+            <View style={{ flex: 1, paddingRight: 16 }}>
               <Eyebrow>Project</Eyebrow>
               <Text style={{ fontSize: 9, fontWeight: "bold", color: INK }}>
                 {input.showName}
               </Text>
+              <View style={{ paddingTop: 12 }}>
+                <Eyebrow>Date</Eyebrow>
+                <Text style={{ fontSize: 9, color: INK }}>
+                  {dayMonth(input.invoiceDate.toISOString().slice(0, 10))}
+                </Text>
+              </View>
             </View>
-            <View style={{ flex: 1 }}>
-              <Eyebrow>Date</Eyebrow>
-              <Text style={{ fontSize: 9, color: INK }}>
-                {dayMonth(input.invoiceDate.toISOString().slice(0, 10))}
-              </Text>
-            </View>
+            {/* A short job's schedule sits beside the details; a long one
+                needs the full width below */}
+            {days.length > 0 && days.length <= 8 && (
+              <View style={{ flex: 1.2 }}>{schedule}</View>
+            )}
           </View>
 
-          {days.length > 0 && (
-            <View style={{ marginTop: 18 }} wrap={false}>
-              <Eyebrow>Schedule</Eyebrow>
-              <View style={{ flexDirection: "row", flexWrap: "wrap" }}>
-                {days.map((day) => (
-                  <ScheduleDay
-                    key={day.date}
-                    day={day}
-                    overtime={overtime.get(day.date) ?? 0}
-                  />
-                ))}
-              </View>
-              <Legend />
-            </View>
-          )}
+          {days.length > 8 && <View style={{ marginTop: 18 }}>{schedule}</View>}
 
           <LineGroup title="Labour" lines={summary.labour} fmt={fmt} />
           <LineGroup title="Per diems" lines={summary.perDiems} fmt={fmt} />
