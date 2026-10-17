@@ -1,7 +1,10 @@
 import { renderDocument } from "@formepdf/core";
 import { Document, Page, View, Text, Table, Row, Cell, Fixed } from "@formepdf/react";
 
+import type { InvoiceTerms } from "@/lib/billing";
+import type { StoredDay } from "@/lib/day-strip";
 import { deriveOvertimeHourlyRate, overtimeEntryCost } from "@/lib/overtime";
+import { generateCaleyInvoicePdf } from "@/lib/pdf-caley";
 
 // Helper to format date without timezone conversion
 const formatDateGB = (date: Date | string): string => {
@@ -77,6 +80,10 @@ export type InvoicePdfInput = {
   customExpenseEntries: CustomExpenseEntry[];
 
   notes?: string;
+
+  /** Day-based invoices: the dated days and the terms they were priced at */
+  days?: StoredDay[];
+  terms?: InvoiceTerms | null;
 };
 
 export const calculateInvoiceTotals = (input: InvoicePdfInput) => {
@@ -120,7 +127,8 @@ export const calculateInvoiceTotals = (input: InvoicePdfInput) => {
   };
 };
 
-export type PdfTemplate = "classic" | "modern" | "minimal";
+export const PDF_TEMPLATES = ["caley", "classic", "modern", "minimal"] as const;
+export type PdfTemplate = (typeof PDF_TEMPLATES)[number];
 
 
 // Modern template — sidebar layout with an accent-colored header block.
@@ -882,11 +890,15 @@ const generateMinimalInvoicePdf = async (
 
 export const generateInvoicePdf = async (
   input: InvoicePdfInput,
-  template: PdfTemplate = "classic",
+  template: PdfTemplate = "caley",
 ): Promise<Uint8Array> => {
   const totals = calculateInvoiceTotals(input);
 
   // Route to appropriate template
+  if (template === "caley") {
+    return generateCaleyInvoicePdf(input, totals);
+  }
+
   if (template === "modern") {
     return generateModernInvoicePdf(input, totals);
   }

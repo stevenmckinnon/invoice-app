@@ -69,7 +69,7 @@ In client components, use `useSession()` from `@/lib/auth-client`. All data is u
 
 **Data fetching** — TanStack Query (React Query) for all client-side data. Custom hooks live in `src/hooks/` (`use-invoices.ts`, `use-clients.ts`). API routes are Next.js Route Handlers under `src/app/api/`. Zod schemas validate all API inputs server-side.
 
-**PDF generation** — `src/lib/pdf.ts` contains `calculateInvoiceTotals` and the PDF rendering logic using `@react-pdf/renderer`. Invoice PDFs are served from `src/app/api/invoices/[id]/pdf/route.ts`.
+**PDF generation** — `src/lib/pdf.tsx` has `calculateInvoiceTotals` and the template router; PDFs are rendered by `@formepdf` and served from `src/app/api/invoices/[id]/pdf/route.ts`. The default template is **Caley** (`src/lib/pdf-caley.tsx`), the invoice page's paper on A4: it reads the stored rows through `summariseInvoice`, so the PDF and the page can't disagree. Overtime is one line per date and rate, on both. formepdf 0.16 accepts a registered TTF but still renders Helvetica, so the app's own fonts can't be embedded. The preview dialog remembers the last template in `localStorage`.
 
 **Layout** — `ConditionalLayout` wraps the app to show the nav/sidebar only on authenticated app pages (not on the marketing home page or auth pages). The `Providers` component wraps with React Query and `next-themes`.
 
