@@ -321,7 +321,7 @@ export const generateCaleyInvoicePdf = async (
 
   const doc = (
     <Document title={`Invoice ${input.invoiceNumber}`} author={input.fullName}>
-      <Page size="A4" margin={{ top: 40, right: 0, bottom: 0, left: 0 }}>
+      <Page size="A4" margin={{ top: 48, right: 0, bottom: 10, left: 0 }}>
         <Fixed position="footer">
           <View
             style={{
