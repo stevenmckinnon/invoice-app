@@ -18,6 +18,11 @@ const nextConfig: NextConfig = {
   // own copy — a second, bundled copy of @formepdf/react here would never
   // match, silently dropping everything below <Document>.
   serverExternalPackages: ["@formepdf/core", "@formepdf/react"],
+  // The Caley PDF reads its fonts from disk at request time, which the
+  // file tracer can't see
+  outputFileTracingIncludes: {
+    "/api/invoices/[id]/pdf": ["./src/fonts/pdf/**"],
+  },
   async headers() {
     return [
       {

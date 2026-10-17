@@ -22,11 +22,11 @@ importers:
         specifier: ^1.7.0
         version: 1.7.0(@date-fns/tz@1.5.0)(@types/react@19.2.18)(date-fns@4.4.0)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
       '@formepdf/core':
-        specifier: ^0.16.0
-        version: 0.16.0(react@19.2.8)
+        specifier: ^0.28.0
+        version: 0.28.0(react@19.2.8)
       '@formepdf/react':
-        specifier: ^0.16.0
-        version: 0.16.0(react@19.2.8)
+        specifier: ^0.28.0
+        version: 0.28.0(react@19.2.8)
       '@hookform/resolvers':
         specifier: ^5.9.1
         version: 5.9.1(@standard-schema/spec@1.1.0)(ajv-formats@2.1.1(ajv@8.20.0))(ajv@8.20.0)(effect@3.20.0)(react-hook-form@7.87.0(react@19.2.8))(valibot@1.4.2(typescript@5.9.3))(zod@4.5.4)
@@ -781,18 +781,18 @@ packages:
   '@floating-ui/utils@0.2.12':
     resolution: {integrity: sha512-HpCo8tmWzLVad5s2d19EhAz5zqrrQ6s69qd6moPMQvkOuSwDT1YgRfWSVuc4ennqrgv3OHppiOGMQ7oC13yIww==}
 
-  '@formepdf/core@0.16.0':
-    resolution: {integrity: sha512-gtCax7sjStTrDG5a5wv38wRI/FZUQEba84IEd64KuRkNd0MR1UgX3j68bibCJvg9axbcs6NrrNPpzvq+M95AYQ==}
+  '@formepdf/core@0.28.0':
+    resolution: {integrity: sha512-0wJKPpCq15jPTNv82OG6zZeE6S2b2B5beIbkIrWQ5T8kOVNq5lAAsiO/+/42vunejgqPLA8H5pA4AQ+pcqLwLQ==}
     peerDependencies:
       react: ^18 || ^19
 
-  '@formepdf/react@0.16.0':
-    resolution: {integrity: sha512-5ouMzNzfHDMmREFoh+dfx3r5BhIWEv1peO7t5BCdC8fNgJSy2dQKW4gd8elQZ92eNCQPzOGpJLyM6JmRx9JLFg==}
+  '@formepdf/react@0.28.0':
+    resolution: {integrity: sha512-mytvkfkMQ83h2rBm/f0HrQ3EBU675CvazOun+XWhBHxd54GTHE/XKDqiYZ3GgmHjNGYhjRqQClFPDoRXmaVS7w==}
     peerDependencies:
       react: ^18 || ^19
 
-  '@formepdf/shared@0.16.0':
-    resolution: {integrity: sha512-Mre1+E9mX7HZJslUMe9QtRfgobEd6UWGkvq+fHA6E1yioGolIVd2Fgs9XieXKt8wAlEftt+OXse3Dynze8/eSg==}
+  '@formepdf/shared@0.28.0':
+    resolution: {integrity: sha512-i9XsJFM07U3pMcdQRM5xHa98WamYf9U+S1UOeBxKWWPCGBpHWx94dAkzFsglGekHAXDiFDkDEFHSgvHHL91Q2w==}
 
   '@hono/node-server@2.1.1':
     resolution: {integrity: sha512-ELuehkj5VCBdgEw9zs+ivkKwyzzUCSQuE96YmiPvn1ECBoZCczbFXJLeEGMTYjphP6gydh4pHMqEYPVMYUVgQg==}
@@ -6832,17 +6832,17 @@ snapshots:
 
   '@floating-ui/utils@0.2.12': {}
 
-  '@formepdf/core@0.16.0(react@19.2.8)':
+  '@formepdf/core@0.28.0(react@19.2.8)':
     dependencies:
-      '@formepdf/react': 0.16.0(react@19.2.8)
+      '@formepdf/react': 0.28.0(react@19.2.8)
       react: 19.2.8
 
-  '@formepdf/react@0.16.0(react@19.2.8)':
+  '@formepdf/react@0.28.0(react@19.2.8)':
     dependencies:
-      '@formepdf/shared': 0.16.0
+      '@formepdf/shared': 0.28.0
       react: 19.2.8
 
-  '@formepdf/shared@0.16.0':
+  '@formepdf/shared@0.28.0':
     dependencies:
       parse5: 7.3.0
 

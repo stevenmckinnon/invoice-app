@@ -1,5 +1,8 @@
 import { renderDocument } from "@formepdf/core";
 import { Document, Fixed, Page, Text, View } from "@formepdf/react";
+import { readFileSync } from "node:fs";
+import path from "node:path";
+
 
 import { type StripDay, shortDateList, toStripDays } from "@/lib/day-strip";
 import { summariseInvoice, type SummaryLine } from "@/lib/invoice-summary";
@@ -9,10 +12,32 @@ import type { InvoicePdfInput, calculateInvoiceTotals } from "@/lib/pdf";
  * The "Caley" template: the invoice page's paper, on A4. Same order and the
  * same grouped lines (read through summariseInvoice, so the PDF can't
  * disagree with the page), the same mini schedule. Colours are the page's
- * tokens as flat print-safe hex; the figures sit right-aligned in
- * Helvetica's tabular digits, since formepdf 0.16 can't embed the app's own
- * fonts (a registered TTF is accepted, then ignored for Helvetica).
+ * tokens as flat print-safe hex, and the fonts are the page's too: Satoshi for
+ * text, JetBrains Mono for figures.
  */
+const FONT_DIR = path.join(process.cwd(), "src/fonts/pdf");
+const SANS = "Satoshi";
+const MONO = "JetBrains Mono";
+
+let fonts: Array<{
+  family: string;
+  src: Uint8Array;
+  fontWeight: number;
+}> | null = null;
+
+/** Satoshi and JetBrains Mono, as on the page; read once per server process */
+const loadFonts = () =>
+  (fonts ??= [
+    [SANS, "Satoshi-Regular", 400],
+    [SANS, "Satoshi-Bold", 700],
+    [MONO, "JetBrainsMono-Regular", 400],
+    [MONO, "JetBrainsMono-Bold", 700],
+  ].map(([family, file, fontWeight]) => ({
+    family: family as string,
+    src: new Uint8Array(readFileSync(path.join(FONT_DIR, `${file}.ttf`))),
+    fontWeight: fontWeight as number,
+  })));
+
 const INK = "#0F1A24";
 const MUTED = "#5C6670";
 const RULE = "#E4E1D8";
@@ -140,6 +165,7 @@ const ScheduleDay = ({
       </View>
       <Text
         style={{
+          fontFamily: MONO,
           fontSize: 6.5,
           color: MUTED,
           textAlign: "center",
@@ -149,7 +175,14 @@ const ScheduleDay = ({
         {dayOfMonth}
       </Text>
       {month && (
-        <Text style={{ fontSize: 6.5, color: MUTED, textAlign: "center" }}>
+        <Text
+          style={{
+            fontFamily: MONO,
+            fontSize: 6.5,
+            color: MUTED,
+            textAlign: "center",
+          }}
+        >
           {month}
         </Text>
       )}
@@ -207,6 +240,7 @@ const Cell = ({
 }) => (
   <Text
     style={{
+      fontFamily: MONO,
       width,
       textAlign: "right",
       fontSize: 9,
@@ -320,8 +354,13 @@ export const generateCaleyInvoicePdf = async (
   );
 
   const doc = (
-    <Document title={`Invoice ${input.invoiceNumber}`} author={input.fullName}>
-      <Page size="A4" margin={{ top: 48, right: 0, bottom: 10, left: 0 }}>
+    <Document
+      title={`Invoice ${input.invoiceNumber}`}
+      author={input.fullName}
+      fonts={loadFonts()}
+      style={{ fontFamily: SANS }}
+    >
+      <Page size="A4" margin={{ top: 48, right: 0, bottom: 20, left: 0 }}>
         <Fixed position="footer">
           <View
             style={{
@@ -346,7 +385,14 @@ export const generateCaleyInvoicePdf = async (
           >
             <View>
               <Eyebrow>Invoice</Eyebrow>
-              <Text style={{ fontSize: 22, fontWeight: "bold", color: INK }}>
+              <Text
+                style={{
+                  fontFamily: MONO,
+                  fontSize: 22,
+                  fontWeight: "bold",
+                  color: INK,
+                }}
+              >
                 {input.invoiceNumber}
               </Text>
             </View>
@@ -461,7 +507,14 @@ export const generateCaleyInvoicePdf = async (
             >
               TOTAL DUE
             </Text>
-            <Text style={{ fontSize: 20, fontWeight: "bold", color: INK }}>
+            <Text
+              style={{
+                fontFamily: MONO,
+                fontSize: 18,
+                fontWeight: "bold",
+                color: INK,
+              }}
+            >
               {fmt.format(totals.totalAmount)}
             </Text>
           </View>
@@ -500,7 +553,14 @@ export const generateCaleyInvoicePdf = async (
                   <Text style={{ fontSize: 8, fontWeight: "bold", color: INK }}>
                     {label}
                   </Text>
-                  <Text style={{ fontSize: 8, color: MUTED, marginTop: 2 }}>
+                  <Text
+                    style={{
+                      fontFamily: label === "Bank address" ? SANS : MONO,
+                      fontSize: 8,
+                      color: MUTED,
+                      marginTop: 2,
+                    }}
+                  >
                     {value}
                   </Text>
                 </View>

@@ -171,8 +171,19 @@ const generateModernInvoicePdf = async (
           </View>
         </Fixed>
 
-        <View style={{ flexDirection: "row", minHeight: 300 }}>
-          <View style={{ width: 170, backgroundColor: secondaryColor }}>
+        {/* The sidebar is pinned to the page, so it can run the full height
+            while the details and table flow beside it at their own length */}
+        <View style={{ flexDirection: "row" }}>
+          <View
+            style={{
+              position: "absolute",
+              top: 0,
+              left: 0,
+              width: 170,
+              height: 830,
+              backgroundColor: secondaryColor,
+            }}
+          >
             <View
               style={{
                 backgroundColor: accentColor,
@@ -246,7 +257,15 @@ const generateModernInvoicePdf = async (
             </View>
           </View>
 
-          <View style={{ flex: 1, paddingHorizontal: 30, paddingTop: 32, paddingBottom: 20 }}>
+          <View
+            style={{
+              flex: 1,
+              marginLeft: 170,
+              paddingHorizontal: 30,
+              paddingTop: 32,
+              paddingBottom: 20,
+            }}
+          >
             {input.showName && (
               <Text
                 style={{ fontSize: 20, fontWeight: "bold", color: accentColor, marginBottom: 20 }}
@@ -559,7 +578,7 @@ const generateMinimalInvoicePdf = async (
           </View>
         </Fixed>
 
-        <View style={{ paddingHorizontal: 60, paddingTop: 60 }}>
+        <View style={{ paddingHorizontal: 60, paddingTop: 44 }}>
           <View
             style={{
               flexDirection: "row",
@@ -578,7 +597,7 @@ const generateMinimalInvoicePdf = async (
             </Text>
           </View>
 
-          <View style={{ marginTop: 24 }}>
+          <View style={{ marginTop: 16 }}>
             {input.showName && (
               <Text
                 style={{ fontSize: 16, fontWeight: "bold", color: textColor, marginBottom: 24 }}
@@ -830,7 +849,7 @@ const generateMinimalInvoicePdf = async (
 
             <View
               style={{
-                marginTop: 32,
+                marginTop: 20,
                 paddingTop: 16,
                 borderTopWidth: 0.5,
                 borderColor: subtleLineColor,
@@ -842,21 +861,21 @@ const generateMinimalInvoicePdf = async (
               <Text style={{ fontSize: 8, color: textColor, marginTop: 8 }}>
                 {`IBAN: ${input.iban}`}
               </Text>
-              <Text style={{ fontSize: 8, color: textColor, marginTop: 4 }}>
+              <Text style={{ fontSize: 8, color: textColor, marginTop: 2 }}>
                 {`SWIFT/BIC: ${input.swiftBic}`}
               </Text>
               {input.accountNumber && (
-                <Text style={{ fontSize: 8, color: textColor, marginTop: 4 }}>
+                <Text style={{ fontSize: 8, color: textColor, marginTop: 2 }}>
                   {`Account Number: ${input.accountNumber}`}
                 </Text>
               )}
               {input.sortCode && (
-                <Text style={{ fontSize: 8, color: textColor, marginTop: 4 }}>
+                <Text style={{ fontSize: 8, color: textColor, marginTop: 2 }}>
                   {`Sort Code: ${input.sortCode}`}
                 </Text>
               )}
               {input.bankAddress && (
-                <Text style={{ fontSize: 8, color: textColor, marginTop: 4 }}>
+                <Text style={{ fontSize: 8, color: textColor, marginTop: 2 }}>
                   {`Bank Address: ${input.bankAddress}`}
                 </Text>
               )}
