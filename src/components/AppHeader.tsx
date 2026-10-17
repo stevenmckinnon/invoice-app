@@ -74,8 +74,10 @@ export const AppHeader = ({ className }: { className?: string }) => {
         className,
       )}
     >
+      {/* Opaque on a phone: blur over scrolling content read as a smudge, worst
+          in the installed app where the status bar sits on top of it */}
       <div
-        className="bg-card/90 supports-[backdrop-filter]:bg-card/70 dark:border-border/50 flex w-full items-center justify-between border-transparent px-4 py-3 shadow-sm backdrop-blur-md md:mx-4 md:rounded-2xl md:border md:shadow-md"
+        className="bg-card md:bg-card/90 md:supports-[backdrop-filter]:bg-card/70 dark:border-border/50 flex w-full items-center justify-between border-transparent px-4 py-3 shadow-sm md:mx-4 md:backdrop-blur-md md:rounded-2xl md:border md:shadow-md"
         style={{
           paddingTop: "max(12px, env(safe-area-inset-top))",
         }}

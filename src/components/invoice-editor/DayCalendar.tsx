@@ -212,11 +212,14 @@ export const DayCalendar = ({
       </div>
 
       <div
-        className="text-muted-foreground mb-1 grid grid-cols-7 gap-1 text-center text-[11px]"
+        className="text-muted-foreground mb-1 grid grid-cols-7 gap-1 text-[11px]"
         aria-hidden="true"
       >
         {["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map((d) => (
-          <span key={d}>{d}</span>
+          // Left-aligned with the date numbers in the tiles below, not centred
+          <span key={d} className="px-1.5 sm:px-2">
+            {d}
+          </span>
         ))}
       </div>
 
