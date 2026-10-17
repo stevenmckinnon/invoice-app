@@ -45,13 +45,27 @@ const Eyebrow = ({ children }: { children: string }) => (
   </Text>
 );
 
-const Block = ({ lines }: { lines: Array<string | undefined> }) => (
+const Block = ({
+  lines,
+  align = "left",
+}: {
+  lines: Array<string | undefined>;
+  align?: "left" | "right";
+}) => (
   <View>
     {lines
       .map((line) => line?.trim())
       .filter(Boolean)
       .map((line, i) => (
-        <Text key={i} style={{ fontSize: 9, color: MUTED, lineHeight: 1.45 }}>
+        <Text
+          key={i}
+          style={{
+            fontSize: 9,
+            color: MUTED,
+            lineHeight: 1.45,
+            textAlign: align,
+          }}
+        >
           {line}
         </Text>
       ))}
@@ -79,7 +93,7 @@ const ScheduleDay = ({
           ? { borderWidth: 0.75, borderColor: MUTED }
           : { borderBottomWidth: 0.75, borderColor: RULE };
   return (
-    <View style={{ width: CELL, marginRight: 3, marginBottom: 6 }}>
+    <View style={{ width: CELL + 4, paddingRight: 4, paddingBottom: 6 }}>
       <View style={{ height: 9, justifyContent: "flex-end" }}>
         {overtime > 0 && (
           <View
@@ -141,11 +155,11 @@ const Legend = () => (
     ].map(([label, swatch]) => (
       <View
         key={label as string}
-        style={{ flexDirection: "row", alignItems: "center", marginRight: 12 }}
+        style={{ flexDirection: "row", alignItems: "center", paddingRight: 14 }}
       >
-        <View
-          style={{ width: 8, height: 6, marginRight: 4, ...(swatch as object) }}
-        />
+        <View style={{ width: 14, paddingRight: 6 }}>
+          <View style={{ width: 8, height: 6, ...(swatch as object) }} />
+        </View>
         <Text style={{ fontSize: 7, color: MUTED }}>{label as string}</Text>
       </View>
     ))}
@@ -294,11 +308,19 @@ export const generateCaleyInvoicePdf = async (
               </Text>
             </View>
             <View style={{ alignItems: "flex-end" }}>
-              <Text style={{ fontSize: 10, fontWeight: "bold", color: INK }}>
+              <Text
+                style={{
+                  fontSize: 10,
+                  fontWeight: "bold",
+                  color: INK,
+                  textAlign: "right",
+                }}
+              >
                 {input.fullName}
               </Text>
               <View style={{ alignItems: "flex-end" }}>
                 <Block
+                  align="right"
                   lines={[
                     input.email,
                     input.addressLine1,
