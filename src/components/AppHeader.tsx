@@ -60,7 +60,6 @@ export const AppHeader = ({ className }: { className?: string }) => {
 
   return (
     <motion.header
-      layout
       // Only the landing page earns an entrance. On app routes the header is
       // chrome, and dropping it in on every hard load reads as a layout shift.
       initial={isLandingPage ? { opacity: 0, y: -100 } : false}
@@ -68,16 +67,17 @@ export const AppHeader = ({ className }: { className?: string }) => {
       transition={{ duration: 0.5, ease: "easeOut" }}
       className={cn(
         "fixed top-0 right-0 left-0 z-50 mx-auto flex w-full max-w-6xl justify-center transition-transform duration-300 ease-in-out md:top-5 md:w-auto",
-        isVisible
-          ? "translate-y-0"
-          : "-translate-y-full md:-translate-y-[calc(100%+20px)]",
+        // No transform at all while shown: a layer that sits at translateY(0)
+        // can be rasterised below device resolution on iOS, which softens
+        // everything in it
+        isVisible ? "" : "-translate-y-full md:-translate-y-[calc(100%+20px)]",
         className,
       )}
     >
       {/* Opaque on a phone: blur over scrolling content read as a smudge, worst
           in the installed app where the status bar sits on top of it */}
       <div
-        className="bg-card md:bg-card/90 md:supports-[backdrop-filter]:bg-card/70 dark:border-border/50 flex w-full items-center justify-between border-transparent px-4 py-3 shadow-sm md:mx-4 md:backdrop-blur-md md:rounded-2xl md:border md:shadow-md"
+        className="bg-card md:bg-card/90 md:supports-[backdrop-filter]:bg-card/70 dark:border-border/50 flex w-full items-center justify-between border-transparent px-4 py-3 shadow-sm md:mx-4 md:rounded-2xl md:border md:shadow-md md:backdrop-blur-md"
         style={{
           paddingTop: "max(12px, env(safe-area-inset-top))",
         }}
