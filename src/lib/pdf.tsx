@@ -171,21 +171,19 @@ const generateModernInvoicePdf = async (
           </View>
         </Fixed>
 
-        {/* The sidebar's tint carries on down the page from where its
-            content ends (absolute elements paint over their siblings, so it
-            can't start any higher without covering the text) */}
-        <View
-          style={{
-            position: "absolute",
-            top: 354,
-            left: 0,
-            width: 170,
-            height: 488,
-            backgroundColor: secondaryColor,
-          }}
-        />
-        <View style={{ flexDirection: "row", minHeight: 356 }}>
-          <View style={{ width: 170, backgroundColor: secondaryColor }}>
+        {/* The sidebar is pinned to the page, so it can run the full height
+            while the details and table flow beside it at their own length */}
+        <View style={{ flexDirection: "row" }}>
+          <View
+            style={{
+              position: "absolute",
+              top: 0,
+              left: 0,
+              width: 170,
+              height: 830,
+              backgroundColor: secondaryColor,
+            }}
+          >
             <View
               style={{
                 backgroundColor: accentColor,
@@ -259,7 +257,15 @@ const generateModernInvoicePdf = async (
             </View>
           </View>
 
-          <View style={{ flex: 1, paddingHorizontal: 30, paddingTop: 32, paddingBottom: 20 }}>
+          <View
+            style={{
+              flex: 1,
+              marginLeft: 170,
+              paddingHorizontal: 30,
+              paddingTop: 32,
+              paddingBottom: 20,
+            }}
+          >
             {input.showName && (
               <Text
                 style={{ fontSize: 20, fontWeight: "bold", color: accentColor, marginBottom: 20 }}
