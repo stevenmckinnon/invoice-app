@@ -61,24 +61,30 @@ export const summariseInvoice = ({
     };
 
   const hourly = deriveOvertimeHourlyRate(items);
-  const overtimeByRate = ["1.5x", "2x"]
-    .map((rateType) => {
-      const entries = overtimeEntries.filter((e) =>
-        rateType === "1.5x" ? e.rateType === "1.5x" : e.rateType !== "1.5x",
+  // One line per date and rate, as the PDFs have always shown it
+  const overtimeLines = (() => {
+    const lines = new Map<
+      string,
+      { date: string; rateType: string; hours: number; amount: number }
+    >();
+    for (const e of overtimeEntries) {
+      const rateType = e.rateType === "1.5x" ? "1.5x" : "2x";
+      const date = dateOnly(e.date);
+      const key = `${date}|${rateType}`;
+      const line = lines.get(key) ?? { date, rateType, hours: 0, amount: 0 };
+      line.hours += Number(e.hours);
+      line.amount += overtimeEntryCost(e, hourly);
+      lines.set(key, line);
+    }
+    return [...lines.values()]
+      .filter((l) => l.hours > 0)
+      .sort(
+        (x, y) =>
+          x.date.localeCompare(y.date) || x.rateType.localeCompare(y.rateType),
       );
-      const hours = entries.reduce((sum, e) => sum + Number(e.hours), 0);
-      return {
-        rateType,
-        hours,
-        rate: hourly * overtimeMultiplier(rateType),
-        amount: entries.reduce(
-          (sum, e) => sum + overtimeEntryCost(e, hourly),
-          0,
-        ),
-        dates: [...new Set(entries.map((e) => dateOnly(e.date)))].sort(),
-      };
-    })
-    .filter((group) => group.hours > 0);
+  })();
+  const overtimeAt = (rateType: string) =>
+    overtimeLines.filter((l) => l.rateType === rateType);
 
   // Which days the stored counts include, spelled out on day invoices
   const combo = days.filter((d) => d.type === "work" && d.alsoTravel).length;
@@ -108,13 +114,13 @@ export const summariseInvoice = ({
       `Work days${includes([combo > 0 && bill !== "travel" && comboNote])}`,
     ),
     line(item("Dark days"), "Dark days"),
-    ...overtimeByRate.map((group) => ({
-      description: `Overtime at ${group.rateType.replace("x", "×")}`,
-      qty: group.hours,
+    ...overtimeLines.map((o) => ({
+      description: `Overtime at ${o.rateType.replace("x", "×")}`,
+      qty: o.hours,
       unit: "h",
-      rate: group.rate,
-      amount: group.amount,
-      dates: group.dates,
+      rate: hourly * overtimeMultiplier(o.rateType),
+      amount: o.amount,
+      dates: [o.date],
     })),
   ].filter((l) => l.qty > 0);
 
@@ -154,9 +160,9 @@ export const summariseInvoice = ({
     },
     dark: { days: item("Dark days").quantity, amount: item("Dark days").cost },
     overtime: {
-      first: overtimeByRate.find((g) => g.rateType === "1.5x")?.hours ?? 0,
-      after: overtimeByRate.find((g) => g.rateType === "2x")?.hours ?? 0,
-      amount: overtimeByRate.reduce((sum, g) => sum + g.amount, 0),
+      first: overtimeAt("1.5x").reduce((n, l) => n + l.hours, 0),
+      after: overtimeAt("2x").reduce((n, l) => n + l.hours, 0),
+      amount: overtimeLines.reduce((n, l) => n + l.amount, 0),
     },
     comboDays: combo,
   };

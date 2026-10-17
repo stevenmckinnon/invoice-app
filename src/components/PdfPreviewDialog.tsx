@@ -23,12 +23,15 @@ import {
 } from "@/components/ui/select";
 import { Spinner } from "@/components/ui/spinner";
 
-type PdfTemplate = "classic" | "modern" | "minimal";
+type PdfTemplate = "caley" | "classic" | "modern" | "minimal";
+
+const TEMPLATE_KEY = "caley-pdf-template";
 
 const TEMPLATE_ITEMS: { value: PdfTemplate; label: string }[] = [
-  { value: "classic", label: "Classic Template" },
-  { value: "modern", label: "Modern Template" },
-  { value: "minimal", label: "Minimal Template" },
+  { value: "caley", label: "Caley" },
+  { value: "classic", label: "Classic" },
+  { value: "modern", label: "Modern" },
+  { value: "minimal", label: "Minimal" },
 ];
 
 interface PdfPreviewDialogProps {
@@ -36,12 +39,7 @@ interface PdfPreviewDialogProps {
   invoiceNumber: string;
   size?: "default" | "sm" | "lg" | "icon";
   variant?:
-    | "default"
-    | "outline"
-    | "ghost"
-    | "destructive"
-    | "secondary"
-    | "link";
+    "default" | "outline" | "ghost" | "destructive" | "secondary" | "link";
   showText?: boolean;
   invoiceDate: Date;
   showName: string;
@@ -59,7 +57,9 @@ export const PdfPreviewDialog = ({
   fullName,
 }: PdfPreviewDialogProps) => {
   const [open, setOpen] = useState(false);
-  const [template, setTemplate] = useState<PdfTemplate>("classic");
+  // Remembers the last template picked. Read on open rather than at render,
+  // so the server and first client render agree.
+  const [template, setTemplate] = useState<PdfTemplate>("caley");
   const [pdfLoading, setPdfLoading] = useState(true);
 
   const downloadInvoicePdf = async () => {
@@ -86,7 +86,17 @@ export const PdfPreviewDialog = ({
       open={open}
       onOpenChange={(next) => {
         setOpen(next);
-        if (next) setPdfLoading(true);
+        if (next) {
+          setPdfLoading(true);
+          try {
+            const saved = localStorage.getItem(TEMPLATE_KEY);
+            if (TEMPLATE_ITEMS.some((t) => t.value === saved)) {
+              setTemplate(saved as PdfTemplate);
+            }
+          } catch {
+            // Storage can be blocked; Caley is the default
+          }
+        }
       }}
     >
       <DialogTrigger render={<Button size={size} variant={variant} />}>
@@ -111,9 +121,14 @@ export const PdfPreviewDialog = ({
               onValueChange={(value) => {
                 setPdfLoading(true);
                 setTemplate(value as PdfTemplate);
+                try {
+                  localStorage.setItem(TEMPLATE_KEY, value as string);
+                } catch {
+                  // Not remembered this time
+                }
               }}
             >
-              <SelectTrigger className="w-[165px]">
+              <SelectTrigger className="w-[140px]">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>

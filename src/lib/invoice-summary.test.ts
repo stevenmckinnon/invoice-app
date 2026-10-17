@@ -57,14 +57,16 @@ describe("summariseInvoice", () => {
     assert.equal(Math.round(shown * 100) / 100, bill.totalAmount);
   });
 
-  it("groups overtime by rate with the dates it fell on", () => {
+  it("lists overtime per date and rate, like the PDFs", () => {
     const { summary } = stored();
     const overtime = summary.labour.filter((l) => l.unit === "h");
     assert.deepEqual(
       overtime.map((l) => [l.description, l.qty, l.dates]),
       [
-        ["Overtime at 1.5×", 4, ["2026-09-16", "2026-09-18"]],
-        ["Overtime at 2×", 4, ["2026-09-16", "2026-09-18"]],
+        ["Overtime at 1.5×", 2, ["2026-09-16"]],
+        ["Overtime at 2×", 1, ["2026-09-16"]],
+        ["Overtime at 1.5×", 2, ["2026-09-18"]],
+        ["Overtime at 2×", 3, ["2026-09-18"]],
       ],
     );
   });

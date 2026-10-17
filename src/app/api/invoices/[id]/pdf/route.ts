@@ -2,10 +2,12 @@ import { headers } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
 
 import { auth } from "@/lib/auth";
+import { parseStoredTerms } from "@/lib/day-invoice";
 import { prisma } from "@/lib/db";
 import {
   generateInvoicePdf,
   type InvoicePdfInput,
+  PDF_TEMPLATES,
   type PdfTemplate,
 } from "@/lib/pdf";
 import { parseDate } from "@/lib/utils";
@@ -24,13 +26,17 @@ export const GET = async (
 
   const { id } = await context.params;
   const { searchParams } = new URL(req.url);
-  const template = (searchParams.get("template") || "classic") as PdfTemplate;
+  const requested = searchParams.get("template");
+  const template: PdfTemplate = PDF_TEMPLATES.includes(requested as PdfTemplate)
+    ? (requested as PdfTemplate)
+    : "caley";
   const invoice = await prisma.invoice.findFirst({
     where: { id, userId: session.user.id },
     include: {
       items: true,
       overtimeEntries: true,
       customExpenseEntries: true,
+      days: { orderBy: { date: "asc" } },
     },
   });
 
@@ -87,6 +93,15 @@ export const GET = async (
       cost: Number(entry.cost),
     })),
     notes: invoice.notes || undefined,
+    terms: parseStoredTerms(invoice.terms),
+    days: invoice.days.map((day) => ({
+      date: day.date.toISOString().slice(0, 10),
+      type: day.type as "work" | "travel" | "dark",
+      alsoTravel: day.alsoTravel as "out" | "home" | null,
+      direction: day.direction as "out" | "home" | null,
+      overtimeHours:
+        day.overtimeHours == null ? null : Number(day.overtimeHours),
+    })),
   };
 
   // Generate PDF on-demand with selected template
