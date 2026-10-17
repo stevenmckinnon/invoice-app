@@ -303,8 +303,9 @@ export const generateCaleyInvoicePdf = async (
                     input.email,
                     input.addressLine1,
                     input.addressLine2,
-                    [input.city, input.state].filter(Boolean).join(", "),
-                    input.postalCode,
+                    [input.city, input.state, input.postalCode]
+                      .filter(Boolean)
+                      .join(", "),
                     input.country,
                   ]}
                 />
@@ -327,10 +328,13 @@ export const generateCaleyInvoicePdf = async (
                         : undefined,
                       input.clientAddress1,
                       input.clientAddress2,
-                      [input.clientCity, input.clientState]
+                      [
+                        input.clientCity,
+                        input.clientState,
+                        input.clientPostalCode,
+                      ]
                         .filter(Boolean)
                         .join(", "),
-                      input.clientPostalCode,
                       input.clientCountry,
                     ]}
                   />
@@ -419,15 +423,15 @@ export const generateCaleyInvoicePdf = async (
             <View
               wrap={false}
               style={{
-                marginTop: 22,
-                paddingTop: 12,
+                marginTop: 16,
+                paddingTop: 10,
                 borderTopWidth: 0.5,
                 borderColor: RULE,
                 flexDirection: "row",
                 flexWrap: "wrap",
               }}
             >
-              <View style={{ width: "33%", marginBottom: 10 }}>
+              <View style={{ width: "33%", marginBottom: 6 }}>
                 <Text style={{ fontSize: 8, fontWeight: "bold", color: INK }}>
                   Pay to
                 </Text>
@@ -436,7 +440,7 @@ export const generateCaleyInvoicePdf = async (
                 </Text>
               </View>
               {payment.map(([label, value]) => (
-                <View key={label} style={{ width: "33%", marginBottom: 10 }}>
+                <View key={label} style={{ width: "33%", marginBottom: 6 }}>
                   <Text style={{ fontSize: 8, fontWeight: "bold", color: INK }}>
                     {label}
                   </Text>
