@@ -572,7 +572,7 @@ const generateMinimalInvoicePdf = async (
           </View>
         </Fixed>
 
-        <View style={{ paddingHorizontal: 60, paddingTop: 60 }}>
+        <View style={{ paddingHorizontal: 60, paddingTop: 44 }}>
           <View
             style={{
               flexDirection: "row",
@@ -591,7 +591,7 @@ const generateMinimalInvoicePdf = async (
             </Text>
           </View>
 
-          <View style={{ marginTop: 24 }}>
+          <View style={{ marginTop: 16 }}>
             {input.showName && (
               <Text
                 style={{ fontSize: 16, fontWeight: "bold", color: textColor, marginBottom: 24 }}
@@ -843,7 +843,7 @@ const generateMinimalInvoicePdf = async (
 
             <View
               style={{
-                marginTop: 32,
+                marginTop: 20,
                 paddingTop: 16,
                 borderTopWidth: 0.5,
                 borderColor: subtleLineColor,
@@ -855,21 +855,21 @@ const generateMinimalInvoicePdf = async (
               <Text style={{ fontSize: 8, color: textColor, marginTop: 8 }}>
                 {`IBAN: ${input.iban}`}
               </Text>
-              <Text style={{ fontSize: 8, color: textColor, marginTop: 4 }}>
+              <Text style={{ fontSize: 8, color: textColor, marginTop: 2 }}>
                 {`SWIFT/BIC: ${input.swiftBic}`}
               </Text>
               {input.accountNumber && (
-                <Text style={{ fontSize: 8, color: textColor, marginTop: 4 }}>
+                <Text style={{ fontSize: 8, color: textColor, marginTop: 2 }}>
                   {`Account Number: ${input.accountNumber}`}
                 </Text>
               )}
               {input.sortCode && (
-                <Text style={{ fontSize: 8, color: textColor, marginTop: 4 }}>
+                <Text style={{ fontSize: 8, color: textColor, marginTop: 2 }}>
                   {`Sort Code: ${input.sortCode}`}
                 </Text>
               )}
               {input.bankAddress && (
-                <Text style={{ fontSize: 8, color: textColor, marginTop: 4 }}>
+                <Text style={{ fontSize: 8, color: textColor, marginTop: 2 }}>
                   {`Bank Address: ${input.bankAddress}`}
                 </Text>
               )}
