@@ -83,7 +83,7 @@ export const AppRail = () => {
   // px-3 + items-start (not items-center) keeps every icon at the same x in
   // both widths, so the width transition only ever reveals labels
   return (
-    <aside className="rail-expanded:w-56 rail-expanded:items-stretch fixed inset-y-0 left-0 z-40 hidden w-16 flex-col items-start gap-4 overflow-x-clip px-3 py-4 transition-[width] duration-200 ease-out motion-reduce:transition-none md:flex">
+    <aside className="rail-expanded:w-56 rail-expanded:items-stretch fixed inset-y-0 left-[env(safe-area-inset-left)] z-40 hidden w-16 flex-col items-start gap-4 overflow-x-clip px-3 py-4 transition-[width] duration-200 ease-out motion-reduce:transition-none md:flex">
       <Link
         href="/dashboard"
         aria-label="Caley dashboard"
