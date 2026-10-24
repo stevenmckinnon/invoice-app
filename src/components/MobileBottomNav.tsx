@@ -85,22 +85,25 @@ export const MobileBottomNav = () => {
                 stiffness: 300,
                 damping: 30,
               }}
-              className="border-border bg-card/90 pointer-events-auto flex items-center gap-2 rounded-full border p-2 shadow-lg backdrop-blur-xl"
+              className="border-border bg-card/90 pointer-events-auto flex max-w-[calc(100%-1rem)] items-center gap-2 rounded-full border p-2 shadow-lg backdrop-blur-xl"
             >
               <LayoutGroup>
-                <ul className="m-0 flex list-none items-center gap-1 p-0">
+                <ul className="m-0 flex min-w-0 list-none items-center gap-1 p-0">
                   {navItems.slice(0, 2).map((item) => {
                     const isActive = item.isActive(pathname);
                     const Icon = item.icon;
 
                     return (
-                      <li key={item.href} className="relative z-10">
+                      <li
+                        key={item.href}
+                        className="relative z-10 w-24 min-w-0 shrink"
+                      >
                         <Link
                           href={item.href}
                           onClick={() => hapticLight()}
                           onTouchStart={prefetchByHref[item.href]}
                           className={cn(
-                            "relative flex w-24 items-center justify-center gap-2 rounded-full py-2 transition-colors duration-200",
+                            "relative flex w-full items-center justify-center gap-2 rounded-full py-2 transition-colors duration-200",
                             !isActive &&
                               "text-muted-foreground hover:bg-muted hover:text-foreground",
                             isActive && "text-background",
@@ -133,12 +136,15 @@ export const MobileBottomNav = () => {
                   })}
 
                   {/* AI chat — centre button */}
-                  <li key="ai-chat" className="relative z-10">
+                  <li
+                    key="ai-chat"
+                    className="relative z-10 w-24 min-w-0 shrink"
+                  >
                     <Link
                       href="/chat"
                       onClick={() => hapticLight()}
                       className={cn(
-                        "relative flex w-24 flex-col items-center justify-center gap-1 rounded-full py-2 transition-colors duration-200",
+                        "relative flex w-full flex-col items-center justify-center gap-1 rounded-full py-2 transition-colors duration-200",
                         pathname === "/chat"
                           ? "text-background"
                           : "text-muted-foreground hover:bg-muted hover:text-foreground",
@@ -171,13 +177,16 @@ export const MobileBottomNav = () => {
                     const Icon = item.icon;
 
                     return (
-                      <li key={item.href} className="relative z-10">
+                      <li
+                        key={item.href}
+                        className="relative z-10 w-24 min-w-0 shrink"
+                      >
                         <Link
                           href={item.href}
                           onClick={() => hapticLight()}
                           onTouchStart={prefetchByHref[item.href]}
                           className={cn(
-                            "relative flex w-24 items-center justify-center gap-2 rounded-full py-2 transition-colors duration-200",
+                            "relative flex w-full items-center justify-center gap-2 rounded-full py-2 transition-colors duration-200",
                             !isActive &&
                               "text-muted-foreground hover:bg-muted hover:text-foreground",
                             isActive && "text-background",
