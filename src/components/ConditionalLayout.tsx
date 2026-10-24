@@ -65,7 +65,7 @@ export const ConditionalLayout = ({ children }: ConditionalLayoutProps) => {
           canvas, so white cards inside it keep their surface contrast */}
       <main
         ref={panelRef}
-        className="md:bg-background dark:md:border-border mx-auto min-h-dvh pt-12 md:fixed md:inset-y-2 md:right-2 md:left-16 rail-expanded:left-56 md:transition-[left] md:duration-200 md:ease-out motion-reduce:transition-none md:min-h-0 md:overflow-y-auto md:rounded-2xl md:border md:border-transparent md:pt-0 md:shadow-sm dark:md:shadow-none"
+        className="md:bg-background dark:md:border-border rail-expanded:left-[calc(14rem+env(safe-area-inset-left))] mx-auto min-h-dvh pt-12 motion-reduce:transition-none md:fixed md:inset-y-2 md:right-[max(0.5rem,env(safe-area-inset-right))] md:left-[calc(4rem+env(safe-area-inset-left))] md:min-h-0 md:overflow-y-auto md:rounded-2xl md:border md:border-transparent md:pt-0 md:shadow-sm md:transition-[left] md:duration-200 md:ease-out dark:md:shadow-none"
       >
         {/* Bottom-nav taps go through here (dashboard/invoices/clients/chat).
             Deliberately not wrapped in ViewTransition: it triggers a native
