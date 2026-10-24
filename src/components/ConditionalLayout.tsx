@@ -59,7 +59,7 @@ export const ConditionalLayout = ({ children }: ConditionalLayoutProps) => {
     <ChatProvider>
       {/* From md up the rail carries navigation; the header is mobile chrome */}
       <AppHeader className="md:hidden" />
-      <div className="bg-sidebar fixed inset-0 hidden md:block" />
+      <div className="app-frame bg-sidebar fixed inset-0 hidden md:block" />
       <AppRail />
       {/* Inset panel: the frame is bg-sidebar and the panel is the usual
           canvas, so white cards inside it keep their surface contrast */}

@@ -265,6 +265,15 @@
     padding-right: env(safe-area-inset-right);
   }
 
+  /* The frame layer is fixed to the layout viewport, so the body's safe-area
+     padding can leave a strip of canvas below it in the installed app. Paint
+     that canvas the frame colour. */
+  @media (min-width: 768px) {
+    html:has(.app-frame) {
+      background-color: var(--sidebar);
+    }
+  }
+
   /* iOS-style smooth scrolling */
   html {
     -webkit-overflow-scrolling: touch;

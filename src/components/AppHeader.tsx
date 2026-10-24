@@ -66,7 +66,7 @@ export const AppHeader = ({ className }: { className?: string }) => {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, ease: "easeOut" }}
       className={cn(
-        "fixed top-0 right-[env(safe-area-inset-right)] left-[env(safe-area-inset-left)] z-50 mx-auto flex w-full max-w-6xl justify-center transition-transform duration-300 ease-in-out md:top-5 md:w-auto",
+        "fixed top-0 right-[env(safe-area-inset-right)] left-[env(safe-area-inset-left)] z-50 mx-auto flex max-w-6xl justify-center transition-transform duration-300 ease-in-out md:top-5 md:w-auto",
         // No transform at all while shown: a layer that sits at translateY(0)
         // can be rasterised below device resolution on iOS, which softens
         // everything in it
