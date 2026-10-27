@@ -27,6 +27,7 @@ struct RootView: View {
 
     var body: some View {
         content
+            .animation(.easeOut(duration: 0.25), value: phase)
             // Whatever the reason for signing out (button, expired session), drop the cached invoices
             .onChange(of: auth.isSignedIn) { _, signedIn in
                 if !signedIn {
@@ -36,18 +37,39 @@ struct RootView: View {
             }
     }
 
+    private var phase: Int {
+        switch auth.state {
+        case .launching: 0
+        case .signedOut: 1
+        case .signedIn: 2
+        }
+    }
+
     @ViewBuilder
     private var content: some View {
         switch auth.state {
         case .launching:
-            ProgressView()
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .background(Color.canvas)
+            LaunchView().transition(.opacity)
         case .signedOut:
-            SignInView()
+            SignInView().transition(.opacity)
         case .signedIn:
-            MainTabView()
+            MainTabView().transition(.opacity)
         }
+    }
+}
+
+/// Matches the system launch screen (same colour, same mark, same size and place) so starting the
+/// app reads as one continuous screen while the saved login is checked, then fades into the app.
+struct LaunchView: View {
+    var body: some View {
+        Image("LaunchMark")
+            .resizable()
+            .scaledToFit()
+            .frame(width: 96, height: 96)
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .background(Color("LaunchBackground").ignoresSafeArea())
+            .accessibilityLabel("Caley")
+            .accessibilityAddTraits(.updatesFrequently)
     }
 }
 

@@ -36,7 +36,7 @@ struct DevServerView: View {
                 } header: {
                     Text("Dev server")
                 } footer: {
-                    Text("The Mac running pnpm dev. If the .local name won't connect, use the Mac's IP address and port 3000.")
+                    Text("Phones use https://caley.app by default. To use your Mac's dev server instead, enter its IP address and port, like 192.168.1.97:3000.")
                 }
 
                 Section {

@@ -130,11 +130,13 @@ struct InvoiceDetailView: View {
 
     private func statusMenu(_ inv: InvoiceDetail) -> some View {
         Menu {
-            ForEach(InvoiceStatus.allCases) { status in
-                Button {
-                    Task { await change(to: status, inv) }
-                } label: {
-                    if status == inv.status { Label(status.label, systemImage: "checkmark") } else { Text(status.label) }
+            // A picker, so iOS draws the tick and keeps every row aligned around it
+            Picker("Status", selection: Binding(
+                get: { inv.status },
+                set: { status in Task { await change(to: status, inv) } }
+            )) {
+                ForEach(InvoiceStatus.allCases) { status in
+                    Label(status.label, systemImage: status.symbol).tag(status)
                 }
             }
         } label: {

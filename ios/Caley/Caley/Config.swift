@@ -1,13 +1,16 @@
 import Foundation
 
 enum Config {
-    /// Where the debug build looks for `pnpm dev` by default: the simulator reaches the Mac at
-    /// localhost, a real phone needs the Mac's Bonjour name (stable across DHCP changes).
+    static let production = URL(string: "https://caley.app")!
+
+    /// Where a Debug build points by default. The simulator reaches `pnpm dev` at localhost; a
+    /// phone talks to production like a Release build. To use the Mac's dev server from a phone,
+    /// long-press the wordmark on the sign-in screen and enter its IP.
     static let defaultDebugURL: URL = {
         #if targetEnvironment(simulator)
         URL(string: "http://localhost:3000")!
         #else
-        URL(string: "http://Steves-MacBook-Pro.local:3000")!
+        production
         #endif
     }()
 
@@ -48,7 +51,7 @@ enum Config {
         #if DEBUG
         debugOverride ?? defaultDebugURL
         #else
-        URL(string: "https://caley.app")!
+        production
         #endif
     }
 }
