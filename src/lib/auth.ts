@@ -1,6 +1,7 @@
 
 import { betterAuth } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
+import { bearer } from "better-auth/plugins";
 import { networkInterfaces } from "node:os";
 import { Resend } from "resend";
 
@@ -103,6 +104,10 @@ export const auth = betterAuth({
       }
     },
   },
+  // The iOS app signs in with email + password, keeps the `set-auth-token`
+  // response header in the Keychain and sends it back as a Bearer token. Web
+  // sessions are unchanged.
+  plugins: [bearer()],
   session: {
     // Serve getSession from a signed cookie instead of hitting the DB on
     // every request. Revocations can lag by up to maxAge.
