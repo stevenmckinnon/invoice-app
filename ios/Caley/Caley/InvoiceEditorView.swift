@@ -7,6 +7,7 @@ struct InvoiceEditorView: View {
     @Environment(AuthStore.self) private var auth
     @Environment(\.dismiss) private var dismiss
     @State private var model: InvoiceEditorModel
+    @State private var pickingDate = false
     let onSaved: () -> Void
 
     init(editing: InvoiceDetail?, onSaved: @escaping () -> Void) {
@@ -42,6 +43,7 @@ struct InvoiceEditorView: View {
                 ToolbarItem(placement: .cancellationAction) { Button("Cancel") { dismiss() } }
             }
             .safeAreaInset(edge: .bottom) { saveBar }
+            .sheet(isPresented: $pickingDate) { datePickerSheet }
             .task { await model.load(auth: auth) }
             .task(id: model.previewKey) { await model.refreshPreview(auth: auth) }
         }
@@ -82,18 +84,54 @@ struct InvoiceEditorView: View {
             }
 
             field("Job name", text: $model.showName, prompt: "e.g. WWE: Clash at the Castle")
-            AdaptiveRow(alignment: .bottom) {
+            AdaptiveRow {
                 field("Invoice number", text: $model.invoiceNumber, prompt: "INV-0001")
-                VStack(alignment: .leading, spacing: 6) {
-                    Text("Date").font(.caption).foregroundStyle(.secondary)
-                    DatePicker("Date", selection: $model.invoiceDate, displayedComponents: .date)
-                        .labelsHidden()
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                }
+                dateField
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .cardStyle()
+    }
+
+    private var invoiceDateText: String {
+        var style = Date.FormatStyle.dateTime.day().month(.abbreviated).year()
+        style.locale = Locale(identifier: "en_GB")
+        return model.invoiceDate.formatted(style)
+    }
+
+    /// Same shape as the text fields; the system's compact picker draws its own grey pill, which
+    /// looked out of place beside them. The picker opens in a sheet instead.
+    private var dateField: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Text("Date").font(.caption).foregroundStyle(.secondary)
+            Button { pickingDate = true } label: {
+                HStack {
+                    Text(invoiceDateText).foregroundStyle(.primary)
+                    Spacer(minLength: 8)
+                    Image(systemName: "calendar").foregroundStyle(.secondary)
+                }
+                .padding(12)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .background(Color.primary.opacity(0.05), in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+            }
+            .buttonStyle(RowPressStyle())
+            .accessibilityLabel("Invoice date, \(invoiceDateText)")
+            .accessibilityHint("Opens a calendar")
+        }
+    }
+
+    private var datePickerSheet: some View {
+        NavigationStack {
+            DatePicker("Invoice date", selection: $model.invoiceDate, displayedComponents: .date)
+                .datePickerStyle(.graphical)
+                .labelsHidden()
+                .padding(.horizontal)
+                .frame(maxHeight: .infinity, alignment: .top)
+                .navigationTitle("Invoice date")
+                .navigationBarTitleDisplayMode(.inline)
+                .toolbar { ToolbarItem(placement: .confirmationAction) { Button("Done") { pickingDate = false } } }
+        }
+        .presentationDetents([.medium])
     }
 
     private var clientName: String {

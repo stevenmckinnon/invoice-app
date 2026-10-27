@@ -125,6 +125,10 @@ struct SignInView: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(.horizontal, 24)
         .accessibilityElement(children: .combine)
+        #if DEBUG
+        // Developer shortcut, deliberately not a visible control
+        .onLongPressGesture(minimumDuration: 1) { showingServer = true }
+        #endif
     }
 
     private var pitch: some View {
@@ -198,16 +202,6 @@ struct SignInView: View {
                 .font(.footnote.weight(.medium))
                 .foregroundStyle(.white.opacity(0.7))
                 .padding(.top, 4)
-
-            #if DEBUG
-            Button { showingServer = true } label: {
-                Label(Config.baseURL.host() ?? "Server", systemImage: "server.rack")
-                    .font(.caption)
-                    .foregroundStyle(.white.opacity(0.45))
-                    .frame(minHeight: 44)
-            }
-            .accessibilityLabel("Dev server: \(Config.baseURL.absoluteString)")
-            #endif
         }
         .padding(.horizontal, 20)
         .padding(.top, 24)
