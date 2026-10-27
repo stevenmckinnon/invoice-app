@@ -42,7 +42,7 @@ struct RootView: View {
         case .launching:
             ProgressView()
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .background(Color.canvas)
+                .background(Color.canvas.ignoresSafeArea())
         case .signedOut:
             SignInView()
         case .signedIn:

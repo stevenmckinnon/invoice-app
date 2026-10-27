@@ -42,7 +42,7 @@ struct ProfileEditorView: View {
             if let loadError {
                 EmptyState(title: "Couldn't load your details", message: loadError, symbol: "wifi.exclamationmark")
             } else if !loaded {
-                ProgressView().padding(.top, 80)
+                ProgressView().frame(maxWidth: .infinity).padding(.top, 80)
             } else {
                 form
             }

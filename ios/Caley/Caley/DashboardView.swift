@@ -46,7 +46,7 @@ struct DashboardView: View {
         NavigationStack {
             ScrollView {
                 if !store.loaded && store.error == nil {
-                    ProgressView().padding(.top, 80)
+                    ProgressView().frame(maxWidth: .infinity).padding(.top, 80)
                 } else if let error = store.error, !store.loaded {
                     EmptyState(title: "Couldn't load", message: error, symbol: "wifi.exclamationmark")
                 } else {
