@@ -11,7 +11,10 @@ final class AppLock {
     static let grace: TimeInterval = 30
 
     var enabled: Bool {
-        didSet { UserDefaults.standard.set(enabled, forKey: Self.key) }
+        didSet {
+            UserDefaults.standard.set(enabled, forKey: Self.key)
+            WidgetSync.lockChanged(enabled: enabled)
+        }
     }
     /// Starts locked when the lock is on, so a cold launch asks before showing anything
     private(set) var locked: Bool
@@ -24,6 +27,7 @@ final class AppLock {
         let on = UserDefaults.standard.bool(forKey: Self.key)
         enabled = on
         locked = on
+        SharedStore.hideAmounts = on
     }
 
     /// "Face ID", "Touch ID" or "Passcode", whichever this phone has
