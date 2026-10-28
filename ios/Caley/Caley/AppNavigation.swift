@@ -1,7 +1,7 @@
 import SwiftUI
 
 enum AppTab: Hashable {
-    case dashboard, invoices, clients, account
+    case dashboard, invoices, assistant, clients, account
 }
 
 /// Which tab is showing, shared so one screen can send you to another (the dashboard's "Add a client")
