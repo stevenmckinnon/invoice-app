@@ -112,6 +112,21 @@ final class InvoiceEditorModel {
         return list
     }
 
+    /// Where the calendar import starts looking: around the days already painted, else the four weeks
+    /// before the invoice date
+    var importRange: (start: Date, end: Date) {
+        let dates = painted.keys.sorted()
+        if let first = dates.first.flatMap(DateOnly.parse), let last = dates.last.flatMap(DateOnly.parse) {
+            let calendar = Calendar.current
+            return (calendar.date(byAdding: .day, value: -7, to: first) ?? first, calendar.date(byAdding: .day, value: 7, to: last) ?? last)
+        }
+        return (Calendar.current.date(byAdding: .day, value: -28, to: invoiceDate) ?? invoiceDate, invoiceDate)
+    }
+
+    func addWorkDays(_ dates: [String]) {
+        painted = CalendarImport.filling(painted, dates: dates)
+    }
+
     // MARK: Loading
 
     func load(auth: AuthStore) async {
