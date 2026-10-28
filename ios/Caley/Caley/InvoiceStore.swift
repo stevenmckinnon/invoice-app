@@ -11,6 +11,7 @@ final class InvoiceStore {
     /// Forget everything: on sign-out the next person to sign in must not see this one's invoices
     func reset() {
         WidgetSync.clear()
+        Reminders.clear()
         prefetching?.cancel()
         invoices = []
         loaded = false
@@ -23,7 +24,10 @@ final class InvoiceStore {
             error = nil
             loaded = true
             // Only a live answer goes to the widgets: a saved copy would just show them old numbers again
-            if !Connectivity.shared.showingSavedCopy { WidgetSync.publish(invoices) }
+            if !Connectivity.shared.showingSavedCopy {
+                WidgetSync.publish(invoices)
+                Reminders.sync(invoices)
+            }
             // Only from a live answer: a saved list would just re-fetch what is already saved
             if !Connectivity.shared.showingSavedCopy { prefetchRecent(auth: auth) }
         } catch APIError.unauthorized {
@@ -52,6 +56,7 @@ final class InvoiceStore {
             try await auth.api.deleteInvoice(id: id)
             invoices.removeAll { $0.id == id }
             WidgetSync.publish(invoices)
+            Reminders.sync(invoices)
             Haptics.success()
             return true
         } catch {
@@ -70,6 +75,7 @@ final class InvoiceStore {
         do {
             try await auth.api.setStatus(status, id: id)
             WidgetSync.publish(invoices)
+            Reminders.sync(invoices)
             Haptics.success()
             return true
         } catch {

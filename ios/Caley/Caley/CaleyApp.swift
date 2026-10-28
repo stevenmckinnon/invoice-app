@@ -9,6 +9,8 @@ struct CaleyApp: App {
     @State private var lock = AppLock()
     @State private var navigation = AppNavigation()
 
+    init() { Reminders.install() }
+
     var body: some Scene {
         WindowGroup {
             RootView()
