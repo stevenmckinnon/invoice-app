@@ -85,12 +85,18 @@ final class AppLock {
         return true
     }
 
+    /// The completion-handler form, wrapped by hand: the `async` overload of `evaluatePolicy` makes the
+    /// runtime report "unsafeForcedSync called from Swift Concurrent context" when it is awaited from
+    /// a main-actor class, because LocalAuthentication answers on its own queue.
     private func authenticate() async -> Bool {
-        let context = LAContext()
-        do {
-            return try await context.evaluatePolicy(.deviceOwnerAuthentication, localizedReason: "Unlock your invoices")
-        } catch {
-            return false
+        await Self.evaluate(LAContext())
+    }
+
+    private nonisolated static func evaluate(_ context: LAContext) async -> Bool {
+        await withCheckedContinuation { continuation in
+            context.evaluatePolicy(.deviceOwnerAuthentication, localizedReason: "Unlock your invoices") { success, _ in
+                continuation.resume(returning: success)
+            }
         }
     }
 }
