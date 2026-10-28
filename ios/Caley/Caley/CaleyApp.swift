@@ -9,7 +9,10 @@ struct CaleyApp: App {
     @State private var lock = AppLock()
     @State private var navigation = AppNavigation()
 
-    init() { Reminders.install() }
+    init() {
+        Reminders.install()
+        BackgroundRefresh.register()
+    }
 
     var body: some Scene {
         WindowGroup {
@@ -59,7 +62,10 @@ struct RootView: View {
                 }
             }
             .animation(.easeOut(duration: 0.2), value: lock.locked)
-            .onChange(of: scenePhase) { _, phase in lock.scenePhaseChanged(phase) }
+            .onChange(of: scenePhase) { _, phase in
+                lock.scenePhaseChanged(phase)
+                if phase == .background { BackgroundRefresh.schedule() }
+            }
             // Whatever the reason for signing out (button, expired session), drop the cached invoices
             .onChange(of: auth.isSignedIn) { _, signedIn in
                 if !signedIn {

@@ -1,5 +1,6 @@
 import SwiftUI
 import UserNotifications
+import BackgroundTasks
 
 /// One local notification the app wants scheduled
 struct PlannedReminder: Equatable {
@@ -78,19 +79,28 @@ enum Reminders {
     static func enable() async -> Bool {
         let granted = await Self.authorize()
         UserDefaults.standard.set(granted, forKey: key)
-        if granted { await rebuild() }
+        if granted {
+            await rebuild()
+            BackgroundRefresh.schedule()
+        }
         return granted
     }
 
     static func disable() async {
         UserDefaults.standard.set(false, forKey: key)
+        BackgroundRefresh.cancel()
         await removeOurs()
     }
 
     /// The invoices changed (a load, a status change, a delete)
     static func sync(_ invoices: [InvoiceListItem]) {
+        Task { await apply(invoices) }
+    }
+
+    /// The same, for a caller that has to wait for the reminders to be in place (the background refresh)
+    static func apply(_ invoices: [InvoiceListItem]) async {
         latest = invoices
-        Task { await rebuild() }
+        await rebuild()
     }
 
     /// The Face ID lock changed, so what the text may say changed with it
@@ -99,6 +109,7 @@ enum Reminders {
     /// Signing out: the next person must not get this one's reminders
     static func clear() {
         latest = []
+        BackgroundRefresh.cancel()
         Task { await removeOurs() }
     }
 
@@ -166,5 +177,51 @@ final class NotificationRouter: NSObject, UNUserNotificationCenterDelegate {
         let link = (response.notification.request.content.userInfo["url"] as? String).flatMap(URL.init(string:))
         completionHandler()
         if let link { Task { @MainActor in LinkBridge.shared.deliver(link) } }
+    }
+}
+
+/// Lets iOS wake the app now and then to fetch the invoices, so a reminder stops once an invoice is
+/// paid somewhere else (the website) without you opening Caley. iOS decides when, and how often:
+/// it is a hint (`earliestBeginDate`), more regular the more you use the app, and never promised.
+enum BackgroundRefresh {
+    static let identifier = "com.stevemckinnon.caley.refresh"
+    private static let gap: TimeInterval = 6 * 3600
+
+    /// Must run before the app finishes launching
+    static func register() {
+        BGTaskScheduler.shared.register(forTaskWithIdentifier: identifier, using: nil) { task in
+            guard let task = task as? BGAppRefreshTask else { return }
+            run(task)
+        }
+    }
+
+    @MainActor
+    static func schedule() {
+        guard Reminders.isEnabled else { return }
+        let request = BGAppRefreshTaskRequest(identifier: identifier)
+        request.earliestBeginDate = Date(timeIntervalSinceNow: gap)
+        try? BGTaskScheduler.shared.submit(request)
+    }
+
+    static func cancel() {
+        BGTaskScheduler.shared.cancel(taskRequestWithIdentifier: identifier)
+    }
+
+    private static func run(_ task: BGAppRefreshTask) {
+        let work = Task { @MainActor in
+            schedule()
+            var ok = true
+            if Reminders.isEnabled, let token = Keychain.read() {
+                switch await InvoiceFetcher.fetch(token: token) {
+                case .success(let invoices):
+                    await Reminders.apply(invoices)
+                    WidgetSync.publish(invoices)
+                case .signedOut: break
+                case .failed: ok = false
+                }
+            }
+            task.setTaskCompleted(success: ok)
+        }
+        task.expirationHandler = { work.cancel() }
     }
 }

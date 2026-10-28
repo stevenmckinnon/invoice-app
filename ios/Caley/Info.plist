@@ -4,6 +4,14 @@
 <dict>
 	<key>CaleyKeychainGroup</key>
 	<string>$(AppIdentifierPrefix)com.stevemckinnon.caley.shared</string>
+	<key>BGTaskSchedulerPermittedIdentifiers</key>
+	<array>
+		<string>com.stevemckinnon.caley.refresh</string>
+	</array>
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>fetch</string>
+	</array>
 	<key>CFBundleURLTypes</key>
 	<array>
 		<dict>

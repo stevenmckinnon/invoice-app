@@ -123,8 +123,10 @@ final class InvoiceEditorModel {
         return (Calendar.current.date(byAdding: .day, value: -28, to: invoiceDate) ?? invoiceDate, invoiceDate)
     }
 
-    func addWorkDays(_ dates: [String]) {
+    /// A job name is only suggested when you haven't typed one
+    func addWorkDays(_ dates: [String], suggestedName: String? = nil) {
         painted = CalendarImport.filling(painted, dates: dates)
+        if showName.trimmingCharacters(in: .whitespaces).isEmpty, let suggestedName { showName = suggestedName }
     }
 
     // MARK: Loading
