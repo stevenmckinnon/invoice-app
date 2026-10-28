@@ -59,7 +59,11 @@ struct DashboardView: View {
             .toolbarTitleDisplayMode(sizeClass == .regular ? .inline : .large)
             .navigationDestination(for: String.self) { InvoiceDetailView(id: $0) }
             .toolbar {
-                ToolbarItem(placement: .topBarTrailing) { yearMenu }
+                // On a wide screen the year picker joins the header row below instead: a toolbar item
+                // isn't kept inside the content's width on every wide layout (a foldable's side tab bar)
+                if sizeClass != .regular {
+                    ToolbarItem(placement: .topBarTrailing) { yearMenu }
+                }
 
             }
             .refreshable { await store.load(auth: auth) }
@@ -137,6 +141,10 @@ struct DashboardView: View {
                         .font(.largeTitle.bold())
                         .accessibilityAddTraits(.isHeader)
                     Spacer(minLength: 12)
+                    yearMenu
+                        .padding(.horizontal, 16)
+                        .frame(minHeight: 44)
+                        .background(Color.card, in: Capsule())
                     Button(action: startInvoice) {
                         Label("New invoice", systemImage: "plus")
                             .font(.headline)
