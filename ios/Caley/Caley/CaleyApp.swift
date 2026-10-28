@@ -5,6 +5,7 @@ struct CaleyApp: App {
     @State private var auth = AuthStore()
     @State private var store = InvoiceStore()
     @State private var clients = ClientStore()
+    @State private var chat = ChatStore()
     @State private var navigation = AppNavigation()
 
     var body: some Scene {
@@ -13,6 +14,7 @@ struct CaleyApp: App {
                 .environment(auth)
                 .environment(store)
                 .environment(clients)
+                .environment(chat)
                 .environment(navigation)
                 .tint(.brand)
                 .task { await auth.restore() }
@@ -24,6 +26,8 @@ struct RootView: View {
     @Environment(AuthStore.self) private var auth
     @Environment(InvoiceStore.self) private var store
     @Environment(ClientStore.self) private var clients
+    @Environment(ChatStore.self) private var chat
+    @Environment(AppNavigation.self) private var navigation
 
     var body: some View {
         content
@@ -33,6 +37,9 @@ struct RootView: View {
                 if !signedIn {
                     store.reset()
                     clients.reset()
+                    chat.reset()
+                    navigation.tab = .dashboard
+                    navigation.accountPath = []
                 }
             }
     }
@@ -85,9 +92,9 @@ struct MainTabView: View {
             InvoiceListView()
                 .tabItem { Label("Invoices", systemImage: "doc.text") }
                 .tag(AppTab.invoices)
-            ClientsView()
-                .tabItem { Label("Clients", systemImage: "person.2") }
-                .tag(AppTab.clients)
+            ChatView()
+                .tabItem { Label("Assistant", systemImage: "sparkles") }
+                .tag(AppTab.assistant)
             AccountView()
                 .tabItem { Label("Account", systemImage: "person.crop.circle") }
                 .tag(AppTab.account)

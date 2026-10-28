@@ -158,6 +158,50 @@ struct APIClient {
         let _: Ignored = try await send("api/invoices/\(id)", method: "PUT", body: payload)
     }
 
+    // MARK: Assistant
+
+    /// Sends the conversation and yields the response as it streams. The server keeps no history:
+    /// every request carries the whole conversation, as the web chat does.
+    func chat(_ messages: [ChatMessage]) -> AsyncThrowingStream<ChatChunk, Error> {
+        AsyncThrowingStream { continuation in
+            let task = Task {
+                do {
+                    var req = try request("api/chat", method: "POST",
+                                          body: JSONValue.object(["messages": .array(messages.map(\.wire))]))
+                    // A reply can pause while the model works through a tool call
+                    req.timeoutInterval = 120
+                    let (bytes, response) = try await Self.session.bytes(for: req)
+                    guard let http = response as? HTTPURLResponse else { throw APIError.server("Bad response") }
+                    if http.statusCode == 401 { throw APIError.unauthorized }
+                    guard (200..<300).contains(http.statusCode) else {
+                        var body = Data()
+                        for try await byte in bytes { body.append(byte); if body.count > 4096 { break } }
+                        // The rate limiter replies with a sentence meant to be shown as it is
+                        let message = (try? JSONSerialization.jsonObject(with: body) as? [String: Any])
+                            .flatMap { $0["message"] as? String }
+                        throw APIError.server(message ?? "The assistant isn't available (\(http.statusCode)).")
+                    }
+                    for try await line in bytes.lines {
+                        guard line.hasPrefix("data:") else { continue }
+                        let payload = line.dropFirst(5).trimmingCharacters(in: .whitespaces)
+                        if payload == "[DONE]" { break }
+                        guard let data = payload.data(using: .utf8),
+                              let json = try? decoder.decode(JSONValue.self, from: data) else { continue }
+                        continuation.yield(ChatChunk(json))
+                    }
+                    continuation.finish()
+                } catch let error as APIError {
+                    continuation.finish(throwing: error)
+                } catch is CancellationError {
+                    continuation.finish()
+                } catch {
+                    continuation.finish(throwing: (error as? URLError)?.code == .cancelled ? CancellationError() : APIError.network(error))
+                }
+            }
+            continuation.onTermination = { _ in task.cancel() }
+        }
+    }
+
     /// Downloads the PDF to a temp file named after the invoice, so the share
     /// sheet offers a sensible filename.
     func pdf(id: String, invoiceNumber: String) async throws -> URL {
