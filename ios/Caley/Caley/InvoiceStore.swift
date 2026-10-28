@@ -6,9 +6,11 @@ final class InvoiceStore {
     private(set) var invoices: [InvoiceListItem] = []
     private(set) var loaded = false
     var error: String?
+    private var prefetching: Task<Void, Never>?
 
     /// Forget everything: on sign-out the next person to sign in must not see this one's invoices
     func reset() {
+        prefetching?.cancel()
         invoices = []
         loaded = false
         error = nil
@@ -19,10 +21,25 @@ final class InvoiceStore {
             invoices = try await auth.api.invoices()
             error = nil
             loaded = true
+            // Only from a live answer: a saved list would just re-fetch what is already saved
+            if !Connectivity.shared.showingSavedCopy { prefetchRecent(auth: auth) }
         } catch APIError.unauthorized {
             auth.sessionExpired()
         } catch {
             self.error = error.localizedDescription
+        }
+    }
+
+    /// Opens the latest few invoices in the background, so they are saved for a place with no signal
+    private func prefetchRecent(auth: AuthStore) {
+        prefetching?.cancel()
+        let ids = invoices.sorted { ($0.date ?? .distantPast) > ($1.date ?? .distantPast) }.prefix(8).map(\.id)
+        let api = auth.api
+        prefetching = Task(priority: .utility) {
+            for id in ids {
+                if Task.isCancelled { return }
+                _ = try? await api.invoice(id: id)
+            }
         }
     }
 

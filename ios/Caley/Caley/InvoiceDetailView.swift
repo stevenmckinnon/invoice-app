@@ -32,6 +32,13 @@ struct InvoiceDetailView: View {
         .navigationTitle(invoice?.invoiceNumber ?? "Invoice")
         .navigationBarTitleDisplayMode(.inline)
         .task { await load() }
+        // Back online: replace the saved copy on screen with the live invoice
+        .onChange(of: Connectivity.shared.showingSavedCopy) { _, showing in
+            if !showing {
+                pdfError = nil
+                Task { await load() }
+            }
+        }
         .sheet(item: $shareURL) { ShareSheet(url: $0).presentationDetents([.medium, .large]) }
         .quickLookPreview($previewURL)
         .sheet(isPresented: $duplicating) {
@@ -100,7 +107,9 @@ struct InvoiceDetailView: View {
                     "Delete \(inv.invoiceNumber)?", isPresented: $confirmingDelete, titleVisibility: .visible
                 ) {
                     Button("Delete invoice", role: .destructive) {
-                        Task { if await store.delete(id: inv.id, auth: auth) { dismiss() } }
+                        Task {
+                            if await store.delete(id: inv.id, auth: auth) { dismiss() } else { pdfError = store.error }
+                        }
                     }
                 } message: {
                     Text(inv.status == .draft
@@ -113,6 +122,7 @@ struct InvoiceDetailView: View {
 
     private func fetchPDF(_ inv: InvoiceDetail) async -> URL? {
         pdfBusy = true
+        pdfError = nil
         defer { pdfBusy = false }
         do {
             return try await auth.api.pdf(id: inv.id, invoiceNumber: inv.invoiceNumber)
@@ -173,10 +183,13 @@ struct InvoiceDetailView: View {
 
     private func change(to status: InvoiceStatus, _ inv: InvoiceDetail) async {
         guard status != inv.status else { return }
+        pdfError = nil
         let previous = invoice?.status
         invoice?.status = status
         if await store.setStatus(status, for: inv.id, auth: auth) == false {
             invoice?.status = previous ?? inv.status
+            // Offline, say so: the change would otherwise just flip back with no explanation
+            pdfError = store.error
         }
     }
 

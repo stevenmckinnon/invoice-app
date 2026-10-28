@@ -6,11 +6,6 @@
 	objectVersion = 70;
 	objects = {
 
-/* Begin PBXFileReference section */
-		A00000000000000000000004 /* Caley.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Caley.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		A00000000000000000000010 /* CaleyTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = CaleyTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-/* End PBXFileReference section */
-
 /* Begin PBXContainerItemProxy section */
 		A00000000000000000000017 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -20,6 +15,11 @@
 			remoteInfo = Caley;
 		};
 /* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		A00000000000000000000004 /* Caley.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Caley.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		A00000000000000000000010 /* CaleyTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = CaleyTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+/* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		A00000000000000000000009 /* Caley */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = Caley; sourceTree = "<group>"; };
