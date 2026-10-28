@@ -19,9 +19,22 @@ struct CaleyApp: App {
                 .environment(lock)
                 .environment(navigation)
                 .tint(.brand)
-                .onOpenURL { url in if auth.isSignedIn { navigation.handle(url) } }
-                .task { await auth.restore() }
+                .onOpenURL { url in Task { await open(url) } }
+                .task {
+                    // Links from Siri, Shortcuts and the Action button arrive through here
+                    LinkBridge.shared.attach { url in Task { await open(url) } }
+                    await auth.restore()
+                }
         }
+    }
+}
+
+extension CaleyApp {
+    /// Opens a `caley://` link once the saved login has been checked: on a cold launch the link arrives
+    /// before the app knows whether you are signed in, and dropping it then would lose it.
+    fileprivate func open(_ url: URL) async {
+        for _ in 0..<50 where auth.isLaunching { try? await Task.sleep(for: .milliseconds(100)) }
+        if auth.isSignedIn { navigation.handle(url) }
     }
 }
 

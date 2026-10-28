@@ -10,6 +10,12 @@ final class AuthStore {
 
     var api: APIClient { APIClient(token: token) }
 
+    /// Still checking the saved login: a link that arrives now should wait for the answer
+    var isLaunching: Bool {
+        if case .launching = state { return true }
+        return false
+    }
+
     var isSignedIn: Bool {
         if case .signedIn = state { return true }
         return false

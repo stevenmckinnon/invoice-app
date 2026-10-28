@@ -53,7 +53,7 @@ enum WidgetLoader {
         guard let token = Keychain.read(migrate: false) else {
             return CaleyEntry(date: now, state: .signedOut, hideAmounts: hide)
         }
-        switch await fetch(token: token) {
+        switch await InvoiceFetcher.fetch(token: token) {
         case .success(let invoices):
             let snapshot = WidgetSnapshot(invoices: invoices, now: now)
             SharedStore.snapshot = snapshot
@@ -65,27 +65,6 @@ enum WidgetLoader {
                 return CaleyEntry(date: now, state: .data(saved, stale: true), hideAmounts: hide)
             }
             return CaleyEntry(date: now, state: .unavailable, hideAmounts: hide)
-        }
-    }
-
-    private enum Outcome { case success([InvoiceListItem]), signedOut, failed }
-
-    private static func fetch(token: String) async -> Outcome {
-        var request = URLRequest(url: (SharedStore.serverURL ?? Config.production).appending(path: "api/invoices"))
-        request.timeoutInterval = 15
-        request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
-        // The app keeps no cookies and neither does this
-        let config = URLSessionConfiguration.ephemeral
-        config.httpShouldSetCookies = false
-        config.httpCookieAcceptPolicy = .never
-        do {
-            let (data, response) = try await URLSession(configuration: config).data(for: request)
-            guard let http = response as? HTTPURLResponse else { return .failed }
-            if http.statusCode == 401 { return .signedOut }
-            guard (200..<300).contains(http.statusCode) else { return .failed }
-            return .success(try JSONDecoder().decode([InvoiceListItem].self, from: data))
-        } catch {
-            return .failed
         }
     }
 }
