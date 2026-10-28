@@ -94,3 +94,34 @@ extension View {
         frame(maxWidth: width).frame(maxWidth: .infinity)
     }
 }
+
+extension View {
+    /// On the iPhone Duo the tab bar sits at the side, outside the region the system gives a tab, yet
+    /// the page inside still keeps a wide trailing inset of its own, so content stopped well short of
+    /// the tab bar. When the region ends clear of the window's edge (a side tab bar), this drops that
+    /// inset. Phones and iPads, whose tab bar is at the bottom or top, are untouched.
+    func reclaimTrailingStrip() -> some View { modifier(ReclaimTrailingStrip()) }
+}
+
+private struct ReclaimTrailingStrip: ViewModifier {
+    @State private var sideTabBar = false
+
+    func body(content: Content) -> some View {
+        content
+            .ignoresSafeArea(.container, edges: sideTabBar ? .trailing : [])
+            .background {
+                GeometryReader { proxy in
+                    Color.clear
+                        .onAppear { update(proxy) }
+                        .onChange(of: proxy.frame(in: .global).maxX) { _, _ in update(proxy) }
+                }
+            }
+    }
+
+    private func update(_ proxy: GeometryProxy) {
+        let window = UIApplication.shared.connectedScenes
+            .compactMap { $0 as? UIWindowScene }.first?.keyWindow?.bounds.width ?? 0
+        let next = window - proxy.frame(in: .global).maxX > 40
+        if next != sideTabBar { sideTabBar = next }
+    }
+}
