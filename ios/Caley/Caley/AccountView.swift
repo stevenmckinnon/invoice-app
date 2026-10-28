@@ -64,9 +64,13 @@ struct AccountView: View {
                 } footer: {
                     Text("A reminder 30 days after an invoice's date while it's still unpaid, then every Monday. Tap one to open the invoice.")
                 }
+                #if DEBUG
+                // Which server a debug build is talking to (the simulator defaults to localhost); a release
+                // build only ever talks to caley.app, so there is nothing to show
                 Section {
                     LabeledContent("Server", value: Config.baseURL.host() ?? Config.baseURL.absoluteString)
                 }
+                #endif
                 Section {
                     Button("Sign out", role: .destructive) {
                         Task { await auth.signOut() }
