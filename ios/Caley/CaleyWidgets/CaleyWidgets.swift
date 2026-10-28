@@ -5,6 +5,7 @@ import WidgetKit
 struct CaleyWidgets: WidgetBundle {
     var body: some Widget {
         OutstandingWidget()
+        PaidOwedWidget()
         SummaryWidget()
         NewInvoiceWidget()
     }
@@ -19,6 +20,18 @@ struct OutstandingWidget: Widget {
         .configurationDisplayName("Outstanding")
         .description("What you're owed, and how much of it is overdue.")
         .supportedFamilies([.systemSmall, .accessoryRectangular, .accessoryCircular, .accessoryInline])
+    }
+}
+
+/// What you've been paid this tax year against what is still owed, with how far through that you are
+struct PaidOwedWidget: Widget {
+    var body: some WidgetConfiguration {
+        StaticConfiguration(kind: "CaleyPaidOwed", provider: CaleyProvider()) { entry in
+            PaidOwedView(entry: entry)
+        }
+        .configurationDisplayName("Paid and owed")
+        .description("Paid so far this tax year, what's still outstanding, and how much of it you've been paid.")
+        .supportedFamilies([.systemSmall, .systemMedium, .accessoryRectangular, .accessoryCircular])
     }
 }
 
