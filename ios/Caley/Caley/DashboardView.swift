@@ -59,6 +59,7 @@ struct DashboardView: View {
             .navigationDestination(for: String.self) { InvoiceDetailView(id: $0) }
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) { yearMenu }
+
             }
             .refreshable { await store.load(auth: auth) }
             .task {
@@ -127,7 +128,21 @@ struct DashboardView: View {
         let outstanding = inYear.filter { $0.status == .sent || $0.status == .overdue }
         let overdue = inYear.filter { $0.status == .overdue }
         VStack(spacing: 12) {
-            newInvoiceButton
+            if sizeClass == .regular {
+                // A full-width bar is out of proportion on a wide screen: there it is a compact button
+                Button(action: startInvoice) {
+                    Label("New invoice", systemImage: "plus")
+                        .font(.headline)
+                        .padding(.horizontal, 20)
+                        .frame(minHeight: 44)
+                        .foregroundStyle(.white)
+                        .background(Color.brand, in: Capsule())
+                }
+                .buttonStyle(PressableStyle())
+                .frame(maxWidth: .infinity, alignment: .trailing)
+            } else {
+                newInvoiceButton
+            }
             if store.invoices.isEmpty {
                 EmptyState(title: "Nothing to show yet", message: "Create your first invoice and your totals show up here.", symbol: "chart.bar")
             } else {
