@@ -18,6 +18,8 @@ final class InvoiceEditorModel {
 
     /// The invoice being edited; nil for a new one
     let editing: InvoiceDetail?
+    /// Currency of the invoice a new one was copied from, so a copy of a dollar invoice stays in dollars
+    private let copiedCurrency: String?
 
     var clients: [Client] = []
     var profile: Profile?
@@ -45,16 +47,20 @@ final class InvoiceEditorModel {
     var saveError: String?
     var attempted = false
 
-    init(editing: InvoiceDetail?) {
+    /// `copying` starts a new invoice from an old one: the client, job name, notes and expenses carry
+    /// over, the days don't (they'd be the old job's dates) and the number is the next free one.
+    init(editing: InvoiceDetail?, copying: InvoiceDetail? = nil) {
+        let base = editing ?? copying
         self.editing = editing
-        clientId = editing?.clientId
-        showName = editing?.showName ?? ""
+        copiedCurrency = copying?.currencyCode
+        clientId = base?.clientId
+        showName = base?.showName ?? ""
         invoiceNumber = editing?.invoiceNumber ?? ""
         invoiceDate = editing.map { DateOnly.localDate($0.invoiceDate) } ?? .now
-        notes = editing?.notes ?? ""
-        attention = editing?.attentionTo
+        notes = base?.notes ?? ""
+        attention = base?.attentionTo
         painted = editing.map { DayEditor.fromStored($0.days) } ?? [:]
-        expenses = (editing?.customExpenseEntries ?? []).map {
+        expenses = (base?.customExpenseEntries ?? []).map {
             var draft = ExpenseDraft()
             draft.description = $0.description
             draft.quantity = $0.quantity
@@ -68,7 +74,7 @@ final class InvoiceEditorModel {
     var client: Client? { clients.first { $0.id == clientId } }
     /// An existing invoice keeps the terms it was priced under; only a change of client re-prices it
     var sameClient: Bool { editing != nil && clientId == editing?.clientId }
-    var currency: String { editing?.currencyCode ?? profile?.currency ?? "GBP" }
+    var currency: String { editing?.currencyCode ?? copiedCurrency ?? profile?.currency ?? "GBP" }
     var billable: [BillableDay] { DayEditor.billableDays(painted) }
     var initialMonth: String { billable.first?.date ?? DateOnly.isoLocal(invoiceDate) }
 

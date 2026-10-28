@@ -9,7 +9,10 @@ enum APIError: LocalizedError {
         switch self {
         case .unauthorized: "Your session has expired. Sign in again."
         case .server(let message): message
-        case .network(let error): error.localizedDescription
+        case .network(let error):
+            (error as? URLError)?.isOffline == true
+                ? "You're offline. Check your connection and try again."
+                : error.localizedDescription
         }
     }
 }
@@ -54,6 +57,8 @@ struct APIClient {
                     .flatMap { ($0["error"] ?? $0["message"]) as? String }
                 throw APIError.server(message ?? "Request failed (\(http.statusCode))")
             }
+            // Any answer at all means the connection works, so saved copies are no longer what's showing
+            await Connectivity.shared.reachedServer()
             return (data, http)
         } catch let error as APIError {
             throw error
@@ -63,9 +68,22 @@ struct APIClient {
     }
 
     private func send<T: Decodable>(_ path: String, method: String = "GET", body: Encodable? = nil) async throws -> T {
-        let (data, _) = try await perform(try request(path, method: method, body: body))
-        do { return try decoder.decode(T.self, from: data) }
-        catch { throw APIError.server("Unexpected response: \(error)") }
+        let saves = method == "GET" && DiskCache.isCacheable(path)
+        do {
+            let (data, _) = try await perform(try request(path, method: method, body: body))
+            let value: T
+            do { value = try decoder.decode(T.self, from: data) }
+            catch { throw APIError.server("Unexpected response: \(error)") }
+            if saves { DiskCache.write(data, for: path) }
+            return value
+        } catch APIError.network(let underlying) where saves && (underlying as? URLError)?.isOffline == true {
+            // No connection: the last good answer beats an error, and the screens say it is old
+            guard let saved = DiskCache.read(path), let value = try? decoder.decode(T.self, from: saved.data) else {
+                throw APIError.network(underlying)
+            }
+            await Connectivity.shared.servedFromCache(savedAt: saved.savedAt)
+            return value
+        }
     }
 
     // MARK: Auth
@@ -108,6 +126,11 @@ struct APIClient {
         struct Body: Encodable { let status: InvoiceStatus }
         struct Ignored: Decodable {}
         let _: Ignored = try await send("api/invoices/\(id)", method: "PATCH", body: Body(status: status))
+    }
+
+    func deleteInvoice(id: String) async throws {
+        struct Ignored: Decodable {}
+        let _: Ignored = try await send("api/invoices/\(id)", method: "DELETE")
     }
 
     // MARK: Editing

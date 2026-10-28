@@ -10,6 +10,7 @@ struct ChatView: View {
     @State private var input = ""
     @State private var openDraft: DraftRef?
     @State private var confirmingClear = false
+    @ScaledMetric(relativeTo: .title) private var sendSize: CGFloat = 34
     @FocusState private var composerFocused: Bool
 
     private struct DraftRef: Identifiable { let id: String }
@@ -152,12 +153,12 @@ struct ChatView: View {
                 .background(Color.card, in: RoundedRectangle(cornerRadius: 20, style: .continuous))
             if chat.sending {
                 Button(action: chat.stop) {
-                    Image(systemName: "stop.circle.fill").font(.system(size: 34)).foregroundStyle(Color.brand)
+                    Image(systemName: "stop.circle.fill").font(.system(size: sendSize)).foregroundStyle(Color.brand)
                 }
                 .accessibilityLabel("Stop")
             } else {
                 Button(action: submit) {
-                    Image(systemName: "arrow.up.circle.fill").font(.system(size: 34)).foregroundStyle(Color.brand)
+                    Image(systemName: "arrow.up.circle.fill").font(.system(size: sendSize)).foregroundStyle(Color.brand)
                         .opacity(canSend ? 1 : 0.35)
                 }
                 .disabled(!canSend)
@@ -198,8 +199,7 @@ private struct MessageView: View {
                 ForEach(message.parts) { part in
                     switch part {
                     case .text(_, let text) where !text.isEmpty:
-                        Text(Self.markdown(text))
-                            .frame(maxWidth: .infinity, alignment: .leading)
+                        MarkdownText(text: text)
                     case .tool(let call):
                         ToolCallView(call: call, openDraft: openDraft)
                     default:
@@ -209,12 +209,6 @@ private struct MessageView: View {
             }
             .padding(.trailing, 24)
         }
-    }
-
-    /// Bold, italics and links; line breaks and list dashes stay as the model wrote them
-    private static func markdown(_ text: String) -> AttributedString {
-        (try? AttributedString(markdown: text, options: .init(interpretedSyntax: .inlineOnlyPreservingWhitespace)))
-            ?? AttributedString(text)
     }
 }
 

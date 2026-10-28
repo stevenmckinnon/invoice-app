@@ -46,6 +46,9 @@ final class ChatStore {
         streamTask = Task {
             defer {
                 sending = false
+                if UIAccessibility.isVoiceOverRunning, messages.last?.hasContent == true, self.error == nil {
+                    UIAccessibility.post(notification: .announcement, argument: "Reply finished")
+                }
                 // A reply that said nothing (stopped at once, or failed) leaves no empty bubble behind
                 if messages.last?.hasContent == false { messages.removeLast() }
                 save()

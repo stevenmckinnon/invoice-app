@@ -8,6 +8,7 @@ struct DashboardView: View {
     @Environment(ClientStore.self) private var clientStore
     @Environment(AppNavigation.self) private var navigation
     @Environment(\.dynamicTypeSize) private var typeSize
+    @Environment(\.horizontalSizeClass) private var sizeClass
     @ScaledMetric(relativeTo: .largeTitle) private var heroSize: CGFloat = 34
     @State private var creating = false
     @State private var needsClient = false
@@ -54,10 +55,12 @@ struct DashboardView: View {
                 }
             }
             .background(Color.canvas)
-            .navigationTitle("Dashboard")
+            .navigationTitle(sizeClass == .regular ? "" : "Dashboard")
+            .toolbarTitleDisplayMode(sizeClass == .regular ? .inline : .large)
             .navigationDestination(for: String.self) { InvoiceDetailView(id: $0) }
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) { yearMenu }
+
             }
             .refreshable { await store.load(auth: auth) }
             .task {
@@ -126,7 +129,28 @@ struct DashboardView: View {
         let outstanding = inYear.filter { $0.status == .sent || $0.status == .overdue }
         let overdue = inYear.filter { $0.status == .overdue }
         VStack(spacing: 12) {
-            newInvoiceButton
+            if sizeClass == .regular {
+                // The large title belongs to the navigation bar and can't share its line, so on a wide
+                // screen the title is drawn here, with a compact button beside it
+                HStack(alignment: .center) {
+                    Text("Dashboard")
+                        .font(.largeTitle.bold())
+                        .accessibilityAddTraits(.isHeader)
+                    Spacer(minLength: 12)
+                    Button(action: startInvoice) {
+                        Label("New invoice", systemImage: "plus")
+                            .font(.headline)
+                            .padding(.horizontal, 20)
+                            .frame(minHeight: 44)
+                            .foregroundStyle(.white)
+                            .background(Color.brand, in: Capsule())
+                    }
+                    .buttonStyle(PressableStyle())
+                }
+                .padding(.top, 4)
+            } else {
+                newInvoiceButton
+            }
             if store.invoices.isEmpty {
                 EmptyState(title: "Nothing to show yet", message: "Create your first invoice and your totals show up here.", symbol: "chart.bar")
             } else {
@@ -147,7 +171,9 @@ struct DashboardView: View {
                 recent
             }
         }
-        .padding(16)
+        // On a wide screen the large title sits at the column's edge, so the cards go flush with it
+        .padding(.vertical, 16)
+        .padding(.horizontal, sizeClass == .regular ? 0 : 16)
     }
 
     private func heroCard(title: String, value: String, footnote: String) -> some View {
