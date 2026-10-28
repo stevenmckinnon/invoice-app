@@ -27,6 +27,7 @@ struct RootView: View {
     @Environment(InvoiceStore.self) private var store
     @Environment(ClientStore.self) private var clients
     @Environment(ChatStore.self) private var chat
+    @Environment(AppNavigation.self) private var navigation
 
     var body: some View {
         content
@@ -37,6 +38,8 @@ struct RootView: View {
                     store.reset()
                     clients.reset()
                     chat.reset()
+                    navigation.tab = .dashboard
+                    navigation.accountPath = []
                 }
             }
     }
@@ -92,9 +95,6 @@ struct MainTabView: View {
             ChatView()
                 .tabItem { Label("Assistant", systemImage: "sparkles") }
                 .tag(AppTab.assistant)
-            ClientsView()
-                .tabItem { Label("Clients", systemImage: "person.2") }
-                .tag(AppTab.clients)
             AccountView()
                 .tabItem { Label("Account", systemImage: "person.crop.circle") }
                 .tag(AppTab.account)

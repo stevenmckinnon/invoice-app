@@ -132,7 +132,7 @@ The API route at `src/app/api/chat/route.ts` loads user profile, clients, and in
 
 ### iOS app (`ios/Caley/`)
 
-A native SwiftUI client (iOS 17+, no third-party packages) over the same route handlers: sign in, dashboard, invoice list and detail, status changes, PDF preview/share, a calendar editor to create and edit day-based invoices, a Clients tab (create, edit, delete) and Account → Your details (profile and bank details). Count-based invoices have no Edit button (their billing is locked).
+A native SwiftUI client (iOS 17+, no third-party packages) over the same route handlers: sign in, dashboard, invoice list and detail, status changes, PDF preview/share, a calendar editor to create and edit day-based invoices, an Assistant tab, and Account, which holds Clients (create, edit, delete) and Your details (profile and bank details). Four tabs: Clients is set up once and rarely visited, so it lives inside Account (`AppNavigation.accountPath` lets other screens open it). Count-based invoices have no Edit button (their billing is locked).
 
 - **Auth** — better-auth's `bearer()` plugin (`src/lib/auth.ts`). `POST /api/auth/sign-in/email` returns the token in the `set-auth-token` header; the app keeps it in the Keychain and sends `Authorization: Bearer`. Web cookie sessions are unchanged. The plugin adds no tables, so deploy `auth.ts` before shipping a release build.
 - **The editor never bills.** `POST /api/invoices/preview` (`src/app/api/invoices/preview/route.ts`) runs `billDays` for the app's live total, with the same terms rule as `PUT` (an invoice keeps its stored terms unless its client changes), so the total on screen is what a save stores. The day-painting rules (`DayEditor.swift`) are a port of `src/lib/day-editor.ts`: change one, change both.

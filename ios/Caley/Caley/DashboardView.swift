@@ -68,7 +68,10 @@ struct DashboardView: View {
                 InvoiceEditorView(editing: nil) { Task { await store.load(auth: auth) } }
             }
             .alert("Add a client first", isPresented: $needsClient) {
-                Button("Go to Clients") { navigation.tab = .clients }
+                Button("Go to Clients") {
+                    navigation.accountPath = [.clients]
+                    navigation.tab = .account
+                }
                 Button("Not now", role: .cancel) {}
             } message: {
                 Text("A client's day rate prices every invoice, and none of your clients has one yet.")
