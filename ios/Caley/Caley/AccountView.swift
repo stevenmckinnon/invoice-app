@@ -10,6 +10,14 @@ struct AccountView: View {
     @State private var remindersOn = Reminders.isEnabled
     @State private var remindersRefused = false
 
+    /// "1.0 (12)": the build is what tells two TestFlight installs of the same version apart
+    private static var versionText: String {
+        let info = Bundle.main.infoDictionary
+        let version = info?["CFBundleShortVersionString"] as? String ?? "?"
+        let build = info?["CFBundleVersion"] as? String ?? "?"
+        return "\(version) (\(build))"
+    }
+
     var body: some View {
         @Bindable var navigation = navigation
         NavigationStack(path: $navigation.accountPath) {
@@ -65,8 +73,17 @@ struct AccountView: View {
                     Text("A reminder 30 days after an invoice's date while it's still unpaid, then every Monday. Tap one to open the invoice.")
                 }
                 Section {
+                    LabeledContent("Version", value: Self.versionText)
+                } footer: {
+                    Text("The build number tells you which TestFlight build is on this device.")
+                }
+                #if DEBUG
+                // Which server a debug build is talking to (the simulator defaults to localhost); a release
+                // build only ever talks to caley.app, so there is nothing to show
+                Section {
                     LabeledContent("Server", value: Config.baseURL.host() ?? Config.baseURL.absoluteString)
                 }
+                #endif
                 Section {
                     Button("Sign out", role: .destructive) {
                         Task { await auth.signOut() }
