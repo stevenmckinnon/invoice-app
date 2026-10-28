@@ -27,6 +27,7 @@ final class AppNavigation {
 extension AppNavigation {
     /// What the `caley://` links the widgets use mean:
     /// - `caley://invoices` and `caley://invoices?filter=overdue`: the invoice list, optionally filtered
+    /// - `caley://dashboard`: the dashboard
     /// - `caley://invoice/<id>`: one invoice
     /// - `caley://new`: the new invoice editor
     /// Anything else is ignored.
@@ -44,6 +45,8 @@ extension AppNavigation {
             guard let id, !id.isEmpty else { return }
             tab = .invoices
             pendingInvoiceID = id
+        case "dashboard":
+            tab = .dashboard
         case "new":
             tab = .dashboard
             pendingNewInvoice = true

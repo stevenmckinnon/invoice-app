@@ -46,6 +46,14 @@ struct WidgetSnapshot: Codable, Equatable {
                   recent: Array(latest))
     }
 
+    /// How much of what has been sent out is paid, 0...1: paid over paid plus outstanding. Drafts are
+    /// left out, since nothing is owed on them yet. 0 when nothing has been sent or paid.
+    var paidShare: Double {
+        let total = paid + outstanding
+        guard total > 0 else { return 0 }
+        return min(max(NSDecimalNumber(decimal: paid / total).doubleValue, 0), 1)
+    }
+
     /// An amount for display, or dots when the app lock is on: a widget sits on a home or lock screen
     /// where anyone can read it, and it can't ask for Face ID itself.
     func amount(_ value: Decimal, hidden: Bool) -> String {

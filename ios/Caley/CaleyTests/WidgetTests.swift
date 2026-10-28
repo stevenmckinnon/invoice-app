@@ -86,6 +86,21 @@ final class WidgetTests: XCTestCase {
         XCTAssertFalse(snapshot.amount(1234.5, hidden: true).contains("1"))
     }
 
+    func testPaidShareIsPaidOverPaidPlusOutstandingAndIgnoresDrafts() throws {
+        let invoices = [
+            try item("1", "2026-09-01", "300", "paid"), try item("2", "2026-09-02", "100", "sent"),
+            try item("3", "2026-09-03", "100", "overdue"), try item("4", "2026-09-04", "5000", "draft"),
+        ]
+        XCTAssertEqual(WidgetSnapshot(invoices: invoices, now: now).paidShare, 0.6, accuracy: 0.0001)
+    }
+
+    func testPaidShareIsZeroNotAnErrorWhenNothingHasBeenSent() throws {
+        XCTAssertEqual(WidgetSnapshot(invoices: [], now: now).paidShare, 0)
+        XCTAssertEqual(WidgetSnapshot(invoices: [try item("1", "2026-09-01", "100", "draft")], now: now).paidShare, 0)
+        // Everything paid is a full bar
+        XCTAssertEqual(WidgetSnapshot(invoices: [try item("1", "2026-09-01", "100", "paid")], now: now).paidShare, 1)
+    }
+
     func testSnapshotSurvivesBeingSavedAndLoaded() throws {
         let snapshot = WidgetSnapshot(invoices: [try item("1", "2026-09-01", "100.25", "overdue")], now: now)
         let decoded = try JSONDecoder().decode(WidgetSnapshot.self, from: JSONEncoder().encode(snapshot))
@@ -119,6 +134,12 @@ final class WidgetTests: XCTestCase {
         for status in [InvoiceStatus.sent, .paid, .overdue] {
             XCTAssertNil(InvoiceStatus.afterSharing(status, completed: true))
         }
+    func testDashboardLinkOpensTheDashboard() {
+        let nav = AppNavigation()
+        nav.tab = .account
+        nav.handle(URL(string: "caley://dashboard")!)
+        XCTAssertEqual(nav.tab, .dashboard)
+        XCTAssertFalse(nav.pendingNewInvoice)                 // it only looks, it doesn't start an invoice
     }
 
     func testNewLinkOpensTheEditorFromTheDashboard() {
