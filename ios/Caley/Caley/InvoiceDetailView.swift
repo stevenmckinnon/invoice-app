@@ -83,6 +83,7 @@ struct InvoiceDetailView: View {
                 }
             }
             .padding(16)
+            .readableWidth()
         }
         .refreshable { await load() }
         .toolbar {

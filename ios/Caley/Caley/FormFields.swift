@@ -79,3 +79,11 @@ struct AdaptiveRow<Content: View>: View {
         }
     }
 }
+
+extension View {
+    /// On an iPad a full-width card is a long way from its own edge. Cap the content at a width that
+    /// reads well and centre it, leaving the background to run edge to edge. A no-op on a phone.
+    func readableWidth(_ width: CGFloat = 720) -> some View {
+        frame(maxWidth: width).frame(maxWidth: .infinity)
+    }
+}

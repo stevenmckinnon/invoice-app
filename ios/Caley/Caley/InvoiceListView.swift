@@ -44,6 +44,7 @@ struct InvoiceListView: View {
                     .scrollContentBackground(.hidden)
                 }
             }
+            .readableWidth()
             .background(Color.canvas)
             .navigationTitle("Invoices")
             .navigationDestination(for: String.self) { InvoiceDetailView(id: $0) }

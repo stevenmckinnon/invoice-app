@@ -214,8 +214,13 @@ struct InvoiceEditorView: View {
                         TextField("What for", text: $expense.description)
                         Button {
                             model.expenses.removeAll { $0.id == expense.id }
-                        } label: { Image(systemName: "minus.circle.fill").foregroundStyle(.secondary) }
-                            .buttonStyle(PressableStyle())
+                        } label: {
+                            Image(systemName: "minus.circle.fill")
+                                .foregroundStyle(.secondary)
+                                .frame(minWidth: 44, minHeight: 44)
+                                .contentShape(Rectangle())
+                        }
+                        .buttonStyle(PressableStyle())
                             .accessibilityLabel("Remove expense")
                     }
                     AdaptiveRow(alignment: .center) {

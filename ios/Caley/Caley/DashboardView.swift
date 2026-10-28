@@ -50,7 +50,7 @@ struct DashboardView: View {
                 } else if let error = store.error, !store.loaded {
                     EmptyState(title: "Couldn't load", message: error, symbol: "wifi.exclamationmark")
                 } else {
-                    content
+                    content.readableWidth()
                 }
             }
             .background(Color.canvas)

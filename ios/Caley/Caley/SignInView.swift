@@ -144,6 +144,7 @@ struct SignInView: View {
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(.horizontal, 24)
+        .readableWidth(520)
         .opacity(pitchIn ? 1 : 0)
         .offset(y: pitchIn ? 0 : 14)
     }
@@ -204,6 +205,7 @@ struct SignInView: View {
                 .padding(.top, 4)
         }
         .padding(.horizontal, 20)
+        .frame(maxWidth: 560)
         .padding(.top, 24)
         .padding(.bottom, max(bottomInset, 16) + 8)
         .frame(maxWidth: .infinity)

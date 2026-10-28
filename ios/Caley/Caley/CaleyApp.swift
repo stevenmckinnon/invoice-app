@@ -146,6 +146,8 @@ private struct OfflineLabel: View {
                 Text("Offline. Showing data saved ") + Text(savedAt, format: .relative(presentation: .named))
             }
             .font(.footnote.weight(.medium))
+            .multilineTextAlignment(.center)
+            .minimumScaleFactor(0.8)
             .frame(maxWidth: .infinity)
         }
         .buttonStyle(PressableStyle())
