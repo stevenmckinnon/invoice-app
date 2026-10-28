@@ -8,6 +8,7 @@ struct InvoiceEditorView: View {
     @Environment(\.dismiss) private var dismiss
     @State private var model: InvoiceEditorModel
     @State private var pickingDate = false
+    @State private var importing = false
     let onSaved: () -> Void
 
     init(editing: InvoiceDetail?, copying: InvoiceDetail? = nil, onSaved: @escaping () -> Void) {
@@ -59,6 +60,11 @@ struct InvoiceEditorView: View {
             }
             .safeAreaInset(edge: .bottom) { saveBar }
             .sheet(isPresented: $pickingDate) { datePickerSheet }
+            .sheet(isPresented: $importing) {
+                CalendarImportView(painted: model.painted, start: model.importRange.start, end: model.importRange.end) {
+                    model.addWorkDays($0)
+                }
+            }
             .task { await model.load(auth: auth) }
             .task(id: model.previewKey) { await model.refreshPreview(auth: auth) }
         }
@@ -172,6 +178,13 @@ struct InvoiceEditorView: View {
 
             Text("Tap a date to paint it. Touch and hold, then drag, to paint a run.")
                 .font(.caption).foregroundStyle(.secondary)
+
+            Button { importing = true } label: {
+                Label("Add from calendar", systemImage: "calendar.badge.plus")
+                    .font(.subheadline.weight(.medium))
+            }
+            .buttonStyle(.bordered)
+            .tint(.brand)
 
             dayDetail
 
