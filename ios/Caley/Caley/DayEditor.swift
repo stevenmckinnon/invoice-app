@@ -23,6 +23,9 @@ enum AlsoTravel: Hashable {
 struct PaintedDay: Equatable {
     var kind: PaintKind
     var alsoTravel: AlsoTravel?
+    /// Travel days: which way, when the invoice stored one (the assistant sets it). Carried through
+    /// an edit untouched, since the calendar has no control for it.
+    var direction: TravelSide?
     var overtimeHours: Double?
 }
 
@@ -117,7 +120,8 @@ enum DayEditor {
             }
             let hours = day.kind == .work ? day.overtimeHours : nil
             return BillableDay(
-                date: date, type: type, alsoTravel: alsoTravel, direction: nil,
+                date: date, type: type, alsoTravel: alsoTravel,
+                direction: day.kind == .travel ? day.direction?.rawValue : nil,
                 overtimeHours: (hours ?? 0) > 0 ? hours : nil)
         }
     }
@@ -135,6 +139,7 @@ enum DayEditor {
             let hours = day.overtimeHours?.double
             painted[String(day.date.prefix(10))] = PaintedDay(
                 kind: kind, alsoTravel: kind == .work ? also : nil,
+                direction: day.direction.flatMap(TravelSide.init(rawValue:)),
                 overtimeHours: (hours ?? 0) > 0 ? hours : nil)
         }
         return painted
