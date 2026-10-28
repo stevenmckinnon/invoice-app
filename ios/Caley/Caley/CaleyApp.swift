@@ -105,15 +105,18 @@ struct MainTabView: View {
         @Bindable var navigation = navigation
         TabView(selection: $navigation.tab) {
             DashboardView()
+                .readableColumn()
                 .tabItem { Label("Dashboard", systemImage: "chart.bar") }
                 .tag(AppTab.dashboard)
             InvoiceListView()
                 .tabItem { Label("Invoices", systemImage: "doc.text") }
                 .tag(AppTab.invoices)
             ChatView()
+                .readableColumn()
                 .tabItem { Label("Assistant", systemImage: "sparkles") }
                 .tag(AppTab.assistant)
             AccountView()
+                .readableColumn()
                 .tabItem { Label("Account", systemImage: "person.crop.circle") }
                 .tag(AppTab.account)
         }

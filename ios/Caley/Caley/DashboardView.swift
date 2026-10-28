@@ -8,6 +8,7 @@ struct DashboardView: View {
     @Environment(ClientStore.self) private var clientStore
     @Environment(AppNavigation.self) private var navigation
     @Environment(\.dynamicTypeSize) private var typeSize
+    @Environment(\.horizontalSizeClass) private var sizeClass
     @ScaledMetric(relativeTo: .largeTitle) private var heroSize: CGFloat = 34
     @State private var creating = false
     @State private var needsClient = false
@@ -50,7 +51,7 @@ struct DashboardView: View {
                 } else if let error = store.error, !store.loaded {
                     EmptyState(title: "Couldn't load", message: error, symbol: "wifi.exclamationmark")
                 } else {
-                    content.readableWidth()
+                    content
                 }
             }
             .background(Color.canvas)
@@ -147,7 +148,9 @@ struct DashboardView: View {
                 recent
             }
         }
-        .padding(16)
+        // On a wide screen the large title sits at the column's edge, so the cards go flush with it
+        .padding(.vertical, 16)
+        .padding(.horizontal, sizeClass == .regular ? 0 : 16)
     }
 
     private func heroCard(title: String, value: String, footnote: String) -> some View {

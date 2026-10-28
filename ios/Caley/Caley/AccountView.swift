@@ -44,7 +44,6 @@ struct AccountView: View {
                 }
             }
             .scrollContentBackground(.hidden)
-            .readableWidth()
             .background(Color.canvas)
             .navigationTitle("Account")
             .navigationDestination(for: AccountRoute.self) { route in

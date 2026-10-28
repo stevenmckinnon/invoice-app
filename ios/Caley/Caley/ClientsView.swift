@@ -33,7 +33,6 @@ struct ClientsView: View {
                 .scrollContentBackground(.hidden)
             }
         }
-        .readableWidth()
         .background(Color.canvas)
         .navigationTitle("Clients")
         .toolbar {

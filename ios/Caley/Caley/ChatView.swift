@@ -24,7 +24,6 @@ struct ChatView: View {
                     conversation
                 }
             }
-            .readableWidth()
             .background(Color.canvas)
             .navigationTitle("Assistant")
             .navigationBarTitleDisplayMode(.inline)
@@ -169,7 +168,6 @@ struct ChatView: View {
         .buttonStyle(PressableStyle())
         .padding(.horizontal, 16)
         .padding(.vertical, 10)
-        .readableWidth()
         .background(Color.canvas)
     }
 

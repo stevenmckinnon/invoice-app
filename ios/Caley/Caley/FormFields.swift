@@ -81,6 +81,13 @@ struct AdaptiveRow<Content: View>: View {
 }
 
 extension View {
+    /// A whole screen (its title, toolbar and content) as one centred column on an iPad, so the
+    /// title and the buttons line up with the content instead of sitting at the screen's far edges.
+    /// The background still runs edge to edge. A no-op on a phone.
+    func readableColumn(_ width: CGFloat = 760) -> some View {
+        frame(maxWidth: width).frame(maxWidth: .infinity).background(Color.canvas.ignoresSafeArea())
+    }
+
     /// On an iPad a full-width card is a long way from its own edge. Cap the content at a width that
     /// reads well and centre it, leaving the background to run edge to edge. A no-op on a phone.
     func readableWidth(_ width: CGFloat = 720) -> some View {

@@ -44,7 +44,7 @@ struct ProfileEditorView: View {
             } else if !loaded {
                 ProgressView().frame(maxWidth: .infinity).padding(.top, 80)
             } else {
-                form.readableWidth()
+                form
             }
         }
         .scrollDismissesKeyboard(.interactively)
