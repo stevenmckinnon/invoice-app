@@ -127,6 +127,13 @@ final class WidgetTests: XCTestCase {
         XCTAssertEqual(nav.pendingInvoiceID, "abc123")
     }
 
+    func testSharingADraftMarksItSentOnlyWhenTheShareWentThrough() {
+        XCTAssertEqual(InvoiceStatus.afterSharing(.draft, completed: true), .sent)
+        XCTAssertNil(InvoiceStatus.afterSharing(.draft, completed: false))      // dismissed: nothing sent
+        // Anything already further along is left alone
+        for status in [InvoiceStatus.sent, .paid, .overdue] {
+            XCTAssertNil(InvoiceStatus.afterSharing(status, completed: true))
+        }
     func testDashboardLinkOpensTheDashboard() {
         let nav = AppNavigation()
         nav.tab = .account
