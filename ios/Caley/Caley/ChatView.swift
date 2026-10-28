@@ -110,7 +110,9 @@ struct ChatView: View {
     private var conversation: some View {
         ScrollViewReader { proxy in
             ScrollView {
-                LazyVStack(alignment: .leading, spacing: 14) {
+                // Not lazy: a lazy stack only estimates the height of rows it hasn't drawn, so scrolling to
+                // the bottom while a reply grows lands short of it (or overshoots) on a wide screen
+                VStack(alignment: .leading, spacing: 14) {
                     ForEach(chat.messages) { message in
                         MessageView(message: message) { openDraft = DraftRef(id: $0) }
                     }
@@ -132,10 +134,20 @@ struct ChatView: View {
                 .padding(16)
             }
             .defaultScrollAnchor(.bottom)
+            .modifier(PinnedToBottom())
             .scrollDismissesKeyboard(.interactively)
             .readableScroll()
-            .onChange(of: chat.messages) { proxy.scrollTo("bottom", anchor: .bottom) }
-            .onChange(of: chat.error) { proxy.scrollTo("bottom", anchor: .bottom) }
+            .onChange(of: chat.messages) { scrollToBottom(proxy) }
+            .onChange(of: chat.error) { scrollToBottom(proxy) }
+        }
+    }
+
+    /// After the new text has been laid out, and without animation: animating to a target that keeps
+    /// moving is what made the view appear to jump
+    private func scrollToBottom(_ proxy: ScrollViewProxy) {
+        Task { @MainActor in
+            await Task.yield()
+            proxy.scrollTo("bottom", anchor: .bottom)
         }
     }
 
@@ -179,6 +191,18 @@ struct ChatView: View {
         let text = input
         input = ""
         chat.send(text, auth: auth, invoices: invoices)
+    }
+}
+
+/// Keeps the conversation pinned to its newest line as it grows (a streamed reply, the keyboard
+/// appearing). iOS 18 does this itself; earlier versions rely on `scrollToBottom`.
+private struct PinnedToBottom: ViewModifier {
+    func body(content: Content) -> some View {
+        if #available(iOS 18, *) {
+            content.defaultScrollAnchor(.bottom, for: .sizeChanges)
+        } else {
+            content
+        }
     }
 }
 
