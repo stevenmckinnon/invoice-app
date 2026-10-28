@@ -172,7 +172,7 @@ describe(
     it("creates INV-2605 from its days at exactly £3,748.13", async () => {
       const result = await createDraft(inv2605());
       assert.equal(result.success, true, result.error ?? "");
-      assert.equal(result.total, "£3748.13");
+      assert.equal(result.total, "£3,748.13");
       assert.equal(result.days, "4 travel, 2 work, 2h overtime");
 
       const invoice = await stored(result.invoiceId!);
@@ -314,7 +314,7 @@ describe(
       });
       assert.equal(result.success, true, result.error ?? "");
       // + 1h at £52.50 × 1.5
-      assert.equal(result.total, "£3826.88");
+      assert.equal(result.total, "£3,826.88");
       const invoice = await stored(invoiceId!);
       assert.equal(invoice.customExpenseEntries.length, 2);
       assert.equal(invoice.days.length, 6);
@@ -326,7 +326,7 @@ describe(
         invoiceId,
         expenses: [{ description: "Parking", unitPrice: 10 }],
       });
-      assert.equal(result.total, "£3697.50");
+      assert.equal(result.total, "£3,697.50");
       const invoice = await stored(invoiceId!);
       assert.equal(invoice.days.length, 6);
       assert.deepEqual(
@@ -343,7 +343,7 @@ describe(
       });
       try {
         const result = await updateDraft({ invoiceId, days: inv2605().days });
-        assert.equal(result.total, "£3748.13");
+        assert.equal(result.total, "£3,748.13");
       } finally {
         await mod.prisma.client.update({
           where: { id: tieredClientId },
@@ -355,7 +355,7 @@ describe(
     it("renames a draft without touching its billing", async () => {
       const { invoiceId } = await createDraft(inv2605());
       const result = await updateDraft({ invoiceId, showName: "Renamed" });
-      assert.equal(result.total, "£3748.13");
+      assert.equal(result.total, "£3,748.13");
       assert.equal((await stored(invoiceId!)).showName, "Renamed");
     });
 
