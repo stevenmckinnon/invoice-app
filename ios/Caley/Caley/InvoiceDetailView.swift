@@ -17,6 +17,9 @@ struct InvoiceDetailView: View {
     @State private var confirmingDelete = false
     @ScaledMetric(relativeTo: .largeTitle) private var totalSize: CGFloat = 32
     @State private var pdfError: String?
+    /// Shown for a few seconds after sharing a draft marked it sent, so it can be taken back
+    @State private var showUndo = false
+    @State private var undoTimer: Task<Void, Never>?
 
     var body: some View {
         Group {
@@ -39,7 +42,18 @@ struct InvoiceDetailView: View {
                 Task { await load() }
             }
         }
-        .sheet(item: $shareURL) { ShareSheet(url: $0).presentationDetents([.medium, .large]) }
+        .sheet(item: $shareURL) { url in
+            ShareSheet(url: url) { completed in
+                guard let inv = invoice, let next = InvoiceStatus.afterSharing(inv.status, completed: completed) else { return }
+                Task {
+                    await change(to: next, inv)
+                    // Only say so if the change held (a failed save rolls back and shows its own error)
+                    guard invoice?.status == next else { return }
+                    announceSent()
+                }
+            }
+            .presentationDetents([.medium, .large])
+        }
         .quickLookPreview($previewURL)
         .sheet(isPresented: $duplicating) {
             if let invoice {
@@ -86,6 +100,10 @@ struct InvoiceDetailView: View {
             .readableWidth()
         }
         .refreshable { await load() }
+        .safeAreaInset(edge: .bottom, spacing: 0) {
+            if showUndo { undoNotice(inv) }
+        }
+        .animation(.easeOut(duration: 0.2), value: showUndo)
         .toolbar {
             if inv.isEditable {
                 ToolbarItem(placement: .topBarTrailing) {
@@ -95,7 +113,9 @@ struct InvoiceDetailView: View {
             ToolbarItem(placement: .topBarTrailing) {
                 Menu {
                     Button("Preview PDF", systemImage: "eye") { Task { previewURL = await fetchPDF(inv) } }
-                    Button("Share PDF", systemImage: "square.and.arrow.up") { Task { shareURL = await fetchPDF(inv) } }
+                    // A draft that is shared has gone out, so the label says what will happen
+                    Button(inv.status == .draft ? "Share and mark as sent" : "Share PDF",
+                           systemImage: "square.and.arrow.up") { Task { shareURL = await fetchPDF(inv) } }
                     Divider()
                     Button("Duplicate", systemImage: "plus.square.on.square") { duplicating = true }
                     Button("Delete", systemImage: "trash", role: .destructive) { confirmingDelete = true }
@@ -119,6 +139,34 @@ struct InvoiceDetailView: View {
                 }
             }
         }
+    }
+
+    private func announceSent() {
+        showUndo = true
+        UIAccessibility.post(notification: .announcement, argument: "Marked as sent. Undo is available.")
+        undoTimer?.cancel()
+        undoTimer = Task {
+            try? await Task.sleep(for: .seconds(7))
+            if !Task.isCancelled { showUndo = false }
+        }
+    }
+
+    private func undoNotice(_ inv: InvoiceDetail) -> some View {
+        HStack(spacing: 14) {
+            Label("Marked as sent", systemImage: "paperplane").font(.subheadline.weight(.medium))
+            Button("Undo") {
+                undoTimer?.cancel()
+                showUndo = false
+                Task { await change(to: .draft, inv) }
+            }
+            .font(.subheadline.weight(.semibold))
+        }
+        .padding(.horizontal, 18)
+        .padding(.vertical, 12)
+        .background(.regularMaterial, in: Capsule())
+        .overlay(Capsule().strokeBorder(.separator))
+        .padding(.bottom, 8)
+        .transition(.move(edge: .bottom).combined(with: .opacity))
     }
 
     private func fetchPDF(_ inv: InvoiceDetail) async -> URL? {
