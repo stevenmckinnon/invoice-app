@@ -26,6 +26,21 @@ final class InvoiceStore {
         }
     }
 
+    /// Deletes on the server first, then drops the row: unlike a status change there is nothing to roll back to
+    func delete(id: String, auth: AuthStore) async -> Bool {
+        do {
+            try await auth.api.deleteInvoice(id: id)
+            invoices.removeAll { $0.id == id }
+            Haptics.success()
+            return true
+        } catch {
+            Haptics.failure()
+            if case APIError.unauthorized = error { auth.sessionExpired() }
+            self.error = error.localizedDescription
+            return false
+        }
+    }
+
     /// Optimistic: the list and dashboard move at once, and roll back if the server refuses.
     func setStatus(_ status: InvoiceStatus, for id: String, auth: AuthStore) async -> Bool {
         guard let index = invoices.firstIndex(where: { $0.id == id }) else { return false }

@@ -10,8 +10,8 @@ struct InvoiceEditorView: View {
     @State private var pickingDate = false
     let onSaved: () -> Void
 
-    init(editing: InvoiceDetail?, onSaved: @escaping () -> Void) {
-        _model = State(initialValue: InvoiceEditorModel(editing: editing))
+    init(editing: InvoiceDetail?, copying: InvoiceDetail? = nil, onSaved: @escaping () -> Void) {
+        _model = State(initialValue: InvoiceEditorModel(editing: editing, copying: copying))
         self.onSaved = onSaved
     }
 

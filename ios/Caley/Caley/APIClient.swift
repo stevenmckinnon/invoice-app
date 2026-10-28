@@ -110,6 +110,11 @@ struct APIClient {
         let _: Ignored = try await send("api/invoices/\(id)", method: "PATCH", body: Body(status: status))
     }
 
+    func deleteInvoice(id: String) async throws {
+        struct Ignored: Decodable {}
+        let _: Ignored = try await send("api/invoices/\(id)", method: "DELETE")
+    }
+
     // MARK: Editing
 
     func clients() async throws -> [Client] { try await send("api/clients") }

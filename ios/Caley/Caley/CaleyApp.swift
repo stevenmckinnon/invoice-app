@@ -6,6 +6,7 @@ struct CaleyApp: App {
     @State private var store = InvoiceStore()
     @State private var clients = ClientStore()
     @State private var chat = ChatStore()
+    @State private var lock = AppLock()
     @State private var navigation = AppNavigation()
 
     var body: some Scene {
@@ -15,6 +16,7 @@ struct CaleyApp: App {
                 .environment(store)
                 .environment(clients)
                 .environment(chat)
+                .environment(lock)
                 .environment(navigation)
                 .tint(.brand)
                 .task { await auth.restore() }
@@ -28,10 +30,20 @@ struct RootView: View {
     @Environment(ClientStore.self) private var clients
     @Environment(ChatStore.self) private var chat
     @Environment(AppNavigation.self) private var navigation
+    @Environment(AppLock.self) private var lock
+    @Environment(\.scenePhase) private var scenePhase
 
     var body: some View {
         content
             .animation(.easeOut(duration: 0.25), value: phase)
+            .overlay {
+                // Locked, or just not in front (the app switcher snapshots whatever is showing)
+                if lock.enabled, auth.isSignedIn, lock.locked || scenePhase != .active {
+                    LockView().transition(.opacity)
+                }
+            }
+            .animation(.easeOut(duration: 0.2), value: lock.locked)
+            .onChange(of: scenePhase) { _, phase in lock.scenePhaseChanged(phase) }
             // Whatever the reason for signing out (button, expired session), drop the cached invoices
             .onChange(of: auth.isSignedIn) { _, signedIn in
                 if !signedIn {
@@ -39,6 +51,7 @@ struct RootView: View {
                     clients.reset()
                     chat.reset()
                     navigation.tab = .dashboard
+                    lock.signedOut()
                     navigation.accountPath = []
                 }
             }

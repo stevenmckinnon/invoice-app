@@ -4,6 +4,7 @@ struct AccountView: View {
     @Environment(AuthStore.self) private var auth
     @Environment(InvoiceStore.self) private var store
     @Environment(AppNavigation.self) private var navigation
+    @Environment(AppLock.self) private var lock
 
     var body: some View {
         @Bindable var navigation = navigation
@@ -20,6 +21,18 @@ struct AccountView: View {
                 Section {
                     NavigationLink("Your details") { ProfileEditorView() }
                     NavigationLink(value: AccountRoute.clients) { Text("Clients") }
+                }
+                Section {
+                    Toggle("Require \(lock.methodName)", isOn: Binding(
+                        get: { lock.enabled },
+                        set: { on in
+                            if on { Task { _ = await lock.enable() } } else { lock.enabled = false }
+                        }))
+                        .disabled(!lock.available)
+                } footer: {
+                    Text(lock.available
+                         ? "Locks Caley when you open it, and when you've been away for 30 seconds or more."
+                         : "Set a passcode on this iPhone to use this.")
                 }
                 Section {
                     LabeledContent("Server", value: Config.baseURL.host() ?? Config.baseURL.absoluteString)

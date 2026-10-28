@@ -6,12 +6,15 @@ struct InvoiceDetailView: View {
 
     @Environment(AuthStore.self) private var auth
     @Environment(InvoiceStore.self) private var store
+    @Environment(\.dismiss) private var dismiss
     @State private var invoice: InvoiceDetail?
     @State private var error: String?
     @State private var pdfBusy = false
     @State private var shareURL: URL?
     @State private var previewURL: URL?
     @State private var editing = false
+    @State private var duplicating = false
+    @State private var confirmingDelete = false
     @ScaledMetric(relativeTo: .largeTitle) private var totalSize: CGFloat = 32
     @State private var pdfError: String?
 
@@ -31,6 +34,13 @@ struct InvoiceDetailView: View {
         .task { await load() }
         .sheet(item: $shareURL) { ShareSheet(url: $0).presentationDetents([.medium, .large]) }
         .quickLookPreview($previewURL)
+        .sheet(isPresented: $duplicating) {
+            if let invoice {
+                InvoiceEditorView(editing: nil, copying: invoice) {
+                    Task { await store.load(auth: auth) }
+                }
+            }
+        }
         .sheet(isPresented: $editing) {
             if let invoice {
                 InvoiceEditorView(editing: invoice) {
@@ -78,12 +88,25 @@ struct InvoiceDetailView: View {
                 Menu {
                     Button("Preview PDF", systemImage: "eye") { Task { previewURL = await fetchPDF(inv) } }
                     Button("Share PDF", systemImage: "square.and.arrow.up") { Task { shareURL = await fetchPDF(inv) } }
+                    Divider()
+                    Button("Duplicate", systemImage: "plus.square.on.square") { duplicating = true }
+                    Button("Delete", systemImage: "trash", role: .destructive) { confirmingDelete = true }
                 } label: {
-                    if pdfBusy { ProgressView() } else { Image(systemName: "doc.richtext") }
+                    if pdfBusy { ProgressView() } else { Image(systemName: "ellipsis.circle") }
                 }
-                .accessibilityLabel("PDF")
-                .accessibilityHint("Preview or share this invoice as a PDF")
+                .accessibilityLabel("More")
                 .disabled(pdfBusy)
+                .confirmationDialog(
+                    "Delete \(inv.invoiceNumber)?", isPresented: $confirmingDelete, titleVisibility: .visible
+                ) {
+                    Button("Delete invoice", role: .destructive) {
+                        Task { if await store.delete(id: inv.id, auth: auth) { dismiss() } }
+                    }
+                } message: {
+                    Text(inv.status == .draft
+                         ? "This can't be undone."
+                         : "This invoice is \(inv.status.label.lowercased()). Deleting it can't be undone.")
+                }
             }
         }
     }
