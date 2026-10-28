@@ -6,6 +6,9 @@ struct AccountView: View {
     @Environment(AppNavigation.self) private var navigation
     @Environment(AppLock.self) private var lock
     @Environment(\.horizontalSizeClass) private var sizeClass
+    @Environment(\.openURL) private var openURL
+    @State private var remindersOn = Reminders.isEnabled
+    @State private var remindersRefused = false
 
     var body: some View {
         @Bindable var navigation = navigation
@@ -45,6 +48,23 @@ struct AccountView: View {
                          : "Set a passcode on this iPhone to use this.")
                 }
                 Section {
+                    Toggle("Chase-up reminders", isOn: Binding(
+                        get: { remindersOn },
+                        set: { on in
+                            Task {
+                                if on {
+                                    remindersOn = await Reminders.enable()
+                                    remindersRefused = !remindersOn
+                                } else {
+                                    remindersOn = false
+                                    await Reminders.disable()
+                                }
+                            }
+                        }))
+                } footer: {
+                    Text("A reminder 30 days after an invoice's date while it's still unpaid, then every Monday. Tap one to open the invoice.")
+                }
+                Section {
                     LabeledContent("Server", value: Config.baseURL.host() ?? Config.baseURL.absoluteString)
                 }
                 Section {
@@ -58,6 +78,14 @@ struct AccountView: View {
             .background(Color.canvas)
             .navigationTitle(sizeClass == .regular ? "" : "Account")
             .toolbarTitleDisplayMode(sizeClass == .regular ? .inline : .large)
+            .alert("Notifications are off", isPresented: $remindersRefused) {
+                Button("Open Settings") {
+                    if let url = URL(string: UIApplication.openSettingsURLString) { openURL(url) }
+                }
+                Button("Not now", role: .cancel) {}
+            } message: {
+                Text("Allow notifications for Caley in Settings to get chase-up reminders.")
+            }
             .navigationDestination(for: AccountRoute.self) { route in
                 switch route {
                 case .clients: ClientsView()
