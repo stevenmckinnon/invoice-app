@@ -162,13 +162,23 @@ def compose_ipad(capture, headline, line, look, out):
     canvas.convert("RGB").save(out, optimize=True)
 
 
+# Sizes App Store Connect accepts per display. The 6.3" / 6.1" slot takes 1206x2622 (and 1179x2556);
+# the 6.9" slot takes 1320x2868. The layout is drawn at 1320x2868 and scaled to the others, which
+# share its proportions to within 0.1%.
+IPHONE_SIZES = {"iphone-6.9": (1320, 2868), "iphone-6.3": (1206, 2622)}
+
+
 def main():
-    for folder, items, fn in (("iphone-6.9", IPHONE, compose_iphone), ("ipad-13", IPAD, compose_ipad)):
+    jobs = [(folder, IPHONE, compose_iphone, size) for folder, size in IPHONE_SIZES.items()]
+    jobs.append(("ipad-13", IPAD, compose_ipad, None))
+    for folder, items, fn, size in jobs:
         outdir = HERE / "screenshots" / folder
         outdir.mkdir(parents=True, exist_ok=True)
         for i, (capture, headline, line, look) in enumerate(items, start=1):
             out = outdir / f"{i:02d}-{Path(capture).stem.split('-', 1)[1]}.png"
             fn(capture, headline, line, look, out)
+            if size and Image.open(out).size != size:
+                Image.open(out).resize(size, Image.LANCZOS).save(out, optimize=True)
             print("wrote", out.relative_to(HERE), Image.open(out).size)
 
 
