@@ -17,23 +17,38 @@ struct InvoiceEditorView: View {
 
     var body: some View {
         NavigationStack {
-            ScrollView {
-                VStack(spacing: 12) {
-                    if let error = model.loadError {
-                        Text(error).font(.footnote).foregroundStyle(.red).frame(maxWidth: .infinity, alignment: .leading)
+            GeometryReader { proxy in
+                // Wide enough for two columns: the calendar on the left, and on the right the job and
+                // the bill, which then stays in view while you paint days
+                let twoColumns = proxy.size.width >= 860
+                ScrollView {
+                    VStack(spacing: 12) {
+                        if let error = model.loadError {
+                            Text(error).font(.footnote).foregroundStyle(.red).frame(maxWidth: .infinity, alignment: .leading)
+                        }
+                        if twoColumns {
+                            HStack(alignment: .top, spacing: 16) {
+                                // The calendar is the main job, so it gets the left side and the top
+                                VStack(spacing: 12) { daysCard }.frame(maxWidth: .infinity)
+                                VStack(spacing: 12) { jobCard; billCard; expensesCard; notesCard }.frame(maxWidth: .infinity)
+                            }
+                        } else {
+                            jobCard
+                            daysCard
+                            expensesCard
+                            notesCard
+                            billCard
+                        }
+                        if model.attempted, !model.problems.isEmpty { problemsCard }
+                        if let error = model.saveError {
+                            Text(error).font(.footnote).foregroundStyle(.red).frame(maxWidth: .infinity, alignment: .leading)
+                        }
                     }
-                    jobCard
-                    daysCard
-                    expensesCard
-                    notesCard
-                    billCard
-                    if model.attempted, !model.problems.isEmpty { problemsCard }
-                    if let error = model.saveError {
-                        Text(error).font(.footnote).foregroundStyle(.red).frame(maxWidth: .infinity, alignment: .leading)
-                    }
+                    .padding(16)
+                    .padding(.bottom, 8)
+                    .frame(maxWidth: twoColumns ? 1180 : 720)
+                    .frame(maxWidth: .infinity)
                 }
-                .padding(16)
-                .padding(.bottom, 8)
             }
             .scrollDismissesKeyboard(.interactively)
             .background(Color.canvas)
@@ -48,6 +63,7 @@ struct InvoiceEditorView: View {
             .task(id: model.previewKey) { await model.refreshPreview(auth: auth) }
         }
         .interactiveDismissDisabled(model.saving)
+        .pageSheet()
     }
 
     // MARK: Cards
@@ -360,5 +376,18 @@ private struct BrushChip: View {
         }
         .buttonStyle(PressableStyle())
         .accessibilityAddTraits(isSelected ? .isSelected : [])
+    }
+}
+
+private extension View {
+    /// The editor is where the work happens, so on an iPad it opens as a full page rather than the
+    /// small floating form sheet. Before iOS 18 the system sizes it.
+    @ViewBuilder
+    func pageSheet() -> some View {
+        if #available(iOS 18, *) {
+            presentationSizing(.page)
+        } else {
+            self
+        }
     }
 }
