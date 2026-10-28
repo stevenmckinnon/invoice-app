@@ -54,6 +54,7 @@ struct DashboardView: View {
                     content
                 }
             }
+            .readableScroll()
             .background(Color.canvas)
             .navigationTitle(sizeClass == .regular ? "" : "Dashboard")
             .toolbarTitleDisplayMode(sizeClass == .regular ? .inline : .large)
