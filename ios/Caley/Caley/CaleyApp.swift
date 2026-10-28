@@ -19,6 +19,7 @@ struct CaleyApp: App {
                 .environment(lock)
                 .environment(navigation)
                 .tint(.brand)
+                .onOpenURL { url in if auth.isSignedIn { navigation.handle(url) } }
                 .task { await auth.restore() }
         }
     }
@@ -52,6 +53,10 @@ struct RootView: View {
                     chat.reset()
                     DiskCache.clear()
                     navigation.tab = .dashboard
+                    navigation.invoiceFilter = nil
+                    navigation.invoicesPath = []
+                    navigation.pendingInvoiceID = nil
+                    navigation.pendingNewInvoice = false
                     lock.signedOut()
                     navigation.accountPath = []
                 }

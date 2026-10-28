@@ -15,33 +15,17 @@ struct DashboardView: View {
     @State private var selectedFy: Int?
     @State private var selectedCurrency: String?
 
-    private var currencies: [String] {
-        Array(Set(store.invoices.map(\.currencyCode))).sorted()
+    private var summary: DashboardSummary {
+        DashboardSummary(invoices: store.invoices, fy: selectedFy, currency: selectedCurrency)
     }
 
-    private var currency: String {
-        if let selectedCurrency, currencies.contains(selectedCurrency) { return selectedCurrency }
-        // The currency most invoices use
-        return Dictionary(grouping: store.invoices, by: \.currencyCode)
-            .max { $0.value.count < $1.value.count }?.key ?? "GBP"
-    }
+    private var currencies: [String] { summary.currencies }
+    private var currency: String { summary.currency }
+    private var years: [Int] { summary.years }
+    private var fy: Int { summary.fy }
+    private var inYear: [InvoiceListItem] { summary.inYear }
 
-    private var currentFy: Int { DateOnly.fyStart(of: .now) }
-
-    private var years: [Int] {
-        let found = Set(store.invoices.compactMap { $0.date.map(DateOnly.fyStart(of:)) })
-        return found.union([currentFy]).sorted(by: >)
-    }
-
-    private var fy: Int { selectedFy ?? currentFy }
-
-    private var inYear: [InvoiceListItem] {
-        store.invoices.filter {
-            $0.currencyCode == currency && ($0.date.map(DateOnly.fyStart(of:)) == fy)
-        }
-    }
-
-    private func total(_ list: [InvoiceListItem]) -> Decimal { list.reduce(0) { $0 + $1.totalAmount.value } }
+    private func total(_ list: [InvoiceListItem]) -> Decimal { DashboardSummary.total(list) }
 
     var body: some View {
         NavigationStack {
@@ -68,6 +52,12 @@ struct DashboardView: View {
 
             }
             .refreshable { await store.load(auth: auth) }
+            // A `caley://new` link from the widget: it may arrive before this screen exists
+            .task(id: navigation.pendingNewInvoice) {
+                guard navigation.pendingNewInvoice else { return }
+                navigation.pendingNewInvoice = false
+                startInvoice()
+            }
             .task {
                 if !store.loaded { await store.load(auth: auth) }
                 if !clientStore.loaded { await clientStore.load(auth: auth) }

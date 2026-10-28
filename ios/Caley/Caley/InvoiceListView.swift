@@ -4,10 +4,16 @@ struct InvoiceListView: View {
     @Environment(AuthStore.self) private var auth
     @Environment(InvoiceStore.self) private var store
     @State private var search = ""
-    @State private var filter: InvoiceStatus?
+    @Environment(AppNavigation.self) private var navigation
     @State private var creating = false
     @State private var selection: String?
     @Environment(\.horizontalSizeClass) private var sizeClass
+
+    /// Lives in the navigation state so a `caley://invoices?filter=overdue` link can set it
+    private var filter: InvoiceStatus? {
+        get { navigation.invoiceFilter }
+        nonmutating set { navigation.invoiceFilter = newValue }
+    }
 
     private var rows: [InvoiceListItem] {
         store.invoices
@@ -34,11 +40,19 @@ struct InvoiceListView: View {
             // The columns and the strip under the tab bar share the app's canvas, not the system white
             .modifier(CanvasSplitBackground())
         } else {
-            NavigationStack {
+            NavigationStack(path: Bindable(navigation).invoicesPath) {
                 listColumn
                     .navigationDestination(for: String.self) { InvoiceDetailView(id: $0) }
             }
         }
+    }
+
+    /// A `caley://invoice/<id>` link: select it beside the list, or push it on a phone. Runs when the
+    /// link arrives and when this tab first appears, since a cold launch from a widget gets here first.
+    private func openPendingInvoice() {
+        guard let id = navigation.pendingInvoiceID else { return }
+        navigation.pendingInvoiceID = nil
+        if wide { selection = id } else { navigation.invoicesPath = [id] }
     }
 
     @ViewBuilder
@@ -82,6 +96,7 @@ struct InvoiceListView: View {
             }
         }
         .background(Color.canvas)
+        .task(id: navigation.pendingInvoiceID) { openPendingInvoice() }
         .navigationTitle("Invoices")
         .searchable(text: $search, prompt: "Invoice, show or client")
         .sheet(isPresented: $creating) {
@@ -94,7 +109,7 @@ struct InvoiceListView: View {
             }
             ToolbarItem(placement: .topBarTrailing) {
                 Menu {
-                    Picker("Status", selection: $filter) {
+                    Picker("Status", selection: Bindable(navigation).invoiceFilter) {
                         Text("All").tag(InvoiceStatus?.none)
                         ForEach(InvoiceStatus.allCases) { Text($0.label).tag(InvoiceStatus?.some($0)) }
                     }

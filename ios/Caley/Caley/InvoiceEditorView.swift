@@ -99,7 +99,7 @@ struct InvoiceEditorView: View {
                 Text(terms.ruleLine(model.currency)).font(.caption).foregroundStyle(.secondary)
             }
 
-            field("Job name", text: $model.showName, prompt: "e.g. WWE: Clash at the Castle")
+            field("Job name", text: $model.showName, prompt: "e.g. The Salt Road, Series 2")
             AdaptiveRow {
                 field("Invoice number", text: $model.invoiceNumber, prompt: "INV-0001")
                 dateField

@@ -2,10 +2,21 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-	<key>ITSAppUsesNonExemptEncryption</key>
-	<false/>
-	<key>NSFaceIDUsageDescription</key>
-	<string>Caley uses Face ID to keep your invoices and bank details private.</string>
+	<key>CaleyKeychainGroup</key>
+	<string>$(AppIdentifierPrefix)com.stevemckinnon.caley.shared</string>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Viewer</string>
+			<key>CFBundleURLName</key>
+			<string>com.stevemckinnon.caley</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>caley</string>
+			</array>
+		</dict>
+	</array>
 	<key>NSAppTransportSecurity</key>
 	<dict>
 		<key>NSAllowsLocalNetworking</key>
