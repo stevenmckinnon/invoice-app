@@ -125,3 +125,26 @@ private struct ReclaimTrailingStrip: ViewModifier {
         if next != sideTabBar { sideTabBar = next }
     }
 }
+
+extension View {
+    /// Centres a scroll view's content in a readable column while the scroll view itself stays full
+    /// width, so its scroll bar sits at the screen's edge instead of riding on the column's. Content
+    /// margins do the centring. Only on a wide screen; a phone's own margins are left alone.
+    /// Apply it to the ScrollView or List itself.
+    func readableScroll(_ width: CGFloat = 760) -> some View { modifier(ReadableScroll(width: width)) }
+}
+
+private struct ReadableScroll: ViewModifier {
+    let width: CGFloat
+    @Environment(\.horizontalSizeClass) private var sizeClass
+
+    func body(content: Content) -> some View {
+        if sizeClass == .regular {
+            GeometryReader { proxy in
+                content.contentMargins(.horizontal, max(0, (proxy.size.width - width) / 2), for: .scrollContent)
+            }
+        } else {
+            content
+        }
+    }
+}

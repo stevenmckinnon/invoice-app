@@ -5,11 +5,21 @@ struct AccountView: View {
     @Environment(InvoiceStore.self) private var store
     @Environment(AppNavigation.self) private var navigation
     @Environment(AppLock.self) private var lock
+    @Environment(\.horizontalSizeClass) private var sizeClass
 
     var body: some View {
         @Bindable var navigation = navigation
         NavigationStack(path: $navigation.accountPath) {
             List {
+                if sizeClass == .regular {
+                    // The large title belongs to the navigation bar, at the screen's edge: on a wide
+                    // screen it is drawn here instead, in line with the column
+                    Text("Account")
+                        .font(.largeTitle.bold())
+                        .accessibilityAddTraits(.isHeader)
+                        .listRowBackground(Color.clear)
+                        .listRowInsets(EdgeInsets(top: 8, leading: 0, bottom: 0, trailing: 0))
+                }
                 if case .signedIn(let user) = auth.state, !user.email.isEmpty {
                     Section {
                         VStack(alignment: .leading, spacing: 2) {
@@ -44,8 +54,10 @@ struct AccountView: View {
                 }
             }
             .scrollContentBackground(.hidden)
+            .readableScroll()
             .background(Color.canvas)
-            .navigationTitle("Account")
+            .navigationTitle(sizeClass == .regular ? "" : "Account")
+            .toolbarTitleDisplayMode(sizeClass == .regular ? .inline : .large)
             .navigationDestination(for: AccountRoute.self) { route in
                 switch route {
                 case .clients: ClientsView()

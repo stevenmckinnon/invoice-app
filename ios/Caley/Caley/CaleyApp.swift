@@ -105,7 +105,6 @@ struct MainTabView: View {
         @Bindable var navigation = navigation
         TabView(selection: $navigation.tab) {
             DashboardView()
-                .readableColumn()
                 .reclaimTrailingStrip()
                 .tabItem { Label("Dashboard", systemImage: "chart.bar") }
                 .tag(AppTab.dashboard)
@@ -114,12 +113,10 @@ struct MainTabView: View {
                 .tabItem { Label("Invoices", systemImage: "doc.text") }
                 .tag(AppTab.invoices)
             ChatView()
-                .readableColumn()
                 .reclaimTrailingStrip()
                 .tabItem { Label("Assistant", systemImage: "sparkles") }
                 .tag(AppTab.assistant)
             AccountView()
-                .readableColumn()
                 .reclaimTrailingStrip()
                 .tabItem { Label("Account", systemImage: "person.crop.circle") }
                 .tag(AppTab.account)

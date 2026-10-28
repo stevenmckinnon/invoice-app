@@ -31,6 +31,7 @@ struct ClientsView: View {
                 }
                 .listStyle(.plain)
                 .scrollContentBackground(.hidden)
+                .readableScroll()
             }
         }
         .background(Color.canvas)

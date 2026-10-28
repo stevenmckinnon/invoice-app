@@ -80,6 +80,7 @@ struct ChatView: View {
             .frame(maxWidth: .infinity)
         }
         .scrollDismissesKeyboard(.interactively)
+        .readableScroll()
     }
 
     /// Questions run at once; a draft needs details, so it fills the field for you to finish
@@ -132,6 +133,7 @@ struct ChatView: View {
             }
             .defaultScrollAnchor(.bottom)
             .scrollDismissesKeyboard(.interactively)
+            .readableScroll()
             .onChange(of: chat.messages) { proxy.scrollTo("bottom", anchor: .bottom) }
             .onChange(of: chat.error) { proxy.scrollTo("bottom", anchor: .bottom) }
         }
@@ -168,6 +170,7 @@ struct ChatView: View {
         .buttonStyle(PressableStyle())
         .padding(.horizontal, 16)
         .padding(.vertical, 10)
+        .readableWidth()
         .background(Color.canvas)
     }
 
