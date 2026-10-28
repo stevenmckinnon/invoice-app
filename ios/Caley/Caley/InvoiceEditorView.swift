@@ -61,8 +61,8 @@ struct InvoiceEditorView: View {
             .safeAreaInset(edge: .bottom) { saveBar }
             .sheet(isPresented: $pickingDate) { datePickerSheet }
             .sheet(isPresented: $importing) {
-                CalendarImportView(painted: model.painted, start: model.importRange.start, end: model.importRange.end) {
-                    model.addWorkDays($0)
+                CalendarImportView(painted: model.painted, start: model.importRange.start, end: model.importRange.end) { dates, name in
+                    model.addWorkDays(dates, suggestedName: name)
                 }
             }
             .task { await model.load(auth: auth) }

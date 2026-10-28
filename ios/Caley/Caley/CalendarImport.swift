@@ -7,6 +7,13 @@ struct CalendarEvent: Equatable {
     let end: Date
 }
 
+/// A calendar the user can pick events from
+struct CalendarChoice: Identifiable, Equatable {
+    let id: String
+    let title: String
+    let account: String
+}
+
 /// A date with at least one event on it
 struct CalendarDay: Identifiable, Equatable {
     let date: String
@@ -52,6 +59,29 @@ enum CalendarImport {
         return next
     }
 
+    /// A job name to offer for the picked days: the title that comes up most (when it repeats), else
+    /// the words every title starts with, minus a trailing "day". "Triplemania day 1", "Triplemania
+    /// day 2" gives "Triplemania". Nil when the titles share nothing worth using.
+    static func suggestedName(from titles: [String]) -> String? {
+        let titles = titles.map { $0.trimmingCharacters(in: .whitespaces) }.filter { !$0.isEmpty }
+        guard !titles.isEmpty else { return nil }
+        let counts = Dictionary(titles.map { ($0, 1) }, uniquingKeysWith: +)
+        if let top = counts.max(by: { $0.value < $1.value || ($0.value == $1.value && $0.key > $1.key) }), top.value >= 2,
+           top.value * 2 > titles.count {
+            return top.key
+        }
+        var shared = titles[0].split(separator: " ").map(String.init)
+        for title in titles.dropFirst() {
+            let words = title.split(separator: " ").map(String.init)
+            var keep = 0
+            while keep < min(shared.count, words.count), shared[keep].lowercased() == words[keep].lowercased() { keep += 1 }
+            shared = Array(shared.prefix(keep))
+        }
+        while let last = shared.last, last.lowercased() == "day" || Int(last) != nil { shared.removeLast() }
+        let name = shared.joined(separator: " ")
+        return name.count >= 4 ? name : nil
+    }
+
     private static func isoDate(_ date: Date, _ calendar: Calendar) -> String {
         let c = calendar.dateComponents([.year, .month, .day], from: date)
         return String(format: "%04d-%02d-%02d", c.year!, c.month!, c.day!)
@@ -84,12 +114,28 @@ final class CalendarReader {
         }
     }
 
-    func events(from start: Date, to end: Date) -> [CalendarEvent] {
+    /// Holidays, birthdays and other subscribed calendars are full of all-day events that aren't work
+    private var workCandidates: [EKCalendar] {
+        store.calendars(for: .event).filter { $0.type != .birthday && $0.type != .subscription }
+    }
+
+    /// The calendars that could hold work, for the picker
+    func calendars() -> [CalendarChoice] {
+        guard authorized else { return [] }
+        return workCandidates
+            .map { CalendarChoice(id: $0.calendarIdentifier, title: $0.title, account: $0.source.title) }
+            .sorted { ($0.account, $0.title) < ($1.account, $1.title) }
+    }
+
+    /// Events in the range, from the given calendars (every work candidate when `only` is empty)
+    func events(from start: Date, to end: Date, only: Set<String> = []) -> [CalendarEvent] {
         guard authorized else { return [] }
         let calendar = Calendar.current
         let from = calendar.startOfDay(for: start)
         let to = calendar.date(byAdding: .day, value: 1, to: calendar.startOfDay(for: end)) ?? end
-        let predicate = store.predicateForEvents(withStart: from, end: to, calendars: nil)
+        let chosen = workCandidates.filter { only.isEmpty || only.contains($0.calendarIdentifier) }
+        guard !chosen.isEmpty else { return [] }
+        let predicate = store.predicateForEvents(withStart: from, end: to, calendars: chosen)
         return store.events(matching: predicate)
             .filter { $0.status != .canceled }
             .map { CalendarEvent(title: $0.title ?? "", start: $0.startDate, end: $0.endDate) }

@@ -65,3 +65,22 @@ final class CalendarImportTests: XCTestCase {
         XCTAssertEqual(next["2026-10-07"]?.kind, .work)
     }
 }
+
+final class CalendarNameSuggestionTests: XCTestCase {
+    func testNumberedDaysShareTheirName() {
+        XCTAssertEqual(CalendarImport.suggestedName(from: ["Triplemania day 1", "Triplemania day 2", "Triplemania day 3"]), "Triplemania")
+    }
+
+    func testRepeatedTitleWinsWhenMostDaysUseIt() {
+        XCTAssertEqual(CalendarImport.suggestedName(from: ["The Salt Road", "The Salt Road", "The Salt Road", "Call"]), "The Salt Road")
+    }
+
+    func testUnrelatedTitlesSuggestNothing() {
+        XCTAssertNil(CalendarImport.suggestedName(from: ["Dentist", "Lunch with Sam"]))
+        XCTAssertNil(CalendarImport.suggestedName(from: []))
+    }
+
+    func testTooShortASharedWordIsNotUsed() {
+        XCTAssertNil(CalendarImport.suggestedName(from: ["On set", "On location"]))
+    }
+}
