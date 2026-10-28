@@ -17,6 +17,7 @@ import {
   generateNextInvoiceNumber,
   isDuplicateInvoiceNumberError,
 } from "@/lib/invoice-number";
+import { formatCurrency } from "@/lib/utils";
 
 /** Dates reach Prisma via `new Date()`, so anything looser becomes Invalid Date */
 const isoDate = z
@@ -48,7 +49,7 @@ export interface InvoiceToolContext {
   } | null;
   profileComplete: boolean;
   currency: string;
-  /** Currency symbol, for the totals the tools report back to the model */
+  /** Currency symbol */
   sym: string;
 }
 
@@ -201,7 +202,6 @@ export const buildInvoiceTools = ({
   user,
   profileComplete,
   currency,
-  sym,
 }: InvoiceToolContext) => ({
   createInvoiceDraft: tool({
     description:
@@ -331,7 +331,7 @@ export const buildInvoiceTools = ({
         invoiceId: invoice.id,
         invoiceNumber: invoice.invoiceNumber,
         days: describeDays(days),
-        total: `${sym}${Number(invoice.totalAmount).toFixed(2)}`,
+        total: formatCurrency(Number(invoice.totalAmount), currency),
       };
     },
   }),
@@ -387,7 +387,7 @@ export const buildInvoiceTools = ({
         return {
           success: true,
           invoiceId,
-          total: `${sym}${Number(existing.totalAmount).toFixed(2)}`,
+          total: formatCurrency(Number(existing.totalAmount), currency),
         };
       }
 
@@ -429,7 +429,7 @@ export const buildInvoiceTools = ({
         success: true,
         invoiceId,
         days: describeDays(nextDays),
-        total: `${sym}${billing.totalAmount.toFixed(2)}`,
+        total: formatCurrency(billing.totalAmount, currency),
       };
     },
   }),
