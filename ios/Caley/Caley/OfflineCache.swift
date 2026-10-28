@@ -77,7 +77,10 @@ final class Connectivity {
     private let monitor = NWPathMonitor()
 
     private init() {
-        monitor.pathUpdateHandler = { [weak self] path in
+        // @Sendable: the system calls this on the monitor's own queue. Without it the closure inherits
+        // this class's main-actor isolation and the runtime flags the off-main call
+        // ("unsafeForcedSync called from Swift Concurrent context")
+        monitor.pathUpdateHandler = { @Sendable [weak self] path in
             let online = path.status == .satisfied
             Task { @MainActor in self?.pathOnline = online }
         }
