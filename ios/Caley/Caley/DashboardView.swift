@@ -55,7 +55,8 @@ struct DashboardView: View {
                 }
             }
             .background(Color.canvas)
-            .navigationTitle("Dashboard")
+            .navigationTitle(sizeClass == .regular ? "" : "Dashboard")
+            .toolbarTitleDisplayMode(sizeClass == .regular ? .inline : .large)
             .navigationDestination(for: String.self) { InvoiceDetailView(id: $0) }
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) { yearMenu }
@@ -129,17 +130,24 @@ struct DashboardView: View {
         let overdue = inYear.filter { $0.status == .overdue }
         VStack(spacing: 12) {
             if sizeClass == .regular {
-                // A full-width bar is out of proportion on a wide screen: there it is a compact button
-                Button(action: startInvoice) {
-                    Label("New invoice", systemImage: "plus")
-                        .font(.headline)
-                        .padding(.horizontal, 20)
-                        .frame(minHeight: 44)
-                        .foregroundStyle(.white)
-                        .background(Color.brand, in: Capsule())
+                // The large title belongs to the navigation bar and can't share its line, so on a wide
+                // screen the title is drawn here, with a compact button beside it
+                HStack(alignment: .center) {
+                    Text("Dashboard")
+                        .font(.largeTitle.bold())
+                        .accessibilityAddTraits(.isHeader)
+                    Spacer(minLength: 12)
+                    Button(action: startInvoice) {
+                        Label("New invoice", systemImage: "plus")
+                            .font(.headline)
+                            .padding(.horizontal, 20)
+                            .frame(minHeight: 44)
+                            .foregroundStyle(.white)
+                            .background(Color.brand, in: Capsule())
+                    }
+                    .buttonStyle(PressableStyle())
                 }
-                .buttonStyle(PressableStyle())
-                .frame(maxWidth: .infinity, alignment: .trailing)
+                .padding(.top, 4)
             } else {
                 newInvoiceButton
             }
