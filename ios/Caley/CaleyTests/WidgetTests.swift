@@ -134,6 +134,8 @@ final class WidgetTests: XCTestCase {
         for status in [InvoiceStatus.sent, .paid, .overdue] {
             XCTAssertNil(InvoiceStatus.afterSharing(status, completed: true))
         }
+    }
+
     func testDashboardLinkOpensTheDashboard() {
         let nav = AppNavigation()
         nav.tab = .account
