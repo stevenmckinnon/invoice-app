@@ -17,6 +17,8 @@ final class AppLock {
     private(set) var locked: Bool
     private var leftAt: Date?
     private var asking = false
+    /// One automatic prompt per lock, so cancelling it leaves the button rather than asking again
+    private var autoPrompted = false
 
     init() {
         let on = UserDefaults.standard.bool(forKey: Self.key)
@@ -44,7 +46,10 @@ final class AppLock {
         case .background:
             if leftAt == nil { leftAt = .now }
         case .active:
-            if enabled, let leftAt, Date.now.timeIntervalSince(leftAt) >= Self.grace { locked = true }
+            if enabled, let leftAt, Date.now.timeIntervalSince(leftAt) >= Self.grace {
+                locked = true
+                autoPrompted = false
+            }
             leftAt = nil
         default:
             break
@@ -54,12 +59,22 @@ final class AppLock {
     /// Signing out ends the session, so the next sign-in (with a password) starts unlocked
     func signedOut() { locked = false }
 
+    /// Called when the lock screen is showing in front of you: asks straight away, once
+    func promptIfNeeded() async {
+        guard locked, !autoPrompted else { return }
+        autoPrompted = true
+        await unlock()
+    }
+
     /// Asks the phone to authenticate; unlocks on success. A cancel leaves it locked for the button.
     func unlock() async {
         guard locked, !asking else { return }
         asking = true
         defer { asking = false }
-        if await authenticate() { locked = false }
+        if await authenticate() {
+            locked = false
+            autoPrompted = false
+        }
     }
 
     /// Turning the lock on takes one successful check, so you can't lock yourself out of a phone
@@ -84,6 +99,10 @@ final class AppLock {
 /// takes shows no invoices.
 struct LockView: View {
     @Environment(AppLock.self) private var lock
+    @Environment(\.scenePhase) private var scenePhase
+
+    /// Face ID can only be asked for while the app is in front
+    private var shouldPrompt: Bool { lock.locked && scenePhase == .active }
 
     var body: some View {
         VStack(spacing: 24) {
@@ -104,6 +123,6 @@ struct LockView: View {
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(Color("LaunchBackground").ignoresSafeArea())
-        .task { await lock.unlock() }
+        .task(id: shouldPrompt) { if shouldPrompt { await lock.promptIfNeeded() } }
     }
 }
