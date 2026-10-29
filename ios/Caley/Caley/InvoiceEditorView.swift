@@ -176,6 +176,8 @@ struct InvoiceEditorView: View {
                 painted: $model.painted, selected: $model.selected,
                 brush: model.brush, initialMonth: model.initialMonth)
 
+            dayDetail
+
             Text("Tap a date to paint it. Touch and hold, then drag, to paint a run.")
                 .font(.caption).foregroundStyle(.secondary)
 
@@ -185,8 +187,6 @@ struct InvoiceEditorView: View {
             }
             .buttonStyle(.bordered)
             .tint(.brand)
-
-            dayDetail
 
             if !countsSummary.isEmpty {
                 Text(countsSummary).font(.subheadline.weight(.medium))
@@ -205,18 +205,35 @@ struct InvoiceEditorView: View {
         return parts.joined(separator: " · ")
     }
 
+    /// How the hours split under the client's terms, as `billDays` will: the tier's first rate up to
+    /// its hours, then the second; no tier, all of it at 1.5x
+    private func overtimeSplit(_ hours: Double) -> String {
+        let rate = { (r: String) in r.replacingOccurrences(of: "x", with: "×") }
+        guard let client = model.client, let tierHours = client.overtimeTierHours?.double,
+              let first = client.overtimeFirstRate, let after = client.overtimeAfterRate else {
+            return "\(hours.formatted())h at 1.5×."
+        }
+        let atFirst = min(hours, tierHours)
+        guard hours > atFirst else { return "\(hours.formatted())h at \(rate(first))." }
+        return "\(atFirst.formatted())h at \(rate(first)) and \((hours - atFirst).formatted())h at \(rate(after)): the rate changes after \(tierHours.formatted())h."
+    }
+
     @ViewBuilder
     private var dayDetail: some View {
-        if let date = model.selected, let day = model.painted[date], day.kind == .work {
-            VStack(alignment: .leading, spacing: 10) {
+        let date = model.selected
+        let day = date.flatMap { model.painted[$0] }
+        VStack(alignment: .leading, spacing: 10) {
+            if let date, let day, day.kind == .work {
                 Text(DateOnly.parse(date).map { DateOnly.format($0, .dateTime.weekday(.wide).day().month(.wide)) } ?? date)
                     .font(.subheadline.weight(.semibold))
                 Stepper(value: Binding(
                     get: { model.painted[date]?.overtimeHours ?? 0 },
                     set: { model.painted[date]?.overtimeHours = $0 > 0 ? $0 : nil }
-                ), in: 0...12, step: 0.5) {
+                ), in: 0...14, step: 0.5) {
                     Text("Overtime: \((day.overtimeHours ?? 0).formatted()) h").monospacedDigit()
                 }
+                Text((day.overtimeHours ?? 0) > 0 ? overtimeSplit(day.overtimeHours ?? 0) : "Hours past a 10-hour day.")
+                    .font(.caption).foregroundStyle(.secondary)
                 if day.alsoTravel != nil {
                     Picker("Travel", selection: Binding(
                         get: { model.painted[date]?.alsoTravel ?? .auto },
@@ -228,10 +245,17 @@ struct InvoiceEditorView: View {
                     }
                     .pickerStyle(.segmented)
                 }
+            } else {
+                Label(day == nil
+                      ? "Paint a work day, then tap it to add overtime."
+                      : "Overtime is added to work days. Tap one to set its hours.",
+                      systemImage: "clock")
+                    .font(.subheadline).foregroundStyle(.secondary)
             }
-            .padding(12)
-            .background(Color.primary.opacity(0.05), in: RoundedRectangle(cornerRadius: 12, style: .continuous))
         }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(12)
+        .background(Color.primary.opacity(0.05), in: RoundedRectangle(cornerRadius: 12, style: .continuous))
     }
 
     private var expensesCard: some View {
