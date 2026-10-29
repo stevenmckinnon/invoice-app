@@ -29,6 +29,8 @@ export const ConditionalLayout = ({ children }: ConditionalLayoutProps) => {
     "/auth/signup",
     "/auth/forgot-password",
     "/auth/reset-password",
+    // An app asking to connect: a page of its own, like signing in
+    "/consent",
   ];
 
   const isLandingPage = pathname === "/";

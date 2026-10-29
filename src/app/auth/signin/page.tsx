@@ -33,10 +33,12 @@ const SignInForm = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [showSuccessAnimation, setShowSuccessAnimation] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  // Where to go once signed in: an MCP client's authorization picks up here
+  const [next, setNext] = useState(callbackUrl);
 
   const handleSuccessAnimationComplete = () => {
     // Force a page refresh to update session
-    window.location.href = callbackUrl;
+    window.location.href = next;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -59,6 +61,10 @@ const SignInForm = () => {
         setIsLoading(false);
         return;
       }
+
+      // Signing in to authorize a connector returns where that flow resumes
+      const data = result.data as { redirect?: boolean; url?: string } | null;
+      if (data?.redirect && data.url) setNext(data.url);
 
       // Show success animation
       setShowSuccessAnimation(true);

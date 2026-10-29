@@ -1,7 +1,10 @@
 
+import { cimd } from "@better-auth/cimd";
+import { fetchClientMetadataResource } from "@better-auth/cimd/node";
+import { mcp } from "@better-auth/mcp";
 import { betterAuth } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
-import { bearer } from "better-auth/plugins";
+import { bearer, jwt } from "better-auth/plugins";
 import { networkInterfaces } from "node:os";
 import { Resend } from "resend";
 
@@ -38,6 +41,20 @@ const lanDevOrigins = () => {
     .filter((net) => net && net.family === "IPv4" && !net.internal)
     .map((net) => `http://${net!.address}:${port}`);
 };
+
+const baseURL =
+  process.env.BETTER_AUTH_URL ||
+  process.env.NEXT_PUBLIC_APP_URL ||
+  "http://localhost:3000";
+
+/** Better Auth's issuer: its base URL plus the auth route's path */
+export const authIssuer = `${baseURL}/api/auth`;
+
+/** The MCP endpoint: what a connector's access tokens are issued for */
+export const MCP_RESOURCE = `${baseURL}/api/mcp`;
+
+/** Read-only for now; invoices:write arrives with the tools that change things */
+export const MCP_SCOPES = ["openid", "profile", "offline_access", "invoices:read"];
 
 export const auth = betterAuth({
   database: prismaAdapter(prisma, {
@@ -107,7 +124,24 @@ export const auth = betterAuth({
   // The iOS app signs in with email + password, keeps the `set-auth-token`
   // response header in the Keychain and sends it back as a Bearer token. Web
   // sessions are unchanged.
-  plugins: [bearer()],
+  //
+  // The rest make Caley an OAuth server for MCP clients (Claude on the phone
+  // and laptop): it signs you in once through the normal login, then
+  // `/api/mcp` accepts the tokens issued. Clients identify themselves with a
+  // Client ID Metadata Document, so nothing is registered by hand.
+  plugins: [
+    bearer(),
+    jwt(),
+    mcp({
+      loginPage: "/auth/signin",
+      consentPage: "/consent",
+      resource: MCP_RESOURCE,
+      // Prisma can't store a resource without its scopes
+      resources: [{ identifier: MCP_RESOURCE, allowedScopes: MCP_SCOPES }],
+      scopes: MCP_SCOPES,
+    }),
+    cimd({ fetchClientMetadataResource, metadataProfile: "mcp-2026-07-28" }),
+  ],
   session: {
     // Serve getSession from a signed cookie instead of hitting the DB on
     // every request. Revocations can lag by up to maxAge.
@@ -117,10 +151,7 @@ export const auth = betterAuth({
     },
   },
   secret: secret ?? "secret-for-development-only",
-  baseURL:
-    process.env.BETTER_AUTH_URL ||
-    process.env.NEXT_PUBLIC_APP_URL ||
-    "http://localhost:3000",
+  baseURL,
   trustedOrigins: [
     "http://localhost:3000",
     "https://invoice-app-drab-psi.vercel.app",
