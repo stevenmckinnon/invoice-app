@@ -11,7 +11,7 @@ import { headers } from "next/headers";
 
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
-import { buildInvoiceTools } from "@/lib/invoice-tools";
+import { buildInvoiceTools, isProfileComplete } from "@/lib/invoice-tools";
 import { clientOvertimeRule } from "@/lib/overtime";
 import { checkRateLimit, type RateLimitWindow } from "@/lib/rate-limit";
 import { formatCurrency } from "@/lib/utils";
@@ -157,15 +157,7 @@ export const POST = async (req: Request) => {
   const statusCount = (status: string) =>
     countOf(totalsByStatus.filter((r) => r.status === status));
 
-  const profileComplete = !!(
-    user?.iban &&
-    user?.swiftBic &&
-    user?.addressLine1 &&
-    user?.city &&
-    user?.postalCode &&
-    user?.country &&
-    (user?.fullName || user?.name)
-  );
+  const profileComplete = isProfileComplete(user);
 
   const clientsList =
     clients.length > 0

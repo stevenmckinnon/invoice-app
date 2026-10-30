@@ -30,8 +30,11 @@ const callTool = async (
   userId: string,
   name: string,
   args: Record<string, unknown>,
+  scopes: string[] = ["invoices:read"],
 ) => {
-  const handler = mod.createMcpHandler(() => mod.createCaleyMcpServer(userId));
+  const handler = mod.createMcpHandler(() =>
+    mod.createCaleyMcpServer(userId, scopes),
+  );
   const response = await handler.fetch(
     new Request("http://localhost/api/mcp", {
       method: "POST",
@@ -97,7 +100,10 @@ describe("protected resource metadata", () => {
     const metadata = (await GET().json()) as Record<string, unknown>;
     assert.equal(metadata.resource, MCP_RESOURCE);
     assert.deepEqual(metadata.authorization_servers, [authIssuer]);
-    assert.deepEqual(metadata.scopes_supported, ["invoices:read"]);
+    assert.deepEqual(metadata.scopes_supported, [
+      "invoices:read",
+      "invoices:write",
+    ]);
   });
 });
 
@@ -181,6 +187,173 @@ describe(
         id: other.id,
       });
       assert.equal(isError, true);
+    });
+
+    describe("drafts", () => {
+      const write = ["invoices:read", "invoices:write"];
+      let writer: string;
+      let bare: string;
+      let clientId: string;
+
+      const days = (...dates: string[]) =>
+        dates.map((date) => ({ date, type: "work" }));
+
+      before(async () => {
+        const tag = Date.now().toString(36);
+        writer = (
+          await mod.prisma.user.create({
+            data: {
+              email: `mcp-writer-${tag}@example.test`,
+              fullName: "Test Freelancer",
+              addressLine1: "1 Test Street",
+              city: "Glasgow",
+              postalCode: "G1 1AA",
+              country: "United Kingdom",
+              iban: "GB00TEST00000000000000",
+              swiftBic: "TESTGB2L",
+              currency: "GBP",
+            },
+          })
+        ).id;
+        // No profile: an invoice can't be made without bank details
+        bare = (
+          await mod.prisma.user.create({
+            data: { email: `mcp-bare-${tag}@example.test` },
+          })
+        ).id;
+        userIds.push(writer, bare);
+        clientId = (
+          await mod.prisma.client.create({
+            data: { userId: writer, name: "Mallard", dayRate: 500 },
+          })
+        ).id;
+      });
+
+      const create = (userId = writer, scopes = write) =>
+        callTool(
+          mod,
+          userId,
+          "create_invoice_draft",
+          {
+            showName: "Harbour Lights",
+            invoiceDate: "2026-10-30",
+            clientId,
+            days: days("2026-10-26", "2026-10-27"),
+          },
+          scopes,
+        );
+
+      it("won't create anything on a read-only connection", async () => {
+        const { isError, text } = await create(writer, ["invoices:read"]);
+        assert.equal(isError, true);
+        assert.match(text, /reconnect|connect it again/);
+        assert.equal(
+          await mod.prisma.invoice.count({ where: { userId: writer } }),
+          0,
+        );
+      });
+
+      it("creates a draft priced from the client's terms", async () => {
+        const { isError, text } = await create();
+        assert.equal(isError, false);
+        const made = JSON.parse(text) as {
+          invoiceId: string;
+          open: string;
+        };
+        assert.match(made.open, /\/invoices\//);
+        const invoice = await mod.prisma.invoice.findFirstOrThrow({
+          where: { id: made.invoiceId },
+          include: { days: true },
+        });
+        assert.equal(invoice.status, "draft");
+        assert.equal(invoice.userId, writer);
+        assert.equal(invoice.days.length, 2);
+        assert.equal(Number(invoice.totalAmount), 1000);
+      });
+
+      it("refuses without bank details rather than make half an invoice", async () => {
+        const { isError, text } = await create(bare);
+        assert.equal(isError, true);
+        assert.match(text, /profile/i);
+      });
+
+      it("reprices a draft when its days change", async () => {
+        const draft = await mod.prisma.invoice.findFirstOrThrow({
+          where: { userId: writer, status: "draft" },
+        });
+        const { isError } = await callTool(
+          mod,
+          writer,
+          "update_invoice_draft",
+          {
+            invoiceId: draft.id,
+            days: days("2026-10-26", "2026-10-27", "2026-10-28"),
+          },
+          write,
+        );
+        assert.equal(isError, false);
+        const after = await mod.prisma.invoice.findFirstOrThrow({
+          where: { id: draft.id },
+        });
+        assert.equal(Number(after.totalAmount), 1500);
+      });
+
+      it("won't change an invoice that has been sent", async () => {
+        const draft = await mod.prisma.invoice.findFirstOrThrow({
+          where: { userId: writer },
+        });
+        await mod.prisma.invoice.update({
+          where: { id: draft.id },
+          data: { status: "sent" },
+        });
+        const { isError, text } = await callTool(
+          mod,
+          writer,
+          "update_invoice_draft",
+          { invoiceId: draft.id, notes: "sneaky" },
+          write,
+        );
+        assert.equal(isError, true);
+        assert.match(text, /sent/);
+        const after = await mod.prisma.invoice.findFirstOrThrow({
+          where: { id: draft.id },
+        });
+        assert.notEqual(after.notes, "sneaky");
+      });
+
+      it("won't touch another user's draft", async () => {
+        const mineDraft = await create();
+        const id = (JSON.parse(mineDraft.text) as { invoiceId: string })
+          .invoiceId;
+        const { isError } = await callTool(
+          mod,
+          mine,
+          "update_invoice_draft",
+          { invoiceId: id, notes: "not yours" },
+          write,
+        );
+        assert.equal(isError, true);
+        const after = await mod.prisma.invoice.findFirstOrThrow({
+          where: { id },
+        });
+        assert.notEqual(after.notes, "not yours");
+      });
+
+      it("won't price against someone else's client", async () => {
+        const { isError } = await callTool(
+          mod,
+          mine,
+          "create_invoice_draft",
+          {
+            showName: "Borrowed",
+            invoiceDate: "2026-10-30",
+            clientId,
+            days: days("2026-10-26"),
+          },
+          write,
+        );
+        assert.equal(isError, true);
+      });
     });
 
     it("finds a search across clients, jobs and numbers within the user", async () => {

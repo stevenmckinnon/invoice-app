@@ -1,12 +1,21 @@
 /**
- * The tools an MCP client (Claude on the phone or laptop) can call. Read-only
- * for now. Every query is scoped to the user the access token was issued to,
- * exactly as the route handlers scope theirs by the session.
+ * The tools an MCP client (Claude on the phone or laptop) can call. Reading
+ * needs `invoices:read`; making and correcting drafts needs `invoices:write`.
+ * Nothing here can send, mark paid or delete an invoice. Every query is scoped
+ * to the user the access token was issued to, exactly as the route handlers
+ * scope theirs by the session.
  */
 import { McpServer } from "@modelcontextprotocol/server";
 import * as z from "zod";
 
+import { APP_URL } from "@/lib/auth";
 import { prisma } from "@/lib/db";
+import {
+  buildInvoiceTools,
+  createInvoiceDraftInput,
+  isProfileComplete,
+  updateInvoiceDraftInput,
+} from "@/lib/invoice-tools";
 
 const text = (value: unknown) => ({
   content: [
@@ -23,8 +32,63 @@ const day = (value: Date) => value.toISOString().slice(0, 10);
 
 const readOnly = { readOnlyHint: true, openWorldHint: false } as const;
 
-export const createCaleyMcpServer = (userId: string) => {
+/** The chat tools' own answer: an error to explain, or what was written */
+type DraftResult = { error?: string } & Record<string, unknown>;
+
+export const createCaleyMcpServer = (
+  userId: string,
+  /** The scopes the access token was granted */
+  scopes: string[] = ["invoices:read"],
+) => {
   const server = new McpServer({ name: "caley", version: "1.0.0" });
+  const canWrite = scopes.includes("invoices:write");
+  const needsWrite = failure(
+    "This connection can read invoices but not create them. In Claude, disconnect the Caley connector and connect it again, and allow it to create drafts.",
+  );
+
+  /** The chat tools, with the user's profile loaded as the chat route does */
+  const draftTools = async () => {
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        fullName: true,
+        name: true,
+        email: true,
+        currency: true,
+        addressLine1: true,
+        addressLine2: true,
+        city: true,
+        state: true,
+        postalCode: true,
+        country: true,
+        iban: true,
+        swiftBic: true,
+        accountNumber: true,
+        sortCode: true,
+        bankAddress: true,
+      },
+    });
+    const currency = user?.currency ?? "GBP";
+    return buildInvoiceTools({
+      userId,
+      email: user?.email ?? "",
+      user,
+      profileComplete: isProfileComplete(user),
+      currency,
+      sym: currency,
+    });
+  };
+
+  const draftAnswer = (result: DraftResult) =>
+    result.error
+      ? failure(result.error)
+      : text({
+          ...result,
+          // Where to review it: the app opens drafts in the calendar editor
+          ...(typeof result.invoiceId === "string" && {
+            open: `${APP_URL}/invoices/${result.invoiceId}`,
+          }),
+        });
 
   server.registerTool(
     "list_clients",
@@ -169,6 +233,56 @@ export const createCaleyMcpServer = (userId: string) => {
         })),
         total: Number(invoice.totalAmount),
       });
+    },
+  );
+
+  server.registerTool(
+    "create_invoice_draft",
+    {
+      description:
+        "Create a DRAFT invoice from the dated days of a job. Prices it from a saved client's terms (use list_clients for the id) and adds your profile and bank details. Nothing is sent: review the draft in Caley, then send it from there. Give one entry per billed date; overtime goes on the day as hours.",
+      inputSchema: createInvoiceDraftInput,
+      annotations: { readOnlyHint: false, destructiveHint: false },
+    },
+    async (input) => {
+      if (!canWrite) return needsWrite;
+      const tools = await draftTools();
+      const result = (await tools.createInvoiceDraft.execute!(input, {
+        toolCallId: "mcp",
+        messages: [],
+      } as never)) as DraftResult;
+      return draftAnswer(result);
+    },
+  );
+
+  server.registerTool(
+    "update_invoice_draft",
+    {
+      description:
+        "Correct a DRAFT invoice: name, date, contact, notes, days or expenses. Days and expenses replace what's there, so send the full set. Invoices that have been sent or paid can't be changed here.",
+      inputSchema: updateInvoiceDraftInput,
+      annotations: { readOnlyHint: false, destructiveHint: false },
+    },
+    async (input) => {
+      if (!canWrite) return needsWrite;
+      // Only drafts: once an invoice has gone out, changing it is a decision
+      // for the app, not for an assistant
+      const existing = await prisma.invoice.findFirst({
+        where: { id: input.invoiceId, userId },
+        select: { status: true },
+      });
+      if (!existing) return failure("No invoice found.");
+      if (existing.status !== "draft") {
+        return failure(
+          `This invoice is ${existing.status}, so it can't be changed here. Only drafts can.`,
+        );
+      }
+      const tools = await draftTools();
+      const result = (await tools.updateInvoiceDraft.execute!(input, {
+        toolCallId: "mcp",
+        messages: [],
+      } as never)) as DraftResult;
+      return draftAnswer(result);
     },
   );
 
