@@ -47,14 +47,23 @@ const baseURL =
   process.env.NEXT_PUBLIC_APP_URL ||
   "http://localhost:3000";
 
+/** The public origin, for links back into the app */
+export const APP_URL = baseURL;
+
 /** Better Auth's issuer: its base URL plus the auth route's path */
 export const authIssuer = `${baseURL}/api/auth`;
 
 /** The MCP endpoint: what a connector's access tokens are issued for */
 export const MCP_RESOURCE = `${baseURL}/api/mcp`;
 
-/** Read-only for now; invoices:write arrives with the tools that change things */
-export const MCP_SCOPES = ["openid", "profile", "offline_access", "invoices:read"];
+/** invoices:write is for drafts only: the tools can't send, mark paid or delete */
+export const MCP_SCOPES = [
+  "openid",
+  "profile",
+  "offline_access",
+  "invoices:read",
+  "invoices:write",
+];
 
 export const auth = betterAuth({
   database: prismaAdapter(prisma, {
@@ -138,6 +147,8 @@ export const auth = betterAuth({
       resource: MCP_RESOURCE,
       // Prisma can't store a resource without its scopes
       resources: [{ identifier: MCP_RESOURCE, allowedScopes: MCP_SCOPES }],
+      // The scopes above are the policy: an existing row must follow them
+      resourceSeedMode: "overwrite",
       scopes: MCP_SCOPES,
     }),
     cimd({ fetchClientMetadataResource, metadataProfile: "mcp-2026-07-28" }),

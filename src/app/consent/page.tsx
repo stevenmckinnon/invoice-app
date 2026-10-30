@@ -10,6 +10,7 @@ export const metadata = { title: "Connect to Caley" };
 /** What each scope lets the app do, in words a person would use */
 const SCOPE_TEXT: Record<string, string> = {
   "invoices:read": "See your clients and invoices, including amounts",
+  "invoices:write": "Create draft invoices and edit drafts",
   offline_access: "Stay connected until you disconnect it",
   openid: "Know which Caley account this is",
   profile: "Know your name",
@@ -73,8 +74,10 @@ const Page = async ({
               ))}
             </ul>
             <p className="text-muted-foreground mt-4 text-xs">
-              It can&apos;t change or delete anything. You can disconnect it at
-              any time.
+              {scopes.includes("invoices:write")
+                ? "It can't send an invoice, mark one paid or delete anything: drafts are for you to review and send."
+                : "It can't change or delete anything."}{" "}
+              You can disconnect it at any time.
             </p>
             <ConsentForm />
           </>

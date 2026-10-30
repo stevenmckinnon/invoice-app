@@ -53,6 +53,29 @@ export interface InvoiceToolContext {
   sym: string;
 }
 
+/** The profile fields every invoice copies; without them one can't be made */
+export const isProfileComplete = (
+  user: {
+    fullName: string | null;
+    name: string | null;
+    addressLine1: string | null;
+    city: string | null;
+    postalCode: string | null;
+    country: string | null;
+    iban: string | null;
+    swiftBic: string | null;
+  } | null,
+) =>
+  !!(
+    user?.iban &&
+    user.swiftBic &&
+    user.addressLine1 &&
+    user.city &&
+    user.postalCode &&
+    user.country &&
+    (user.fullName || user.name)
+  );
+
 const daySchema = z.object({
   date: isoDate.describe("The calendar date"),
   type: z

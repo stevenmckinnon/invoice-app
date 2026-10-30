@@ -18,7 +18,17 @@ export const POST = requireMcpAuth(
   (request, claims) => {
     const userId = claims.sub;
     if (!userId) return new Response("Unauthorized", { status: 401 });
-    return createMcpHandler(() => createCaleyMcpServer(userId)).fetch(request);
+    // The scope claim is a space-separated string
+    const scopes = String(claims.scope ?? "").split(" ");
+    return createMcpHandler(() =>
+      createCaleyMcpServer(userId, scopes),
+    ).fetch(request);
   },
-  { resource: MCP_RESOURCE, requiredScopes: ["invoices:read"] },
+  {
+    resource: MCP_RESOURCE,
+    // Reading is the floor; writing is asked for too, so a new connection is
+    // offered both at once
+    requiredScopes: ["invoices:read"],
+    challengeScopes: ["invoices:read", "invoices:write"],
+  },
 );
