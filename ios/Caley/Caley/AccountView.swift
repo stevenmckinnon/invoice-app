@@ -44,6 +44,11 @@ struct AccountView: View {
                     NavigationLink(value: AccountRoute.clients) { Text("Clients") }
                 }
                 Section {
+                    TaxYearExportRow()
+                } footer: {
+                    Text("A spreadsheet of the year's sent, paid and overdue invoices, 6 April to 5 April.")
+                }
+                Section {
                     Toggle("Require \(lock.methodName)", isOn: Binding(
                         get: { lock.enabled },
                         set: { on in

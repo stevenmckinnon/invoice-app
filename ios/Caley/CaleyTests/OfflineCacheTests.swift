@@ -15,6 +15,8 @@ final class OfflineCacheTests: XCTestCase {
         // A saved answer would hand out a number that is already taken
         XCTAssertFalse(DiskCache.isCacheable("api/invoices/next-number"))
         XCTAssertFalse(DiskCache.isCacheable("api/invoices/clx123abc/pdf"))
+        // Looks like an invoice's path, but it's a report fetched on demand
+        XCTAssertFalse(DiskCache.isCacheable("api/invoices/export"))
         XCTAssertFalse(DiskCache.isCacheable("api/auth/get-session"))
         XCTAssertFalse(DiskCache.isCacheable("api/chat"))
     }

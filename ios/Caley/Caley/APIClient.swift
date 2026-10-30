@@ -225,6 +225,19 @@ struct APIClient {
         }
     }
 
+    /// A tax year's invoices as a CSV, saved to a temp file named after the year so the share sheet
+    /// offers a sensible filename. Fetched on demand, never cached: it's a report, not an invoice.
+    func taxYearExport(year: Int) async throws -> URL {
+        var req = try request("api/invoices/export")
+        req.url = req.url?.appending(queryItems: [URLQueryItem(name: "year", value: String(year))])
+        let (data, _) = try await perform(req)
+        let dir = FileManager.default.temporaryDirectory.appending(path: "export-\(year)", directoryHint: .isDirectory)
+        try FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
+        let url = dir.appending(path: TaxYearExport.filename(year: year))
+        try data.write(to: url, options: .atomic)
+        return url
+    }
+
     /// Downloads the PDF to a temp file named after the invoice, so the share
     /// sheet offers a sensible filename.
     func pdf(id: String, invoiceNumber: String) async throws -> URL {
