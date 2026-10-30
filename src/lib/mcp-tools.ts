@@ -16,6 +16,7 @@ import {
   isProfileComplete,
   updateInvoiceDraftInput,
 } from "@/lib/invoice-tools";
+import { signPdfLink, PDF_LINK_TTL_SECONDS } from "@/lib/signed-link";
 
 const text = (value: unknown) => ({
   content: [
@@ -232,6 +233,35 @@ export const createCaleyMcpServer = (
           cost: Number(e.cost),
         })),
         total: Number(invoice.totalAmount),
+      });
+    },
+  );
+
+  server.registerTool(
+    "get_invoice_pdf_link",
+    {
+      description:
+        "A link to the invoice's PDF, to give to the person: opening it shows or downloads the PDF. The link works for 10 minutes, so make a new one if it's needed later. It can't be fetched by you; just share it.",
+      inputSchema: z.object({
+        id: z.string().optional(),
+        invoiceNumber: z.string().optional().describe("For example INV-2605"),
+      }),
+      annotations: readOnly,
+    },
+    async ({ id, invoiceNumber }) => {
+      if (!id && !invoiceNumber) return failure("Give an id or invoiceNumber.");
+      // Only the user's own invoices get a link
+      const invoice = await prisma.invoice.findFirst({
+        where: { userId, ...(id ? { id } : { invoiceNumber }) },
+        select: { id: true, invoiceNumber: true },
+      });
+      if (!invoice) return failure("No invoice found.");
+
+      const params = new URLSearchParams({ ...signPdfLink(invoice.id, userId) });
+      return text({
+        invoiceNumber: invoice.invoiceNumber,
+        url: `${APP_URL}/api/invoices/${invoice.id}/pdf?${params}`,
+        expiresInMinutes: PDF_LINK_TTL_SECONDS / 60,
       });
     },
   );

@@ -189,6 +189,44 @@ describe(
       assert.equal(isError, true);
     });
 
+    describe("PDF links", () => {
+      it("gives a link that opens the user's own invoice", async () => {
+        const own = await mod.prisma.invoice.findFirstOrThrow({
+          where: { userId: mine },
+        });
+        const { isError, text } = await callTool(mod, mine, "get_invoice_pdf_link", {
+          invoiceNumber: own.invoiceNumber,
+        });
+        assert.equal(isError, false);
+        const link = JSON.parse(text) as { url: string; expiresInMinutes: number };
+        const url = new URL(link.url);
+        assert.match(url.pathname, new RegExp(`/api/invoices/${own.id}/pdf$`));
+        const { verifyPdfLink } = await import("@/lib/signed-link");
+        assert.equal(
+          verifyPdfLink(own.id, {
+            u: url.searchParams.get("u"),
+            exp: url.searchParams.get("exp"),
+            sig: url.searchParams.get("sig"),
+          }),
+          mine,
+        );
+        assert.equal(link.expiresInMinutes, 10);
+      });
+
+      it("won't make a link for another user's invoice", async () => {
+        const other = await mod.prisma.invoice.findFirstOrThrow({
+          where: { userId: theirs },
+        });
+        const byId = await callTool(mod, mine, "get_invoice_pdf_link", { id: other.id });
+        const byNumber = await callTool(mod, mine, "get_invoice_pdf_link", {
+          invoiceNumber: other.invoiceNumber,
+        });
+        assert.equal(byId.isError, true);
+        assert.equal(byNumber.isError, true);
+        assert.doesNotMatch(byId.text + byNumber.text, /sig=/);
+      });
+    });
+
     describe("drafts", () => {
       const write = ["invoices:read", "invoices:write"];
       let writer: string;

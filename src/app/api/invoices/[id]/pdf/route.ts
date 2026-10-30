@@ -10,28 +10,42 @@ import {
   PDF_TEMPLATES,
   type PdfTemplate,
 } from "@/lib/pdf";
+import { verifyPdfLink } from "@/lib/signed-link";
 import { parseDate } from "@/lib/utils";
 
 export const GET = async (
   req: NextRequest,
   context: { params: Promise<{ id: string }> },
 ) => {
-  const session = await auth.api.getSession({
-    headers: await headers(),
-  });
+  const { id } = await context.params;
+  const { searchParams } = new URL(req.url);
 
-  if (!session?.user?.id) {
+  // A signed link (from the MCP connector) stands in for a session; one that
+  // doesn't check out is refused outright rather than falling back to cookies
+  let userId: string | null | undefined;
+  if (searchParams.has("sig")) {
+    userId = verifyPdfLink(id, {
+      u: searchParams.get("u"),
+      exp: searchParams.get("exp"),
+      sig: searchParams.get("sig"),
+    });
+  } else {
+    const session = await auth.api.getSession({
+      headers: await headers(),
+    });
+    userId = session?.user?.id;
+  }
+
+  if (!userId) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const { id } = await context.params;
-  const { searchParams } = new URL(req.url);
   const requested = searchParams.get("template");
   const template: PdfTemplate = PDF_TEMPLATES.includes(requested as PdfTemplate)
     ? (requested as PdfTemplate)
     : "caley";
   const invoice = await prisma.invoice.findFirst({
-    where: { id, userId: session.user.id },
+    where: { id, userId },
     include: {
       items: true,
       overtimeEntries: true,
@@ -110,6 +124,8 @@ export const GET = async (
   return new Response(Buffer.from(pdfBytes), {
     headers: {
       "Content-Type": "application/pdf",
+      // Bank details are on it: never keep a copy in a shared cache
+      "Cache-Control": "private, no-store",
       "Content-Disposition": `inline; filename="${invoice.invoiceDate
         .toISOString()
         .slice(0, 10)
