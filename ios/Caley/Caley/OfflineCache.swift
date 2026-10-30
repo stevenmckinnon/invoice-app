@@ -9,12 +9,13 @@ enum DiskCache {
     private static let directory = URL.applicationSupportDirectory.appending(path: "cache", directoryHint: .isDirectory)
 
     /// Only reads whose staleness is harmless. The next invoice number is not one of them: a saved
-    /// answer would hand out a number that is already taken. PDFs are binary and fetched on demand.
+    /// answer would hand out a number that is already taken. PDFs and the tax-year export are fetched
+    /// on demand.
     static func isCacheable(_ path: String) -> Bool {
         if path == "api/invoices" || path == "api/clients" || path == "api/profile" { return true }
         guard path.hasPrefix("api/invoices/") else { return false }
         let rest = path.dropFirst("api/invoices/".count)
-        return !rest.isEmpty && !rest.contains("/") && rest != "next-number"
+        return !rest.isEmpty && !rest.contains("/") && rest != "next-number" && !rest.hasPrefix("export")
     }
 
     private static func file(for path: String) -> URL {

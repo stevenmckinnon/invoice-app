@@ -130,6 +130,14 @@ Uses **AI SDK v7** (`ai` 7.x, `@ai-sdk/react` 4.x, `@ai-sdk/anthropic` 4.x). v7 
 
 The API route at `src/app/api/chat/route.ts` loads user profile, clients, and invoice stats as instructions context, then provides two tools: `createInvoiceDraft` and `updateInvoiceDraft` (`src/lib/invoice-tools.ts`). Both take **dated days** (one entry per date, overtime as hours on the day) and price them with `billDays`, so their drafts are day-based and open in the calendar editor. A saved client's terms price the draft; an unsaved client needs explicit `rates`. Count-based drafts can't be updated by the tool.
 
+### Year-end export
+
+`GET /api/invoices/export?year=2026` (cookie or bearer; no `year` means the current one) is a CSV of tax year 2026/27, 6 April 2026 to 5 April 2027, for an accountant: one row per invoice that has gone out (**drafts are left out**), oldest first, with Invoice number, Invoice date (ISO), Client, Job, Status, Currency, Labour, Per diems, Expenses and Total. `src/lib/invoice-export.ts` is the pure part (`fyBounds`, `csvCell`, `buildInvoiceCsv`); the route is `src/app/api/invoices/export/route.ts`.
+
+- **Amounts come from the stored rows, grouped as the invoice page groups them** (`summariseInvoice`: labour including overtime, per diems, expenses plus any other fee), and the total is the stored `totalAmount`. **Never use the `subtotalLabor/PerDiem/Travel` columns**: day-based invoices leave them at zero. The groups add up to the total on every seeded invoice; `export.test.ts` zeroes the subtotals on purpose to keep it that way. There's no Travel column because travel days sit inside labour and per diems. It exports amounts as they are (there's no VAT in Caley), one currency per row.
+- **Safe to open in a spreadsheet**: text starting with `=`, `+`, `-` or `@` gets a leading apostrophe (a job called `=HYPERLINK(...)` would otherwise run), cells are quoted per RFC 4180, lines end CRLF and there's a UTF-8 byte order mark so Excel reads it right. `Cache-Control: private, no-store`.
+- **Web**: an Export menu on the Invoices page lists the tax years that have invoices (`ExportMenu.tsx`). **iOS**: Account's "Export for your accountant" (`TaxYearExport.swift`) fetches it with the bearer token into a temp file named like the server's and opens the share sheet. `DiskCache.isCacheable` excludes `api/invoices/export`, which otherwise looks like an invoice's path.
+
 ### MCP connector (`/api/mcp`)
 
 Claude on the phone or laptop (and Claude Code) can read your invoices and create draft ones through a custom connector: Settings → Connectors → Add custom connector → `https://caley.app/api/mcp`. Caley is the OAuth server; Claude never sees your password.

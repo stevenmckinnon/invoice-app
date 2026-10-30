@@ -7,6 +7,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 
 import { EmptyState } from "@/components/EmptyState";
+import { ExportMenu } from "@/components/ExportMenu";
 import { InvoiceStatusBadge } from "@/components/InvoiceStatusBadge";
 import { PageHeader } from "@/components/PageHeader";
 import { PdfPreviewDialog } from "@/components/PdfPreviewDialog";
@@ -168,15 +169,18 @@ export default function AllInvoicesPage() {
       <PageHeader
         title="Invoices"
         actions={
-          <Button
-            nativeButton={false}
-            render={
-              <Link href="/invoices/new">
-                <HugeiconsIcon icon={Add01Icon} />
-                Create Invoice
-              </Link>
-            }
-          />
+          <div className="flex gap-2">
+            <ExportMenu invoiceDates={invoices.map((i) => i.invoiceDate)} />
+            <Button
+              nativeButton={false}
+              render={
+                <Link href="/invoices/new">
+                  <HugeiconsIcon icon={Add01Icon} />
+                  Create Invoice
+                </Link>
+              }
+            />
+          </div>
         }
       />
 
