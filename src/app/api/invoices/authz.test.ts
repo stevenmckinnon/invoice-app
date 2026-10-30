@@ -84,6 +84,8 @@ describe(
     let mod: Awaited<ReturnType<typeof load>>;
     const userIds: string[] = [];
     let victimCookie: string;
+    let victimUserId: string;
+    let attackerUserId: string;
     let attackerCookie: string;
     let victimInvoiceId: string;
     let victimClientId: string;
@@ -156,6 +158,8 @@ describe(
       const victim = await signUp("victim");
       const attacker = await signUp("attacker");
       victimCookie = victim.cookie;
+      victimUserId = victim.userId;
+      attackerUserId = attacker.userId;
       attackerCookie = attacker.cookie;
 
       const client = await mod.prisma.client.create({
@@ -212,6 +216,59 @@ describe(
       const res = await getPdf();
       assert.equal(res.status, 401);
       assert.notEqual(res.headers.get("content-type"), "application/pdf");
+    });
+
+    describe("signed links", () => {
+      const viaLink = async (
+        change: (p: URLSearchParams) => void = () => {},
+      ) => {
+        const { signPdfLink } = await import("@/lib/signed-link");
+        const query = new URLSearchParams({
+          ...signPdfLink(victimInvoiceId, victimUserId),
+        });
+        change(query);
+        // No cookie at all: the link has to stand on its own
+        requestHeaders = new Headers();
+        return mod.pdfRoute.GET(
+          new NextRequest(
+            `http://localhost/api/invoices/${victimInvoiceId}/pdf?${query}`,
+          ),
+          params(victimInvoiceId),
+        );
+      };
+
+      it("serves the PDF to a valid link without a session", async () => {
+        const res = await viaLink();
+        assert.equal(res.status, 200);
+        assert.equal(res.headers.get("content-type"), "application/pdf");
+        assert.equal(res.headers.get("cache-control"), "private, no-store");
+      });
+
+      it("refuses a tampered signature", async () => {
+        const res = await viaLink((q) => q.set("sig", `${q.get("sig")}x`));
+        assert.equal(res.status, 401);
+      });
+
+      it("refuses a link whose user was swapped for the attacker's", async () => {
+        const res = await viaLink((q) => q.set("u", attackerUserId));
+        assert.equal(res.status, 401);
+      });
+
+      it("refuses a link that has expired", async () => {
+        const res = await viaLink((q) => q.set("exp", "1"));
+        assert.equal(res.status, 401);
+      });
+
+      it("doesn't fall back to a session when the link is bad", async () => {
+        requestHeaders = new Headers({ cookie: victimCookie });
+        const res = await mod.pdfRoute.GET(
+          new NextRequest(
+            `http://localhost/api/invoices/${victimInvoiceId}/pdf?sig=nope&u=x&exp=1`,
+          ),
+          params(victimInvoiceId),
+        );
+        assert.equal(res.status, 401);
+      });
     });
 
     it("refuses a PDF to another user's session", async () => {
