@@ -202,7 +202,6 @@ export const ChatContent = ({
     stop,
     mounted,
     isGenerating,
-    clearChat,
     error,
     clearError,
     regenerate,
@@ -398,15 +397,7 @@ export const ChatContent = ({
             className="font-sans text-base md:text-base"
           />
           <PromptInputFooter>
-            {messages.length > 0 ? (
-              <button
-                type="button"
-                onClick={clearChat}
-                className="text-muted-foreground hover:text-foreground text-xs transition-colors"
-              >
-                Clear chat
-              </button>
-            ) : (
+            {messages.length === 0 && (
               <span className="text-muted-foreground hidden text-xs md:inline">
                 Shift+Enter for new line
               </span>
