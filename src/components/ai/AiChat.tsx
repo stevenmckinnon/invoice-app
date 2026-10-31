@@ -14,7 +14,8 @@ import {
 import { cn } from "@/lib/utils";
 
 export const AiChat = () => {
-  const { open, setOpen, draftInvoiceId, draftPanelOpen } = useChatSession();
+  const { open, setOpen, draftInvoiceId, draftPanelOpen, historyOpen } =
+    useChatSession();
 
   const showDraftAlongside = Boolean(draftInvoiceId) && draftPanelOpen;
 
@@ -50,9 +51,19 @@ export const AiChat = () => {
             // and a bare max-w-none is a different modifier group, so
             // tailwind-merge keeps both and the media query wins.
             "bg-card inset-y-4 right-4 flex h-auto w-[min(26rem,calc(100vw-2rem))] max-w-none flex-col gap-0 overflow-hidden rounded-2xl p-0 shadow-xl sm:max-w-none md:border-none",
-            // Widen only when the draft is actually showing beside the
-            // conversation, so collapsing it gives the width back
-            showDraftAlongside && "lg:w-[min(52rem,calc(100vw-2rem))]",
+            // Widen only when the draft or the chat list is actually showing
+            // beside the conversation, so closing it gives the width back.
+            // Below lg there's no room: the list slides over instead.
+            "motion-safe:transition-[width] motion-safe:duration-200 motion-safe:ease-out",
+            showDraftAlongside &&
+              historyOpen &&
+              "lg:w-[min(68rem,calc(100vw-2rem))]",
+            showDraftAlongside &&
+              !historyOpen &&
+              "lg:w-[min(52rem,calc(100vw-2rem))]",
+            !showDraftAlongside &&
+              historyOpen &&
+              "lg:w-[min(42rem,calc(100vw-2rem))]",
           )}
         >
           <ChatSurface

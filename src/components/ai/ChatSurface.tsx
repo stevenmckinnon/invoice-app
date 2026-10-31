@@ -132,11 +132,17 @@ export const ChatSurface = ({
       )}
 
       <div className="relative flex min-h-0 flex-1">
-        {/* Beside the conversation on the full page from lg up */}
-        {onCanvas && historyOpen && (
+        {/* Beside the conversation from lg up: the drawer widens to make room
+            (see AiChat), and on the full page it takes a column */}
+        {historyOpen && (
           <aside
             aria-label="Chat history"
-            className="bg-card mb-4 ml-3 hidden w-64 shrink-0 flex-col overflow-hidden rounded-2xl shadow-sm lg:flex dark:border"
+            className={cn(
+              "hidden w-64 shrink-0 flex-col overflow-hidden lg:flex",
+              onCanvas
+                ? "bg-card mb-4 ml-3 rounded-2xl shadow-sm dark:border"
+                : "bg-muted/40",
+            )}
           >
             <ChatHistoryPanel />
           </aside>
@@ -162,11 +168,11 @@ export const ChatSurface = ({
           </aside>
         )}
 
-        {/* Over the conversation everywhere else: the drawer and below lg.
+        {/* Over the conversation below lg, where there's no room beside it.
             The scrim and Escape put it away, as does picking a chat. */}
         {historyOpen && (
           <div
-            className={cn("absolute inset-0 z-20 flex", onCanvas && "lg:hidden")}
+            className="absolute inset-0 z-20 flex lg:hidden"
             onKeyDown={(e) => {
               if (e.key === "Escape") {
                 // Put the list away without also closing the drawer around it
