@@ -2,16 +2,15 @@
 
 import { useState } from "react";
 
-import { Clock01Icon, Delete02Icon } from "@hugeicons/core-free-icons";
+import {
+  Cancel01Icon,
+  Delete02Icon,
+  PlusSignIcon,
+} from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 
 import { useChatSession } from "@/components/ai/ChatProvider";
 import { Button } from "@/components/ui/button";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useChatConversations } from "@/hooks/use-chat-conversations";
 import { cn } from "@/lib/utils";
@@ -32,37 +31,62 @@ const whenLabel = (iso: string, now = new Date()) => {
 };
 
 /**
- * Past chats, newest first. The list is read each time it opens, so a chat
- * started on the phone is here on the laptop. Deleting asks first: it can't
- * be undone, and a hover-only button is easy to hit on a touch screen.
+ * Past chats, newest first, with New chat at the top. It is a panel, not a
+ * popup: ChatSurface puts it beside the conversation on /chat and over it
+ * elsewhere. `onDone` is given only for the overlay, where picking a chat or
+ * starting a new one should put the panel away again.
+ *
+ * The list is read whenever the panel opens (and when the window regains
+ * focus), so a chat started on the phone is here on the laptop. Deleting asks
+ * first: it can't be undone, and a hover-only button is easy to hit on touch.
  */
-export const ChatHistory = () => {
-  const { conversationId, openConversation, deleteConversation } =
-    useChatSession();
-  const [open, setOpen] = useState(false);
+export const ChatHistoryPanel = ({ onDone }: { onDone?: () => void }) => {
+  const {
+    conversationId,
+    messages,
+    newChat,
+    openConversation,
+    deleteConversation,
+    historyOpen,
+  } = useChatSession();
   const [confirmingId, setConfirmingId] = useState<string | null>(null);
-  const { data, isLoading, isError, refetch } = useChatConversations(open);
+  const { data, isLoading, isError, refetch } =
+    useChatConversations(historyOpen);
 
   return (
-    <Popover
-      open={open}
-      onOpenChange={(next) => {
-        setOpen(next);
-        if (!next) setConfirmingId(null);
-      }}
-    >
-      <PopoverTrigger
-        render={
-          <Button variant="ghost" size="icon-sm" aria-label="Chat history" />
-        }
-      >
-        <HugeiconsIcon icon={Clock01Icon} className="size-4" />
-      </PopoverTrigger>
-      <PopoverContent align="end" className="w-80 p-2">
-        <p className="text-muted-foreground px-2 pt-1 pb-2 text-xs font-medium">
-          Chats
-        </p>
+    <div className="flex min-h-0 flex-1 flex-col">
+      <div className="flex items-center gap-2 px-3 pt-3 pb-2">
+        <Button
+          variant="outline"
+          size="sm"
+          className="flex-1 justify-start gap-2"
+          // Nothing to start over from until something has been said
+          disabled={messages.length === 0}
+          onClick={() => {
+            newChat();
+            onDone?.();
+          }}
+        >
+          <HugeiconsIcon icon={PlusSignIcon} className="size-4" />
+          New chat
+        </Button>
+        {onDone && (
+          <Button
+            variant="ghost"
+            size="icon-sm"
+            aria-label="Close chat history"
+            onClick={onDone}
+          >
+            <HugeiconsIcon icon={Cancel01Icon} className="size-4" />
+          </Button>
+        )}
+      </div>
 
+      <p className="text-muted-foreground px-4 pb-1 text-xs font-medium">
+        Chats
+      </p>
+
+      <div className="min-h-0 flex-1 overflow-y-auto px-2 pb-3">
         {isLoading && (
           <div className="space-y-2 p-2">
             <Skeleton className="h-9 w-full" />
@@ -74,7 +98,9 @@ export const ChatHistory = () => {
         {/* A failed refresh keeps showing the list it has; only say so with nothing to show */}
         {isError && !data && (
           <div className="p-2 text-sm">
-            <p className="text-muted-foreground">Couldn&apos;t load your chats.</p>
+            <p className="text-muted-foreground">
+              Couldn&apos;t load your chats.
+            </p>
             <Button
               variant="link"
               className="h-auto p-0"
@@ -92,7 +118,7 @@ export const ChatHistory = () => {
         )}
 
         {data && data.length > 0 && (
-          <ul className="max-h-80 space-y-0.5 overflow-y-auto">
+          <ul className="space-y-0.5">
             {data.map((chat) => {
               const active = chat.id === conversationId;
               return (
@@ -126,7 +152,7 @@ export const ChatHistory = () => {
                         type="button"
                         aria-current={active ? "true" : undefined}
                         onClick={async () => {
-                          if (await openConversation(chat.id)) setOpen(false);
+                          if (await openConversation(chat.id)) onDone?.();
                         }}
                         className={cn(
                           "hover:bg-muted flex min-w-0 flex-1 flex-col rounded-lg px-2 py-1.5 text-left transition-colors",
@@ -155,7 +181,7 @@ export const ChatHistory = () => {
             })}
           </ul>
         )}
-      </PopoverContent>
-    </Popover>
+      </div>
+    </div>
   );
 };

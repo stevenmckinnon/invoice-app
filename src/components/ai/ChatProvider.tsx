@@ -90,6 +90,9 @@ type ChatContextValue = ReturnType<typeof useChat> & {
   setDraftPanelOpen: (open: boolean) => void;
   /** The saved chat on screen; a new one has an id before it is first saved */
   conversationId: string;
+  /** The list of past chats, shared so both surfaces agree on whether it's showing */
+  historyOpen: boolean;
+  setHistoryOpen: (open: boolean) => void;
   /** Start again with an empty chat. The one you leave stays in history. */
   newChat: () => void;
   /** Reopen a saved chat; false if it couldn't be loaded */
@@ -117,6 +120,7 @@ export const useChatSessionOptional = () => useContext(ChatContext);
 export const ChatProvider = ({ children }: { children: React.ReactNode }) => {
   const mounted = useIsHydrated();
   const [open, setOpen] = useState(false);
+  const [historyOpen, setHistoryOpen] = useState(false);
   const chat = useChat({ transport, throttle: 50 });
   const { messages, setMessages, status, stop, clearError } = chat;
   const queryClient = useQueryClient();
@@ -248,6 +252,8 @@ export const ChatProvider = ({ children }: { children: React.ReactNode }) => {
         draftPanelOpen,
         setDraftPanelOpen,
         conversationId,
+        historyOpen,
+        setHistoryOpen,
         newChat,
         openConversation,
         deleteConversation,

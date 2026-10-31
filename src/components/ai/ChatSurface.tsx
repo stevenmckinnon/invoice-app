@@ -1,5 +1,6 @@
 "use client";
 import {
+  PanelLeftIcon,
   PanelRightIcon,
   PlusSignIcon,
   SparklesIcon,
@@ -7,7 +8,7 @@ import {
 import { HugeiconsIcon } from "@hugeicons/react";
 
 import { ChatContent, type ChatSurfaceKind } from "@/components/ai/ChatContent";
-import { ChatHistory } from "@/components/ai/ChatHistory";
+import { ChatHistoryPanel } from "@/components/ai/ChatHistory";
 import { useChatSession } from "@/components/ai/ChatProvider";
 import { DraftInvoicePreview } from "@/components/ai/DraftInvoicePreview";
 import { Button } from "@/components/ui/button";
@@ -49,6 +50,8 @@ export const ChatSurface = ({
     setDraftPanelOpen,
     messages,
     newChat,
+    historyOpen,
+    setHistoryOpen,
   } = useChatSession();
 
   const hasDraft = Boolean(draftInvoiceId);
@@ -91,7 +94,17 @@ export const ChatSurface = ({
           >
             <HugeiconsIcon icon={PlusSignIcon} className="size-4" />
           </Button>
-          <ChatHistory />
+          <Button
+            variant="ghost"
+            size="icon-sm"
+            onClick={() => setHistoryOpen(!historyOpen)}
+            className={cn(historyOpen && "bg-muted text-foreground")}
+            aria-label="Chat history"
+            aria-expanded={historyOpen}
+            title="Chat history"
+          >
+            <HugeiconsIcon icon={PanelLeftIcon} className="size-4" />
+          </Button>
           {trailing}
         </div>
       </div>
@@ -118,7 +131,17 @@ export const ChatSurface = ({
         </div>
       )}
 
-      <div className="flex min-h-0 flex-1">
+      <div className="relative flex min-h-0 flex-1">
+        {/* Beside the conversation on the full page from lg up */}
+        {onCanvas && historyOpen && (
+          <aside
+            aria-label="Chat history"
+            className="bg-card mb-4 ml-3 hidden w-64 shrink-0 flex-col overflow-hidden rounded-2xl shadow-sm lg:flex dark:border"
+          >
+            <ChatHistoryPanel />
+          </aside>
+        )}
+
         <ChatContent className="min-w-0 flex-1" surface={surface} />
 
         {hasDraft && draftPanelOpen && (
@@ -137,6 +160,34 @@ export const ChatSurface = ({
               onNavigate={onNavigate}
             />
           </aside>
+        )}
+
+        {/* Over the conversation everywhere else: the drawer and below lg.
+            The scrim and Escape put it away, as does picking a chat. */}
+        {historyOpen && (
+          <div
+            className={cn("absolute inset-0 z-20 flex", onCanvas && "lg:hidden")}
+            onKeyDown={(e) => {
+              if (e.key === "Escape") {
+                // Put the list away without also closing the drawer around it
+                e.stopPropagation();
+                setHistoryOpen(false);
+              }
+            }}
+          >
+            <nav
+              aria-label="Chat history"
+              className="bg-card flex h-full w-[min(20rem,85%)] flex-col border-r shadow-xl"
+            >
+              <ChatHistoryPanel onDone={() => setHistoryOpen(false)} />
+            </nav>
+            <button
+              type="button"
+              aria-label="Close chat history"
+              className="bg-background/60 min-w-0 flex-1 backdrop-blur-[1px]"
+              onClick={() => setHistoryOpen(false)}
+            />
+          </div>
         )}
       </div>
     </>
