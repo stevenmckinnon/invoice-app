@@ -1,8 +1,13 @@
 "use client";
-import { PanelRightIcon, SparklesIcon } from "@hugeicons/core-free-icons";
+import {
+  PanelRightIcon,
+  PlusSignIcon,
+  SparklesIcon,
+} from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 
 import { ChatContent, type ChatSurfaceKind } from "@/components/ai/ChatContent";
+import { ChatHistory } from "@/components/ai/ChatHistory";
 import { useChatSession } from "@/components/ai/ChatProvider";
 import { DraftInvoicePreview } from "@/components/ai/DraftInvoicePreview";
 import { Button } from "@/components/ui/button";
@@ -42,6 +47,8 @@ export const ChatSurface = ({
     isGenerating,
     draftPanelOpen,
     setDraftPanelOpen,
+    messages,
+    newChat,
   } = useChatSession();
 
   const hasDraft = Boolean(draftInvoiceId);
@@ -73,6 +80,18 @@ export const ChatSurface = ({
               Draft
             </Button>
           )}
+          {/* Nothing to start over from until something has been said */}
+          <Button
+            variant="ghost"
+            size="icon-sm"
+            onClick={newChat}
+            disabled={messages.length === 0}
+            aria-label="New chat"
+            title="New chat"
+          >
+            <HugeiconsIcon icon={PlusSignIcon} className="size-4" />
+          </Button>
+          <ChatHistory />
           {trailing}
         </div>
       </div>

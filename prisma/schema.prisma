@@ -50,6 +50,8 @@ model User {
   oauthRefreshTokens OauthRefreshToken[]
   oauthAccessTokens  OauthAccessToken[]
   oauthConsents      OauthConsent[]
+
+  chatConversations ChatConversation[]
 }
 
 /// Avatar bytes live here rather than in User.image, which better-auth copies
@@ -494,4 +496,21 @@ model OauthClientAssertion {
   expiresAt DateTime
 
   @@map("oauthClientAssertion")
+}
+
+/// One assistant conversation, kept so a chat started on the phone can be
+/// reopened on the laptop. `messages` is the AI SDK's UIMessage[] exactly as the
+/// client holds it, tool results included: that is how the model finds the
+/// draft's id when you say "add Thursday". The id is chosen by the client so
+/// saving needs no round trip.
+model ChatConversation {
+  id        String   @id
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title     String
+  messages  Json
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId, updatedAt])
 }

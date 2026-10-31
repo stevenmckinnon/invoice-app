@@ -11,9 +11,42 @@ import {
 } from "react";
 
 import { useChat } from "@ai-sdk/react";
+import { useQueryClient } from "@tanstack/react-query";
 import { DefaultChatTransport, type UIMessage } from "ai";
+import { toast } from "sonner";
+
+import {
+  CHAT_CONVERSATIONS_KEY,
+  deleteConversationRequest,
+  loadConversation,
+  saveConversation,
+} from "@/hooks/use-chat-conversations";
 
 const STORAGE_KEY = "caley-chat-session";
+
+const newConversationId = () => crypto.randomUUID();
+
+/** What this browser keeps of the open chat. Older versions stored just the
+ *  messages, so that shape is still read (and given an id). */
+const readStoredSession = (): { id: string; messages: UIMessage[] } | null => {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return null;
+    const parsed: unknown = JSON.parse(raw);
+    if (Array.isArray(parsed)) {
+      return parsed.length > 0
+        ? { id: newConversationId(), messages: parsed as UIMessage[] }
+        : null;
+    }
+    const stored = parsed as { id?: unknown; messages?: unknown };
+    if (typeof stored?.id === "string" && Array.isArray(stored.messages)) {
+      return { id: stored.id, messages: stored.messages as UIMessage[] };
+    }
+  } catch {
+    // Ignore malformed storage
+  }
+  return null;
+};
 
 const noopSubscribe = () => () => {};
 
@@ -55,7 +88,13 @@ type ChatContextValue = ReturnType<typeof useChat> & {
   /** Whether the draft preview is showing, shared across both chat surfaces */
   draftPanelOpen: boolean;
   setDraftPanelOpen: (open: boolean) => void;
-  clearChat: () => void;
+  /** The saved chat on screen; a new one has an id before it is first saved */
+  conversationId: string;
+  /** Start again with an empty chat. The one you leave stays in history. */
+  newChat: () => void;
+  /** Reopen a saved chat; false if it couldn't be loaded */
+  openConversation: (id: string) => Promise<boolean>;
+  deleteConversation: (id: string) => Promise<void>;
   /** Drawer open state, shared so any surface can open the assistant */
   open: boolean;
   setOpen: (open: boolean) => void;
@@ -79,7 +118,14 @@ export const ChatProvider = ({ children }: { children: React.ReactNode }) => {
   const mounted = useIsHydrated();
   const [open, setOpen] = useState(false);
   const chat = useChat({ transport, throttle: 50 });
-  const { messages, setMessages, status } = chat;
+  const { messages, setMessages, status, stop, clearError } = chat;
+  const queryClient = useQueryClient();
+  // Read once, before anything renders: the id is never drawn into the page,
+  // so the server (no storage) and the client agreeing isn't a concern
+  const [stored] = useState(readStoredSession);
+  const [conversationId, setConversationId] = useState(
+    () => stored?.id ?? newConversationId(),
+  );
 
   const isGenerating = status === "submitted" || status === "streaming";
 
@@ -94,32 +140,27 @@ export const ChatProvider = ({ children }: { children: React.ReactNode }) => {
   const setDraftPanelOpen = (open: boolean) =>
     setCollapsedDraftId(open ? null : draftInvoiceId);
 
-  // Restore history once on mount
+  // Put the open chat back once on mount
   const restored = useRef(false);
   useEffect(() => {
     if (restored.current) return;
     restored.current = true;
-    try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if (raw) {
-        const parsed: UIMessage[] = JSON.parse(raw);
-        if (parsed.length > 0) setMessages(parsed);
-      }
-    } catch {
-      // Ignore malformed storage
-    }
-  }, [setMessages]);
+    if (stored) setMessages(stored.messages);
+  }, [stored, setMessages]);
 
-  // Persist on a trailing debounce rather than only when idle, so a refresh
-  // mid-stream keeps what has arrived so far. Serializing on every chunk
-  // blocks the main thread, hence the delay.
+  // Keep this browser's copy on a trailing debounce rather than only when
+  // idle, so a refresh mid-stream keeps what has arrived so far. Serializing
+  // on every chunk blocks the main thread, hence the delay.
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   useEffect(() => {
     if (!mounted || messages.length === 0) return;
     if (saveTimer.current) clearTimeout(saveTimer.current);
     saveTimer.current = setTimeout(() => {
       try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(messages));
+        localStorage.setItem(
+          STORAGE_KEY,
+          JSON.stringify({ id: conversationId, messages }),
+        );
       } catch {
         // Ignore storage errors (quota, private mode)
       }
@@ -127,15 +168,74 @@ export const ChatProvider = ({ children }: { children: React.ReactNode }) => {
     return () => {
       if (saveTimer.current) clearTimeout(saveTimer.current);
     };
-  }, [messages, mounted]);
+  }, [messages, conversationId, mounted]);
 
-  const clearChat = () => {
+  // Save to your account when a reply finishes (or is stopped), not on every
+  // chunk, so history follows you to the other device without a request per
+  // token. `unsaved` is true from the moment a reply starts until it's saved.
+  const unsaved = useRef(false);
+  const refreshHistory = () =>
+    queryClient.invalidateQueries({ queryKey: CHAT_CONVERSATIONS_KEY });
+  useEffect(() => {
+    if (isGenerating) {
+      unsaved.current = true;
+      return;
+    }
+    if (!unsaved.current || !mounted || messages.length === 0) return;
+    unsaved.current = false;
+    void saveConversation(conversationId, messages).then((saved) => {
+      if (saved) refreshHistory();
+    });
+    // refreshHistory only wraps the stable queryClient
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isGenerating, messages, conversationId, mounted]);
+
+  /** Leaving a chat mid-reply: save what there is first, so it isn't lost */
+  const leaveCurrentChat = () => {
+    if (unsaved.current && messages.length > 0) {
+      void saveConversation(conversationId, messages).then((saved) => {
+        if (saved) refreshHistory();
+      });
+    }
+    unsaved.current = false;
+    stop();
+    clearError();
+  };
+
+  const newChat = () => {
+    leaveCurrentChat();
     setMessages([]);
+    setConversationId(newConversationId());
     try {
       localStorage.removeItem(STORAGE_KEY);
     } catch {
       // Ignore storage errors
     }
+  };
+
+  const openConversation = async (id: string) => {
+    if (id === conversationId) return true;
+    leaveCurrentChat();
+    const saved = await loadConversation(id);
+    if (!saved) {
+      toast.error("Couldn't open that chat");
+      refreshHistory();
+      return false;
+    }
+    unsaved.current = false;
+    setConversationId(id);
+    setMessages(saved);
+    return true;
+  };
+
+  const deleteConversation = async (id: string) => {
+    const deleted = await deleteConversationRequest(id);
+    if (!deleted) {
+      toast.error("Couldn't delete that chat");
+      return;
+    }
+    if (id === conversationId) newChat();
+    refreshHistory();
   };
 
   return (
@@ -147,7 +247,10 @@ export const ChatProvider = ({ children }: { children: React.ReactNode }) => {
         draftInvoiceId,
         draftPanelOpen,
         setDraftPanelOpen,
-        clearChat,
+        conversationId,
+        newChat,
+        openConversation,
+        deleteConversation,
         open,
         setOpen,
       }}
