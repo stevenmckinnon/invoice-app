@@ -238,6 +238,29 @@ struct APIClient {
         return url
     }
 
+    // MARK: Saved chats
+
+    func chatConversations() async throws -> [ChatConversationSummary] { try await send("api/chat/conversations") }
+
+    /// A saved chat's messages, read back from the `UIMessage` JSON the server keeps
+    func chatConversation(id: String) async throws -> [ChatMessage] {
+        struct Saved: Decodable { let messages: [JSONValue] }
+        let saved: Saved = try await send("api/chat/conversations/\(id)")
+        return saved.messages.compactMap(ChatMessage.init(wire:)).filter(\.hasContent)
+    }
+
+    /// Creates the chat under an id the app chose, or replaces it; the server names it
+    func saveChatConversation(id: String, messages: [ChatMessage]) async throws {
+        struct Ignored: Decodable {}
+        let body = JSONValue.object(["messages": .array(messages.map(\.wire))])
+        let _: Ignored = try await send("api/chat/conversations/\(id)", method: "PUT", body: body)
+    }
+
+    func deleteChatConversation(id: String) async throws {
+        let req = try request("api/chat/conversations/\(id)", method: "DELETE")
+        _ = try await perform(req)
+    }
+
     /// Downloads the PDF to a temp file named after the invoice, so the share
     /// sheet offers a sensible filename.
     func pdf(id: String, invoiceNumber: String) async throws -> URL {
