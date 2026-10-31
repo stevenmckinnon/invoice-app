@@ -122,6 +122,46 @@ struct ChatMessage: Identifiable, Codable, Hashable {
         return .object(["id": .string(id), "role": .string(role.rawValue), "parts": .array(parts)])
     }
 
+    init(id: String, role: Role, parts: [ChatPart]) {
+        self.id = id
+        self.role = role
+        self.parts = parts
+    }
+
+    /// Reads a message back from the AI SDK's `UIMessage` shape, as a saved chat holds it: written by
+    /// this app (`wire`) or by the web chat. Anything the screen doesn't draw (reasoning, files,
+    /// sources) is dropped, and so is a tool call that never got an answer, which the model would
+    /// reject if the conversation were sent again. A system message isn't ours to show: nil.
+    init?(wire json: JSONValue) {
+        guard let roleName = json["role"]?.string, let role = Role(rawValue: roleName),
+              case .array(let raw)? = json["parts"] else { return nil }
+        var parts: [ChatPart] = []
+        for part in raw {
+            let type = part["type"]?.string ?? ""
+            if type == "step-start" {
+                parts.append(.stepStart(id: UUID().uuidString))
+            } else if type == "text" {
+                if let text = part["text"]?.string, !text.isEmpty { parts.append(.text(id: UUID().uuidString, text)) }
+            } else if type.hasPrefix("tool-") {
+                var call = ToolCall(id: part["toolCallId"]?.string ?? UUID().uuidString,
+                                    name: String(type.dropFirst("tool-".count)))
+                call.input = part["input"]
+                switch part["state"]?.string {
+                case "output-available":
+                    call.output = part["output"]
+                    call.state = .done
+                case "output-error":
+                    call.errorText = part["errorText"]?.string
+                    call.state = .failed
+                default:
+                    continue
+                }
+                parts.append(.tool(call))
+            }
+        }
+        self.init(id: json["id"]?.string ?? UUID().uuidString, role: role, parts: parts)
+    }
+
     /// Whether anything of this message is on screen yet: until then a spinner stands in for it
     var hasVisibleParts: Bool {
         parts.contains {
@@ -172,5 +212,31 @@ enum ChatChunk {
         case "error": self = .error(json["errorText"]?.string ?? "Something went wrong.")
         default: self = .ignored
         }
+    }
+}
+
+/// One saved chat in the history list: enough to name it, not its messages
+struct ChatConversationSummary: Decodable, Identifiable, Hashable {
+    let id: String
+    let title: String
+    let updatedAt: String
+
+    private static let parser: ISO8601DateFormatter = {
+        let f = ISO8601DateFormatter()
+        f.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+        return f
+    }()
+
+    var date: Date? { Self.parser.date(from: updatedAt) }
+
+    /// "Today", "Yesterday", then the date: enough to tell chats apart
+    func dateLabel(now: Date = .now, calendar: Calendar = .current) -> String {
+        guard let date else { return "" }
+        if calendar.isDate(date, inSameDayAs: now) { return "Today" }
+        if let yesterday = calendar.date(byAdding: .day, value: -1, to: now), calendar.isDate(date, inSameDayAs: yesterday) {
+            return "Yesterday"
+        }
+        let sameYear = calendar.component(.year, from: date) == calendar.component(.year, from: now)
+        return date.formatted(sameYear ? .dateTime.day().month(.abbreviated) : .dateTime.day().month(.abbreviated).year())
     }
 }

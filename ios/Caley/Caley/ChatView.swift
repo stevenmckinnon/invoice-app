@@ -7,37 +7,62 @@ struct ChatView: View {
     @Environment(InvoiceStore.self) private var invoices
     @Environment(ChatStore.self) private var chat
 
+    @Environment(\.horizontalSizeClass) private var sizeClass
+
     @State private var input = ""
     @State private var openDraft: DraftRef?
-    @State private var confirmingClear = false
+    /// The chats list: a column beside the conversation on an iPad, a sheet on a phone
+    @State private var showingHistory = false
     @ScaledMetric(relativeTo: .title) private var sendSize: CGFloat = 34
     @FocusState private var composerFocused: Bool
 
     private struct DraftRef: Identifiable { let id: String }
 
+    private var wide: Bool { sizeClass == .regular }
+
     var body: some View {
         NavigationStack {
-            Group {
-                if chat.messages.isEmpty {
-                    welcome
-                } else {
-                    conversation
+            HStack(spacing: 0) {
+                if wide && showingHistory {
+                    ChatHistoryList()
+                        .frame(width: 300)
+                    Divider()
+                }
+                Group {
+                    if chat.messages.isEmpty {
+                        welcome
+                    } else {
+                        conversation
+                    }
                 }
             }
             .background(Color.canvas)
             .navigationTitle("Assistant")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
+                ToolbarItem(placement: .topBarLeading) {
+                    Button("Chats", systemImage: wide ? "sidebar.left" : "list.bullet") { showingHistory.toggle() }
+                        .accessibilityHint(showingHistory ? "Hides your past chats" : "Shows your past chats")
+                }
                 ToolbarItem(placement: .topBarTrailing) {
-                    Button("New chat", systemImage: "square.and.pencil") { confirmingClear = true }
+                    // No confirmation: the chat you leave stays in your history
+                    Button("New chat", systemImage: "square.and.pencil") { chat.newChat() }
                         .disabled(chat.messages.isEmpty || chat.sending)
                 }
             }
             .safeAreaInset(edge: .bottom, spacing: 0) { composer }
-            .confirmationDialog("Start a new chat?", isPresented: $confirmingClear, titleVisibility: .visible) {
-                Button("Clear conversation", role: .destructive) { chat.reset() }
-            } message: {
-                Text("Drafts the assistant already saved stay in your invoices.")
+            .sheet(isPresented: Binding(get: { showingHistory && !wide }, set: { if !$0 { showingHistory = false } })) {
+                NavigationStack {
+                    ChatHistoryList { showingHistory = false }
+                        .navigationTitle("Chats")
+                        .navigationBarTitleDisplayMode(.inline)
+                        .toolbar {
+                            ToolbarItem(placement: .topBarTrailing) {
+                                Button("Done") { showingHistory = false }
+                            }
+                        }
+                }
+                .presentationDetents([.medium, .large])
             }
             .sheet(item: $openDraft) { draft in
                 NavigationStack {
