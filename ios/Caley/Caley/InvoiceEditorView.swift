@@ -9,6 +9,8 @@ struct InvoiceEditorView: View {
     @State private var model: InvoiceEditorModel
     @State private var pickingDate = false
     @State private var importing = false
+    @State private var showingProfile = false
+    @FocusState private var jobFocused: Bool
     let onSaved: () -> Void
 
     init(editing: InvoiceDetail?, copying: InvoiceDetail? = nil, onSaved: @escaping () -> Void) {
@@ -22,11 +24,13 @@ struct InvoiceEditorView: View {
                 // Wide enough for two columns: the calendar on the left, and on the right the job and
                 // the bill, which then stays in view while you paint days
                 let twoColumns = proxy.size.width >= 860
+                ScrollViewReader { reader in
                 ScrollView {
                     VStack(spacing: 12) {
                         if let error = model.loadError {
                             Text(error).font(.footnote).foregroundStyle(.red).frame(maxWidth: .infinity, alignment: .leading)
                         }
+                        if !model.profileGapText.isEmpty { profileNotice }
                         if twoColumns {
                             HStack(alignment: .top, spacing: 16) {
                                 // The calendar is the main job, so it gets the left side and the top
@@ -40,7 +44,7 @@ struct InvoiceEditorView: View {
                             notesCard
                             billCard
                         }
-                        if model.attempted, !model.problems.isEmpty { problemsCard }
+                        if model.attempted, !model.problems.isEmpty { problemsCard.id("problems") }
                         if let error = model.saveError {
                             Text(error).font(.footnote).foregroundStyle(.red).frame(maxWidth: .infinity, alignment: .leading)
                         }
@@ -49,6 +53,20 @@ struct InvoiceEditorView: View {
                     .padding(.bottom, 8)
                     .frame(maxWidth: twoColumns ? 1180 : 720)
                     .frame(maxWidth: .infinity)
+                }
+                // A failed Save takes you to what needs doing, not just a list at the bottom
+                .onChange(of: model.attempts) {
+                    guard !model.problems.isEmpty else { return }
+                    switch model.firstProblem {
+                    case .client:
+                        withAnimation { reader.scrollTo("clientField", anchor: .center) }
+                    case .job:
+                        withAnimation { reader.scrollTo("jobField", anchor: .center) }
+                        jobFocused = true
+                    case .other:
+                        withAnimation { reader.scrollTo("problems", anchor: .center) }
+                    }
+                }
                 }
             }
             .scrollDismissesKeyboard(.interactively)
@@ -60,6 +78,14 @@ struct InvoiceEditorView: View {
             }
             .safeAreaInset(edge: .bottom) { saveBar }
             .sheet(isPresented: $pickingDate) { datePickerSheet }
+            // Your details open over the invoice, so nothing entered here is lost, and the notice
+            // clears when they're saved
+            .sheet(isPresented: $showingProfile, onDismiss: { Task { await model.reloadProfile(auth: auth) } }) {
+                NavigationStack {
+                    ProfileEditorView()
+                        .toolbar { ToolbarItem(placement: .cancellationAction) { Button("Close") { showingProfile = false } } }
+                }
+            }
             .sheet(isPresented: $importing) {
                 CalendarImportView(painted: model.painted, start: model.importRange.start, end: model.importRange.end) { dates, name in
                     model.addWorkDays(dates, suggestedName: name)
@@ -89,7 +115,7 @@ struct InvoiceEditorView: View {
             } label: {
                 HStack {
                     VStack(alignment: .leading, spacing: 2) {
-                        Text("Client").font(.caption).foregroundStyle(.secondary)
+                        (Text("Client") + Text(" *")).font(.caption).foregroundStyle(.secondary)
                         Text(clientName).foregroundStyle(model.clientId == nil ? .secondary : .primary)
                     }
                     Spacer()
@@ -100,12 +126,18 @@ struct InvoiceEditorView: View {
                 .background(Color.primary.opacity(0.05), in: RoundedRectangle(cornerRadius: 12, style: .continuous))
             }
             .tint(.primary)
+            .accessibilityHint("Required")
+            .id("clientField")
+
+            if model.attempted, model.clientId == nil {
+                Text("Pick a client.").font(.caption).foregroundStyle(.red)
+            }
 
             if let terms = model.preview?.terms ?? (model.sameClient ? model.editing?.terms : nil) {
                 Text(terms.ruleLine(model.currency)).font(.caption).foregroundStyle(.secondary)
             }
 
-            field("Job name", text: $model.showName, prompt: "e.g. The Salt Road, Series 2")
+            jobNameField
             AdaptiveRow {
                 field("Invoice number", text: $model.invoiceNumber, prompt: "INV-0001")
                 dateField
@@ -113,6 +145,41 @@ struct InvoiceEditorView: View {
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .cardStyle()
+    }
+
+    private var jobNameField: some View {
+        let missing = model.attempted && model.showName.trimmingCharacters(in: .whitespaces).isEmpty
+        return VStack(alignment: .leading, spacing: 6) {
+            (Text("Job name") + Text(" *")).font(.caption).foregroundStyle(.secondary)
+            TextField("e.g. The Salt Road, Series 2", text: $model.showName)
+                .focused($jobFocused)
+                .padding(12)
+                .background(Color.primary.opacity(0.05), in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+                .overlay {
+                    if missing { RoundedRectangle(cornerRadius: 12, style: .continuous).strokeBorder(.red, lineWidth: 1) }
+                }
+                .accessibilityLabel("Job name, required")
+            if missing { Text("Name the job.").font(.caption).foregroundStyle(.red) }
+        }
+        .id("jobField")
+    }
+
+    /// Said before any work is done, and over the invoice rather than away from it
+    private var profileNotice: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Label("Add \(model.profileGapText) before you save", systemImage: "person.crop.circle.badge.exclamationmark")
+                .font(.subheadline.weight(.semibold))
+            Text("Every invoice carries them. Your details open over this invoice, so nothing you've entered is lost.")
+                .font(.footnote)
+                .foregroundStyle(.secondary)
+            Button("Open your details") { showingProfile = true }
+                .buttonStyle(.bordered)
+                .tint(.brand)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(16)
+        .background(Color.orange.opacity(0.12), in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+        .accessibilityElement(children: .contain)
     }
 
     private var invoiceDateText: String {
@@ -350,6 +417,13 @@ struct InvoiceEditorView: View {
                 Text("Total").font(.caption).foregroundStyle(.secondary)
                 Text((model.preview?.totalAmount.value ?? 0).money(model.currency))
                     .font(.title3.weight(.bold)).monospacedDigit()
+                // Once there are days to bill, what stands between here and Save, before the tap
+                if !model.billable.isEmpty, !model.stillToDo.isEmpty, !model.attempted {
+                    Text("Before you can save: \(model.stillToDo.joined(separator: ", ")).")
+                        .font(.caption2)
+                        .foregroundStyle(.secondary)
+                        .lineLimit(2)
+                }
             }
             Spacer()
             Button {

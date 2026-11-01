@@ -1,11 +1,19 @@
 "use client";
 
+import { useRef, useState } from "react";
+
 import { MinusSignIcon, PlusSignIcon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 
 import { Button } from "@/components/ui/button";
 import type { InvoiceTerms, TravelDirection } from "@/lib/billing";
 import type { PaintedDay, Painted } from "@/lib/day-editor";
+import {
+  OT_MAX,
+  OT_STEP,
+  parseOvertime,
+  radioKeyTarget,
+} from "@/lib/day-keyboard";
 import { type StripDay, longDate } from "@/lib/day-strip";
 import { cn } from "@/lib/utils";
 
@@ -19,35 +27,52 @@ const Segmented = <T extends string | undefined>({
   options: ReadonlyArray<{ value: T; label: string }>;
   value: T;
   onChange: (value: T) => void;
-}) => (
-  <div
-    role="radiogroup"
-    aria-label={label}
-    className="bg-muted flex w-fit rounded-full p-0.5 text-xs font-medium"
-  >
-    {options.map((option) => (
-      <button
-        key={option.label}
-        type="button"
-        role="radio"
-        aria-checked={value === option.value}
-        onClick={() => onChange(option.value)}
-        className={cn(
-          "rounded-full px-3 py-1.5 transition-colors",
-          value === option.value
-            ? "bg-card text-foreground shadow-sm"
-            : "text-muted-foreground hover:text-foreground",
-        )}
-      >
-        {option.label}
-      </button>
-    ))}
-  </div>
-);
+}) => {
+  const buttons = useRef<Array<HTMLButtonElement | null>>([]);
+  // None of the options may match (an unresolved direction): Tab still has to land somewhere
+  const current = Math.max(
+    0,
+    options.findIndex((option) => option.value === value),
+  );
 
-/** Overtime is logged in half hours, up to a 24-hour day */
-const OT_STEP = 0.5;
-const OT_MAX = 14;
+  return (
+    <div
+      role="radiogroup"
+      aria-label={label}
+      className="bg-muted flex w-fit rounded-full p-0.5 text-xs font-medium"
+      onKeyDown={(e) => {
+        const next = radioKeyTarget(options.length, current, e.key);
+        if (next === null) return;
+        // A radio group is one Tab stop and the arrows choose within it
+        e.preventDefault();
+        onChange(options[next]!.value);
+        buttons.current[next]?.focus();
+      }}
+    >
+      {options.map((option, index) => (
+        <button
+          key={option.label}
+          ref={(el) => {
+            buttons.current[index] = el;
+          }}
+          type="button"
+          role="radio"
+          aria-checked={value === option.value}
+          tabIndex={index === current ? 0 : -1}
+          onClick={() => onChange(option.value)}
+          className={cn(
+            "rounded-full px-3 py-1.5 transition-colors",
+            value === option.value
+              ? "bg-card text-foreground shadow-sm"
+              : "text-muted-foreground hover:text-foreground",
+          )}
+        >
+          {option.label}
+        </button>
+      ))}
+    </div>
+  );
+};
 
 /**
  * Detail for the day last tapped: travel on a work day, a travel day's
@@ -78,6 +103,16 @@ export const DayDetails = ({
     });
 
   const hours = entry?.overtimeHours ?? 0;
+  // What's in the box while it's being typed; null otherwise, so the box
+  // follows the stepper and the day you've selected
+  const [draft, setDraft] = useState<string | null>(null);
+  const commitDraft = () => {
+    if (draft === null) return;
+    const typed = parseOvertime(draft);
+    // Not a number: go back to what it was rather than guess
+    if (typed !== null) update({ overtimeHours: typed });
+    setDraft(null);
+  };
   // Split as billDays will: the tier's first rate up to its hours, then its
   // second; no tier, all of it at 1.5x
   const tier = terms?.overtimeTier ?? null;
@@ -174,12 +209,40 @@ export const DayDetails = ({
               >
                 <HugeiconsIcon icon={MinusSignIcon} />
               </Button>
-              <output
-                className="w-14 text-center font-mono text-lg font-semibold tabular-nums"
-                aria-live="polite"
-              >
-                {hours}h
-              </output>
+              {/* Type the hours, or step by half hours; the box takes
+                  Up and Down too */}
+              <input
+                type="number"
+                inputMode="decimal"
+                min={0}
+                max={OT_MAX}
+                step={OT_STEP}
+                aria-label="Overtime hours"
+                value={draft ?? String(hours)}
+                onChange={(e) => {
+                  setDraft(e.target.value);
+                  // Live, so the total follows the arrow keys and typing; an
+                  // empty box waits for blur, so it can be cleared and retyped
+                  const typed = parseOvertime(e.target.value);
+                  if (typed !== null && e.target.value.trim() !== "") {
+                    update({ overtimeHours: typed });
+                  }
+                }}
+                onBlur={commitDraft}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    commitDraft();
+                  } else if (e.key === "Escape" && draft !== null) {
+                    e.stopPropagation();
+                    setDraft(null);
+                  }
+                }}
+                className="border-input bg-background focus-visible:ring-ring h-8 w-16 rounded-md border text-center font-mono text-base font-semibold tabular-nums focus-visible:ring-2 focus-visible:outline-none"
+              />
+              <span className="text-muted-foreground text-sm" aria-hidden="true">
+                h
+              </span>
               <Button
                 type="button"
                 variant="outline"
