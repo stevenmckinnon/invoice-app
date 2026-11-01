@@ -30,6 +30,11 @@ enum BillingLines {
                 detail: "\(item.quantity) × \(item.unitPrice.money(currency))", amount: item.cost.value)
         }
         func named(_ name: String) -> LineItem? { items.first { $0.description == name && $0.quantity > 0 } }
+        /// A per diem with days but no rate (a client paid a travel per diem only) is left out rather than
+        /// shown as £0.00, as on the web
+        func perDiem(_ name: String) -> LineItem? {
+            named(name).flatMap { $0.unitPrice.value > 0 || $0.cost.value > 0 ? $0 : nil }
+        }
 
         var labour = [Names.travel, Names.work, Names.dark].enumerated().compactMap { index, name in
             named(name).map { line($0, name.replacingOccurrences(of: "Days", with: "days"), index) }
@@ -52,8 +57,8 @@ enum BillingLines {
         }
 
         let perDiems = [
-            named(Names.perDiemTravel).map { line($0, "Travel days", 0) },
-            named(Names.perDiemWork).map { line($0, "Work days", 1) },
+            perDiem(Names.perDiemTravel).map { line($0, "Travel days", 0) },
+            perDiem(Names.perDiemWork).map { line($0, "Work days", 1) },
         ].compactMap { $0 }
         let other = items.filter { !Names.standard.contains($0.description) && $0.quantity > 0 }
             .enumerated().map { line($1, $1.description, $0) }

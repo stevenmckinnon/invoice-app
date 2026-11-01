@@ -46,6 +46,8 @@ final class InvoiceEditorModel {
     var saving = false
     var saveError: String?
     var attempted = false
+    /// Counts every tap on Save, so the screen can react to each failed one, not just the first
+    private(set) var attempts = 0
 
     /// `copying` starts a new invoice from an old one: the client, job name, notes and expenses carry
     /// over, the days don't (they'd be the old job's dates) and the number is the next free one.
@@ -96,20 +98,45 @@ final class InvoiceEditorModel {
                 days.filter { $0.type == "dark" }.count)
     }
 
-    var problems: [String] {
-        var list: [String] = []
-        if clientId == nil { list.append("Pick a client: their rates price the invoice.") }
-        else if let client, !client.canBill, !sameClient { list.append("This client has no day rate yet.") }
-        if showName.trimmingCharacters(in: .whitespaces).isEmpty { list.append("Name the job.") }
-        if invoiceNumber.trimmingCharacters(in: .whitespaces).isEmpty { list.append("Give it an invoice number.") }
-        if billable.isEmpty && parsedExpenses.isEmpty { list.append("Paint at least one day.") }
-        if let previewError { list.append(previewError) }
-        if editing == nil, let profile,
-           profile.displayName.isEmpty || (profile.addressLine1 ?? "").isEmpty
-            || (profile.iban ?? "").isEmpty || (profile.swiftBic ?? "").isEmpty {
-            list.append("Your profile is missing your address or bank details. Add them on the web first.")
+    /// What a new invoice still needs from your details, said up front; empty once it has it all
+    var profileGapText: String {
+        guard editing == nil, let profile else { return "" }
+        return ProfileGap.describe(profile.gaps)
+    }
+
+    /// One thing that stops a save: `message` answers a tap on Save, `short` is what's still to do,
+    /// said before the first tap. Listed in the order a person would fix them.
+    struct Check {
+        let message: String
+        let short: String
+    }
+
+    var checks: [Check] {
+        var list: [Check] = []
+        if clientId == nil { list.append(Check(message: "Pick a client: their rates price the invoice.", short: "pick a client")) }
+        else if let client, !client.canBill, !sameClient { list.append(Check(message: "This client has no day rate yet.", short: "give the client a day rate")) }
+        if showName.trimmingCharacters(in: .whitespaces).isEmpty { list.append(Check(message: "Name the job.", short: "name the job")) }
+        if invoiceNumber.trimmingCharacters(in: .whitespaces).isEmpty { list.append(Check(message: "Give it an invoice number.", short: "give it an invoice number")) }
+        if billable.isEmpty && parsedExpenses.isEmpty { list.append(Check(message: "Paint at least one day.", short: "paint a day")) }
+        if let previewError { list.append(Check(message: previewError, short: "")) }
+        if !profileGapText.isEmpty {
+            list.append(Check(message: "Add \(profileGapText) to your details.", short: "add \(profileGapText) to your details"))
         }
         return list
+    }
+
+    var problems: [String] { checks.map(\.message) }
+
+    /// What's left, for the line under the total once there are days to bill
+    var stillToDo: [String] { checks.map(\.short).filter { !$0.isEmpty } }
+
+    /// Where a failed save should take you: the first thing that needs doing
+    enum Problem { case client, job, other }
+
+    var firstProblem: Problem {
+        if clientId == nil { return .client }
+        if showName.trimmingCharacters(in: .whitespaces).isEmpty { return .job }
+        return .other
     }
 
     /// Where the calendar import starts looking: around the days already painted, else the four weeks
@@ -148,6 +175,18 @@ final class InvoiceEditorModel {
         }
     }
 
+    /// Read your details again, after they've been edited over this invoice
+    func reloadProfile(auth: AuthStore) async {
+        guard editing == nil else { return }
+        do {
+            profile = try await auth.api.profile()
+        } catch APIError.unauthorized {
+            auth.sessionExpired()
+        } catch {
+            // Keep what we had: the notice stays until the server says otherwise
+        }
+    }
+
     /// Prices the current days on the server. Run from `.task(id: previewKey)`, so a newer edit
     /// cancels the wait and only the last one asks.
     func refreshPreview(auth: AuthStore) async {
@@ -176,6 +215,7 @@ final class InvoiceEditorModel {
     /// Returns the saved invoice's id, or nil with `saveError` / `attempted` set
     func save(auth: AuthStore) async -> String? {
         attempted = true
+        attempts += 1
         guard problems.isEmpty, let clientId else { return nil }
         saving = true
         saveError = nil
