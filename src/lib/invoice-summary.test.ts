@@ -7,7 +7,7 @@ import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 
 import { type BillableDay, type InvoiceTerms, billDays } from "@/lib/billing";
-import { summariseInvoice } from "@/lib/invoice-summary";
+import { summariseInvoice, summaryTotals } from "@/lib/invoice-summary";
 
 const mallard: InvoiceTerms = {
   dayRate: 450,
@@ -115,5 +115,60 @@ describe("summariseInvoice", () => {
       ["Kit hire"],
     );
     assert.deepEqual(summary.labour[1].dates, ["2026-08-14"]);
+  });
+
+  it("totals the groups to the stored total, per diems and expenses included", () => {
+    const { bill, summary } = stored();
+    const totals = summaryTotals(summary);
+    // The page's legend lists these, so they have to be the whole bill
+    assert.ok(totals.perDiems > 0, "the job has per diems");
+    assert.ok(totals.expenses > 0, "the job has an expense");
+    assert.equal(totals.total, bill.totalAmount);
+    assert.equal(
+      Math.round((totals.labour + totals.perDiems + totals.expenses) * 100) / 100,
+      bill.totalAmount,
+    );
+  });
+
+  it("reads other fees on an old invoice with the expenses", () => {
+    const summary = summariseInvoice({
+      items: [
+        { description: "Work Days", quantity: 2, unitPrice: 500, cost: 1000 },
+        { description: "Kit hire", quantity: 1, unitPrice: 120, cost: 120 },
+      ],
+      overtimeEntries: [],
+      customExpenseEntries: [
+        { description: "Taxi", quantity: 1, unitPrice: 20, cost: 20 },
+      ],
+    });
+    assert.deepEqual(summaryTotals(summary), {
+      labour: 1000,
+      perDiems: 0,
+      expenses: 140,
+      total: 1140,
+    });
+  });
+
+  it("leaves out a per diem row that has days but no rate", () => {
+    // A client paid a travel per diem only: three work days, nothing owed per day
+    const terms: InvoiceTerms = { ...mallard, perDiem: { travel: 60, work: 0 } };
+    const days: BillableDay[] = [
+      { date: "2026-09-15", type: "travel" },
+      { date: "2026-09-16", type: "work" },
+      { date: "2026-09-17", type: "work" },
+      { date: "2026-09-18", type: "work" },
+    ];
+    const bill = billDays({ days, terms, expenses: [] });
+    const summary = summariseInvoice({
+      items: bill.items,
+      overtimeEntries: bill.overtimeEntries,
+      customExpenseEntries: bill.customExpenseEntries,
+      days,
+      terms,
+    });
+    assert.ok(summary.perDiems.every((l) => l.rate > 0 || l.amount > 0));
+    assert.deepEqual(summary.perDiems.map((l) => l.description), ["Travel days"]);
+    // Nothing owed went with it
+    assert.equal(summaryTotals(summary).total, bill.totalAmount);
   });
 });

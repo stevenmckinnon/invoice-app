@@ -37,10 +37,16 @@ export const fetchProfile = async (): Promise<Profile> => {
   return res.json();
 };
 
-export const useProfile = () => {
+/**
+ * `fresh` reads it again whenever the window regains focus. The invoice editor
+ * wants that: if you fix a missing detail in another tab, coming back should
+ * clear the notice without a reload.
+ */
+export const useProfile = ({ fresh = false }: { fresh?: boolean } = {}) => {
   return useQuery({
     queryKey: ["profile"],
     queryFn: fetchProfile,
+    ...(fresh && { refetchOnWindowFocus: true, staleTime: 0 }),
   });
 };
 

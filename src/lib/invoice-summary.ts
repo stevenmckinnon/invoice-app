@@ -136,7 +136,10 @@ export const summariseInvoice = ({
       item("Per Diems Work Days"),
       `Work days${includes([combo > 0 && perDiem === "work" && comboNote])}`,
     ),
-  ].filter((l) => l.qty > 0);
+  ]
+    // A client with only a travel per diem has days on the work line but no
+    // rate: a £0.00 row looks unfinished, and adds nothing
+    .filter((l) => l.qty > 0 && (l.rate > 0 || l.amount > 0));
 
   // Anything else the old form or the assistant added (kit hire, a fee)
   const other: SummaryLine[] = items
@@ -166,4 +169,23 @@ export const summariseInvoice = ({
     },
     comboDays: combo,
   };
+};
+
+export type Summary = ReturnType<typeof summariseInvoice>;
+
+const cents = (value: number) => Math.round(value * 100) / 100;
+
+/**
+ * What the groups come to, in the three the invoice is read in. They add up
+ * to the stored total (a test holds that), so a screen that lists them can
+ * show the sum without re-billing.
+ */
+export const summaryTotals = (summary: Summary) => {
+  const sum = (lines: SummaryLine[]) =>
+    lines.reduce((total, l) => total + l.amount, 0);
+  const labour = cents(sum(summary.labour));
+  const perDiems = cents(sum(summary.perDiems));
+  // Anything else on the invoice (kit hire, a fee) is read with the expenses
+  const expenses = cents(sum(summary.expenses) + sum(summary.other));
+  return { labour, perDiems, expenses, total: cents(labour + perDiems + expenses) };
 };
