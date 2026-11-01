@@ -363,13 +363,13 @@
   left: 0;
   top: 0;
   width: 358px;
-  height: 590px;
+  height: 656px;
   background: transparent;
   box-shadow: none;
 }
 .cd .cd-mask[data-compact] .cd-rest {
-  left: 250px;
-  top: 540px;
+  left: 330px;
+  top: 636px;
 }
 .cd .cd-mask[data-compact] .cd-body {
   display: flex;

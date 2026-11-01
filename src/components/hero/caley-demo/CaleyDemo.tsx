@@ -206,7 +206,7 @@ export function CaleyDemo() {
       poster={POSTER}
       script={script}
       cursor={{ at: "rest" }}
-      compact={{ below: 560, width: 358, height: 590 }}
+      compact={{ below: 560, width: 358, height: 656 }}
       className="cd"
     >
       {(s, _rect, layout) => {
