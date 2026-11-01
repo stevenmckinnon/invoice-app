@@ -1,7 +1,7 @@
 /**
  * The money in the demo is the product's own: the painted days go through the
  * same `billDays` and `summariseInvoice` the invoice page uses, so a figure on
- * the paper is a figure Caley would really produce. Mallard's terms are the
+ * the paper is a figure Caley would really produce. The client's terms are the
  * ones the billing tests use.
  */
 import {

@@ -201,7 +201,7 @@ export function CaleyDemo() {
   return (
     <Stage<S>
       width={1000}
-      height={640}
+      height={590}
       initial={initial}
       poster={POSTER}
       script={script}
@@ -311,7 +311,7 @@ export function CaleyDemo() {
                     <header className="cd-paper__head">
                       <div>
                         <p className="cd-paper__job">Harbour Lights Pilot</p>
-                        <p className="cd-paper__client">Mallard Productions</p>
+                        <p className="cd-paper__client">Foxglove Pictures</p>
                       </div>
                       <p className="cd-paper__no">INV-2610</p>
                     </header>
