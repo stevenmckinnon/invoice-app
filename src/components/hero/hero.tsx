@@ -16,7 +16,7 @@ const Hero = () => (
       <BackgroundPattern />
     </div>
 
-    <div className="rise-in relative z-10 mx-auto flex flex-col items-center justify-center px-6 pt-20 pb-12 md:px-12 md:pt-24">
+    <div className="rise-in relative z-10 mx-auto flex flex-col items-center justify-center px-6 pt-24 pb-12 md:px-12 md:pt-32">
       <div className="mx-auto w-full max-w-4xl text-center">
         <h1 className="text-5xl leading-[1.05] font-bold tracking-tight text-balance sm:text-6xl md:text-7xl">
           Invoicing for{" "}

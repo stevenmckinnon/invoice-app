@@ -201,12 +201,12 @@ export function CaleyDemo() {
   return (
     <Stage<S>
       width={1000}
-      height={590}
+      height={624}
       initial={initial}
       poster={POSTER}
       script={script}
       cursor={{ at: "rest" }}
-      compact={{ below: 560, width: 358, height: 680 }}
+      compact={{ below: 560, width: 358, height: 590 }}
       className="cd"
     >
       {(s, _rect, layout) => {

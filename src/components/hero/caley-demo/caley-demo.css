@@ -19,26 +19,24 @@
   font-family: var(--ss-font);
 }
 
-/* The window fades out at its foot over filler (fade crop) */
+/* The window floats whole on the page, one 32px gutter on three sides */
 .cd .cd-mask {
   position: absolute;
   inset: 0;
-  -webkit-mask-image: linear-gradient(to bottom, #000 64%, transparent 98%);
-  mask-image: linear-gradient(to bottom, #000 64%, transparent 98%);
 }
 .cd .cd-win {
   position: absolute;
   left: 32px;
-  top: 24px;
+  top: 32px;
   width: 936px;
-  height: 680px;
+  height: 560px;
   background: var(--card);
   box-shadow: 0 0 0 1px var(--border), 0 24px 48px -24px color-mix(in oklab, var(--foreground) 22%, transparent);
 }
 .cd .cd-rest {
   position: absolute;
   left: 640px;
-  top: 640px;
+  top: 540px;
 }
 
 .cd .cd-body {
@@ -365,13 +363,13 @@
   left: 0;
   top: 0;
   width: 358px;
-  height: 680px;
+  height: 590px;
   background: transparent;
   box-shadow: none;
 }
 .cd .cd-mask[data-compact] .cd-rest {
   left: 250px;
-  top: 640px;
+  top: 540px;
 }
 .cd .cd-mask[data-compact] .cd-body {
   display: flex;
