@@ -19,6 +19,7 @@ import {
   matchesBrush,
   monthGrid,
 } from "@/lib/day-editor";
+import { calendarKeyTarget, radioKeyTarget } from "@/lib/day-keyboard";
 import { type StripDay, dayOfMonth, longDate } from "@/lib/day-strip";
 import { cn } from "@/lib/utils";
 
@@ -81,6 +82,12 @@ export const DayCalendar = ({
     month: Number(initialMonth.slice(5, 7)) - 1,
   }));
   const [brush, setBrush] = useState<Brush>("work");
+  const brushRefs = useRef<Partial<Record<Brush, HTMLButtonElement | null>>>({});
+  // The one day Tab lands on; arrow keys move it. Without this every day of
+  // the month is its own Tab stop, 30 to get past
+  const [focusDate, setFocusDate] = useState<string | null>(null);
+  const gridRef = useRef<HTMLDivElement>(null);
+  const pendingFocus = useRef<string | null>(null);
   const painting = useRef(false);
   // Decided once per gesture by the day it starts on and held for the whole
   // drag, so one stroke never flickers days on and off
@@ -89,6 +96,13 @@ export const DayCalendar = ({
   // you tap a day to edit its overtime, and a tap that deleted it would be a
   // trap. It becomes an erase if the finger moves on to another day.
   const pendingErase = useRef<string | null>(null);
+
+  // Selecting by pointer moves the Tab stop to that day as well, so a stale
+  // keyboard position never wins over the day you just clicked
+  const select = (date: string) => {
+    setFocusDate(date);
+    onSelect(date);
+  };
 
   const paint = useCallback(
     (date: string) =>
@@ -113,7 +127,7 @@ export const DayCalendar = ({
       pendingErase.current = null;
     }
     paint(date);
-    onSelect(date);
+    select(date);
   };
 
   useEffect(() => {
@@ -129,9 +143,55 @@ export const DayCalendar = ({
     };
   }, []);
 
+  // After an arrow key moves the roving stop (and maybe the month), put the
+  // focus on its button once it has been drawn
+  useEffect(() => {
+    const date = pendingFocus.current;
+    if (!date) return;
+    pendingFocus.current = null;
+    gridRef.current
+      ?.querySelector<HTMLElement>(`[data-date="${date}"]`)
+      ?.focus();
+  }, [cursor.year, cursor.month, focusDate]);
+
   const byDate = new Map(days.map((day) => [day.date, day]));
   const grid = monthGrid(cursor.year, cursor.month);
   const thisMonth = `${cursor.year}-${String(cursor.month + 1).padStart(2, "0")}`;
+  // Tab lands on the day you were last on, else the selected one, else the
+  // first day of the job in view, else the 1st
+  const tabDate =
+    (focusDate && grid.includes(focusDate) && focusDate) ||
+    (selected && grid.includes(selected) && selected) ||
+    grid.find((date) => date.startsWith(thisMonth) && byDate.has(date)) ||
+    `${thisMonth}-01`;
+
+  const onDayKeyDown = (e: React.KeyboardEvent, date: string) => {
+    if (e.altKey || e.ctrlKey || e.metaKey) return;
+    const target = calendarKeyTarget(date, e.key);
+    if (!target) return;
+    // Moving never paints: Space and Enter do that, as before
+    e.preventDefault();
+    pendingFocus.current = target;
+    setFocusDate(target);
+    const paging = e.key === "PageUp" || e.key === "PageDown";
+    if (paging || !grid.includes(target)) {
+      setCursor({
+        year: Number(target.slice(0, 4)),
+        month: Number(target.slice(5, 7)) - 1,
+      });
+    }
+  };
+
+  const onBrushKeyDown = (e: React.KeyboardEvent) => {
+    const index = BRUSHES.findIndex((option) => option.id === brush);
+    const next = radioKeyTarget(BRUSHES.length, index, e.key);
+    if (next === null) return;
+    e.preventDefault();
+    const option = BRUSHES[next]!;
+    setBrush(option.id);
+    brushRefs.current[option.id]?.focus();
+  };
+
   const step = (delta: number) =>
     setCursor(({ year, month }) => {
       const m = month + delta;
@@ -180,6 +240,7 @@ export const DayCalendar = ({
         <div
           role="radiogroup"
           aria-label="Paint days as"
+          onKeyDown={onBrushKeyDown}
           className="bg-muted flex w-full overflow-x-auto rounded-full p-0.5 text-[11px] font-medium sm:w-auto sm:text-xs"
         >
           {BRUSHES.map((option) => (
@@ -188,6 +249,11 @@ export const DayCalendar = ({
               type="button"
               role="radio"
               aria-checked={brush === option.id}
+              // A radio group is one Tab stop; arrow keys choose within it
+              tabIndex={brush === option.id ? 0 : -1}
+              ref={(el) => {
+                brushRefs.current[option.id] = el;
+              }}
               onClick={() => setBrush(option.id)}
               className={cn(
                 // Below sm the five brushes share the full row
@@ -225,6 +291,10 @@ export const DayCalendar = ({
 
       {/* touch-none so a drag paints instead of scrolling the page */}
       <div
+        ref={gridRef}
+        role="group"
+        aria-label="Calendar days"
+        aria-describedby="calendar-help"
         className="grid touch-none grid-cols-7 gap-1 select-none"
         onPointerMove={onGridPointerMove}
       >
@@ -241,6 +311,9 @@ export const DayCalendar = ({
               key={date}
               type="button"
               data-date={date}
+              tabIndex={date === tabDate ? 0 : -1}
+              onFocus={() => setFocusDate(date)}
+              onKeyDown={(e) => onDayKeyDown(e, date)}
               aria-pressed={isSelected}
               aria-label={`${longDate(date)}: ${
                 type
@@ -264,7 +337,7 @@ export const DayCalendar = ({
                 // Tap a matching day to select it; tap it again to clear it
                 if (matches && !isSelected) pendingErase.current = date;
                 else paint(date);
-                onSelect(date);
+                select(date);
               }}
               onClick={(e) => {
                 // Pointer taps were handled on pointerdown; acting on their
@@ -274,7 +347,7 @@ export const DayCalendar = ({
                 const matches = matchesBrush(entry, brush);
                 strokeErases.current = matches;
                 if (!(matches && !isSelected)) paint(date);
-                onSelect(date);
+                select(date);
               }}
               className={cn(
                 "relative flex h-12 flex-col items-start overflow-hidden rounded-lg p-1.5 text-left transition-[box-shadow] sm:h-16 sm:p-2",
@@ -328,9 +401,11 @@ export const DayCalendar = ({
           );
         })}
       </div>
-      <p className="text-muted-foreground mt-3 text-xs">
+      <p id="calendar-help" className="text-muted-foreground mt-3 text-xs">
         Tap or drag to paint. Tap a painted day to select it, and tap it again
         to clear it; dragging from it clears every day of that kind it crosses.
+        With a keyboard, the arrow keys move between days, Space paints the day
+        you are on, and Page Up and Page Down change month.
       </p>
     </section>
   );

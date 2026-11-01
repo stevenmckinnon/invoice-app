@@ -75,6 +75,8 @@ In client components, use `useSession()` from `@/lib/auth-client`. All data is u
 
 **UI** — shadcn/ui components in `src/components/ui/`. `sonner` for toast notifications. `motion` (Framer Motion) for animations. Fonts: Satoshi (local, body), Oswald (Google, headings via `font-oswald` class), Roboto Mono (Google, mono).
 
+**Keyboard in the day editor** — rules live in `src/lib/day-keyboard.ts` (pure, tested), used by `DayCalendar` and `DayDetails`. A `role="radio"` button must follow the radio pattern, so every radio group here (the paint options, and Travel on this day) is **one Tab stop** with the arrows choosing within it (`radioKeyTarget`); don't add `role="radio"` to buttons without that. The calendar is one Tab stop too (roving `tabIndex`: the day you were on, else the selected one, else the job's first day), with the arrows moving a day or a week, Home and End to the ends of the week, Page Up and Page Down changing month (`calendarKeyTarget`); moving never paints, Space and Enter do. Pointer selection moves the Tab stop too. Overtime is a number field (typed hours, rounded to the half hour and kept to 14 by `parseOvertime`, applied live, and the native up and down arrows step it) beside the − and + buttons.
+
 ### Data Model
 
 Core models in `prisma/schema.prisma`:
