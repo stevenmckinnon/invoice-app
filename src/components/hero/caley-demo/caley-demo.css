@@ -1,0 +1,439 @@
+/* The Stageshow demo wears Caley's own tokens, so light and dark follow the
+   site. Everything is scoped under .cd. */
+.cd {
+  --ss-canvas: var(--background);
+  --ss-surface: var(--card);
+  --ss-chrome: var(--card);
+  --ss-fill: var(--muted);
+  --ss-line: var(--border);
+  --ss-line-faint: var(--border);
+  --ss-text: var(--muted-foreground);
+  --ss-text-strong: var(--foreground);
+  --ss-text-faint: color-mix(in oklab, var(--muted-foreground) 70%, transparent);
+  --ss-icon: var(--muted-foreground);
+  --ss-accent: var(--primary);
+  --ss-font: var(--font-sans), system-ui, sans-serif;
+  --ss-mono: var(--font-mono), ui-monospace, monospace;
+  --cd-work: var(--primary);
+  --cd-warn: oklch(0.78 0.16 75);
+  font-family: var(--ss-font);
+}
+
+/* The window floats whole on the page, one 32px gutter on three sides */
+.cd .cd-mask {
+  position: absolute;
+  inset: 0;
+}
+.cd .cd-win {
+  position: absolute;
+  left: 32px;
+  top: 32px;
+  width: 936px;
+  height: 560px;
+  background: var(--card);
+  box-shadow: 0 0 0 1px var(--border), 0 24px 48px -24px color-mix(in oklab, var(--foreground) 22%, transparent);
+}
+.cd .cd-rest {
+  position: absolute;
+  left: 640px;
+  top: 540px;
+}
+
+.cd .cd-body {
+  display: grid;
+  grid-template-columns: 1fr 340px;
+  gap: 16px;
+  height: 100%;
+  padding: 16px;
+  background: var(--background);
+  font-size: 13px;
+  color: var(--foreground);
+}
+.cd .cd-left {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+}
+.cd .cd-card {
+  background: var(--card);
+  border-radius: 14px;
+  padding: 14px;
+  box-shadow: 0 1px 2px color-mix(in oklab, var(--foreground) 6%, transparent);
+}
+
+/* Days card */
+.cd .cd-days__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+.cd .cd-month {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.cd .cd-month__name {
+  font-weight: 700;
+  font-size: 15px;
+  min-width: 112px;
+  text-align: center;
+  color: var(--foreground);
+}
+.cd .cd-iconbtn {
+  display: inline-grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  color: var(--muted-foreground);
+}
+.cd .cd-iconbtn--box {
+  box-shadow: inset 0 0 0 1px var(--border);
+}
+.cd .cd-brushes {
+  display: flex;
+  gap: 4px;
+  padding: 3px;
+  border-radius: 999px;
+  background: var(--muted);
+}
+.cd .cd-brush {
+  padding: 5px 11px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--muted-foreground);
+  white-space: nowrap;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+.cd .cd-brush[data-on] {
+  background: var(--card);
+  color: var(--foreground);
+  box-shadow: 0 1px 2px color-mix(in oklab, var(--foreground) 14%, transparent);
+}
+
+.cd .cd-weekdays,
+.cd .cd-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 6px;
+}
+.cd .cd-weekdays {
+  margin-bottom: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  text-align: center;
+  color: var(--muted-foreground);
+}
+.cd .cd-day {
+  position: relative;
+  height: 40px;
+  border-radius: 9px;
+  box-shadow: inset 0 0 0 1px var(--border);
+  display: grid;
+  place-items: center;
+  font-size: 13px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--foreground);
+  transition: background-color 0.18s ease, box-shadow 0.18s ease, color 0.18s ease;
+}
+.cd .cd-day[data-out] {
+  color: var(--muted-foreground);
+  opacity: 0.45;
+}
+.cd .cd-day[data-kind="work"] {
+  background: var(--primary);
+  color: var(--primary-foreground);
+  box-shadow: none;
+}
+.cd .cd-day[data-kind="travel"] {
+  background: color-mix(in oklab, var(--primary) 12%, transparent);
+  box-shadow: inset 0 0 0 1.5px var(--primary);
+  color: var(--primary);
+}
+.cd .cd-day[data-selected] {
+  outline: 2px solid var(--foreground);
+  outline-offset: 2px;
+}
+.cd .cd-day[data-ot] .cd-day__num {
+  transform: translateY(-6px);
+}
+.cd .cd-day__plane {
+  position: absolute;
+  right: 4px;
+  bottom: 3px;
+}
+.cd .cd-day__ot {
+  position: absolute;
+  left: 50%;
+  bottom: 2px;
+  transform: translateX(-50%);
+  padding: 0 5px;
+  border-radius: 999px;
+  font-size: 9.5px;
+  font-weight: 700;
+  line-height: 14px;
+  background: var(--cd-warn);
+  color: oklch(0.2 0.04 75);
+}
+
+/* Overtime detail */
+.cd .cd-detail__date {
+  margin: 0 0 8px;
+  font-weight: 700;
+  font-size: 13px;
+}
+.cd .cd-detail__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.cd .cd-detail__label {
+  font-weight: 600;
+  color: var(--muted-foreground);
+}
+.cd .cd-stepper {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.cd .cd-field {
+  display: inline-flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 8px;
+  min-width: 72px;
+  height: 28px;
+  padding: 0 10px;
+  align-items: center;
+  border-radius: 8px;
+  box-shadow: inset 0 0 0 1px var(--border);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+.cd .cd-caret {
+  display: none;
+}
+.cd .cd-field__unit {
+  font-weight: 500;
+  color: var(--muted-foreground);
+}
+.cd .cd-detail__split {
+  margin: 8px 0 0;
+  font-size: 12px;
+  color: var(--muted-foreground);
+}
+
+/* Expenses: filler at the foot */
+.cd .cd-expenses {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.cd .cd-expenses__title {
+  margin: 0;
+  font-weight: 700;
+}
+.cd .cd-ghostbtn {
+  padding: 5px 11px;
+  border-radius: 8px;
+  box-shadow: inset 0 0 0 1px var(--border);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--muted-foreground);
+}
+
+/* Paper */
+.cd .cd-right {
+  min-width: 0;
+}
+.cd .cd-paper {
+  background: var(--card);
+  border-radius: 14px;
+  padding: 20px 18px 16px;
+  box-shadow: 0 1px 2px color-mix(in oklab, var(--foreground) 6%, transparent), 0 0 0 1px var(--border);
+  font-size: 12.5px;
+}
+.cd .cd-paper__head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  padding-bottom: 14px;
+  margin-bottom: 4px;
+  border-bottom: 1px solid var(--border);
+}
+.cd .cd-paper__job {
+  margin: 0;
+  font-weight: 700;
+  font-size: 14px;
+  color: var(--foreground);
+}
+.cd .cd-paper__client {
+  margin: 2px 0 0;
+  color: var(--muted-foreground);
+}
+.cd .cd-paper__no {
+  margin: 0;
+  font-family: var(--ss-mono);
+  font-size: 11.5px;
+  color: var(--muted-foreground);
+}
+.cd .cd-group {
+  margin: 12px 0 2px;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted-foreground);
+}
+.cd .cd-line {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  align-items: baseline;
+  column-gap: 10px;
+  padding: 6px 0;
+}
+.cd .cd-line__label {
+  font-weight: 600;
+  color: var(--foreground);
+}
+.cd .cd-line__calc {
+  display: inline-flex;
+  gap: 6px;
+  font-family: var(--ss-mono);
+  font-size: 11px;
+  color: var(--muted-foreground);
+  white-space: nowrap;
+}
+.cd .cd-line__amount {
+  min-width: 74px;
+  text-align: right;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--foreground);
+}
+.cd .cd-total {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+  font-weight: 700;
+  font-size: 14px;
+}
+.cd .cd-total__amount {
+  font-size: 24px;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+}
+
+.cd .cd-right {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.cd .cd-notes {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.cd .cd-notes__title {
+  margin: 0 0 4px;
+  font-weight: 700;
+}
+.cd .cd-bar {
+  display: block;
+  height: 8px;
+  border-radius: 4px;
+  background: var(--muted);
+}
+
+/* Compact: the same story on a phone, the cards on the page */
+.cd .cd-mask[data-compact] {
+  -webkit-mask-image: none;
+  mask-image: none;
+}
+.cd .cd-win--bare {
+  left: 0;
+  top: 0;
+  width: 358px;
+  height: 656px;
+  background: transparent;
+  box-shadow: none;
+}
+.cd .cd-mask[data-compact] .cd-rest {
+  left: 330px;
+  top: 636px;
+}
+.cd .cd-mask[data-compact] .cd-body {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 0;
+  background: transparent;
+}
+.cd .cd-mask[data-compact] .cd-left,
+.cd .cd-mask[data-compact] .cd-right {
+  display: contents;
+}
+.cd .cd-mask[data-compact] .cd-card {
+  padding: 12px;
+  box-shadow: 0 0 0 1px var(--border);
+}
+.cd .cd-mask[data-compact] .cd-days {
+  order: 1;
+}
+.cd .cd-mask[data-compact] .cd-detail {
+  order: 2;
+}
+.cd .cd-mask[data-compact] .ss-collapse {
+  order: 2;
+}
+.cd .cd-mask[data-compact] .cd-paper {
+  order: 3;
+  padding: 14px 14px 12px;
+  box-shadow: 0 0 0 1px var(--border);
+}
+.cd .cd-mask[data-compact] .cd-expenses,
+.cd .cd-mask[data-compact] .cd-notes,
+.cd .cd-mask[data-compact] .cd-month .cd-iconbtn,
+.cd .cd-mask[data-compact] .cd-line__calc {
+  display: none;
+}
+.cd .cd-mask[data-compact] .cd-month__name {
+  min-width: 0;
+  text-align: left;
+}
+.cd .cd-mask[data-compact] .cd-brush {
+  padding: 5px 9px;
+}
+.cd .cd-mask[data-compact] .cd-grid,
+.cd .cd-mask[data-compact] .cd-weekdays {
+  gap: 5px;
+}
+.cd .cd-mask[data-compact] .cd-day {
+  height: 38px;
+}
+.cd .cd-mask[data-compact] .cd-line {
+  grid-template-columns: 1fr auto;
+}
+.cd .cd-mask[data-compact] .cd-day__ot {
+  font-size: 10.5px;
+}
+.cd .ss-stage {
+  overflow: hidden;
+}
+/* The stage sets its tokens on itself, so the window's chrome follows the
+   site's light and dark from here */
+.cd .ss-stage {
+  --ss-chrome: var(--card);
+  --ss-ink-1: var(--muted);
+  --ss-line: var(--border);
+  --ss-text-faint: var(--muted-foreground);
+}
