@@ -13,6 +13,8 @@ const config = [
       "build/**",
       "next-env.d.ts",
       "src/generated/**",
+      // The Stageshow kit is vendored as shipped; the demo that uses it is linted
+      "src/components/stageshow/kit/**",
       "prisma/migrations/**/migration.sql",
       // Claude Code keeps parallel sessions' git worktrees here: whole copies
       // of the repo, which would otherwise be linted as if they were source

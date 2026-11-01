@@ -2,10 +2,10 @@ import { ArrowRight01Icon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import Link from "next/link";
 
-import { DemoDashboard } from "@/components/DemoDashboard";
 import { Button } from "@/components/ui/button";
 
 import { BackgroundPattern } from "./background-pattern";
+import { CaleyDemo } from "./caley-demo";
 
 // The entrance is decorative and lives in CSS (`rise-in`, globals.css), so the
 // headline and CTAs are painted by the server HTML rather than waiting on
@@ -55,31 +55,15 @@ const Hero = () => (
         </p>
       </div>
 
-      {/* App Demo Dashboard — the hero's visual anchor, so it is pulled up into
-          the first viewport rather than parked below it, and widened to
-          `max-w-5xl` so its figures read at a glance. The spacing above is
-          tuned so the revenue total and all three stat tiles clear the fold at
-          1280x800; what falls below is the Breakdown pair, which the component
-          already treats as its most expendable content.
-
-          No bottom fade mask: the viewport edge is already a deliberate crop,
-          and masking the mockup dissolved the `glossy-frame` and cut through
-          the Breakdown cards mid-row, which read as a rendering fault rather
-          than an intentional ending.
-
-          `inert` because it is a picture of the product, not the product: it
-          used to put a live "Create Invoice" <button> into the tab order that
-          went nowhere, and its own headings into the document outline. Sighted
-          users get the mockup; everyone else gets the hero copy above, which
-          says the same thing. */}
+      {/* The hero's visual anchor: Caley's editor painting a job, animated
+          (Stageshow). `inert` because it is a picture of the product, not the
+          product; everyone else gets the hero copy above, which says the same
+          thing. The page is its ground, so there is no plate behind it. */}
       <div
         className="rise-in mx-auto mt-10 w-full max-w-5xl [--rise-delay:0.25s] [--rise-distance:40px] [--rise-duration:1s]"
         inert
       >
-        <div className="relative">
-          <div className="bg-primary/20 absolute -inset-1 rounded-3xl opacity-50 blur-xl" />
-          <DemoDashboard />
-        </div>
+        <CaleyDemo />
       </div>
     </div>
   </section>
