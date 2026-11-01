@@ -11,7 +11,7 @@ import {
   toLegs,
   weekdayShort,
 } from "@/lib/day-strip";
-import type { summariseInvoice } from "@/lib/invoice-summary";
+import { type Summary, summaryTotals } from "@/lib/invoice-summary";
 import { cn, formatCurrency } from "@/lib/utils";
 
 import {
@@ -24,7 +24,6 @@ import {
 } from "./day-fills";
 import { OvertimeCap } from "./OvertimeCap";
 
-type Summary = ReturnType<typeof summariseInvoice>;
 
 const ruleText = (terms: InvoiceTerms) => {
   const tier = terms.overtimeTier
@@ -69,6 +68,10 @@ export const DayStrip = ({
     }),
   );
   const money = (amount: number) => formatCurrency(amount, currency);
+  // The legend is the summary, so it lists everything the total is made of:
+  // without per diems and expenses the figures stopped short of the total
+  const totals = summaryTotals(summary);
+  const perDiemDays = summary.perDiems.reduce((n, l) => n + l.qty, 0);
   const gridColumns = {
     gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))`,
   };
@@ -307,7 +310,7 @@ export const DayStrip = ({
 
       {/* Legend doubles as the summary. Overtime is one item with a two-part
           swatch: as two items the legend wrapped and orphaned "2×". */}
-      <dl className="border-border/60 mt-5 grid grid-cols-2 gap-x-6 gap-y-4 border-t pt-4 sm:grid-cols-4">
+      <dl className="border-border/60 mt-5 grid grid-cols-2 gap-x-6 gap-y-4 border-t pt-4 sm:grid-cols-3 lg:grid-cols-6">
         {[
           {
             swatch: <span className="bg-primary size-2.5 rounded-[3px]" />,
@@ -352,6 +355,32 @@ export const DayStrip = ({
                 .join(" · ") || "None",
             amount: summary.overtime.amount,
           },
+          // Only when there is one: a job with no per diems or expenses
+          // keeps the four it always had
+          ...(totals.perDiems > 0
+            ? [
+                {
+                  swatch: (
+                    <span className="border-muted-foreground size-2.5 rounded-[3px] border" />
+                  ),
+                  label: "Per diems",
+                  detail: `${perDiemDays} ${perDiemDays === 1 ? "day" : "days"}`,
+                  amount: totals.perDiems,
+                },
+              ]
+            : []),
+          ...(totals.expenses > 0
+            ? [
+                {
+                  swatch: (
+                    <span className="bg-muted-foreground/60 size-2.5 rounded-[3px]" />
+                  ),
+                  label: "Expenses",
+                  detail: "Receipts and fees",
+                  amount: totals.expenses,
+                },
+              ]
+            : []),
         ].map((item) => (
           <div key={item.label}>
             <dt className="flex items-center gap-2 text-xs font-medium">
@@ -367,6 +396,13 @@ export const DayStrip = ({
           </div>
         ))}
       </dl>
+
+      <div className="border-border/60 mt-4 flex items-baseline justify-between gap-4 border-t pt-3">
+        <span className="text-sm font-semibold">Total</span>
+        <span className="font-mono text-sm font-semibold tabular-nums">
+          {money(totals.total)}
+        </span>
+      </div>
     </section>
   );
 };

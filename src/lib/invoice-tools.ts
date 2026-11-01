@@ -17,6 +17,7 @@ import {
   generateNextInvoiceNumber,
   isDuplicateInvoiceNumberError,
 } from "@/lib/invoice-number";
+import { type ProfileFields, profileGaps } from "@/lib/profile-readiness";
 import { formatCurrency } from "@/lib/utils";
 
 /** Dates reach Prisma via `new Date()`, so anything looser becomes Invalid Date */
@@ -54,27 +55,8 @@ export interface InvoiceToolContext {
 }
 
 /** The profile fields every invoice copies; without them one can't be made */
-export const isProfileComplete = (
-  user: {
-    fullName: string | null;
-    name: string | null;
-    addressLine1: string | null;
-    city: string | null;
-    postalCode: string | null;
-    country: string | null;
-    iban: string | null;
-    swiftBic: string | null;
-  } | null,
-) =>
-  !!(
-    user?.iban &&
-    user.swiftBic &&
-    user.addressLine1 &&
-    user.city &&
-    user.postalCode &&
-    user.country &&
-    (user.fullName || user.name)
-  );
+export const isProfileComplete = (user: ProfileFields | null) =>
+  profileGaps(user).length === 0;
 
 const daySchema = z.object({
   date: isoDate.describe("The calendar date"),

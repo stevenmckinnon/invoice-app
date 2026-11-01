@@ -101,6 +101,10 @@ Pages read money from the **stored** rows (`summariseInvoice`, `src/lib/invoice-
 
 UI: the invoice page shows the paper document plus the day strip (`src/components/invoice/`); new and day-based invoices use the calendar editor (`src/components/invoice-editor/`), whose preview runs the same `billDays`.
 
+**The editor says what it needs before the click, not after.** `profileGaps` (`src/lib/profile-readiness.ts`, shared with the assistant's `isProfileComplete`) names what a new invoice still needs from your profile (name, address, bank details), and the editor shows that as a notice at the top. Its link opens the profile in a **new tab** so the invoice in progress isn't lost; the editor reads the profile again when the tab regains focus, so the notice clears on return. Client and Job are marked required, "Before you can create it: …" appears once a day is painted, and Create invoice with something missing moves focus to the first problem (client, then job) with an inline message and `aria-invalid`.
+
+**The job summary adds up.** The legend on the invoice page lists work, travel, dark, overtime, per diems and expenses (the last two only when there are some) with a Total, all from `summaryTotals` (`invoice-summary.ts`), which a test holds equal to the stored total. A per diem row with days but no rate (a client paid a travel per diem only) is left out rather than shown as £0.00.
+
 ### AI Chat (`src/components/ai/`)
 
 A chat assistant powered by Claude, with two surfaces sharing one conversation:

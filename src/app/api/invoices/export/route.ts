@@ -8,7 +8,7 @@ import {
   exportFilename,
   fyBounds,
 } from "@/lib/invoice-export";
-import { summariseInvoice } from "@/lib/invoice-summary";
+import { summariseInvoice, summaryTotals } from "@/lib/invoice-summary";
 import { getFyStart } from "@/lib/tax-year";
 
 /**
@@ -64,8 +64,11 @@ export const GET = async (req: NextRequest) => {
     unitPrice: Number(l.unitPrice),
     cost: Number(l.cost),
   });
-  const sum = (lines: Array<{ amount: number }>) =>
-    lines.reduce((n, l) => n + l.amount, 0);
+  const pickTotals = ({
+    labour,
+    perDiems,
+    expenses,
+  }: ReturnType<typeof summaryTotals>) => ({ labour, perDiems, expenses });
 
   const csv = buildInvoiceCsv(
     invoices.map((i) => {
@@ -85,9 +88,7 @@ export const GET = async (req: NextRequest) => {
         showName: i.showName,
         status: i.status,
         currency: i.currency,
-        labour: sum(summary.labour),
-        perDiems: sum(summary.perDiems),
-        expenses: sum(summary.expenses) + sum(summary.other),
+        ...pickTotals(summaryTotals(summary)),
         totalAmount: Number(i.totalAmount),
       };
     }),

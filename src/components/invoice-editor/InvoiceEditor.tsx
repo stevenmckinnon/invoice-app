@@ -14,6 +14,7 @@ import {
   type PaperInvoice,
 } from "@/components/invoice/InvoicePaper";
 import { overtimeByDate } from "@/components/invoice/OvertimeCap";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useClients } from "@/hooks/use-clients";
@@ -32,6 +33,11 @@ import {
 import { type Painted, fromStoredDays, toBillableDays } from "@/lib/day-editor";
 import { toStripDays } from "@/lib/day-strip";
 import { summariseInvoice } from "@/lib/invoice-summary";
+import {
+  describeGaps,
+  profileGaps,
+  profileName,
+} from "@/lib/profile-readiness";
 import { formatCurrency } from "@/lib/utils";
 
 import { DayCalendar } from "./DayCalendar";
@@ -41,6 +47,16 @@ import {
   ExpensesEditor,
   newExpenseKey,
 } from "./ExpensesEditor";
+
+/** A star that says so out loud, for the fields Create invoice insists on */
+const RequiredMark = () => (
+  <>
+    <span aria-hidden="true" className="text-muted-foreground">
+      *
+    </span>
+    <span className="sr-only">(required)</span>
+  </>
+);
 
 const today = () => new Date().toISOString().slice(0, 10);
 
@@ -74,7 +90,7 @@ export const InvoiceEditor = ({
   const createInvoice = useCreateInvoice();
   const updateInvoice = useUpdateInvoice();
   const { data: clients = [] } = useClients();
-  const { data: profile } = useProfile();
+  const { data: profile } = useProfile({ fresh: true });
 
   const [clientId, setClientId] = useState<string | null>(
     invoice?.clientId ?? null,
@@ -160,10 +176,9 @@ export const InvoiceEditor = ({
     }
   }
 
-  const profileName = profile
-    ? profile.fullName ||
-      `${profile.firstName ?? ""} ${profile.lastName ?? ""}`.trim()
-    : "";
+  const youName = profileName(profile);
+  // What a new invoice still needs from your profile, said up front
+  const profileGap = !invoice && profile ? describeGaps(profileGaps(profile)) : "";
 
   // Your details: a saved invoice keeps its own copy; a new one takes your
   // profile. The client's details likewise, unless the client changes.
@@ -187,7 +202,7 @@ export const InvoiceEditor = ({
           : null,
       }
     : {
-        fullName: profileName,
+        fullName: youName,
         email: profile?.email ?? "",
         addressLine1: profile?.addressLine1 ?? "",
         addressLine2: profile?.addressLine2 ?? null,
@@ -250,29 +265,68 @@ export const InvoiceEditor = ({
   });
   const overtime = overtimeByDate(bill?.overtimeEntries ?? []);
 
-  const problems = [
-    !clientId && "Pick a client: their rates price the invoice.",
-    client && !terms && "This client has no day rate yet.",
-    !showName.trim() && "Name the job.",
-    !invoiceNumber.trim() && "Give it an invoice number.",
-    billable.length === 0 &&
-      parsedExpenses.length === 0 &&
-      "Paint at least one day.",
-    billingError,
-    !invoice &&
-      profile &&
-      (!profileName ||
-        !profile.addressLine1 ||
-        !profile.iban ||
-        !profile.swiftBic) &&
-      "Your profile is missing your address or bank details.",
-  ].filter((p): p is string => Boolean(p));
+  // Each check, in the order a person would fix them. `short` is what's still
+  // to do, said before the first click; `message` is what the click answers
+  const profileProblem = profileGap ? `Add ${profileGap} to your profile.` : "";
+  const checks = [
+    {
+      failed: !clientId,
+      message: "Pick a client: their rates price the invoice.",
+      short: "pick a client",
+    },
+    {
+      failed: Boolean(client && !terms),
+      message: "This client has no day rate yet.",
+      short: "give the client a day rate",
+    },
+    { failed: !showName.trim(), message: "Name the job.", short: "name the job" },
+    {
+      failed: !invoiceNumber.trim(),
+      message: "Give it an invoice number.",
+      short: "give it an invoice number",
+    },
+    {
+      failed: billable.length === 0 && parsedExpenses.length === 0,
+      message: "Paint at least one day.",
+      short: "paint a day",
+    },
+    {
+      failed: Boolean(billingError),
+      message: billingError ?? "",
+      short: "",
+    },
+    {
+      failed: Boolean(profileProblem),
+      message: profileProblem,
+      short: `add ${profileGap} to your profile`,
+    },
+  ].filter((c) => c.failed);
+  const problems = checks.map((c) => c.message);
+  const stillToDo = checks.map((c) => c.short).filter(Boolean);
 
   const saving = createInvoice.isPending || updateInvoice.isPending;
 
+  /** Take the person to the first thing that needs doing, not just say so */
+  const focusFirstProblem = () => {
+    if (!clientId) {
+      document
+        .querySelector<HTMLElement>("#client-field button, #client-field input")
+        ?.focus();
+    } else if (!showName.trim()) {
+      document.getElementById("job-name")?.focus();
+    } else {
+      document
+        .getElementById("invoice-problems")
+        ?.scrollIntoView({ block: "center" });
+    }
+  };
+
   const save = () => {
     setAttempted(true);
-    if (problems.length || !bill) return;
+    if (problems.length || !bill) {
+      focusFirstProblem();
+      return;
+    }
     const payload = {
       invoiceNumber: invoiceNumber.trim(),
       invoiceDate,
@@ -351,6 +405,29 @@ export const InvoiceEditor = ({
         {invoice ? "Edit invoice" : "New invoice"}
       </h1>
 
+      {/* Said before any work is done, and without a way to lose it: the
+          profile opens in its own tab, and this one notices when you're back */}
+      {profileGap && (
+        <Alert className="mt-4">
+          <AlertTitle>Add {profileGap} before you create an invoice</AlertTitle>
+          <AlertDescription>
+            <p>
+              Every invoice carries them.{" "}
+              <a
+                href="/profile"
+                target="_blank"
+                rel="noopener"
+                className="text-foreground underline underline-offset-2"
+              >
+                Open your profile
+              </a>{" "}
+              in a new tab: this invoice stays as it is, and this notice clears
+              when you come back.
+            </p>
+          </AlertDescription>
+        </Alert>
+      )}
+
       {/* One column in working order: client and job, days, expenses, then
           the invoice itself as the review step */}
       <div className="mt-8 space-y-4">
@@ -359,8 +436,10 @@ export const InvoiceEditor = ({
           aria-label="Client and job"
         >
           <div className="grid gap-4 sm:grid-cols-2">
-            <div>
-              <p className="mb-1.5 text-xs font-medium">Client</p>
+            <div id="client-field">
+              <p className="mb-1.5 text-xs font-medium">
+                Client <RequiredMark />
+              </p>
               <ClientSelector
                 value={clientId ?? undefined}
                 onSelect={(id) => {
@@ -370,20 +449,35 @@ export const InvoiceEditor = ({
                 }}
                 onCreateNew={() => setShowCreateClient(true)}
               />
+              {attempted && !clientId && (
+                <p className="text-destructive mt-1.5 text-xs">
+                  Pick a client.
+                </p>
+              )}
             </div>
             <div>
               <label
                 htmlFor="job-name"
                 className="mb-1.5 block text-xs font-medium"
               >
-                Job
+                Job <RequiredMark />
               </label>
               <Input
                 id="job-name"
                 value={showName}
                 placeholder="e.g. Triplemania 34"
+                aria-required="true"
+                aria-invalid={attempted && !showName.trim() ? true : undefined}
+                aria-describedby={
+                  attempted && !showName.trim() ? "job-name-error" : undefined
+                }
                 onChange={(e) => setShowName(e.target.value)}
               />
+              {attempted && !showName.trim() && (
+                <p id="job-name-error" className="text-destructive mt-1.5 text-xs">
+                  Name the job.
+                </p>
+              )}
             </div>
           </div>
           {/* The client's terms, read-only: they never change per job */}
@@ -458,19 +552,24 @@ export const InvoiceEditor = ({
       <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div aria-live="polite" className="min-w-0">
           {attempted && problems.length > 0 ? (
-            <ul className="text-destructive space-y-1 text-sm">
+            <ul
+              id="invoice-problems"
+              className="text-destructive space-y-1 text-sm"
+            >
               {problems.map((problem) => (
                 <li key={problem}>
                   {problem}
-                  {problem.startsWith("Your profile") && (
+                  {problem === profileProblem && (
                     <>
                       {" "}
-                      <Link
+                      <a
                         href="/profile"
+                        target="_blank"
+                        rel="noopener"
                         className="underline underline-offset-2"
                       >
-                        Complete your profile
-                      </Link>
+                        Open your profile in a new tab
+                      </a>
                     </>
                   )}
                   {problem.startsWith("This client") && client && (
@@ -488,12 +587,21 @@ export const InvoiceEditor = ({
               ))}
             </ul>
           ) : (
-            <p className="text-muted-foreground text-sm">
-              Total{" "}
-              <span className="text-foreground font-mono font-semibold">
-                {total}
-              </span>
-            </p>
+            <div className="text-muted-foreground text-sm">
+              <p>
+                Total{" "}
+                <span className="text-foreground font-mono font-semibold">
+                  {total}
+                </span>
+              </p>
+              {/* Once there are days to bill, what stands between here and
+                  Create invoice, before the click rather than after it */}
+              {billable.length > 0 && stillToDo.length > 0 && (
+                <p className="mt-0.5 text-xs">
+                  Before you can create it: {stillToDo.join(", ")}.
+                </p>
+              )}
+            </div>
           )}
         </div>
         <div className="flex gap-2">
