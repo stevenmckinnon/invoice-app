@@ -21,9 +21,26 @@ struct Amount: Decodable, Hashable {
 }
 
 enum InvoiceStatus: String, Codable, CaseIterable, Identifiable {
-    case draft, sent, paid, overdue
+    case draft, sent, paid, overdue, void
     var id: String { rawValue }
     var label: String { rawValue.capitalized }
+
+    /// What the status menu offers: voiding is its own action, void stays void, and paid can't
+    /// go back to draft. The same rule as `canChangeStatus` in `src/lib/invoice-lifecycle.ts`.
+    var choices: [InvoiceStatus] {
+        switch self {
+        case .void: [.void]
+        case .paid: [.sent, .paid, .overdue]
+        default: [.draft, .sent, .paid, .overdue]
+        }
+    }
+}
+
+/// Another invoice this one is linked to by a correction.
+struct LinkedInvoice: Decodable, Hashable, Identifiable {
+    let id: String
+    let invoiceNumber: String
+    let status: InvoiceStatus?
 }
 
 /// A row from `GET /api/invoices`.
@@ -102,11 +119,19 @@ struct InvoiceDetail: Decodable, Identifiable {
     let overtimeEntries: [OvertimeEntry]
     let customExpenseEntries: [LineItem]
     let days: [InvoiceDay]
+    /// The invoice this one replaces
+    let corrects: LinkedInvoice?
+    /// The invoices that replaced this one, newest first
+    let corrections: [LinkedInvoice]?
 
     var currencyCode: String { currency ?? "GBP" }
     var date: Date? { DateOnly.parse(invoiceDate) }
-    /// Only invoices built from days can be edited; the rest are locked for life
-    var isEditable: Bool { terms != nil }
+    /// Only drafts built from days can be edited. Once an invoice has gone out its billing is locked,
+    /// and invoices made before days existed are locked for life.
+    var isEditable: Bool { terms != nil && status == .draft }
+    /// The correction still standing, if there is one
+    var replacement: LinkedInvoice? { corrections?.first { $0.status != .void } }
+    var canCorrect: Bool { status != .draft && replacement == nil }
 }
 
 struct Session: Decodable {
@@ -269,6 +294,8 @@ struct InvoicePayload: Encodable {
     let status: InvoiceStatus
     let days: [BillableDay]
     let customExpenseEntries: [Expense]
+    /// The issued invoice this one replaces; creating it voids that one
+    var correctsId: String? = nil
 }
 
 

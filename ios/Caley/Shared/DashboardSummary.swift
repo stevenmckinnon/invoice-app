@@ -26,7 +26,10 @@ struct DashboardSummary: Equatable {
 
         let code = currency
         let year = fy
-        inYear = invoices.filter { $0.currencyCode == code && $0.date.map(DateOnly.fyStart(of:)) == year }
+        // A voided invoice was replaced, so counting it would count the job twice
+        inYear = invoices.filter {
+            $0.status != .void && $0.currencyCode == code && $0.date.map(DateOnly.fyStart(of:)) == year
+        }
     }
 
     static func total(_ list: [InvoiceListItem]) -> Decimal { list.reduce(0) { $0 + $1.totalAmount.value } }

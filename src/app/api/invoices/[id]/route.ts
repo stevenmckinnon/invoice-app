@@ -12,6 +12,15 @@ import {
 } from "@/lib/day-invoice";
 import { prisma } from "@/lib/db";
 import {
+  DELETE_REFUSED_MESSAGE,
+  INVOICE_STATUS_VALUES,
+  LOCKED_BILLING_MESSAGE,
+  canChangeStatus,
+  canDeleteInvoice,
+  isBillingLocked,
+  statusChangeRefusal,
+} from "@/lib/invoice-lifecycle";
+import {
   duplicateInvoiceNumberMessage,
   isDuplicateInvoiceNumberError,
 } from "@/lib/invoice-number";
@@ -67,8 +76,8 @@ const invoiceUpdateSchema = z.object({
 // What still changes on any invoice, including one whose billing is locked
 const invoicePatchSchema = z
   .object({
-    status: z.enum(["draft", "sent", "paid", "overdue"]),
-    notes: z.string().max(5000).nullable(),
+    status: z.enum(INVOICE_STATUS_VALUES),
+notes: z.string().max(5000).nullable(),
   })
   .partial()
   .refine((v) => v.status !== undefined || v.notes !== undefined, {
@@ -106,10 +115,19 @@ export const PUT = async (req: NextRequest, context: RouteContext) => {
     // only by invoiceId, so deleting first wiped other users' line items
     const existing = await prisma.invoice.findFirst({
       where: { id, userId: session.user.id },
-      select: { id: true, clientId: true, terms: true },
+      select: { id: true, clientId: true, terms: true, status: true },
     });
     if (!existing) {
       return NextResponse.json({ error: "Not found" }, { status: 404 });
+    }
+
+    // Once it has gone out it's a record: only status and notes change,
+    // through PATCH
+    if (isBillingLocked(existing.status)) {
+      return NextResponse.json(
+        { error: LOCKED_BILLING_MESSAGE },
+        { status: 409 },
+      );
     }
 
     // A clientId from another user would link their client to this invoice
@@ -242,6 +260,13 @@ export const DELETE = async (req: NextRequest, context: RouteContext) => {
       return NextResponse.json({ error: "Not found" }, { status: 404 });
     }
 
+    if (!canDeleteInvoice(invoice.status)) {
+      return NextResponse.json(
+        { error: DELETE_REFUSED_MESSAGE },
+        { status: 409 },
+      );
+    }
+
     await prisma.invoice.delete({ where: { id } });
     return NextResponse.json({ success: true }, { status: 200 });
   } catch (err: any) {
@@ -272,6 +297,11 @@ export const GET = async (req: NextRequest, context: RouteContext) => {
         overtimeEntries: true,
         customExpenseEntries: true,
         days: { orderBy: { date: "asc" } },
+        corrects: { select: { id: true, invoiceNumber: true } },
+        corrections: {
+          select: { id: true, invoiceNumber: true, status: true },
+          orderBy: { createdAt: "desc" },
+        },
       },
     });
 
@@ -315,6 +345,12 @@ export const PATCH = async (req: NextRequest, context: RouteContext) => {
 
     // Only the status and notes; billing goes through PUT
     const { status, notes } = parsed.data;
+    if (status && !canChangeStatus(invoice.status, status)) {
+      return NextResponse.json(
+        { error: statusChangeRefusal(invoice.status, status) },
+        { status: 409 },
+      );
+    }
     const updated = await prisma.invoice.update({
       where: { id },
       data: {

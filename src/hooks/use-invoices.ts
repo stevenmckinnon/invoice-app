@@ -3,6 +3,7 @@ import { toast } from "sonner";
 
 import type { BillableDay, InvoiceTerms } from "@/lib/billing";
 import type { StoredDay } from "@/lib/day-strip";
+import type { InvoiceStatus } from "@/lib/invoice-lifecycle";
 
 export type Invoice = {
   id: string;
@@ -127,6 +128,10 @@ export type InvoiceWithRelations = {
   createdAt: Date | string;
   updatedAt: Date | string;
   userId: string;
+  /** The invoice this one replaces */
+  corrects?: { id: string; invoiceNumber: string } | null;
+  /** The invoices that replaced this one, newest first */
+  corrections?: Array<{ id: string; invoiceNumber: string; status: string }>;
   items: Array<{
     id: string;
     description: string;
@@ -222,6 +227,7 @@ export type CreateInvoiceInput = {
   }>;
   status?: "draft" | "sent" | "paid" | "overdue";
   notes?: string;
+  correctsId?: string;
 };
 
 export type UpdateInvoiceInput = CreateInvoiceInput;
@@ -343,7 +349,7 @@ export const useUpdateInvoiceStatus = () => {
       status,
     }: {
       id: string;
-      status: "draft" | "sent" | "paid" | "overdue";
+      status: InvoiceStatus;
     }): Promise<{ id: string; status: string }> => {
       const res = await fetch(`/api/invoices/${id}`, {
         method: "PATCH",

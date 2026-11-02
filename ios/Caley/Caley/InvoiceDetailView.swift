@@ -15,6 +15,9 @@ struct InvoiceDetailView: View {
     @State private var editing = false
     @State private var duplicating = false
     @State private var confirmingDelete = false
+    @State private var correcting = false
+    @State private var confirmingVoid = false
+    @State private var confirmingDraft = false
     @ScaledMetric(relativeTo: .largeTitle) private var totalSize: CGFloat = 32
     @State private var pdfError: String?
     /// Shown for a few seconds after sharing a draft marked it sent, so it can be taken back
@@ -62,6 +65,16 @@ struct InvoiceDetailView: View {
                 }
             }
         }
+        .sheet(isPresented: $correcting) {
+            if let invoice {
+                InvoiceEditorView(editing: nil, correcting: invoice) {
+                    Task {
+                        await load()
+                        await store.load(auth: auth)
+                    }
+                }
+            }
+        }
         .sheet(isPresented: $editing) {
             if let invoice {
                 InvoiceEditorView(editing: invoice) {
@@ -89,6 +102,7 @@ struct InvoiceDetailView: View {
         ScrollView {
             VStack(spacing: 12) {
                 header(inv)
+                if inv.status == .void || inv.corrects != nil { correctionNotice(inv) }
                 billing(inv)
                 parties(inv)
                 payment(inv)
@@ -112,13 +126,24 @@ struct InvoiceDetailView: View {
             }
             ToolbarItem(placement: .topBarTrailing) {
                 Menu {
-                    Button("Preview PDF", systemImage: "eye") { Task { previewURL = await fetchPDF(inv) } }
-                    // A draft that is shared has gone out, so the label says what will happen
-                    Button(inv.status == .draft ? "Share and mark as sent" : "Share PDF",
-                           systemImage: "square.and.arrow.up") { Task { shareURL = await fetchPDF(inv) } }
-                    Divider()
+                    // A void invoice isn't owed, so it has no PDF to send by mistake
+                    if inv.status != .void {
+                        Button("Preview PDF", systemImage: "eye") { Task { previewURL = await fetchPDF(inv) } }
+                        // A draft that is shared has gone out, so the label says what will happen
+                        Button(inv.status == .draft ? "Share and mark as sent" : "Share PDF",
+                               systemImage: "square.and.arrow.up") { Task { shareURL = await fetchPDF(inv) } }
+                        Divider()
+                    }
                     Button("Duplicate", systemImage: "plus.square.on.square") { duplicating = true }
-                    Button("Delete", systemImage: "trash", role: .destructive) { confirmingDelete = true }
+                    if inv.canCorrect {
+                        Button("Issue corrected invoice", systemImage: "doc.badge.gearshape") { correcting = true }
+                    }
+                    // A draft can be deleted; once it has gone out it can only be voided
+                    if inv.status == .draft {
+                        Button("Delete", systemImage: "trash", role: .destructive) { confirmingDelete = true }
+                    } else if inv.status != .void {
+                        Button("Void invoice", systemImage: "xmark.circle", role: .destructive) { confirmingVoid = true }
+                    }
                 } label: {
                     if pdfBusy { ProgressView() } else { Image(systemName: "ellipsis.circle") }
                 }
@@ -133,9 +158,14 @@ struct InvoiceDetailView: View {
                         }
                     }
                 } message: {
-                    Text(inv.status == .draft
-                         ? "This can't be undone."
-                         : "This invoice is \(inv.status.label.lowercased()). Deleting it can't be undone.")
+                    Text("This can't be undone.")
+                }
+                .confirmationDialog(
+                    "Void \(inv.invoiceNumber)?", isPresented: $confirmingVoid, titleVisibility: .visible
+                ) {
+                    Button("Void invoice", role: .destructive) { Task { await change(to: .void, inv) } }
+                } message: {
+                    Text("It stays on record but stops counting towards your totals and exports, and its PDF is no longer available. This can't be undone. To send a replacement, use Issue corrected invoice instead.")
                 }
             }
         }
@@ -215,19 +245,33 @@ struct InvoiceDetailView: View {
             // A picker, so iOS draws the tick and keeps every row aligned around it
             Picker("Status", selection: Binding(
                 get: { inv.status },
-                set: { status in Task { await change(to: status, inv) } }
+                set: { status in
+                    // Back to draft unlocks the billing, so it takes a deliberate yes
+                    if status == .draft { confirmingDraft = true } else { Task { await change(to: status, inv) } }
+                }
             )) {
-                ForEach(InvoiceStatus.allCases) { status in
+                ForEach(inv.status.choices) { status in
                     Label(status.label, systemImage: status.symbol).tag(status)
                 }
             }
         } label: {
             HStack(spacing: 6) {
                 StatusBadge(status: inv.status)
-                Image(systemName: "chevron.up.chevron.down").font(.caption2).foregroundStyle(.secondary)
+                // A void invoice stays void, so nothing here says it could change
+                if inv.status != .void {
+                    Image(systemName: "chevron.up.chevron.down").font(.caption2).foregroundStyle(.secondary)
+                }
             }
         }
+        .disabled(inv.status == .void)
         .accessibilityLabel("Status: \(inv.status.label). Change status")
+        .confirmationDialog(
+            "Move \(inv.invoiceNumber) back to draft?", isPresented: $confirmingDraft, titleVisibility: .visible
+        ) {
+            Button("Move to draft", role: .destructive) { Task { await change(to: .draft, inv) } }
+        } message: {
+            Text("Only do this if it never reached the client. If they have it, issue a corrected invoice instead, so your records match what they were sent.")
+        }
     }
 
     private func change(to status: InvoiceStatus, _ inv: InvoiceDetail) async {
@@ -240,6 +284,30 @@ struct InvoiceDetailView: View {
             // Offline, say so: the change would otherwise just flip back with no explanation
             pdfError = store.error
         }
+    }
+
+    private func correctionNotice(_ inv: InvoiceDetail) -> some View {
+        VStack(alignment: .leading, spacing: 8) {
+            if inv.status == .void {
+                Text("This invoice is void").font(.subheadline.weight(.semibold))
+                Text("It stays on record and doesn't count towards your totals.")
+                    .font(.subheadline).foregroundStyle(.secondary)
+                if let replacement = inv.replacement {
+                    NavigationLink("Replaced by \(replacement.invoiceNumber)") {
+                        InvoiceDetailView(id: replacement.id)
+                    }
+                    .font(.subheadline)
+                }
+            }
+            if let original = inv.corrects {
+                NavigationLink("Replaces \(original.invoiceNumber)") {
+                    InvoiceDetailView(id: original.id)
+                }
+                .font(.subheadline)
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .cardStyle()
     }
 
     private func billing(_ inv: InvoiceDetail) -> some View {

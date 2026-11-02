@@ -17,6 +17,7 @@ import { overtimeByDate } from "@/components/invoice/OvertimeCap";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useClients } from "@/hooks/use-clients";
 import {
   type InvoiceWithRelations,
@@ -80,38 +81,65 @@ const ruleLine = (terms: InvoiceTerms, currency: string) => {
  * else comes from the client and your profile, and the job-specific text is
  * edited in place on the live paper at the end.
  */
+export const InvoiceEditorSkeleton = () => (
+  <div
+    className="mx-auto w-full max-w-4xl px-4 pt-6 md:px-6 md:pt-10"
+    aria-busy="true"
+  >
+    <Skeleton className="mb-3 h-8 w-24" />
+    <Skeleton className="h-10 w-56" />
+    <Skeleton className="mt-8 h-32 w-full rounded-2xl" />
+    <Skeleton className="mt-4 h-80 w-full rounded-2xl" />
+  </div>
+);
+
 export const InvoiceEditor = ({
   invoice,
+  correcting,
 }: {
   /** The invoice being edited; omitted for a new one */
   invoice?: InvoiceWithRelations;
+  /** The issued invoice a new one replaces: its job, days and rates carry over */
+  correcting?: InvoiceWithRelations;
 }) => {
   const router = useRouter();
   const createInvoice = useCreateInvoice();
   const updateInvoice = useUpdateInvoice();
   const { data: clients = [] } = useClients();
   const { data: profile } = useProfile({ fresh: true });
+  const source = invoice ?? correcting;
 
   const [clientId, setClientId] = useState<string | null>(
-    invoice?.clientId ?? null,
+    source?.clientId ?? null,
   );
-  const [showName, setShowName] = useState(invoice?.showName ?? "");
+  const [showName, setShowName] = useState(source?.showName ?? "");
   const [invoiceNumber, setInvoiceNumber] = useState(
     invoice?.invoiceNumber ?? "",
   );
   const [invoiceDate, setInvoiceDate] = useState(
-    invoice ? String(invoice.invoiceDate).slice(0, 10) : today(),
+    // A correction keeps the original's date, so it stays in the same tax year
+    source ? String(source.invoiceDate).slice(0, 10) : today(),
   );
   // Undefined until edited on the paper: then it follows the client
   const [attentionTo, setAttentionTo] = useState<string | undefined>(
-    invoice?.attentionTo ?? undefined,
+    source?.attentionTo ?? undefined,
   );
-  const [notes, setNotes] = useState(invoice?.notes ?? "");
+  const [notes, setNotes] = useState(
+    correcting
+      ? [
+          `Replaces invoice ${correcting.invoiceNumber}.`,
+          // Correcting a correction: the client only needs the latest
+          correcting.notes?.replace(/^Replaces invoice \S+\.\s*/, ""),
+        ]
+          .filter(Boolean)
+          .join("\n\n")
+      : (invoice?.notes ?? ""),
+  );
   const [painted, setPainted] = useState<Painted>(() =>
-    invoice ? fromStoredDays(invoice.days) : new Map(),
+    source ? fromStoredDays(source.days) : new Map(),
   );
   const [expenses, setExpenses] = useState<EditableExpense[]>(() =>
-    (invoice?.customExpenseEntries ?? []).map((e) => ({
+    (source?.customExpenseEntries ?? []).map((e) => ({
       key: newExpenseKey(),
       description: e.description,
       quantity: e.quantity,
@@ -140,18 +168,19 @@ export const InvoiceEditor = ({
   }, [invoice]);
 
   const client = clients.find((c) => c.id === clientId) ?? null;
-  const sameClient = invoice != null && clientId === invoice.clientId;
+  const sameClient = source != null && clientId === source.clientId;
 
-  // An existing invoice keeps the terms it was priced under; only a change of
-  // client re-prices it. The server applies the same rule.
+  // An existing invoice keeps the terms it was priced under, and a correction
+  // takes the terms of the one it replaces; only a change of client re-prices
+  // it. The server applies the same rule.
   const terms: InvoiceTerms | null =
-    sameClient && invoice?.terms
-      ? invoice.terms
+    sameClient && source?.terms
+      ? source.terms
       : client
         ? termsFromClient(client)
         : null;
 
-  const currency = invoice?.currency ?? profile?.currency ?? "GBP";
+  const currency = source?.currency ?? profile?.currency ?? "GBP";
   const currencySymbol = formatCurrency(0, currency).replace(/[\d.,\s]/g, "");
 
   const billable = useMemo(() => toBillableDays(painted), [painted]);
@@ -221,7 +250,7 @@ export const InvoiceEditor = ({
       };
 
   const billedTo =
-    sameClient && invoice
+    invoice && sameClient
       ? {
           clientName: invoice.clientName,
           clientAddress1: invoice.clientAddress1,
@@ -359,6 +388,7 @@ export const InvoiceEditor = ({
       // The API defaults a missing status to draft; keep what it was
       status: (invoice?.status ?? "draft") as
         "draft" | "sent" | "paid" | "overdue",
+      correctsId: correcting?.id,
       days: billable,
       customExpenseEntries: parsedExpenses.map((e, i) => ({
         // The schema wants an id; the server never stores it
@@ -393,20 +423,36 @@ export const InvoiceEditor = ({
         nativeButton={false}
         render={
           <Link
-            href={invoice ? `/invoices/${invoice.id}` : "/invoices"}
+            href={source ? `/invoices/${source.id}` : "/invoices"}
             transitionTypes={["back"]}
           >
             <HugeiconsIcon icon={ArrowLeft01Icon} />
-            {invoice ? invoice.showName : "Invoices"}
+            {source ? source.showName : "Invoices"}
           </Link>
         }
       />
       <h1 className="text-3xl font-bold tracking-tight md:text-4xl">
-        {invoice ? "Edit invoice" : "New invoice"}
+        {invoice
+          ? "Edit invoice"
+          : correcting
+            ? `Correct ${correcting.invoiceNumber}`
+            : "New invoice"}
       </h1>
 
       {/* Said before any work is done, and without a way to lose it: the
           profile opens in its own tab, and this one notices when you're back */}
+      {correcting && (
+        <Alert className="mt-6">
+          <AlertTitle>
+            This replaces {correcting.invoiceNumber}, which will be voided
+          </AlertTitle>
+          <AlertDescription>
+            The new invoice starts as a draft. {correcting.invoiceNumber} stays
+            on record but stops counting, and can&apos;t be un-voided.
+          </AlertDescription>
+        </Alert>
+      )}
+
       {profileGap && (
         <Alert className="mt-4">
           <AlertTitle>Add {profileGap} before you create an invoice</AlertTitle>
@@ -484,7 +530,7 @@ export const InvoiceEditor = ({
           {client && (
             <p className="text-muted-foreground mt-3 text-xs">
               {terms ? ruleLine(terms, currency) : "No day rate set."}
-              {sameClient && invoice?.terms
+              {sameClient && source?.terms
                 ? " · as when this invoice was made"
                 : ""}
               {" · "}
@@ -609,13 +655,19 @@ export const InvoiceEditor = ({
             variant="outline"
             nativeButton={false}
             render={
-              <Link href={invoice ? `/invoices/${invoice.id}` : "/invoices"}>
+              <Link href={source ? `/invoices/${source.id}` : "/invoices"}>
                 Cancel
               </Link>
             }
           />
           <Button type="button" onClick={save} disabled={saving}>
-            {saving ? "Saving…" : invoice ? "Save changes" : "Create invoice"}
+            {saving
+              ? "Saving…"
+              : invoice
+                ? "Save changes"
+                : correcting
+                  ? "Create and void original"
+                  : "Create invoice"}
           </Button>
         </div>
       </div>

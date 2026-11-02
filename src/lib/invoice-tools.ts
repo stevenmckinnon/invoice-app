@@ -13,6 +13,7 @@ import {
   storedToBillable,
 } from "@/lib/day-invoice";
 import { prisma } from "@/lib/db";
+import { isBillingLocked } from "@/lib/invoice-lifecycle";
 import {
   generateNextInvoiceNumber,
   isDuplicateInvoiceNumberError,
@@ -358,6 +359,7 @@ export const buildInvoiceTools = ({
         where: { id: invoiceId, userId },
         select: {
           id: true,
+          status: true,
           terms: true,
           totalAmount: true,
           days: true,
@@ -366,6 +368,12 @@ export const buildInvoiceTools = ({
       });
       if (!existing) {
         return { error: "Invoice not found or does not belong to you." };
+      }
+
+      if (isBillingLocked(existing.status)) {
+        return {
+          error: `This invoice is ${existing.status}, so it can't be edited here. Only drafts can. A mistake on it is fixed by issuing a corrected invoice from its page in the app.`,
+        };
       }
 
       // Invoices made before days were recorded are never converted

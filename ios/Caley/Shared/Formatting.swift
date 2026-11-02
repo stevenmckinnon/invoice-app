@@ -55,6 +55,7 @@ extension InvoiceStatus {
         case .sent: .blue
         case .paid: .green
         case .overdue: .red
+        case .void: .secondary
         }
     }
 
@@ -64,6 +65,7 @@ extension InvoiceStatus {
         case .sent: "paperplane"
         case .paid: "checkmark.circle"
         case .overdue: "exclamationmark.circle"
+        case .void: "xmark.circle"
         }
     }
 }
