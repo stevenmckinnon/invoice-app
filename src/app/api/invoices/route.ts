@@ -8,8 +8,13 @@ import {
   clientTermsSelect,
   dayBillingWrites,
   invoiceDaysSchema,
+  parseStoredTerms,
 } from "@/lib/day-invoice";
 import { prisma } from "@/lib/db";
+import {
+  canCorrectInvoice,
+  statusesThatCanBecome,
+} from "@/lib/invoice-lifecycle";
 import {
   duplicateInvoiceNumberMessage,
   isDuplicateInvoiceNumberError,
@@ -61,6 +66,8 @@ const invoiceInputSchema = z.object({
   customExpenseEntries: z.array(customExpenseEntrySchema),
   status: z.enum(["draft", "sent", "paid", "overdue"]).optional(),
   notes: z.string().optional(),
+  // The issued invoice this one replaces; creating it voids the original
+  correctsId: z.string().min(1).optional(),
 });
 
 export const POST = async (req: NextRequest) => {
@@ -98,7 +105,47 @@ export const POST = async (req: NextRequest) => {
         { status: 400 },
       );
     }
-    const terms = termsFromClient(client);
+
+    const original = parsed.correctsId
+      ? await prisma.invoice.findFirst({
+          where: { id: parsed.correctsId, userId: session.user.id },
+          select: {
+            id: true,
+            status: true,
+            clientId: true,
+            terms: true,
+            corrections: {
+              where: { status: { not: "void" } },
+              select: { invoiceNumber: true },
+              take: 1,
+            },
+          },
+        })
+      : null;
+    if (parsed.correctsId && !original) {
+      return NextResponse.json({ error: "Invoice not found" }, { status: 404 });
+    }
+    if (original && !canCorrectInvoice(original.status)) {
+      return NextResponse.json(
+        { error: "A draft hasn't gone out yet, so just edit it." },
+        { status: 409 },
+      );
+    }
+    if (original?.corrections[0]) {
+      return NextResponse.json(
+        {
+          error: `This invoice has already been replaced by ${original.corrections[0].invoiceNumber}.`,
+        },
+        { status: 409 },
+      );
+    }
+
+    // A correction bills at the rates of the invoice it replaces, so raising
+    // a client's rate since then can't change what the mistake costs them
+    const terms =
+      (original?.clientId === parsed.clientId
+        ? parseStoredTerms(original?.terms)
+        : null) ?? termsFromClient(client);
     if (!terms) {
       return NextResponse.json(
         {
@@ -119,10 +166,13 @@ export const POST = async (req: NextRequest) => {
       invoiceDate: parseDate(parsed.invoiceDate),
     };
 
-    const created = await prisma.invoice.create({
+    // One transaction: the original can't be voided without its replacement
+    const created = await prisma.$transaction(async (tx) => {
+      const invoice = await tx.invoice.create({
       data: {
         userId: session.user.id,
         clientId: parsed.clientId,
+        correctsId: original?.id,
         invoiceNumber: pdfInput.invoiceNumber,
         invoiceDate: pdfInput.invoiceDate,
         showName: pdfInput.showName,
@@ -160,11 +210,19 @@ export const POST = async (req: NextRequest) => {
           ? parseDate(pdfInput.dateOfBirth as any)
           : null,
         currency: pdfInput.currency ?? "GBP",
-        status: parsed.status || "draft",
+        status: original ? "draft" : parsed.status || "draft",
         notes: pdfInput.notes,
         ...dayBilling,
       },
       select: { id: true, invoiceNumber: true },
+      });
+      if (original) {
+        await tx.invoice.update({
+          where: { id: original.id },
+          data: { status: "void" },
+        });
+      }
+      return invoice;
     });
 
     return NextResponse.json(
@@ -234,8 +292,13 @@ export const PATCH = async (req: NextRequest) => {
     return NextResponse.json({ error: "Invalid request" }, { status: 400 });
   }
 
+  // An invoice that can't make this change is left as it is, and isn't counted
   const { count } = await prisma.invoice.updateMany({
-    where: { id: { in: parsed.data.ids }, userId: session.user.id },
+    where: {
+      id: { in: parsed.data.ids },
+      userId: session.user.id,
+      status: { in: statusesThatCanBecome(parsed.data.status) },
+    },
     data: { status: parsed.data.status },
   });
 

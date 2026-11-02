@@ -177,8 +177,14 @@ model Invoice {
   subtotalTravel     Decimal
   totalAmount        Decimal
 
-  status             String   @default("draft") // draft, sent, paid, overdue
+  status             String   @default("draft") // draft, sent, paid, overdue, void
   notes              String?
+
+  // The invoice this one replaces. Issuing a correction voids the original,
+  // which stays on record so the numbering has no gaps.
+  correctsId         String?
+  corrects           Invoice?  @relation("InvoiceCorrections", fields: [correctsId], references: [id], onDelete: SetNull)
+  corrections        Invoice[] @relation("InvoiceCorrections")
 
   // Snapshot of the client's billing terms when the invoice was created
   // (day rate, per diems, overtime tier, travel + work rule). Bills are worked

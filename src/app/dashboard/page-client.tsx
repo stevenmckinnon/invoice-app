@@ -67,7 +67,9 @@ const dominantCurrency = (invoices: { currency: string }[]): string => {
 export default function Home() {
   const { data: session, isPending } = useSession();
   const router = useRouter();
-  const { data: allInvoices = [], isLoading, error } = useInvoices();
+  const { data: everyInvoice = [], isLoading, error } = useInvoices();
+  // A voided invoice was replaced, so counting it would count the job twice
+  const allInvoices = everyInvoice.filter((inv) => inv.status !== "void");
   // null = follow the most common currency until the user picks one
   const [selectedCurrency, setSelectedCurrency] = useState<string | null>(
     null,

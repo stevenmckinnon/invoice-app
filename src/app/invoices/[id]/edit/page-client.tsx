@@ -6,22 +6,25 @@ import { HugeiconsIcon } from "@hugeicons/react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 
-import { InvoiceEditor } from "@/components/invoice-editor/InvoiceEditor";
+import {
+  InvoiceEditor,
+  InvoiceEditorSkeleton,
+} from "@/components/invoice-editor/InvoiceEditor";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { Skeleton } from "@/components/ui/skeleton";
 import { Textarea } from "@/components/ui/textarea";
 import {
   type InvoiceWithRelations,
   useInvoice,
   useUpdateInvoiceNotes,
 } from "@/hooks/use-invoices";
+import { canCorrectInvoice, isBillingLocked } from "@/lib/invoice-lifecycle";
 
 /**
- * Day-based invoices open in the calendar editor. Count-based invoices made
- * before days were recorded are never converted, so their billing is locked:
- * only their notes change here, and a mistake is fixed with a corrected
- * invoice.
+ * Day-based drafts open in the calendar editor. Billing is locked on anything
+ * that has gone out, and on count-based invoices made before days were
+ * recorded, which are never converted: only their notes change here, and a
+ * mistake is fixed with a corrected invoice.
  */
 export default function EditInvoicePage() {
   const params = useParams();
@@ -37,26 +40,18 @@ export default function EditInvoicePage() {
       </div>
     );
   }
-  if (isLoading || !invoice) return <EditSkeleton />;
-  if (invoice.terms) return <InvoiceEditor invoice={invoice} />;
+  if (isLoading || !invoice) return <InvoiceEditorSkeleton />;
+  if (invoice.terms && !isBillingLocked(invoice.status)) {
+    return <InvoiceEditor invoice={invoice} />;
+  }
   return <LockedInvoice invoice={invoice} />;
 }
 
-const EditSkeleton = () => (
-  <div
-    className="mx-auto w-full max-w-4xl px-4 pt-6 md:px-6 md:pt-10"
-    aria-busy="true"
-  >
-    <Skeleton className="mb-3 h-8 w-24" />
-    <Skeleton className="h-10 w-56" />
-    <Skeleton className="mt-8 h-32 w-full rounded-2xl" />
-    <Skeleton className="mt-4 h-80 w-full rounded-2xl" />
-  </div>
-);
-
-/** An invoice made before days were recorded: notes only */
+/** An issued invoice, or one made before days were recorded: notes only */
 function LockedInvoice({ invoice }: { invoice: InvoiceWithRelations }) {
   const updateNotes = useUpdateInvoiceNotes();
+  const replaced = invoice.corrections?.some((c) => c.status !== "void");
+  const correctable = canCorrectInvoice(invoice.status) && !replaced;
   const [notes, setNotes] = useState(invoice.notes ?? "");
   const changed = notes.trim() !== (invoice.notes ?? "").trim();
 
@@ -89,20 +84,32 @@ function LockedInvoice({ invoice }: { invoice: InvoiceWithRelations }) {
         />
         <div className="space-y-3">
           <p className="text-pretty">
-            This invoice was made before days were recorded, so its billing
-            can&apos;t change. If something on it is wrong, issue a corrected
-            invoice.
+            {isBillingLocked(invoice.status)
+              ? "This invoice has gone out, so its billing can't change."
+              : "This invoice was made before days were recorded, so its billing can't change."}{" "}
+            {replaced
+              ? "It has already been replaced by a corrected invoice."
+              : "If something on it is wrong, issue a corrected invoice."}
           </p>
-          <Button
-            variant="outline"
-            size="sm"
-            nativeButton={false}
-            render={
-              <Link href="/invoices/new" transitionTypes={["forward"]}>
-                New invoice
-              </Link>
-            }
-          />
+          {(correctable || !isBillingLocked(invoice.status)) && (
+            <Button
+              variant="outline"
+              size="sm"
+              nativeButton={false}
+              render={
+                <Link
+                  href={
+                    correctable
+                      ? `/invoices/new?corrects=${invoice.id}`
+                      : "/invoices/new"
+                  }
+                  transitionTypes={["forward"]}
+                >
+                  {correctable ? "Issue corrected invoice" : "New invoice"}
+                </Link>
+              }
+            />
+          )}
         </div>
       </div>
 

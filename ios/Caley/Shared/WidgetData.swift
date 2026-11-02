@@ -35,7 +35,7 @@ struct WidgetSnapshot: Codable, Equatable {
         let summary = DashboardSummary(invoices: invoices, now: now)
         let code = summary.currency
         let latest = invoices
-            .filter { $0.currencyCode == code }
+            .filter { $0.currencyCode == code && $0.status != .void }
             .sorted { ($0.date ?? .distantPast) > ($1.date ?? .distantPast) }
             .prefix(3)
             .map { Recent(id: $0.id, number: $0.invoiceNumber, showName: $0.showName, clientName: $0.clientName,

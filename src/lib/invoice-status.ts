@@ -1,13 +1,14 @@
 import {
   AlertCircleIcon,
+  CancelCircleIcon,
   CheckmarkCircle02Icon,
   FileEditIcon,
   SentIcon,
 } from "@hugeicons/core-free-icons";
 
+import type { InvoiceStatus } from "./invoice-lifecycle";
 import type { IconSvgElement } from "@hugeicons/react";
 
-export type InvoiceStatus = "draft" | "sent" | "paid" | "overdue";
 
 interface InvoiceStatusConfig {
   value: InvoiceStatus;
@@ -26,7 +27,9 @@ interface InvoiceStatusConfig {
  * Single source of truth for invoice status display — every dot, badge and
  * select option derives from this so the colour language stays consistent.
  */
-export const INVOICE_STATUSES: InvoiceStatusConfig[] = [
+export const INVOICE_STATUSES: (InvoiceStatusConfig & {
+  value: Exclude<InvoiceStatus, "void">;
+})[] = [
   {
     value: "draft",
     label: "Draft",
@@ -66,8 +69,23 @@ export const INVOICE_STATUSES: InvoiceStatusConfig[] = [
   },
 ];
 
+/**
+ * Kept apart from the list above, which is what you can choose and what the
+ * dashboards count: voiding is its own confirmed action, and void isn't owed.
+ */
+export const VOID_STATUS: InvoiceStatusConfig = {
+  value: "void",
+  label: "Void",
+  dotClass: "bg-stone-400",
+  badgeClass:
+    "bg-stone-100 text-stone-600 border-stone-200 line-through dark:bg-stone-900 dark:text-stone-400 dark:border-stone-700",
+  icon: CancelCircleIcon,
+  tileClass:
+    "bg-stone-100 text-stone-500 dark:bg-stone-800 dark:text-stone-400",
+};
+
 export const getInvoiceStatusConfig = (status: string): InvoiceStatusConfig =>
-  INVOICE_STATUSES.find((s) => s.value === status) ?? {
+  [...INVOICE_STATUSES, VOID_STATUS].find((s) => s.value === status) ?? {
     value: "draft",
     label: status,
     dotClass: "bg-gray-500",

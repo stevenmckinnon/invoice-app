@@ -10,6 +10,7 @@ import * as z from "zod";
 
 import { APP_URL } from "@/lib/auth";
 import { prisma } from "@/lib/db";
+import { INVOICE_STATUS_VALUES } from "@/lib/invoice-lifecycle";
 import {
   buildInvoiceTools,
   createInvoiceDraftInput,
@@ -126,7 +127,7 @@ export const createCaleyMcpServer = (
       description:
         "List invoices, newest first: number, date, job, client, total and status. Filter by status, client name or invoice number to narrow it.",
       inputSchema: z.object({
-        status: z.enum(["draft", "sent", "paid", "overdue"]).optional(),
+        status: z.enum(INVOICE_STATUS_VALUES).optional(),
         search: z
           .string()
           .optional()
@@ -253,9 +254,12 @@ export const createCaleyMcpServer = (
       // Only the user's own invoices get a link
       const invoice = await prisma.invoice.findFirst({
         where: { userId, ...(id ? { id } : { invoiceNumber }) },
-        select: { id: true, invoiceNumber: true },
+        select: { id: true, invoiceNumber: true, status: true },
       });
       if (!invoice) return failure("No invoice found.");
+      if (invoice.status === "void") {
+        return failure(`${invoice.invoiceNumber} is void, so it has no PDF.`);
+      }
 
       const params = new URLSearchParams({ ...signPdfLink(invoice.id, userId) });
       return text({

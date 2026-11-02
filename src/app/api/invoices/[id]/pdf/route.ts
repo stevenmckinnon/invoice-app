@@ -58,6 +58,14 @@ export const GET = async (
     return NextResponse.json({ error: "Invoice not found" }, { status: 404 });
   }
 
+  // A void invoice isn't owed, so there's no PDF that could be sent by mistake
+  if (invoice.status === "void") {
+    return NextResponse.json(
+      { error: "This invoice is void, so it has no PDF." },
+      { status: 409 },
+    );
+  }
+
   // Transform database data to PDF input format
   const pdfInput: InvoicePdfInput = {
     invoiceNumber: invoice.invoiceNumber,

@@ -18,6 +18,7 @@ final class InvoiceEditorModel {
 
     /// The invoice being edited; nil for a new one
     let editing: InvoiceDetail?
+    let correcting: InvoiceDetail?
     /// Currency of the invoice a new one was copied from, so a copy of a dollar invoice stays in dollars
     private let copiedCurrency: String?
 
@@ -51,17 +52,26 @@ final class InvoiceEditorModel {
 
     /// `copying` starts a new invoice from an old one: the client, job name, notes and expenses carry
     /// over, the days don't (they'd be the old job's dates) and the number is the next free one.
-    init(editing: InvoiceDetail?, copying: InvoiceDetail? = nil) {
-        let base = editing ?? copying
+    /// `correcting` replaces an issued invoice: its days, date and rates carry over too, since it is
+    /// the same job, and saving voids the original.
+    init(editing: InvoiceDetail?, copying: InvoiceDetail? = nil, correcting: InvoiceDetail? = nil) {
+        let base = editing ?? correcting ?? copying
         self.editing = editing
-        copiedCurrency = copying?.currencyCode
+        self.correcting = correcting
+        copiedCurrency = (correcting ?? copying)?.currencyCode
         clientId = base?.clientId
         showName = base?.showName ?? ""
         invoiceNumber = editing?.invoiceNumber ?? ""
-        invoiceDate = editing.map { DateOnly.localDate($0.invoiceDate) } ?? .now
-        notes = base?.notes ?? ""
+        invoiceDate = (editing ?? correcting).map { DateOnly.localDate($0.invoiceDate) } ?? .now
+        notes = correcting.map { original in
+            // Correcting a correction: the client only needs the latest
+            let earlier = original.notes?.replacingOccurrences(
+                of: #"^Replaces invoice \S+\.\s*"#, with: "", options: .regularExpression)
+            return ["Replaces invoice \(original.invoiceNumber).", earlier]
+                .compactMap { $0 }.filter { !$0.isEmpty }.joined(separator: "\n\n")
+        } ?? base?.notes ?? ""
         attention = base?.attentionTo
-        painted = editing.map { DayEditor.fromStored($0.days) } ?? [:]
+        painted = (editing ?? correcting).map { DayEditor.fromStored($0.days) } ?? [:]
         expenses = (base?.customExpenseEntries ?? []).map {
             var draft = ExpenseDraft()
             draft.description = $0.description
@@ -75,7 +85,11 @@ final class InvoiceEditorModel {
 
     var client: Client? { clients.first { $0.id == clientId } }
     /// An existing invoice keeps the terms it was priced under; only a change of client re-prices it
-    var sameClient: Bool { editing != nil && clientId == editing?.clientId }
+    /// Keeps the rates it was priced under: an invoice being edited, or the one a correction replaces
+    var sameClient: Bool {
+        guard let base = editing ?? correcting else { return false }
+        return clientId == base.clientId
+    }
     var currency: String { editing?.currencyCode ?? copiedCurrency ?? profile?.currency ?? "GBP" }
     var billable: [BillableDay] { DayEditor.billableDays(painted) }
     var initialMonth: String { billable.first?.date ?? DateOnly.isoLocal(invoiceDate) }
@@ -197,7 +211,7 @@ final class InvoiceEditorModel {
         defer { previewing = false }
         do {
             let result = try await auth.api.preview(PreviewRequest(
-                clientId: clientId, invoiceId: editing?.id, days: billable, expenses: parsedExpenses))
+                clientId: clientId, invoiceId: (editing ?? correcting)?.id, days: billable, expenses: parsedExpenses))
             if Task.isCancelled { return }
             preview = result
             previewError = nil
@@ -282,6 +296,7 @@ final class InvoiceEditorModel {
                 InvoicePayload.Expense(
                     id: "new-\(index)", description: e.description, quantity: e.quantity, unitPrice: e.unitPrice,
                     cost: (Double(e.quantity) * e.unitPrice * 100).rounded() / 100)
-            })
+            },
+            correctsId: correcting?.id)
     }
 }

@@ -208,7 +208,7 @@ struct DashboardView: View {
     private var statusBreakdown: some View {
         VStack(alignment: .leading, spacing: 10) {
             Text("By status").font(.subheadline.weight(.semibold))
-            ForEach(InvoiceStatus.allCases) { status in
+            ForEach(InvoiceStatus.allCases.filter { $0 != .void }) { status in
                 let list = inYear.filter { $0.status == status }
                 HStack {
                     Circle().fill(status.tint).frame(width: 8, height: 8).accessibilityHidden(true)

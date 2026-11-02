@@ -13,8 +13,9 @@ struct InvoiceEditorView: View {
     @FocusState private var jobFocused: Bool
     let onSaved: () -> Void
 
-    init(editing: InvoiceDetail?, copying: InvoiceDetail? = nil, onSaved: @escaping () -> Void) {
-        _model = State(initialValue: InvoiceEditorModel(editing: editing, copying: copying))
+    init(editing: InvoiceDetail?, copying: InvoiceDetail? = nil, correcting: InvoiceDetail? = nil,
+         onSaved: @escaping () -> Void) {
+        _model = State(initialValue: InvoiceEditorModel(editing: editing, copying: copying, correcting: correcting))
         self.onSaved = onSaved
     }
 
@@ -71,7 +72,9 @@ struct InvoiceEditorView: View {
             }
             .scrollDismissesKeyboard(.interactively)
             .background(Color.canvas)
-            .navigationTitle(model.editing.map { "Edit \($0.invoiceNumber)" } ?? "New invoice")
+            .navigationTitle(model.editing.map { "Edit \($0.invoiceNumber)" }
+                             ?? model.correcting.map { "Correct \($0.invoiceNumber)" }
+                             ?? "New invoice")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) { Button("Cancel") { dismiss() } }
@@ -133,7 +136,7 @@ struct InvoiceEditorView: View {
                 Text("Pick a client.").font(.caption).foregroundStyle(.red)
             }
 
-            if let terms = model.preview?.terms ?? (model.sameClient ? model.editing?.terms : nil) {
+            if let terms = model.preview?.terms ?? (model.sameClient ? (model.editing ?? model.correcting)?.terms : nil) {
                 Text(terms.ruleLine(model.currency)).font(.caption).foregroundStyle(.secondary)
             }
 
@@ -437,7 +440,7 @@ struct InvoiceEditorView: View {
             } label: {
                 HStack(spacing: 8) {
                     if model.saving { ProgressView().tint(.white) }
-                    Text(model.editing == nil ? "Save invoice" : "Save changes")
+                    Text(model.editing != nil ? "Save changes" : model.correcting != nil ? "Save and void original" : "Save invoice")
                         .fontWeight(.semibold)
                         .lineLimit(1)
                         .minimumScaleFactor(0.7)

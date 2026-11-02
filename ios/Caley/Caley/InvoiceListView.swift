@@ -136,7 +136,7 @@ struct InvoiceListView: View {
 
     @ViewBuilder
     private func swipe(for invoice: InvoiceListItem) -> some View {
-        if invoice.status != .paid {
+        if invoice.status != .paid && invoice.status != .void {
             Button("Paid", systemImage: "checkmark.circle") {
                 Task { _ = await store.setStatus(.paid, for: invoice.id, auth: auth) }
             }

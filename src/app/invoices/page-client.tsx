@@ -38,6 +38,7 @@ import {
 import {
   getInvoiceStatusConfig,
   INVOICE_STATUSES,
+  VOID_STATUS,
 } from "@/lib/invoice-status";
 import { cn, formatCurrency, formatCurrencyTotals, formatDate } from "@/lib/utils";
 
@@ -45,7 +46,10 @@ const ITEMS_PER_PAGE = 10;
 
 const STATUS_FILTER_ITEMS = [
   { value: "all", label: "All statuses" },
-  ...INVOICE_STATUSES.map(({ value, label }) => ({ value, label })),
+  ...[...INVOICE_STATUSES, VOID_STATUS].map(({ value, label }) => ({
+    value,
+    label,
+  })),
 ];
 
 export default function AllInvoicesPage() {

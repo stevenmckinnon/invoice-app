@@ -37,7 +37,7 @@ export const GET = async (req: NextRequest) => {
     where: {
       userId: session.user.id,
       invoiceDate: { gte: from, lt: to },
-      status: { not: "draft" },
+      status: { notIn: ["draft", "void"] },
     },
     select: {
       invoiceNumber: true,

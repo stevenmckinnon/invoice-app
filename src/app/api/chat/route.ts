@@ -114,7 +114,8 @@ export const POST = async (req: Request) => {
     // invoices once a user had more than the cap.
     prisma.invoice.groupBy({
       by: ["currency", "status"],
-      where: { userId },
+      // A voided invoice was replaced, so counting it would count the job twice
+      where: { userId, status: { not: "void" } },
       _sum: { totalAmount: true },
       _count: { _all: true },
     }),
