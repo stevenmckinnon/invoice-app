@@ -53,8 +53,8 @@ const BrushSwatch = ({ brush }: { brush: Brush }) => (
 
 /**
  * Paint a job's days onto a month. Tap or drag with a brush. Tapping a day
- * the brush already matches selects it, and tapping it again clears it; a
- * drag that starts on one clears every day of that kind it crosses. Painting
+ * the brush already matches only selects it (its panel removes it); a drag
+ * that starts on one clears every day of that kind it crosses. Painting
  * outside the job extends it; gaps inside become days off.
  */
 export const DayCalendar = ({
@@ -92,9 +92,10 @@ export const DayCalendar = ({
   // Decided once per gesture by the day it starts on and held for the whole
   // drag, so one stroke never flickers days on and off
   const strokeErases = useRef(false);
-  // A press on an unselected day the brush already matches only selects it:
-  // you tap a day to edit its overtime, and a tap that deleted it would be a
-  // trap. It becomes an erase if the finger moves on to another day.
+  // A press on a day the brush already matches only selects it: you tap a day
+  // to edit its overtime, and a tap that deleted it would be a trap (painting
+  // selects the day, so "tap the selected day to clear it" erased the day you
+  // had just painted). It becomes an erase if the finger moves on to another day.
   const pendingErase = useRef<string | null>(null);
 
   // Selecting by pointer moves the Tab stop to that day as well, so a stale
@@ -334,19 +335,19 @@ export const DayCalendar = ({
                 painting.current = true;
                 const matches = matchesBrush(entry, brush);
                 strokeErases.current = matches;
-                // Tap a matching day to select it; tap it again to clear it
-                if (matches && !isSelected) pendingErase.current = date;
+                // Tap a matching day to select it; never to clear it
+                if (matches) pendingErase.current = date;
                 else paint(date);
                 select(date);
               }}
               onClick={(e) => {
                 // Pointer taps were handled on pointerdown; acting on their
                 // click too would undo them. Keyboard clicks (Enter/Space)
-                // report detail 0, and follow the same select-then-clear rule.
+                // report detail 0, and follow the same paint-or-select rule.
                 if (e.detail !== 0) return;
                 const matches = matchesBrush(entry, brush);
                 strokeErases.current = matches;
-                if (!(matches && !isSelected)) paint(date);
+                if (!matches) paint(date);
                 select(date);
               }}
               className={cn(
@@ -402,9 +403,9 @@ export const DayCalendar = ({
         })}
       </div>
       <p id="calendar-help" className="text-muted-foreground mt-3 text-xs">
-        Tap or drag to paint. Tap a painted day to select it, and tap it again
-        to clear it; dragging from it clears every day of that kind it crosses.
-        With a keyboard, the arrow keys move between days, Space paints the day
+        Tap or drag to paint. Tap a painted day to select it and set its
+        overtime, or remove it from the panel below; dragging from a painted
+        day clears every day of that kind it crosses. With a keyboard, the arrow keys move between days, Space paints the day
         you are on, and Page Up and Page Down change month.
       </p>
     </section>
