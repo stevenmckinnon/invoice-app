@@ -1,4 +1,5 @@
 import SwiftUI
+import TipKit
 
 /// A Monday-first month grid you paint with a brush. Tap a date to paint it; tapping a date the brush
 /// already matches only selects it, so you can set its overtime (the panel below removes it). Touch
@@ -13,6 +14,8 @@ struct DayCalendarView: View {
     @State private var month: Int // 0-based
     @State private var erasing: Bool?
     @State private var lastStroked: String?
+    /// Whether this drag painted anything, which is what the editor's tips listen for
+    @State private var strokePainted = false
 
     @ScaledMetric(relativeTo: .subheadline) private var cellHeight: CGFloat = 46
     private let spacing: CGFloat = 4
@@ -80,8 +83,14 @@ struct DayCalendarView: View {
                             stroke(at: drag.location, cellWidth: cellWidth)
                         }
                         .onEnded { _ in
+                            if strokePainted {
+                                // They've found runs, so that tip is done, and overtime is next
+                                PaintRunTip().invalidate(reason: .actionPerformed)
+                                Task { await OvertimeTip.paintedRun.donate() }
+                            }
                             erasing = nil
                             lastStroked = nil
+                            strokePainted = false
                         }
                 )
             }
@@ -103,6 +112,7 @@ struct DayCalendarView: View {
     private func tap(_ date: String) {
         if !DayEditor.matches(painted[date], brush) {
             painted = DayEditor.applyStroke(painted, date: date, brush: brush, erasing: false)
+            Task { await PaintRunTip.tappedDate.donate() }
         }
         selected = date
         UIImpactFeedbackGenerator(style: .light).impactOccurred()
@@ -121,6 +131,7 @@ struct DayCalendarView: View {
         let next = DayEditor.applyStroke(painted, date: date, brush: brush, erasing: isErasing)
         if next != painted {
             painted = next
+            if !isErasing { strokePainted = true }
             UISelectionFeedbackGenerator().selectionChanged()
         }
         selected = date

@@ -3,6 +3,7 @@ import { describe, it } from "node:test";
 
 import {
   APPLE_TEAM_ID,
+  APP_LINK_COMPONENTS,
   IOS_BUNDLE_ID,
   appSiteAssociation,
 } from "@/lib/app-association";
@@ -14,10 +15,67 @@ const proxyRunsOn = (pathname: string) =>
 
 describe("apple-app-site-association", () => {
   it("links the password manager to the iOS app by team and bundle ID", () => {
-    assert.deepEqual(appSiteAssociation, {
-      webcredentials: { apps: [`${APPLE_TEAM_ID}.${IOS_BUNDLE_ID}`] },
+    assert.deepEqual(appSiteAssociation.webcredentials, {
+      apps: [`${APPLE_TEAM_ID}.${IOS_BUNDLE_ID}`],
     });
+    assert.deepEqual(appSiteAssociation.applinks.details[0]?.appIDs, [
+      `${APPLE_TEAM_ID}.${IOS_BUNDLE_ID}`,
+    ]);
     assert.match(APPLE_TEAM_ID, /^[A-Z0-9]{10}$/);
+  });
+
+  /**
+   * Whether iOS would open a URL in the app: components are read in order and the first that
+   * matches decides. In a pattern `*` is any run of characters and `?` exactly one.
+   */
+  const opensInApp = (path: string, query: Record<string, string> = {}) => {
+    const pattern = (p: string) =>
+      new RegExp(
+        `^${p.replace(/[.+^${}()|[\]\\]/g, "\\$&").replace(/\*/g, ".*").replace(/\?/g, ".")}$`,
+      );
+    for (const component of APP_LINK_COMPONENTS) {
+      if (!pattern(component["/"]).test(path)) continue;
+      const wants = (component as { "?"?: Record<string, string> })["?"];
+      if (
+        wants &&
+        !Object.entries(wants).every(
+          ([key, value]) => key in query && pattern(value).test(query[key]!),
+        )
+      ) {
+        continue;
+      }
+      return !(component as { exclude?: boolean }).exclude;
+    }
+    return false;
+  };
+
+  it("opens the pages the app has in the app", () => {
+    for (const path of [
+      "/dashboard",
+      "/invoices",
+      "/invoices/new",
+      "/invoices/cmw10gbg9001a4psmx2xstufy",
+      "/invoices/cmw10gbg9001a4psmx2xstufy/edit",
+      "/clients",
+      "/chat",
+    ]) {
+      assert.equal(opensInApp(path), true, path);
+    }
+  });
+
+  it("leaves the rest in Safari", () => {
+    // The app corrects from the invoice itself, not from this link
+    assert.equal(opensInApp("/invoices/new", { corrects: "abc" }), false);
+    for (const path of [
+      "/",
+      "/auth/signin",
+      "/profile",
+      "/consent",
+      "/api/invoices/abc/pdf",
+      "/clients/abc/edit",
+    ]) {
+      assert.equal(opensInApp(path), false, path);
+    }
   });
 
   it("is not behind the sign-in redirect: Apple fetches it with no login", () => {

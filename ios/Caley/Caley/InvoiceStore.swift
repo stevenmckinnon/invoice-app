@@ -12,6 +12,7 @@ final class InvoiceStore {
     func reset() {
         WidgetSync.clear()
         Reminders.clear()
+        Spotlight.clear()
         prefetching?.cancel()
         invoices = []
         loaded = false
@@ -27,6 +28,7 @@ final class InvoiceStore {
             if !Connectivity.shared.showingSavedCopy {
                 WidgetSync.publish(invoices)
                 Reminders.sync(invoices)
+                Spotlight.sync(invoices)
             }
             // Only from a live answer: a saved list would just re-fetch what is already saved
             if !Connectivity.shared.showingSavedCopy { prefetchRecent(auth: auth) }
@@ -57,6 +59,7 @@ final class InvoiceStore {
             invoices.removeAll { $0.id == id }
             WidgetSync.publish(invoices)
             Reminders.sync(invoices)
+            Spotlight.sync(invoices)
             Haptics.success()
             return true
         } catch {
@@ -86,6 +89,7 @@ final class InvoiceStore {
             try await auth.api.setStatus(status, id: id)
             WidgetSync.publish(invoices)
             Reminders.sync(invoices)
+            Spotlight.sync(invoices)
             Haptics.success()
             return true
         } catch {

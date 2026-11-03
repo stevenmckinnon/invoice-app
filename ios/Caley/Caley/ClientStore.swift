@@ -3,7 +3,10 @@ import SwiftUI
 @MainActor
 @Observable
 final class ClientStore {
-    private(set) var clients: [Client] = []
+    /// Spotlight follows every change: a load, a save, a delete, and sign-out's reset
+    private(set) var clients: [Client] = [] {
+        didSet { Spotlight.sync(clients) }
+    }
     private(set) var currency = "GBP"
     private(set) var loaded = false
     var error: String?
