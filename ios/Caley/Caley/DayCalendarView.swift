@@ -1,8 +1,9 @@
 import SwiftUI
 
-/// A Monday-first month grid you paint with a brush. Tap a date to paint it (tap a date the brush
-/// already matches to erase it); touch and hold, then drag, to paint a run. A plain swipe still
-/// scrolls the page.
+/// A Monday-first month grid you paint with a brush. Tap a date to paint it; tapping a date the brush
+/// already matches only selects it, so you can set its overtime (the panel below removes it). Touch
+/// and hold, then drag, to paint a run, or to clear one when it starts on a matching date. A plain
+/// swipe still scrolls the page.
 struct DayCalendarView: View {
     @Binding var painted: Painted
     @Binding var selected: String?
@@ -97,8 +98,12 @@ struct DayCalendarView: View {
         year = y
     }
 
+    /// A tap never erases: you tap a painted day to open it for overtime, and erasing it there meant
+    /// tapping twice more to get it back
     private func tap(_ date: String) {
-        painted = DayEditor.applyStroke(painted, date: date, brush: brush, erasing: DayEditor.matches(painted[date], brush))
+        if !DayEditor.matches(painted[date], brush) {
+            painted = DayEditor.applyStroke(painted, date: date, brush: brush, erasing: false)
+        }
         selected = date
         UIImpactFeedbackGenerator(style: .light).impactOccurred()
     }

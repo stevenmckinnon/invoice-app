@@ -101,6 +101,12 @@ export const DayDetails = ({
       next.set(date, { ...current, ...patch });
       return next;
     });
+  const remove = () =>
+    setPainted((prev) => {
+      const next = new Map(prev);
+      next.delete(date);
+      return next;
+    });
 
   const hours = entry?.overtimeHours ?? 0;
   // What's in the box while it's being typed; null otherwise, so the box
@@ -126,7 +132,22 @@ export const DayDetails = ({
       className="bg-card rounded-2xl p-4 shadow-sm md:p-6 dark:border"
       aria-label="Selected day"
     >
-      <h2 className="text-sm font-semibold">{longDate(date)}</h2>
+      <div className="flex items-center justify-between gap-3">
+        <h2 className="text-sm font-semibold">{longDate(date)}</h2>
+        {/* The one way a tap removes a day: tapping it on the calendar only
+            selects it, so opening a day for its overtime can't erase it */}
+        {entry && (
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            className="text-muted-foreground -my-1 -mr-2"
+            onClick={remove}
+          >
+            Remove day
+          </Button>
+        )}
+      </div>
 
       {!entry || entry.type === "off" ? (
         <p className="text-muted-foreground mt-1 text-sm">

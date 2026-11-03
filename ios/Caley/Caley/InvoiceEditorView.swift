@@ -248,7 +248,7 @@ struct InvoiceEditorView: View {
 
             dayDetail
 
-            Text("Tap a date to paint it. Touch and hold, then drag, to paint a run.")
+            Text("Tap a date to paint it, or a painted one to select it. Touch and hold, then drag, to paint a run.")
                 .font(.caption).foregroundStyle(.secondary)
 
             Button { importing = true } label: {
@@ -293,33 +293,45 @@ struct InvoiceEditorView: View {
         let date = model.selected
         let day = date.flatMap { model.painted[$0] }
         VStack(alignment: .leading, spacing: 10) {
-            if let date, let day, day.kind == .work {
-                Text(DateOnly.parse(date).map { DateOnly.format($0, .dateTime.weekday(.wide).day().month(.wide)) } ?? date)
-                    .font(.subheadline.weight(.semibold))
-                Stepper(value: Binding(
-                    get: { model.painted[date]?.overtimeHours ?? 0 },
-                    set: { model.painted[date]?.overtimeHours = $0 > 0 ? $0 : nil }
-                ), in: 0...14, step: 0.5) {
-                    Text("Overtime: \((day.overtimeHours ?? 0).formatted()) h").monospacedDigit()
+            if let date, let day {
+                HStack {
+                    Text(DateOnly.parse(date).map { DateOnly.format($0, .dateTime.weekday(.wide).day().month(.wide)) } ?? date)
+                        .font(.subheadline.weight(.semibold))
+                    Spacer()
+                    // The one way a tap removes a day: tapping it on the calendar only selects it
+                    Button("Remove day") { model.painted[date] = nil }
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                        .frame(minHeight: 44)
+                        .contentShape(Rectangle())
                 }
-                Text((day.overtimeHours ?? 0) > 0 ? overtimeSplit(day.overtimeHours ?? 0) : "Hours past a 10-hour day.")
-                    .font(.caption).foregroundStyle(.secondary)
-                if day.alsoTravel != nil {
-                    Picker("Travel", selection: Binding(
-                        get: { model.painted[date]?.alsoTravel ?? .auto },
-                        set: { model.painted[date]?.alsoTravel = $0 }
-                    )) {
-                        Text("Auto").tag(AlsoTravel.auto)
-                        Text("Flew in").tag(AlsoTravel.set(.out))
-                        Text("Flew home").tag(AlsoTravel.set(.home))
+                .padding(.vertical, -8)
+                if day.kind == .work {
+                    Stepper(value: Binding(
+                        get: { model.painted[date]?.overtimeHours ?? 0 },
+                        set: { model.painted[date]?.overtimeHours = $0 > 0 ? $0 : nil }
+                    ), in: 0...14, step: 0.5) {
+                        Text("Overtime: \((day.overtimeHours ?? 0).formatted()) h").monospacedDigit()
                     }
-                    .pickerStyle(.segmented)
+                    Text((day.overtimeHours ?? 0) > 0 ? overtimeSplit(day.overtimeHours ?? 0) : "Hours past a 10-hour day.")
+                        .font(.caption).foregroundStyle(.secondary)
+                    if day.alsoTravel != nil {
+                        Picker("Travel", selection: Binding(
+                            get: { model.painted[date]?.alsoTravel ?? .auto },
+                            set: { model.painted[date]?.alsoTravel = $0 }
+                        )) {
+                            Text("Auto").tag(AlsoTravel.auto)
+                            Text("Flew in").tag(AlsoTravel.set(.out))
+                            Text("Flew home").tag(AlsoTravel.set(.home))
+                        }
+                        .pickerStyle(.segmented)
+                    }
+                } else {
+                    Label("Overtime is added to work days. Tap one to set its hours.", systemImage: "clock")
+                        .font(.subheadline).foregroundStyle(.secondary)
                 }
             } else {
-                Label(day == nil
-                      ? "Paint a work day, then tap it to add overtime."
-                      : "Overtime is added to work days. Tap one to set its hours.",
-                      systemImage: "clock")
+                Label("Paint a work day, then tap it to add overtime.", systemImage: "clock")
                     .font(.subheadline).foregroundStyle(.secondary)
             }
         }
