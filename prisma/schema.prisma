@@ -178,6 +178,9 @@ model Invoice {
   totalAmount        Decimal
 
   status             String   @default("draft") // draft, sent, paid, overdue, void
+  // When it was marked paid; cleared if it leaves paid. Null on invoices
+  // paid before this was recorded, so "paid this month" can't count those.
+  paidAt             DateTime?
   notes              String?
 
   // The invoice this one replaces. Issuing a correction voids the original,

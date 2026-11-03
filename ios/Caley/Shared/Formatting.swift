@@ -81,6 +81,11 @@ extension Color {
     static let brand = Color(UIColor { $0.userInterfaceStyle == .dark
         ? UIColor(red: 0.30, green: 0.60, blue: 0.92, alpha: 1)
         : UIColor(red: 0.04, green: 0.38, blue: 0.70, alpha: 1) })
+    /// Green that's legible as text: the system green is too light for it on white (about 2:1), so
+    /// light mode uses a deeper one, as the web's `--success` does
+    static let success = Color(UIColor { $0.userInterfaceStyle == .dark
+        ? UIColor(red: 0.19, green: 0.82, blue: 0.35, alpha: 1)
+        : UIColor(red: 0.10, green: 0.47, blue: 0.22, alpha: 1) })
 }
 
 extension DateOnly {

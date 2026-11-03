@@ -153,11 +153,17 @@ struct DashboardView: View {
             if store.invoices.isEmpty {
                 EmptyState(title: "Nothing to show yet", message: "Create your first invoice and your totals show up here.", symbol: "chart.bar")
             } else {
+                let thisMonth = summary.invoicedThisMonth
                 heroCard(title: "Invoiced · \(DateOnly.fyLabel(fy))", value: total(inYear).money(currency),
+                         pill: summary.isCurrentFy && thisMonth > 0
+                            ? "\(thisMonth.money(currency)) invoiced in \(summary.monthName)" : nil,
                          footnote: "\(inYear.count) invoice\(inYear.count == 1 ? "" : "s")")
+                let paidThisMonth = summary.paidThisMonth
                 // Side by side while two amounts fit; stacked once text is large enough that they'd be cut off
                 let cards = Group {
-                    statCard(title: "Paid", value: total(inYear.filter { $0.status == .paid }).money(currency), tint: .green)
+                    statCard(title: "Paid", value: total(inYear.filter { $0.status == .paid }).money(currency), tint: .green,
+                             change: summary.isCurrentFy && paidThisMonth.count > 0
+                                ? "\(paidThisMonth.amount.money(currency)) paid in \(summary.monthName)" : nil)
                     statCard(title: "Outstanding", value: total(outstanding).money(currency), tint: .blue,
                              footnote: overdue.isEmpty ? nil : "\(overdue.count) overdue")
                 }
@@ -166,6 +172,7 @@ struct DashboardView: View {
                 } else {
                     HStack(spacing: 12) { cards }
                 }
+                if !inYear.isEmpty { MonthBarsCard(summary: summary) }
                 statusBreakdown
                 recent
             }
@@ -175,7 +182,9 @@ struct DashboardView: View {
         .padding(.horizontal, sizeClass == .regular ? 0 : 16)
     }
 
-    private func heroCard(title: String, value: String, footnote: String) -> some View {
+    /// The pill says what this month added to the total, as an amount; with nothing yet this month
+    /// the count stands in for it
+    private func heroCard(title: String, value: String, pill: String?, footnote: String) -> some View {
         VStack(alignment: .leading, spacing: 4) {
             Text(title).font(.subheadline).foregroundStyle(.secondary)
             Text(value)
@@ -183,19 +192,38 @@ struct DashboardView: View {
                 .monospacedDigit()
                 .lineLimit(1)
                 .minimumScaleFactor(0.5)
-            Text(footnote).font(.footnote).foregroundStyle(.secondary)
+            if let pill {
+                Text(pill)
+                    .font(.subheadline.weight(.semibold))
+                    .monospacedDigit()
+                    .foregroundStyle(Color.success)
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 6)
+                    .background(Color.success.opacity(0.12), in: Capsule())
+                    .padding(.top, 4)
+            } else {
+                Text(footnote).font(.footnote).foregroundStyle(.secondary)
+            }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .cardStyle()
         .accessibilityElement(children: .combine)
     }
 
-    private func statCard(title: String, value: String, tint: Color, footnote: String? = nil) -> some View {
+    /// `change` is one plain fact under the number, muted with an arrow ("↑ £4,378.13 paid in November")
+    private func statCard(title: String, value: String, tint: Color, footnote: String? = nil, change: String? = nil) -> some View {
         VStack(alignment: .leading, spacing: 4) {
             Label(title, systemImage: "circle.fill")
                 .font(.caption.weight(.medium))
                 .labelStyle(DotLabelStyle(tint: tint))
             Text(value).font(.title3.weight(.semibold)).monospacedDigit().minimumScaleFactor(0.7).lineLimit(1)
+            if let change {
+                Text("\(Image(systemName: "arrow.up")) \(change)")
+                    .font(.caption)
+                    .monospacedDigit()
+                    .foregroundStyle(.secondary)
+                    .accessibilityLabel(change)
+            }
             if let footnote {
                 Text(footnote).font(.caption).foregroundStyle(.red)
             }
@@ -241,6 +269,94 @@ struct DashboardView: View {
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .cardStyle()
+    }
+}
+
+/// The tax year as twelve bars, April first, each standing in a full-height track: months still to
+/// come are bare tracks, and last year's month is a mark across its track. The web's `MonthBars`.
+private struct MonthBarsCard: View {
+    let summary: DashboardSummary
+    @ScaledMetric(relativeTo: .caption2) private var trackHeight: CGFloat = 120
+
+    var body: some View {
+        let bars = summary.monthBars
+        let hasPrevious = bars.contains { $0.previous != nil }
+        let peak = bars.map { max($0.value ?? 0, $0.previous ?? 0) }.max() ?? 0
+        let max = peak > 0 ? peak : 1
+        VStack(alignment: .leading, spacing: 12) {
+            HStack {
+                Text("By month").font(.subheadline.weight(.semibold))
+                Spacer()
+                if hasPrevious {
+                    HStack(spacing: 12) {
+                        HStack(spacing: 4) {
+                            Capsule().fill(Color.brand).frame(width: 5, height: 11)
+                            Text(DateOnly.fyLabel(summary.fy))
+                        }
+                        HStack(spacing: 4) {
+                            Rectangle().fill(Color.primary.opacity(0.45)).frame(width: 11, height: 2)
+                            Text(DateOnly.fyLabel(summary.fy - 1))
+                        }
+                    }
+                    .font(.caption2)
+                    .foregroundStyle(.secondary)
+                    .accessibilityHidden(true)
+                }
+            }
+            HStack(alignment: .bottom, spacing: 4) {
+                ForEach(bars) { bar in
+                    VStack(spacing: 6) {
+                        track(bar, max: max)
+                        Text(bar.label)
+                            .font(.caption2)
+                            .foregroundStyle(.secondary)
+                            .opacity(bar.value == nil ? 0.6 : 1)
+                            .lineLimit(1)
+                            .minimumScaleFactor(0.7)
+                    }
+                    .frame(maxWidth: .infinity)
+                    .accessibilityElement(children: .ignore)
+                    .accessibilityLabel(label(bar))
+                }
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .cardStyle()
+    }
+
+    private func fraction(_ value: Decimal, of max: Decimal) -> CGFloat {
+        CGFloat(truncating: (value / max) as NSDecimalNumber)
+    }
+
+    private func track(_ bar: DashboardSummary.MonthBar, max: Decimal) -> some View {
+        GeometryReader { proxy in
+            let height = proxy.size.height
+            ZStack(alignment: .bottom) {
+                Capsule().fill(Color.primary.opacity(0.07))
+                if let value = bar.value, value > 0 {
+                    // Never thinner than the track is wide, so a small month still reads as a bar
+                    Capsule().fill(Color.brand)
+                        .frame(height: Swift.max(proxy.size.width, height * fraction(value, of: max)))
+                }
+                if let previous = bar.previous, previous > 0 {
+                    Rectangle().fill(Color.primary.opacity(0.45))
+                        .frame(height: 2)
+                        .offset(y: -height * fraction(previous, of: max) + 1)
+                }
+            }
+            .clipShape(Capsule())
+        }
+        .frame(maxWidth: 28)
+        .frame(height: trackHeight)
+    }
+
+    private func label(_ bar: DashboardSummary.MonthBar) -> String {
+        let currency = summary.currency
+        var text = bar.value.map { "\(bar.label), \($0.money(currency)) invoiced" } ?? "\(bar.label), still to come"
+        if let previous = bar.previous {
+            text += ", \(previous.money(currency)) in \(DateOnly.fyLabel(summary.fy - 1))"
+        }
+        return text
     }
 }
 

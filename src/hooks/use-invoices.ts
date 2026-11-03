@@ -15,6 +15,8 @@ export type Invoice = {
   totalAmount: number;
   currency: string;
   status: string;
+  /** When it was marked paid; null if it isn't, or was paid before this was recorded */
+  paidAt: Date | string | null;
   createdAt: Date | string;
 };
 
