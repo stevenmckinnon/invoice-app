@@ -15,6 +15,7 @@ final class AppLock {
             UserDefaults.standard.set(enabled, forKey: Self.key)
             WidgetSync.lockChanged(enabled: enabled)
             Reminders.refresh()
+            Spotlight.refresh()
         }
     }
     /// Starts locked when the lock is on, so a cold launch asks before showing anything

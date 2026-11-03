@@ -30,9 +30,11 @@ extension AppNavigation {
     /// - `caley://dashboard`: the dashboard
     /// - `caley://invoice/<id>`: one invoice
     /// - `caley://new`: the new invoice editor
-    /// Anything else is ignored.
+    /// - `caley://clients`: Clients, inside Account
+    /// - `caley://assistant`: the Assistant
+    /// A caley.app web link is read as the same thing first (`AppLink.route`). Anything else is ignored.
     func handle(_ url: URL) {
-        guard url.scheme == "caley" else { return }
+        guard let url = url.scheme == "caley" ? url : AppLink.route(from: url) else { return }
         switch url.host() {
         case "invoices":
             let filter = URLComponents(url: url, resolvingAgainstBaseURL: false)?
@@ -50,8 +52,45 @@ extension AppNavigation {
         case "new":
             tab = .dashboard
             pendingNewInvoice = true
+        case "clients":
+            accountPath = [.clients]
+            tab = .account
+        case "assistant":
+            tab = .assistant
         default:
             break
+        }
+    }
+}
+
+/// caley.app links that open in the app instead of Safari (universal links): an invoice from the
+/// Claude connector, say. iOS only hands over the paths in the site's association file
+/// (`APP_LINK_COMPONENTS` in `src/lib/app-association.ts`); keep the two in step.
+enum AppLink {
+    static let hosts: Set<String> = ["caley.app", "www.caley.app"]
+
+    /// The `caley://` link a web URL means, or nil for a page the app doesn't have
+    static func route(from url: URL) -> URL? {
+        guard url.scheme == "https", let host = url.host(), hosts.contains(host) else { return nil }
+        let parts = url.pathComponents.filter { $0 != "/" }
+        let query = URLComponents(url: url, resolvingAgainstBaseURL: false)?.queryItems ?? []
+        switch parts.first {
+        case "dashboard" where parts.count == 1:
+            return URL(string: "caley://dashboard")
+        case "clients" where parts.count == 1:
+            return URL(string: "caley://clients")
+        case "chat" where parts.count == 1:
+            return URL(string: "caley://assistant")
+        case "invoices":
+            guard parts.count > 1 else { return URL(string: "caley://invoices") }
+            if parts[1] == "new" {
+                // Starting a correction stays on the web; the app corrects from the invoice
+                return query.contains { $0.name == "corrects" } ? nil : URL(string: "caley://new")
+            }
+            // `/invoices/<id>/edit` opens the invoice: its Edit button is there for a draft
+            return URL(string: "caley://invoice/\(parts[1])")
+        default:
+            return nil
         }
     }
 }

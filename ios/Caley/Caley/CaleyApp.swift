@@ -1,4 +1,6 @@
+import CoreSpotlight
 import SwiftUI
+import TipKit
 
 @main
 struct CaleyApp: App {
@@ -12,6 +14,7 @@ struct CaleyApp: App {
     init() {
         Reminders.install()
         BackgroundRefresh.register()
+        EditorTips.configure()
     }
 
     var body: some Scene {
@@ -24,7 +27,14 @@ struct CaleyApp: App {
                 .environment(lock)
                 .environment(navigation)
                 .tint(.brand)
+                // caley:// links, and caley.app links iOS hands over (universal links)
                 .onOpenURL { url in Task { await open(url) } }
+                // A tapped Spotlight result
+                .onContinueUserActivity(CSSearchableItemActionType) { activity in
+                    guard let id = activity.userInfo?[CSSearchableItemActivityIdentifier] as? String,
+                          let url = SpotlightPlanner.link(forIdentifier: id) else { return }
+                    Task { await open(url) }
+                }
                 .task {
                     // Links from Siri, Shortcuts and the Action button arrive through here
                     LinkBridge.shared.attach { url in Task { await open(url) } }
@@ -35,7 +45,7 @@ struct CaleyApp: App {
 }
 
 extension CaleyApp {
-    /// Opens a `caley://` link once the saved login has been checked: on a cold launch the link arrives
+    /// Opens a link once the saved login has been checked: on a cold launch the link arrives
     /// before the app knows whether you are signed in, and dropping it then would lose it.
     fileprivate func open(_ url: URL) async {
         for _ in 0..<50 where auth.isLaunching { try? await Task.sleep(for: .milliseconds(100)) }

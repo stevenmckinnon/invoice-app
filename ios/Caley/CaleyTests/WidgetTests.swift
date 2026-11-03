@@ -154,7 +154,8 @@ final class WidgetTests: XCTestCase {
 
     func testOtherLinksAreIgnored() {
         let nav = AppNavigation()
-        for text in ["https://caley.app/invoices", "caley://invoice/", "caley://invoice", "caley://nowhere", "other://new"] {
+        // caley.app pages the app has now open in it (`LinksAndSpotlightTests`); these it doesn't have
+        for text in ["https://caley.app/profile", "https://example.com/invoices", "caley://invoice/", "caley://invoice", "caley://nowhere", "other://new"] {
             nav.handle(URL(string: text)!)
         }
         XCTAssertEqual(nav.tab, .dashboard)

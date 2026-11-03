@@ -1,4 +1,5 @@
 import SwiftUI
+import TipKit
 
 /// Builds or edits a day-based invoice: pick a client (their rates price it), name the job, paint
 /// the days on a calendar, add expenses. The total comes from the server's `billDays`, so it is
@@ -246,6 +247,11 @@ struct InvoiceEditorView: View {
                 painted: $model.painted, selected: $model.selected,
                 brush: model.brush, initialMonth: model.initialMonth)
 
+            // Below the calendar, never above it: a tip that appears mid-painting would push every
+            // date down under your finger. Runs after a few single taps; overtime after a run.
+            TipView(PaintRunTip())
+            TipView(OvertimeTip())
+
             dayDetail
 
             Text("Tap a date to paint it, or a painted one to select it. Touch and hold, then drag, to paint a run.")
@@ -309,7 +315,10 @@ struct InvoiceEditorView: View {
                 if day.kind == .work {
                     Stepper(value: Binding(
                         get: { model.painted[date]?.overtimeHours ?? 0 },
-                        set: { model.painted[date]?.overtimeHours = $0 > 0 ? $0 : nil }
+                        set: {
+                        model.painted[date]?.overtimeHours = $0 > 0 ? $0 : nil
+                        OvertimeTip().invalidate(reason: .actionPerformed)
+                    }
                     ), in: 0...14, step: 0.5) {
                         Text("Overtime: \((day.overtimeHours ?? 0).formatted()) h").monospacedDigit()
                     }
