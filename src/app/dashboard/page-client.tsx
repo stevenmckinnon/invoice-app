@@ -895,9 +895,12 @@ export default function Home() {
               </>
             )}
           </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-              <div className="space-y-2">
+          {/* Laid out by the card's own width, not the window's: it sits in a
+              half-width column, so a window breakpoint stacked three short
+              figures down one side of a wide card */}
+          <CardContent className="@container">
+            <div className="grid grid-cols-2 gap-x-4 gap-y-5 @md:grid-cols-3">
+              <div className="col-span-2 space-y-1.5 @md:col-span-1">
                 <p className="text-muted-foreground text-sm font-medium">
                   Revenue
                 </p>
@@ -926,9 +929,9 @@ export default function Home() {
                   </div>
                 )}
               </div>
-              <div className="space-y-2">
+              <div className="space-y-1.5">
                 <p className="text-muted-foreground text-sm font-medium">
-                  Invoices Created
+                  Invoices created
                 </p>
                 <p className="text-2xl font-bold tabular-nums">
                   {isCurrentFy
@@ -944,13 +947,10 @@ export default function Home() {
                         ).length
                       : 0}
                 </p>
-                <p className="text-muted-foreground text-xs">
-                  {isCurrentFy ? "This month" : `In ${bestMonthName}`}
-                </p>
               </div>
-              <div className="space-y-2">
+              <div className="space-y-1.5">
                 <p className="text-muted-foreground text-sm font-medium">
-                  {isCurrentFy ? "Paid This Month" : "Paid That Month"}
+                  Invoices paid
                 </p>
                 <p className="text-success text-2xl font-bold tabular-nums">
                   {isCurrentFy
@@ -964,7 +964,6 @@ export default function Home() {
                         ).length
                       : 0}
                 </p>
-                <p className="text-muted-foreground text-xs">Invoices paid</p>
               </div>
             </div>
           </CardContent>
