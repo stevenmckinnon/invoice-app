@@ -36,6 +36,23 @@ export const canChangeStatus = (from: string, to: string) => {
   return true;
 };
 
+/**
+ * What a status change does to the paid date: becoming paid stamps it, and
+ * going back to sent or overdue clears it (it was marked by mistake).
+ * Anything else leaves it alone: paid to paid doesn't move the date, and a
+ * paid invoice that's voided keeps it, since the money did come in.
+ */
+export const paidAtAfter = (
+  from: string | null,
+  to: string,
+  now: Date,
+): Date | null | undefined => {
+  if (from === to) return undefined;
+  if (to === "paid") return now;
+  if (from === "paid" && to !== "void") return null;
+  return undefined;
+};
+
 /** The statuses a bulk change may move an invoice out of */
 export const statusesThatCanBecome = (to: InvoiceStatus) =>
   INVOICE_STATUS_VALUES.filter((from) => canChangeStatus(from, to));

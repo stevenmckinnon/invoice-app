@@ -264,6 +264,7 @@ export const GET = async () => {
       totalAmount: true,
       currency: true,
       status: true,
+      paidAt: true,
       createdAt: true,
       fullName: true,
     },
@@ -292,14 +293,21 @@ export const PATCH = async (req: NextRequest) => {
     return NextResponse.json({ error: "Invalid request" }, { status: 400 });
   }
 
-  // An invoice that can't make this change is left as it is, and isn't counted
+  // An invoice that can't make this change is left as it is, and isn't counted.
+  // Nor is one already at the status: marking a paid invoice paid again would
+  // otherwise move its paid date to today.
+  const { status } = parsed.data;
   const { count } = await prisma.invoice.updateMany({
     where: {
       id: { in: parsed.data.ids },
       userId: session.user.id,
-      status: { in: statusesThatCanBecome(parsed.data.status) },
+      status: {
+        in: statusesThatCanBecome(status).filter((from) => from !== status),
+      },
     },
-    data: { status: parsed.data.status },
+    // Every row that moves takes the same paid date: stamped on becoming
+    // paid, cleared on leaving it (void never appears here)
+    data: { status, paidAt: status === "paid" ? new Date() : null },
   });
 
   return NextResponse.json({ count });

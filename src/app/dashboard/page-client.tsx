@@ -1,23 +1,23 @@
 "use client";
 import { useEffect, useState } from "react";
 
-import { Add01Icon, AnalyticsDownIcon, AnalyticsUpIcon, FileAttachmentIcon, ViewIcon } from "@hugeicons/core-free-icons";
+import {
+  Add01Icon,
+  AnalyticsDownIcon,
+  AnalyticsUpIcon,
+  ArrowDown02Icon,
+  ArrowUp02Icon,
+  FileAttachmentIcon,
+  ViewIcon,
+} from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import {
-  Area,
-  AreaChart,
-  CartesianGrid,
-  Tooltip as RechartsTooltip,
-  ResponsiveContainer,
-  XAxis,
-  YAxis,
-} from "recharts";
 
 import { DashboardSkeleton } from "@/components/DashboardSkeleton";
 import { EmptyState } from "@/components/EmptyState";
 import { InvoiceStatusBadge } from "@/components/InvoiceStatusBadge";
+import { MonthBars } from "@/components/MonthBars";
 import { PageHeader } from "@/components/PageHeader";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -43,6 +43,7 @@ import {
 } from "@/components/ui/tooltip";
 import { useInvoices } from "@/hooks/use-invoices";
 import { useSession } from "@/lib/auth-client";
+import { averageOf, paidInMonth } from "@/lib/dashboard-figures";
 import { INVOICE_STATUSES } from "@/lib/invoice-status";
 import { formatFy, getFyMonthIndex, getFyStart } from "@/lib/tax-year";
 import { cn, formatCurrency, formatDate, getGreeting } from "@/lib/utils";
@@ -64,6 +65,28 @@ const dominantCurrency = (invoices: { currency: string }[]): string => {
 };
 
 
+/**
+ * A small fact under a card's number: an arrow and plain words. Muted either
+ * way, since a smaller average isn't bad news the way red would say it is.
+ */
+const ChangeLine = ({
+  up,
+  children,
+}: {
+  up: boolean;
+  children: React.ReactNode;
+}) => (
+  // Inline, so on a narrow card the arrow stays on the first line as it wraps
+  <p className="text-muted-foreground mt-2 text-xs font-medium tabular-nums">
+    <HugeiconsIcon
+      icon={up ? ArrowUp02Icon : ArrowDown02Icon}
+      className="mr-1 inline size-3 align-[-0.125em]"
+      aria-hidden="true"
+    />
+    {children}
+  </p>
+);
+
 export default function Home() {
   const { data: session, isPending } = useSession();
   const router = useRouter();
@@ -74,59 +97,8 @@ export default function Home() {
   const [selectedCurrency, setSelectedCurrency] = useState<string | null>(
     null,
   );
-  const [chartColors, setChartColors] = useState({
-    primary: "#3b82f6",
-    muted: "#9ca3af",
-    grid: "#374151",
-    cardBg: "#1f2937",
-    border: "#374151",
-  });
-
   const currentFy = getFyStart(new Date());
   const [selectedFy, setSelectedFy] = useState(currentFy);
-
-  // Get theme colors from CSS variables
-  useEffect(() => {
-    const updateColors = () => {
-      // Create a temporary element to get computed colors
-      const temp = document.createElement("div");
-      document.body.appendChild(temp);
-
-      // Apply Tailwind classes and read computed RGB colors
-      temp.className = "text-primary";
-      const primaryColor = getComputedStyle(temp).color;
-
-      temp.className = "text-muted-foreground";
-      const mutedColor = getComputedStyle(temp).color;
-
-      temp.className = "border-border";
-      const borderColor = getComputedStyle(temp).borderColor;
-
-      temp.className = "bg-card";
-      const cardBg = getComputedStyle(temp).backgroundColor;
-
-      document.body.removeChild(temp);
-
-      setChartColors({
-        primary: primaryColor || "#3b82f6",
-        muted: mutedColor || "#9ca3af",
-        grid: borderColor || "#374151",
-        cardBg: cardBg || "#1f2937",
-        border: borderColor || "#374151",
-      });
-    };
-
-    updateColors();
-
-    // Listen for theme changes
-    const observer = new MutationObserver(updateColors);
-    observer.observe(document.documentElement, {
-      attributes: true,
-      attributeFilter: ["class"],
-    });
-
-    return () => observer.disconnect();
-  }, []);
 
   useEffect(() => {
     if (!session && !isPending) {
@@ -288,6 +260,11 @@ export default function Home() {
         100
       : null;
 
+  const monthName = now.toLocaleDateString("en-GB", { month: "long" });
+  // By the day it was marked paid, which may be in a later tax year than
+  // the invoice: that's why this reads all of them, not just this year's
+  const paidThisMonth = paidInMonth(invoices, now);
+
   // Best month revenue for past years
   const bestMonthRevenue = !isCurrentFy
     ? Math.max(
@@ -405,6 +382,25 @@ export default function Home() {
     previousToDateRevenue > 0
       ? ((toDateRevenue - previousToDateRevenue) / previousToDateRevenue) * 100
       : null;
+  // The average invoice, cut at the same point as the comparisons above
+  const amountsUpTo = (fyStart: number, cutoff: Date | null) =>
+    invoices
+      .filter((inv) => {
+        const date = new Date(inv.invoiceDate);
+        return getFyStart(date) === fyStart && (!cutoff || date <= cutoff);
+      })
+      .map((inv) => Number(inv.totalAmount));
+  const averageToDate = averageOf(
+    amountsUpTo(selectedFy, isCurrentFy ? now : null),
+  );
+  const previousAverageToDate = averageOf(
+    amountsUpTo(selectedFy - 1, isCurrentFy ? sameDayLastYear : null),
+  );
+  const averageChange =
+    averageToDate !== null && previousAverageToDate !== null
+      ? averageToDate - previousAverageToDate
+      : null;
+
   const toDateLabel = now.toLocaleDateString("en-GB", {
     day: "numeric",
     month: "short",
@@ -492,25 +488,13 @@ export default function Home() {
             <div className="min-w-0 break-words text-4xl font-bold tracking-tight tabular-nums sm:text-5xl">
               {formatCurrency(totalRevenue, displayCurrency)}
             </div>
-            {monthlyChange !== null ? (
-              <div className="bg-card flex items-center gap-1.5 rounded-full py-1.5 pr-3 pl-2.5 shadow-xs">
-                {monthlyChange >= 0 ? (
-                  <HugeiconsIcon icon={AnalyticsUpIcon} className="text-success h-4 w-4" />
-                ) : (
-                  <HugeiconsIcon icon={AnalyticsDownIcon} className="text-destructive h-4 w-4" />
-                )}
-                <span
-                  className={`text-xs font-semibold ${
-                    monthlyChange >= 0 ? "text-success" : "text-destructive"
-                  }`}
-                >
-                  {monthlyChange >= 0 ? "+" : "−"}
-                  {Math.abs(monthlyChange).toFixed(1)}%
-                </span>
-                <span className="text-muted-foreground text-xs font-medium">
-                  this month, vs this point last month
-                </span>
-              </div>
+            {/* What this month added to the total, as an amount: the
+                comparison with last month lives in This Month below */}
+            {isCurrentFy && monthToDateRevenue > 0 ? (
+              <span className="bg-success/12 text-success rounded-full px-3 py-1.5 text-sm font-semibold tabular-nums">
+                {formatCurrency(monthToDateRevenue, displayCurrency)} invoiced
+                in {monthName}
+              </span>
             ) : (
               <span className="text-muted-foreground text-sm font-medium">
                 {fyInvoices.length} invoice{fyInvoices.length !== 1 ? "s" : ""}{" "}
@@ -568,7 +552,19 @@ export default function Home() {
             <div className="text-success break-words text-xl font-bold tracking-tight tabular-nums sm:text-3xl">
               {formatCurrency(paidRevenue, displayCurrency)}
             </div>
-            <p className="text-muted-foreground mt-2 text-xs font-medium">
+            {/* One plain fact about the month under the year's number */}
+            {isCurrentFy && paidThisMonth.count > 0 && (
+              <ChangeLine up>
+                {formatCurrency(paidThisMonth.amount, displayCurrency)} paid in{" "}
+                {monthName}
+              </ChangeLine>
+            )}
+            <p
+              className={cn(
+                "text-muted-foreground text-xs font-medium",
+                !(isCurrentFy && paidThisMonth.count > 0) && "mt-2",
+              )}
+            >
               {fyInvoices.filter((inv) => inv.status === "paid").length} paid
               invoices
             </p>
@@ -615,9 +611,26 @@ export default function Home() {
             <div className="break-words text-xl font-bold tracking-tight tabular-nums sm:text-3xl">
               {formatCurrency(averageInvoice, displayCurrency)}
             </div>
-            <p className="text-muted-foreground mt-2 text-xs font-medium">
-              per invoice
-            </p>
+            {/* Rounded to the pound: pennies either way aren't a change */}
+            {averageChange !== null && Math.round(averageChange) !== 0 ? (
+              <ChangeLine up={averageChange > 0}>
+                {formatCurrency(Math.abs(averageChange), displayCurrency, {
+                  decimals: 0,
+                })}{" "}
+                {averageChange > 0 ? "more" : "less"}{" "}
+                {isCurrentFy
+                  ? "than this point last year"
+                  : `than ${formatFy(selectedFy - 1)}`}
+              </ChangeLine>
+            ) : (
+              <p className="text-muted-foreground mt-2 text-xs font-medium">
+                {averageChange !== null
+                  ? isCurrentFy
+                    ? "Same as this point last year"
+                    : `Same as ${formatFy(selectedFy - 1)}`
+                  : "per invoice"}
+              </p>
+            )}
           </CardContent>
         </Card>
       </div>
@@ -653,140 +666,26 @@ export default function Home() {
             {hasPreviousFy && fyInvoices.length > 0 && (
               <ul className="text-muted-foreground flex items-center gap-4 text-xs font-medium">
                 <li className="flex items-center gap-1.5">
-                  <span className="bg-primary h-0.5 w-3 rounded-full" />
+                  <span className="bg-primary h-3 w-1.5 rounded-full" />
                   {formatFy(selectedFy)}
                 </li>
                 <li className="flex items-center gap-1.5">
-                  <span className="border-muted-foreground h-0 w-3 border-t-2 border-dashed" />
+                  <span className="bg-foreground/45 h-0.5 w-3" />
                   {formatFy(selectedFy - 1)}
                 </li>
               </ul>
             )}
           </div>
         </CardHeader>
-        <CardContent className="px-0 pb-2 md:px-4">
+        <CardContent>
           {fyInvoices.length > 0 ? (
-            <div className="h-[300px] w-full">
-              <ResponsiveContainer width="100%" height="100%">
-                <AreaChart
-                  data={revenueData}
-                  margin={{ top: 8, right: 24, left: 8, bottom: 8 }}
-                >
-                  <defs>
-                    <linearGradient
-                      id="colorRevenue"
-                      x1="0"
-                      y1="0"
-                      x2="0"
-                      y2="1"
-                    >
-                      <stop
-                        offset="0%"
-                        stopColor={chartColors.primary}
-                        stopOpacity={0.28}
-                      />
-                      <stop
-                        offset="100%"
-                        stopColor={chartColors.primary}
-                        stopOpacity={0}
-                      />
-                    </linearGradient>
-                  </defs>
-                  <CartesianGrid
-                    vertical={false}
-                    stroke={chartColors.grid}
-                    strokeOpacity={0.6}
-                  />
-                  <XAxis
-                    dataKey="month"
-                    fontSize={12}
-                    tickLine={false}
-                    axisLine={false}
-                    tick={{ fill: chartColors.muted }}
-                    dy={8}
-                  />
-                  <YAxis
-                    fontSize={12}
-                    tickLine={false}
-                    axisLine={false}
-                    tick={{ fill: chartColors.muted }}
-                    tickFormatter={(value) =>
-                      formatCurrency(value, displayCurrency, { decimals: 0 })
-                    }
-                    width={64}
-                  />
-                  <RechartsTooltip
-                    cursor={{ stroke: chartColors.muted, strokeOpacity: 0.4 }}
-                    content={({ active, payload, label }) => {
-                      if (!active || !payload?.length) return null;
-                      const point = payload[0].payload as (typeof revenueData)[number];
-                      return (
-                        <div className="bg-popover text-popover-foreground dark:border-border min-w-40 rounded-xl px-3 py-2.5 text-xs shadow-lg dark:border">
-                          <p className="mb-1.5 font-semibold">{label}</p>
-                          {point.revenue !== null && (
-                            <div className="flex items-center justify-between gap-4">
-                              <span className="text-muted-foreground">
-                                {formatFy(selectedFy)}
-                              </span>
-                              <span className="font-semibold tabular-nums">
-                                {formatCurrency(point.revenue, displayCurrency)}
-                              </span>
-                            </div>
-                          )}
-                          {point.previous !== null && (
-                            <div className="flex items-center justify-between gap-4">
-                              <span className="text-muted-foreground">
-                                {formatFy(selectedFy - 1)}
-                              </span>
-                              <span className="text-muted-foreground tabular-nums">
-                                {formatCurrency(point.previous, displayCurrency)}
-                              </span>
-                            </div>
-                          )}
-                          {point.revenue !== null && point.invoices > 0 && (
-                            <p className="text-muted-foreground mt-1.5">
-                              {point.invoices} invoice
-                              {point.invoices !== 1 ? "s" : ""}
-                            </p>
-                          )}
-                        </div>
-                      );
-                    }}
-                  />
-                  {hasPreviousFy && (
-                    <Area
-                      type="monotone"
-                      dataKey="previous"
-                      stroke={chartColors.muted}
-                      strokeOpacity={0.7}
-                      strokeWidth={1.5}
-                      strokeDasharray="4 4"
-                      fill="none"
-                      dot={false}
-                      activeDot={false}
-                      animationDuration={600}
-                    />
-                  )}
-                  <Area
-                    type="monotone"
-                    dataKey="revenue"
-                    stroke={chartColors.primary}
-                    strokeWidth={2}
-                    fill="url(#colorRevenue)"
-                    dot={false}
-                    activeDot={{
-                      r: 4,
-                      fill: chartColors.primary,
-                      stroke: chartColors.cardBg,
-                      strokeWidth: 2,
-                    }}
-                    animationDuration={800}
-                  />
-                </AreaChart>
-              </ResponsiveContainer>
-            </div>
+            <MonthBars
+              data={revenueData}
+              fy={selectedFy}
+              currency={displayCurrency}
+            />
           ) : (
-            <div className="flex h-[300px] items-center justify-center">
+            <div className="flex h-52 items-center justify-center">
               <EmptyState
                 title="No revenue to chart"
                 description="Monthly trends appear once you create an invoice."
@@ -996,9 +895,12 @@ export default function Home() {
               </>
             )}
           </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-              <div className="space-y-2">
+          {/* Laid out by the card's own width, not the window's: it sits in a
+              half-width column, so a window breakpoint stacked three short
+              figures down one side of a wide card */}
+          <CardContent className="@container">
+            <div className="grid grid-cols-2 gap-x-4 gap-y-5 @md:grid-cols-3">
+              <div className="col-span-2 space-y-1.5 @md:col-span-1">
                 <p className="text-muted-foreground text-sm font-medium">
                   Revenue
                 </p>
@@ -1027,9 +929,9 @@ export default function Home() {
                   </div>
                 )}
               </div>
-              <div className="space-y-2">
+              <div className="space-y-1.5">
                 <p className="text-muted-foreground text-sm font-medium">
-                  Invoices Created
+                  Invoices created
                 </p>
                 <p className="text-2xl font-bold tabular-nums">
                   {isCurrentFy
@@ -1045,21 +947,14 @@ export default function Home() {
                         ).length
                       : 0}
                 </p>
-                <p className="text-muted-foreground text-xs">
-                  {isCurrentFy ? "This month" : `In ${bestMonthName}`}
-                </p>
               </div>
-              <div className="space-y-2">
+              <div className="space-y-1.5">
                 <p className="text-muted-foreground text-sm font-medium">
-                  {isCurrentFy ? "Paid This Month" : "Paid That Month"}
+                  Invoices paid
                 </p>
                 <p className="text-success text-2xl font-bold tabular-nums">
                   {isCurrentFy
-                    ? fyInvoices.filter(
-                        (inv) =>
-                          inv.status === "paid" &&
-                          new Date(inv.invoiceDate).getMonth() === currentMonth,
-                      ).length
+                    ? paidThisMonth.count
                     : bestMonthIndex >= 0
                       ? fyInvoices.filter(
                           (inv) =>
@@ -1069,7 +964,6 @@ export default function Home() {
                         ).length
                       : 0}
                 </p>
-                <p className="text-muted-foreground text-xs">Invoices paid</p>
               </div>
             </div>
           </CardContent>

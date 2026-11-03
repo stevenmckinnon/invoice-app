@@ -18,6 +18,7 @@ import {
   canChangeStatus,
   canDeleteInvoice,
   isBillingLocked,
+  paidAtAfter,
   statusChangeRefusal,
 } from "@/lib/invoice-lifecycle";
 import {
@@ -216,6 +217,11 @@ export const PUT = async (req: NextRequest, context: RouteContext) => {
             : null,
           currency: pdfInput.currency ?? "GBP",
           status: parsed.status || "draft",
+          paidAt: paidAtAfter(
+            existing.status,
+            parsed.status || "draft",
+            new Date(),
+          ),
           notes: pdfInput.notes,
           ...dayBilling,
         },
@@ -355,10 +361,13 @@ export const PATCH = async (req: NextRequest, context: RouteContext) => {
       where: { id },
       data: {
         status,
+        paidAt: status
+          ? paidAtAfter(invoice.status, status, new Date())
+          : undefined,
         // An emptied note clears it rather than storing whitespace
         notes: notes === undefined ? undefined : notes?.trim() || null,
       },
-      select: { id: true, status: true, notes: true },
+      select: { id: true, status: true, paidAt: true, notes: true },
     });
 
     return NextResponse.json(updated);

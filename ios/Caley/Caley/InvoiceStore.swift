@@ -71,7 +71,17 @@ final class InvoiceStore {
     func setStatus(_ status: InvoiceStatus, for id: String, auth: AuthStore) async -> Bool {
         guard let index = invoices.firstIndex(where: { $0.id == id }) else { return false }
         let previous = invoices[index].status
+        let previousPaidAt = invoices[index].paidAt
         invoices[index].status = status
+        // The server's rule (`paidAtAfter`): becoming paid stamps the date, going back to sent or
+        // overdue clears it, and voiding keeps it. The next load brings the server's own value.
+        if status != previous {
+            if status == .paid {
+                invoices[index].paidAt = ISO8601DateFormatter().string(from: .now)
+            } else if previous == .paid && status != .void {
+                invoices[index].paidAt = nil
+            }
+        }
         do {
             try await auth.api.setStatus(status, id: id)
             WidgetSync.publish(invoices)
@@ -80,6 +90,7 @@ final class InvoiceStore {
             return true
         } catch {
             invoices[index].status = previous
+            invoices[index].paidAt = previousPaidAt
             Haptics.failure()
             if case APIError.unauthorized = error { auth.sessionExpired() }
             self.error = error.localizedDescription

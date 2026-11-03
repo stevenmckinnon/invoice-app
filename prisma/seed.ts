@@ -154,6 +154,12 @@ const buildInvoice = (input: {
     subtotalTravel: 0,
     totalAmount: totals.totalAmount,
     status: input.status,
+    // Paid three weeks after it was invoiced, so paid dates spread across the
+    // year like real ones
+    paidAt:
+      input.status === "paid"
+        ? new Date(new Date(input.invoiceDate).getTime() + 21 * 86_400_000)
+        : null,
     notes: input.notes,
     items: { createMany: { data: items } },
     overtimeEntries: {

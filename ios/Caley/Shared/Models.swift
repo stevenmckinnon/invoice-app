@@ -53,9 +53,19 @@ struct InvoiceListItem: Decodable, Identifiable, Hashable {
     let totalAmount: Amount
     let currency: String?
     var status: InvoiceStatus
+    /// When it was marked paid (an ISO timestamp); nil if it isn't, or was paid before the server
+    /// recorded paid dates. Missing from older cached responses, which decode as nil too.
+    var paidAt: String?
 
     var currencyCode: String { currency ?? "GBP" }
     var date: Date? { DateOnly.parse(invoiceDate) }
+    var paidDate: Date? { paidAt.flatMap(InvoiceListItem.parseTimestamp) }
+
+    static func parseTimestamp(_ s: String) -> Date? {
+        let f = ISO8601DateFormatter()
+        f.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+        return f.date(from: s) ?? ISO8601DateFormatter().date(from: s)
+    }
 }
 
 struct LineItem: Decodable, Hashable {
