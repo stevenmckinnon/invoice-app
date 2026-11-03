@@ -324,8 +324,9 @@ export const generateCaleyInvoicePdf = async (
   const payment = [
     ["IBAN", input.iban],
     ["SWIFT / BIC", input.swiftBic],
-    ["Account no.", input.accountNumber],
+    // Sort code first, the way UK bank details are written
     ["Sort code", input.sortCode],
+    ["Account no.", input.accountNumber],
     ["Bank address", input.bankAddress],
   ].filter(([, value]) => value);
 

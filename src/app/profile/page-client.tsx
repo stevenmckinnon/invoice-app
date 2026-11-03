@@ -34,6 +34,7 @@ import {
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useProfile, useUpdateProfile } from "@/hooks/use-profile";
+import { hasBankDetails } from "@/lib/profile-readiness";
 
 const CURRENCY_ITEMS = [
   { value: "GBP", label: "GBP (£)" },
@@ -54,13 +55,33 @@ const profileSchema = z.object({
   postalCode: z.string().min(1, "Postal code is required"),
   country: z.string().min(1, "Country is required"),
   dateOfBirth: z.string().optional(),
-  iban: z.string().min(1, "IBAN is required"),
-  swiftBic: z.string().min(1, "SWIFT/BIC is required"),
+  iban: z.string().optional(),
+  swiftBic: z.string().optional(),
   accountNumber: z.string().optional(),
   sortCode: z.string().optional(),
   bankAddress: z.string().optional(),
   currency: z.string().optional(),
-});
+})
+  // One whole pair, as invoices need (hasBankDetails). The message goes on
+  // the half-filled field, or on sort code when nothing is filled in.
+  .superRefine((values, ctx) => {
+    if (hasBankDetails(values)) return;
+    const half = (
+      [
+        ["sortCode", "accountNumber"],
+        ["accountNumber", "sortCode"],
+        ["iban", "swiftBic"],
+        ["swiftBic", "iban"],
+      ] as const
+    ).find(([filled, empty]) => values[filled]?.trim() && !values[empty]?.trim());
+    ctx.addIssue({
+      code: "custom",
+      path: [half ? half[1] : "sortCode"],
+      message: half
+        ? "Fill this in too: it goes with the one beside it."
+        : "Add a sort code and account number, or an IBAN and SWIFT/BIC.",
+    });
+  });
 
 type ProfileFormValues = z.infer<typeof profileSchema>;
 
@@ -200,7 +221,7 @@ export default function ProfilePage() {
               <CardTitle>Personal Information</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+              <div className="grid grid-cols-1 items-start gap-4 md:grid-cols-2">
                 <FormField
                   control={form.control}
                   name="firstName"
@@ -336,7 +357,7 @@ export default function ProfilePage() {
                 )}
               />
 
-              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+              <div className="grid grid-cols-1 items-start gap-4 md:grid-cols-2">
                 <FormField
                   control={form.control}
                   name="city"
@@ -366,7 +387,7 @@ export default function ProfilePage() {
                 />
               </div>
 
-              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+              <div className="grid grid-cols-1 items-start gap-4 md:grid-cols-2">
                 <FormField
                   control={form.control}
                   name="postalCode"
@@ -437,52 +458,61 @@ export default function ProfilePage() {
                 )}
               />
 
-              <FormField
-                control={form.control}
-                name="iban"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>IBAN *</FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder="GB29 NWBK 6016 1331 9268 19"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormDescription>
-                      International Bank Account Number
-                    </FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              {/* Either pair is enough: a UK client pays by sort code, one abroad by IBAN */}
+              <p className="text-muted-foreground text-sm">
+                Add a sort code and account number, an IBAN and SWIFT/BIC, or
+                both. Invoices show whichever you fill in.
+              </p>
 
-              <FormField
-                control={form.control}
-                name="swiftBic"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>SWIFT/BIC *</FormLabel>
-                    <FormControl>
-                      <Input placeholder="NWBKGB2L" {...field} />
-                    </FormControl>
-                    <FormDescription>Bank Identifier Code</FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+              {/* items-start on every row: an error line under one field
+                  would otherwise stretch its neighbour and push its input down */}
+              <div className="grid grid-cols-1 items-start gap-4 md:grid-cols-2">
+                <FormField
+                  control={form.control}
+                  name="sortCode"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Sort code</FormLabel>
+                      <FormControl>
+                        <Input placeholder="12-34-56" {...field} />
+                      </FormControl>
+                      <FormDescription>For UK payments</FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
                 <FormField
                   control={form.control}
                   name="accountNumber"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Account Number</FormLabel>
+                      <FormLabel>Account number</FormLabel>
                       <FormControl>
                         <Input placeholder="12345678" {...field} />
                       </FormControl>
-                      <FormDescription>Optional</FormDescription>
+                      <FormDescription>For UK payments</FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+              </div>
+
+
+              <div className="grid grid-cols-1 items-start gap-4 md:grid-cols-2">
+                <FormField
+                  control={form.control}
+                  name="iban"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>IBAN</FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder="GB29 NWBK 6016 1331 9268 19"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormDescription>For international payments</FormDescription>
                       <FormMessage />
                     </FormItem>
                   )}
@@ -490,14 +520,14 @@ export default function ProfilePage() {
 
                 <FormField
                   control={form.control}
-                  name="sortCode"
+                  name="swiftBic"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Sort Code</FormLabel>
+                      <FormLabel>SWIFT/BIC</FormLabel>
                       <FormControl>
-                        <Input placeholder="12-34-56" {...field} />
+                        <Input placeholder="NWBKGB2L" {...field} />
                       </FormControl>
-                      <FormDescription>Optional (UK)</FormDescription>
+                      <FormDescription>Goes with the IBAN</FormDescription>
                       <FormMessage />
                     </FormItem>
                   )}

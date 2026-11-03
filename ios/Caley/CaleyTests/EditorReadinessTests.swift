@@ -34,6 +34,13 @@ final class EditorReadinessTests: XCTestCase {
         }
     }
 
+    func testUKSortCodeAndAccountNumberWillDo() {
+        let uk = profile(["iban": nil, "swiftBic": nil, "sortCode": "12-34-56", "accountNumber": "12345678"])
+        XCTAssertEqual(uk.gaps, [])
+        // Half a pair is no use to a client paying it
+        XCTAssertEqual(profile(["iban": nil, "swiftBic": nil, "sortCode": "12-34-56"]).gaps, [.bank])
+    }
+
     func testBankDetailsNeedBothIBANAndSWIFT() {
         XCTAssertEqual(profile(["iban": nil]).gaps, [.bank])
         XCTAssertEqual(profile(["swiftBic": ""]).gaps, [.bank])
@@ -46,9 +53,9 @@ final class EditorReadinessTests: XCTestCase {
 
     func testTheGapsReadAsAShortList() {
         XCTAssertEqual(ProfileGap.describe([.address]), "your address")
-        XCTAssertEqual(ProfileGap.describe([.address, .bank]), "your address and your bank details (IBAN and SWIFT)")
+        XCTAssertEqual(ProfileGap.describe([.address, .bank]), "your address and your bank details (a sort code and account number, or an IBAN and SWIFT)")
         XCTAssertEqual(ProfileGap.describe([.name, .address, .bank]),
-                       "your name, your address and your bank details (IBAN and SWIFT)")
+                       "your name, your address and your bank details (a sort code and account number, or an IBAN and SWIFT)")
         XCTAssertEqual(ProfileGap.describe([]), "")
     }
 }

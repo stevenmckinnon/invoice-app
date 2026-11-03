@@ -303,8 +303,9 @@ export const buildInvoiceTools = ({
               client?.postalCode ?? clientPostalCode ?? undefined,
             clientCountry: client?.country ?? clientCountry ?? undefined,
             attentionTo: attentionTo ?? client?.attentionTo ?? undefined,
-            iban: user!.iban!,
-            swiftBic: user!.swiftBic!,
+            // Either bank pair may be empty: isProfileComplete checked one is whole
+            iban: user?.iban ?? "",
+            swiftBic: user?.swiftBic ?? "",
             accountNumber: user?.accountNumber ?? undefined,
             sortCode: user?.sortCode ?? undefined,
             bankAddress: user?.bankAddress ?? undefined,

@@ -477,6 +477,7 @@ export default function AllInvoicesPage() {
                             }
                             showName={invoice.showName}
                             fullName={invoice.fullName}
+                            status={invoice.status}
                           />
                         </TableCell>
                       </TableRow>

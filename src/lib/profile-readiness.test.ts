@@ -38,6 +38,14 @@ describe("profileGaps", () => {
     assert.deepEqual(profileGaps({ ...complete, swiftBic: "  " }), ["bank"]);
   });
 
+  it("takes a UK sort code and account number instead", () => {
+    const uk = { ...complete, iban: "", swiftBic: "", sortCode: "12-34-56", accountNumber: "12345678" };
+    assert.deepEqual(profileGaps(uk), []);
+    // Half a pair is no use to a client paying it
+    assert.deepEqual(profileGaps({ ...uk, accountNumber: " " }), ["bank"]);
+    assert.deepEqual(profileGaps({ ...uk, sortCode: null }), ["bank"]);
+  });
+
   it("takes a name from the full name, the account name or first and last", () => {
     assert.equal(profileName({ fullName: "A B" }), "A B");
     assert.equal(profileName({ name: "Account Name" }), "Account Name");
@@ -53,11 +61,11 @@ describe("describeGaps", () => {
     assert.equal(describeGaps(["address"]), "your address");
     assert.equal(
       describeGaps(["address", "bank"]),
-      "your address and your bank details (IBAN and SWIFT)",
+      "your address and your bank details (a sort code and account number, or an IBAN and SWIFT)",
     );
     assert.equal(
       describeGaps(["name", "address", "bank"]),
-      "your name, your address and your bank details (IBAN and SWIFT)",
+      "your name, your address and your bank details (a sort code and account number, or an IBAN and SWIFT)",
     );
     assert.equal(describeGaps([]), "");
   });
