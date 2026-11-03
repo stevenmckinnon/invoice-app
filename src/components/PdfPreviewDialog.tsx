@@ -3,6 +3,7 @@ import { useState } from "react";
 
 import { Download01Icon, FileAttachmentIcon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
+import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -22,6 +23,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Spinner } from "@/components/ui/spinner";
+import { useUpdateInvoiceStatus } from "@/hooks/use-invoices";
 
 type PdfTemplate = "caley" | "classic" | "modern" | "minimal";
 
@@ -44,6 +46,8 @@ interface PdfPreviewDialogProps {
   invoiceDate: Date;
   showName: string;
   fullName: string;
+  /** A draft that's downloaded is offered "mark as sent", as sharing one on iOS does */
+  status?: string;
 }
 
 export const PdfPreviewDialog = ({
@@ -55,17 +59,26 @@ export const PdfPreviewDialog = ({
   invoiceDate,
   showName,
   fullName,
+  status,
 }: PdfPreviewDialogProps) => {
   const [open, setOpen] = useState(false);
   // Remembers the last template picked. Read on open rather than at render,
   // so the server and first client render agree.
   const [template, setTemplate] = useState<PdfTemplate>("caley");
   const [pdfLoading, setPdfLoading] = useState(true);
+  // Set once a draft has been downloaded: the footer then asks whether it's
+  // going to the client, since a draft left behind never counts as owed
+  const [askSent, setAskSent] = useState(false);
+  const updateStatus = useUpdateInvoiceStatus();
 
   const downloadInvoicePdf = async () => {
     const response = await fetch(
       `/api/invoices/${invoiceId}/pdf?template=${template}`,
     );
+    if (!response.ok) {
+      toast.error("Couldn't download the PDF. Please try again.");
+      return;
+    }
     const blob = await response.blob();
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement("a");
@@ -79,7 +92,14 @@ export const PdfPreviewDialog = ({
     a.click();
     window.URL.revokeObjectURL(url);
     document.body.removeChild(a);
+    if (status === "draft") setAskSent(true);
   };
+
+  const markSent = () =>
+    updateStatus.mutate(
+      { id: invoiceId, status: "sent" },
+      { onSuccess: () => setOpen(false) },
+    );
 
   return (
     <Dialog
@@ -87,6 +107,7 @@ export const PdfPreviewDialog = ({
       onOpenChange={(next) => {
         setOpen(next);
         if (next) {
+          setAskSent(false);
           setPdfLoading(true);
           try {
             const saved = localStorage.getItem(TEMPLATE_KEY);
@@ -156,15 +177,35 @@ export const PdfPreviewDialog = ({
             onLoad={() => setPdfLoading(false)}
           />
         </div>
-        <DialogFooter>
-          <Button variant="outline" onClick={() => setOpen(false)}>
-            Cancel
-          </Button>
-          <Button onClick={downloadInvoicePdf}>
-            <HugeiconsIcon icon={Download01Icon} className="h-4 w-4" />
-            Download PDF
-          </Button>
-        </DialogFooter>
+        {askSent ? (
+          // Announced, and in place of the buttons that led here, so the
+          // question can't be missed and nothing changes without a yes
+          <DialogFooter className="items-center sm:justify-between">
+            <p role="status" className="text-sm">
+              Downloaded. Sending it to the client? Mark it as sent so it
+              counts as owed.
+            </p>
+            <div className="flex gap-2">
+              <Button variant="outline" onClick={() => setOpen(false)}>
+                Keep as draft
+              </Button>
+              <Button onClick={markSent} disabled={updateStatus.isPending}>
+                {updateStatus.isPending && <Spinner />}
+                Mark as sent
+              </Button>
+            </div>
+          </DialogFooter>
+        ) : (
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setOpen(false)}>
+              Cancel
+            </Button>
+            <Button onClick={downloadInvoicePdf}>
+              <HugeiconsIcon icon={Download01Icon} className="h-4 w-4" />
+              Download PDF
+            </Button>
+          </DialogFooter>
+        )}
       </DialogContent>
     </Dialog>
   );

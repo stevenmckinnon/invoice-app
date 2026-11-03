@@ -33,8 +33,12 @@ struct ProfileEditorView: View {
 
     private var problems: [String] {
         let required = [("first name", firstName), ("last name", lastName), ("address", addressLine1), ("city", city),
-                        ("postal code", postalCode), ("country", country), ("IBAN", iban), ("SWIFT / BIC", swiftBic)]
-        return required.filter { $0.1.trimmingCharacters(in: .whitespaces).isEmpty }.map { "Add your \($0.0)." }
+                        ("postal code", postalCode), ("country", country)]
+        var problems = required.filter { $0.1.trimmingCharacters(in: .whitespaces).isEmpty }.map { "Add your \($0.0)." }
+        if !Profile.hasBankDetails(iban: iban, swift: swiftBic, sortCode: sortCode, accountNumber: accountNumber) {
+            problems.append("Add a sort code and account number, or an IBAN and SWIFT / BIC.")
+        }
+        return problems
     }
 
     var body: some View {
@@ -89,13 +93,15 @@ struct ProfileEditorView: View {
                 }
             }
 
-            CardSection(title: "Bank details", footnote: "Printed on every invoice so you can be paid.") {
+            // Either pair is enough: a UK client pays by sort code, one abroad by IBAN
+            CardSection(title: "Bank details",
+                        footnote: "A sort code and account number, an IBAN and SWIFT / BIC, or both. Invoices show whichever you fill in.") {
+                AdaptiveRow {
+                    LabeledField(label: "Sort code", text: $sortCode, keyboard: .numbersAndPunctuation, monospaced: true)
+                    LabeledField(label: "Account number", text: $accountNumber, keyboard: .numbersAndPunctuation, monospaced: true)
+                }
                 LabeledField(label: "IBAN", text: $iban, keyboard: .asciiCapable, capitalization: .characters, monospaced: true)
                 LabeledField(label: "SWIFT / BIC", text: $swiftBic, keyboard: .asciiCapable, capitalization: .characters, monospaced: true)
-                AdaptiveRow {
-                    LabeledField(label: "Account number", text: $accountNumber, keyboard: .numbersAndPunctuation, monospaced: true)
-                    LabeledField(label: "Sort code", text: $sortCode, keyboard: .numbersAndPunctuation, monospaced: true)
-                }
                 LabeledField(label: "Bank address", text: $bankAddress)
             }
 

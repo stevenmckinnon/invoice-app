@@ -10,11 +10,11 @@ enum ProfileGap: CaseIterable {
         switch self {
         case .name: "your name"
         case .address: "your address"
-        case .bank: "your bank details (IBAN and SWIFT)"
+        case .bank: "your bank details (a sort code and account number, or an IBAN and SWIFT)"
         }
     }
 
-    /// "your address and your bank details (IBAN and SWIFT)"
+    /// "your address and your bank details (…)"
     static func describe(_ gaps: [ProfileGap]) -> String {
         let parts = gaps.map(\.phrase)
         guard parts.count > 1 else { return parts.first ?? "" }
@@ -30,7 +30,18 @@ extension Profile {
         if displayName.isEmpty { gaps.append(.name) }
         // The invoice carries the whole address, so any missing part counts
         if [addressLine1, city, postalCode, country].contains(where: blank) { gaps.append(.address) }
-        if [iban, swiftBic].contains(where: blank) { gaps.append(.bank) }
+        if !hasBankDetails { gaps.append(.bank) }
         return gaps
+    }
+
+    /// An IBAN with its SWIFT, or a UK sort code with its account number: either whole pair will do,
+    /// half of one won't. The web's `hasBankDetails`, and what the server enforces.
+    var hasBankDetails: Bool {
+        Self.hasBankDetails(iban: iban, swift: swiftBic, sortCode: sortCode, accountNumber: accountNumber)
+    }
+
+    static func hasBankDetails(iban: String?, swift: String?, sortCode: String?, accountNumber: String?) -> Bool {
+        func filled(_ value: String?) -> Bool { !(value ?? "").trimmingCharacters(in: .whitespaces).isEmpty }
+        return (filled(iban) && filled(swift)) || (filled(sortCode) && filled(accountNumber))
     }
 }

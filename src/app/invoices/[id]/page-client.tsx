@@ -278,6 +278,7 @@ export default function InvoiceDetailPage({ params }: Props) {
                 }
                 showName={invoice.showName}
                 fullName={invoice.fullName}
+                status={invoice.status}
               />
             )}
           </div>

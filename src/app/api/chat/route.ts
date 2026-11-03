@@ -199,7 +199,7 @@ export const POST = async (req: Request) => {
 - Name: ${user?.fullName ?? user?.name ?? "Unknown"}
 - Email: ${session.user.email}
 - Currency: ${currency} (${sym})
-- Profile complete for invoicing: ${profileComplete ? "Yes" : "No — missing required fields (IBAN, address, etc.). Direct the user to /profile to complete it."}
+- Profile complete for invoicing: ${profileComplete ? "Yes" : "No — missing required fields (bank details: a sort code and account number or an IBAN and SWIFT; or the address). Direct the user to /profile to complete it."}
 
 ## Saved Clients
 ${clientsList}

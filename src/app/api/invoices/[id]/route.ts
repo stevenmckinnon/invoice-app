@@ -25,6 +25,10 @@ import {
   duplicateInvoiceNumberMessage,
   isDuplicateInvoiceNumberError,
 } from "@/lib/invoice-number";
+import {
+  BANK_DETAILS_MESSAGE,
+  hasBankDetails,
+} from "@/lib/profile-readiness";
 import { parseDate } from "@/lib/utils";
 
 const customExpenseEntrySchema = z.object({
@@ -59,8 +63,9 @@ const invoiceUpdateSchema = z.object({
   clientCountry: z.string().optional(),
   attentionTo: z.string().optional(),
 
-  iban: z.string().min(1),
-  swiftBic: z.string().min(1),
+  // Either pair will do (hasBankDetails): a UK invoice needs no IBAN
+  iban: z.string().optional(),
+  swiftBic: z.string().optional(),
   accountNumber: z.string().optional(),
   sortCode: z.string().optional(),
   bankAddress: z.string().optional(),
@@ -106,6 +111,9 @@ export const PUT = async (req: NextRequest, context: RouteContext) => {
     const json = await req.json();
     const parsed = invoiceUpdateSchema.parse(json);
     invoiceNumber = parsed.invoiceNumber;
+    if (!hasBankDetails(parsed)) {
+      return NextResponse.json({ error: BANK_DETAILS_MESSAGE }, { status: 400 });
+    }
 
     const pdfInput = {
       ...parsed,
@@ -207,8 +215,8 @@ export const PUT = async (req: NextRequest, context: RouteContext) => {
           clientPostalCode: pdfInput.clientPostalCode,
           clientCountry: pdfInput.clientCountry,
           attentionTo: pdfInput.attentionTo,
-          iban: pdfInput.iban,
-          swiftBic: pdfInput.swiftBic,
+          iban: pdfInput.iban ?? "",
+          swiftBic: pdfInput.swiftBic ?? "",
           accountNumber: pdfInput.accountNumber,
           sortCode: pdfInput.sortCode,
           bankAddress: pdfInput.bankAddress,

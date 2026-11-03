@@ -227,8 +227,9 @@ export const InvoicePaper = ({
   const payment = [
     { label: "IBAN", value: invoice.iban },
     { label: "SWIFT / BIC", value: invoice.swiftBic },
-    { label: "Account no.", value: invoice.accountNumber },
+    // Sort code first, the way UK bank details are written
     { label: "Sort code", value: invoice.sortCode },
+    { label: "Account no.", value: invoice.accountNumber },
     { label: "Bank address", value: invoice.bankAddress },
   ].filter((field) => field.value);
 

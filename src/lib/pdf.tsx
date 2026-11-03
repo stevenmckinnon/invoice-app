@@ -66,6 +66,7 @@ export type InvoicePdfInput = {
   clientCountry?: string;
   attentionTo?: string;
 
+  /** Empty on a UK invoice paid by sort code and account number */
   iban: string;
   swiftBic: string;
   accountNumber?: string;
@@ -215,23 +216,31 @@ const generateModernInvoicePdf = async (
                 DETAILS
               </Text>
 
-              <Text
-                style={{ fontSize: 7, fontWeight: "bold", color: mutedTextColor, marginTop: 12 }}
-              >
-                IBAN
-              </Text>
-              <Text style={{ fontSize: 8, color: textColor, marginTop: 2 }}>
-                {input.iban}
-              </Text>
+              {input.iban && (
+                <>
+                  <Text
+                    style={{ fontSize: 7, fontWeight: "bold", color: mutedTextColor, marginTop: 12 }}
+                  >
+                    IBAN
+                  </Text>
+                  <Text style={{ fontSize: 8, color: textColor, marginTop: 2 }}>
+                    {input.iban}
+                  </Text>
+                </>
+              )}
 
-              <Text
-                style={{ fontSize: 7, fontWeight: "bold", color: mutedTextColor, marginTop: 8 }}
-              >
-                SWIFT/BIC
-              </Text>
-              <Text style={{ fontSize: 8, color: textColor, marginTop: 2 }}>
-                {input.swiftBic}
-              </Text>
+              {input.swiftBic && (
+                <>
+                  <Text
+                    style={{ fontSize: 7, fontWeight: "bold", color: mutedTextColor, marginTop: 8 }}
+                  >
+                    SWIFT/BIC
+                  </Text>
+                  <Text style={{ fontSize: 8, color: textColor, marginTop: 2 }}>
+                    {input.swiftBic}
+                  </Text>
+                </>
+              )}
 
               {input.accountNumber && (
                 <View style={{ marginTop: 8 }}>
@@ -858,12 +867,16 @@ const generateMinimalInvoicePdf = async (
               <Text style={{ fontSize: 9, fontWeight: "bold", color: textColor }}>
                 Payment Details
               </Text>
-              <Text style={{ fontSize: 8, color: textColor, marginTop: 8 }}>
-                {`IBAN: ${input.iban}`}
-              </Text>
-              <Text style={{ fontSize: 8, color: textColor, marginTop: 2 }}>
-                {`SWIFT/BIC: ${input.swiftBic}`}
-              </Text>
+              {input.iban && (
+                <Text style={{ fontSize: 8, color: textColor, marginTop: 8 }}>
+                  {`IBAN: ${input.iban}`}
+                </Text>
+              )}
+              {input.swiftBic && (
+                <Text style={{ fontSize: 8, color: textColor, marginTop: 2 }}>
+                  {`SWIFT/BIC: ${input.swiftBic}`}
+                </Text>
+              )}
               {input.accountNumber && (
                 <Text style={{ fontSize: 8, color: textColor, marginTop: 2 }}>
                   {`Account Number: ${input.accountNumber}`}
@@ -1258,12 +1271,16 @@ const generateClassicInvoicePdf = async (
             <Text style={{ fontSize: 10, fontWeight: "bold", color: accentColor }}>
               PAYMENT DETAILS
             </Text>
-            <Text style={{ fontSize: 9, color: textColor, marginTop: 6 }}>
-              IBAN: {input.iban}
-            </Text>
-            <Text style={{ fontSize: 9, color: textColor, marginTop: 2 }}>
-              SWIFT/BIC: {input.swiftBic}
-            </Text>
+            {input.iban && (
+              <Text style={{ fontSize: 9, color: textColor, marginTop: 6 }}>
+                IBAN: {input.iban}
+              </Text>
+            )}
+            {input.swiftBic && (
+              <Text style={{ fontSize: 9, color: textColor, marginTop: 2 }}>
+                SWIFT/BIC: {input.swiftBic}
+              </Text>
+            )}
             {input.accountNumber && (
               <Text style={{ fontSize: 9, color: textColor, marginTop: 2 }}>
                 Account Number: {input.accountNumber}

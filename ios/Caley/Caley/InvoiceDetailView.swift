@@ -337,10 +337,11 @@ struct InvoiceDetailView: View {
         section("Payment details") {
             VStack(spacing: 8) {
                 row("Account name", inv.fullName)
-                row("IBAN", inv.iban)
-                row("SWIFT / BIC", inv.swiftBic)
-                if let n = inv.accountNumber, !n.isEmpty { row("Account number", n) }
+                // Whichever pair the invoice carries: a UK one has no IBAN
                 if let s = inv.sortCode, !s.isEmpty { row("Sort code", s) }
+                if let n = inv.accountNumber, !n.isEmpty { row("Account number", n) }
+                if !inv.iban.isEmpty { row("IBAN", inv.iban) }
+                if !inv.swiftBic.isEmpty { row("SWIFT / BIC", inv.swiftBic) }
             }
         }
     }
