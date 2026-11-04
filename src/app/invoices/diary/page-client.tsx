@@ -58,27 +58,100 @@ const chipClass = (hold: Hold, clashes: boolean) =>
 export default function DiaryPage() {
   const { data: holds = [], isLoading } = useHolds();
   const release = useReleaseHold();
-  const [cursor, setCursor] = useState(() => {
-    const now = new Date();
-    return { year: now.getFullYear(), month: now.getMonth() };
-  });
+  const [picked, setPicked] = useState<{ year: number; month: number } | null>(null);
   const [dialog, setDialog] = useState<{ open: boolean; editing?: Hold }>({ open: false });
   const [releasing, setReleasing] = useState<Hold | null>(null);
 
+  const todayStr = today();
+  const clashes = clashesOf(holds);
+
+  // Everything that hasn't finished yet, across all months: clashes first,
+  // then by the first date. This is the page's answer to "what's coming up".
+  const upcoming = holds
+    .filter((h) => (h.dates.at(-1) ?? "") >= todayStr)
+    .sort(
+      (a, b) =>
+        Number(clashes.has(b.id)) - Number(clashes.has(a.id)) ||
+        (a.dates[0] ?? "").localeCompare(b.dates[0] ?? ""),
+    );
+
+  // Open on the month of the next date held, never on an empty grid; once
+  // you've paged, stay where you put it.
+  const nextDate =
+    holds
+      .flatMap((h) => h.dates)
+      .filter((d) => d >= todayStr)
+      .sort()[0] ?? todayStr;
+  const cursor = picked ?? { year: Number(nextDate.slice(0, 4)), month: Number(nextDate.slice(5, 7)) - 1 };
+
   const thisMonth = `${cursor.year}-${String(cursor.month + 1).padStart(2, "0")}`;
   const grid = monthGrid(cursor.year, cursor.month);
-  const clashes = clashesOf(holds);
-  const inView = holds.filter((h) => h.dates.some((d) => grid.includes(d)));
-  const step = (delta: number) =>
-    setCursor(({ year, month }) => {
-      const m = month + delta;
-      return { year: year + Math.floor(m / 12), month: ((m % 12) + 12) % 12 };
-    });
-  const later = holds.filter((h) => isPencilled(h) && (h.dates.at(-1) ?? "") > grid.at(-1)!).length;
+  // Jobs already over that fall in the month on screen. The rest are above.
+  const earlier = holds.filter(
+    (h) => (h.dates.at(-1) ?? "") < todayStr && h.dates.some((d) => grid.includes(d)),
+  );
+  const step = (delta: number) => {
+    const m = cursor.month + delta;
+    setPicked({ year: cursor.year + Math.floor(m / 12), month: ((m % 12) + 12) % 12 });
+  };
 
   const releasingMoves = releasing
     ? holds.filter((h) => promotedByRelease(holds, releasing).includes(h.id))
     : [];
+
+  const renderRow = (hold: Hold) => {
+    const clashWith = clashes.get(hold.id);
+    return (
+      <div key={hold.id} className="flex flex-wrap items-center gap-x-4 gap-y-2 py-3 first:pt-0 last:pb-0">
+        <div className="min-w-0 flex-1">
+          <p className="truncate text-sm font-semibold">{hold.showName}</p>
+          <p className="text-muted-foreground text-xs">
+            {hold.client.name} · {holdRangeLabel(hold.dates)} · {hold.dates.length} day
+            {hold.dates.length === 1 ? "" : "s"}
+          </p>
+          {clashWith && (
+            <p className="text-warning mt-0.5 text-xs font-medium">
+              Clashes with {clashWith.map((h) => `${h.showName}${isPencilled(h) ? "" : " (confirmed)"}`).join(" and ")}
+            </p>
+          )}
+        </div>
+        {isPencilled(hold) ? (
+          <>
+            <span
+              className={cn(
+                "rounded-full px-2.5 py-0.5 text-xs font-medium",
+                clashWith ? "bg-warning/12 text-warning" : "bg-muted text-muted-foreground",
+              )}
+            >
+              {rankLabel(hold)} pencil
+            </span>
+            <div className="flex gap-2">
+              <Button variant="ghost" size="sm" onClick={() => setDialog({ open: true, editing: hold })}>
+                Edit
+              </Button>
+              <Button variant="outline" size="sm" onClick={() => setReleasing(hold)}>
+                Release
+              </Button>
+              {/* Opens the editor with the dates painted; saving it confirms the job */}
+              <Button size="sm" nativeButton={false} render={<Link href={`/invoices/new?hold=${hold.id}`}>Confirm</Link>} />
+            </div>
+          </>
+        ) : (
+          <Button
+            variant="outline"
+            size="sm"
+            nativeButton={false}
+            render={
+              <Link href={`/invoices/${hold.invoice?.id}`} transitionTypes={["forward"]}>
+                Open {hold.invoice?.invoiceNumber}
+                <HugeiconsIcon icon={ArrowRight01Icon} />
+              </Link>
+            }
+          />
+        )}
+      </div>
+    );
+  };
 
   return (
     <div className="mx-auto grid w-full max-w-6xl grid-cols-1 gap-6 p-6 py-10 md:pb-8">
@@ -93,6 +166,33 @@ export default function DiaryPage() {
         }
       />
       <InvoicesViewSwitch current="diary" />
+
+      <section aria-label="Coming up" className="grid gap-3">
+        <h2 className="text-sm font-semibold">Coming up</h2>
+        {isLoading ? (
+          <Skeleton className="h-20 w-full rounded-2xl" />
+        ) : upcoming.length === 0 ? (
+          <Card>
+            <CardContent>
+              <EmptyState
+                icon={Calendar03Icon}
+                title="Nothing coming up"
+                description="Pencil a job when you're asked to hold dates, and confirm it into an invoice once it's yours."
+                action={
+                  <Button variant="outline" onClick={() => setDialog({ open: true })}>
+                    <HugeiconsIcon icon={Add01Icon} />
+                    New pencil
+                  </Button>
+                }
+              />
+            </CardContent>
+          </Card>
+        ) : (
+          <Card>
+            <CardContent className="divide-border divide-y px-3 md:px-6">{upcoming.map(renderRow)}</CardContent>
+          </Card>
+        )}
+      </section>
 
       <Card>
         <CardContent className="px-3 md:px-6">
@@ -169,93 +269,14 @@ export default function DiaryPage() {
         </CardContent>
       </Card>
 
-      <section aria-label={`Jobs in ${monthName(cursor.year, cursor.month)}`}>
-        {isLoading ? (
-          <Skeleton className="h-20 w-full rounded-2xl" />
-        ) : inView.length === 0 ? (
+      {earlier.length > 0 && (
+        <section aria-label={`Earlier jobs in ${monthName(cursor.year, cursor.month)}`} className="grid gap-3">
+          <h2 className="text-sm font-semibold">Earlier in {monthName(cursor.year, cursor.month).split(" ")[0]}</h2>
           <Card>
-            <CardContent>
-              <EmptyState
-                icon={Calendar03Icon}
-                title={`Nothing pencilled in ${monthName(cursor.year, cursor.month).split(" ")[0]}`}
-                description={
-                  later > 0
-                    ? `${later} pencil${later === 1 ? "" : "s"} later on. Pencil a job here when you're asked to hold dates.`
-                    : "Pencil a job when you're asked to hold dates, and confirm it into an invoice once it's yours."
-                }
-                action={
-                  <Button variant="outline" onClick={() => setDialog({ open: true })}>
-                    <HugeiconsIcon icon={Add01Icon} />
-                    New pencil
-                  </Button>
-                }
-              />
-            </CardContent>
+            <CardContent className="divide-border divide-y px-3 md:px-6">{earlier.map(renderRow)}</CardContent>
           </Card>
-        ) : (
-          <Card>
-            <CardContent className="divide-border divide-y px-3 md:px-6">
-              {inView.map((hold) => {
-                const clashWith = clashes.get(hold.id);
-                return (
-                  <div key={hold.id} className="flex flex-wrap items-center gap-x-4 gap-y-2 py-3 first:pt-0 last:pb-0">
-                    <div className="min-w-0 flex-1">
-                      <p className="truncate text-sm font-semibold">{hold.showName}</p>
-                      <p className="text-muted-foreground text-xs">
-                        {hold.client.name} · {holdRangeLabel(hold.dates)} · {hold.dates.length} day
-                        {hold.dates.length === 1 ? "" : "s"}
-                      </p>
-                      {clashWith && (
-                        <p className="text-warning mt-0.5 text-xs font-medium">
-                          Clashes with {clashWith.map((h) => `${h.showName}${isPencilled(h) ? "" : " (confirmed)"}`).join(" and ")}
-                        </p>
-                      )}
-                    </div>
-                    {isPencilled(hold) ? (
-                      <>
-                        <span
-                          className={cn(
-                            "rounded-full px-2.5 py-0.5 text-xs font-medium",
-                            clashWith ? "bg-warning/12 text-warning" : "bg-muted text-muted-foreground",
-                          )}
-                        >
-                          {rankLabel(hold)} pencil
-                        </span>
-                        <div className="flex gap-2">
-                          <Button variant="ghost" size="sm" onClick={() => setDialog({ open: true, editing: hold })}>
-                            Edit
-                          </Button>
-                          <Button variant="outline" size="sm" onClick={() => setReleasing(hold)}>
-                            Release
-                          </Button>
-                          {/* Opens the editor with the dates painted; saving it confirms the job */}
-                          <Button
-                            size="sm"
-                            nativeButton={false}
-                            render={<Link href={`/invoices/new?hold=${hold.id}`}>Confirm</Link>}
-                          />
-                        </div>
-                      </>
-                    ) : (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        nativeButton={false}
-                        render={
-                          <Link href={`/invoices/${hold.invoice?.id}`} transitionTypes={["forward"]}>
-                            Open {hold.invoice?.invoiceNumber}
-                            <HugeiconsIcon icon={ArrowRight01Icon} />
-                          </Link>
-                        }
-                      />
-                    )}
-                  </div>
-                );
-              })}
-            </CardContent>
-          </Card>
-        )}
-      </section>
+        </section>
+      )}
 
       <PencilDialog
         open={dialog.open}
