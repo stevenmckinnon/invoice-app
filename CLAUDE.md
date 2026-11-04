@@ -213,6 +213,7 @@ A native SwiftUI client (iOS 17+, no third-party packages) over the same route h
 ### CI and production safeguards
 
 - **CI** (`.github/workflows/ci.yml`) runs lint, typecheck and the full test suite on every push to `main` and every PR, against a throwaway `postgres:17` service on the same port as `compose.yaml`, so the database-backed tests run rather than skip.
+- **Dependency vulnerabilities** (what Snyk and `pnpm audit` report): fix direct dependencies by upgrading them; for a vulnerable package pulled in by something else, add a patched version to `overrides` in `pnpm-workspace.yaml` (commented there), staying within the major its parent asks for where a patched one exists, and drop it once the parent catches up. pnpm holds back releases under a day old (`minimumReleaseAge`); don't add `minimumReleaseAgeExclude` entries to get round it, since `pnpm add` writes them on its own when you ask for a brand-new version. Run `pnpm audit` and a full `pnpm build` after any upgrade. One low finding, `deepmerge` under the shadcn CLI, has no fixed release yet.
 - **Rate limiting** — `/api/chat` allows 20 requests per 10 minutes and 200 per day per user (`CHAT_RATE_LIMITS` in the route). Counters live in the `RateLimit` table (`src/lib/rate-limit.ts`), one atomic upsert per window, so they hold across serverless instances. A 429 returns JSON that `ChatContent` shows as a plain notice instead of the error box.
 
 ### Environment Variables
