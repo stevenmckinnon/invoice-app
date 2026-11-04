@@ -19,6 +19,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useClients } from "@/hooks/use-clients";
+import type { Hold } from "@/hooks/use-holds";
 import {
   type InvoiceWithRelations,
   useCreateInvoice,
@@ -96,11 +97,14 @@ export const InvoiceEditorSkeleton = () => (
 export const InvoiceEditor = ({
   invoice,
   correcting,
+  fromHold,
 }: {
   /** The invoice being edited; omitted for a new one */
   invoice?: InvoiceWithRelations;
   /** The issued invoice a new one replaces: its job, days and rates carry over */
   correcting?: InvoiceWithRelations;
+  /** The pencil this invoice confirms: its client, job and dates (as work days) */
+  fromHold?: Hold;
 }) => {
   const router = useRouter();
   const createInvoice = useCreateInvoice();
@@ -110,9 +114,11 @@ export const InvoiceEditor = ({
   const source = invoice ?? correcting;
 
   const [clientId, setClientId] = useState<string | null>(
-    source?.clientId ?? null,
+    source?.clientId ?? fromHold?.client.id ?? null,
   );
-  const [showName, setShowName] = useState(source?.showName ?? "");
+  const [showName, setShowName] = useState(
+    source?.showName ?? fromHold?.showName ?? "",
+  );
   const [invoiceNumber, setInvoiceNumber] = useState(
     invoice?.invoiceNumber ?? "",
   );
@@ -135,8 +141,12 @@ export const InvoiceEditor = ({
           .join("\n\n")
       : (invoice?.notes ?? ""),
   );
+  // A confirmed pencil's dates start as work days, as Add from calendar paints
+  // them on iOS; travel, dark days and overtime are added from there
   const [painted, setPainted] = useState<Painted>(() =>
-    source ? fromStoredDays(source.days) : new Map(),
+    source
+      ? fromStoredDays(source.days)
+      : new Map(fromHold?.dates.map((date) => [date, { type: "work" as const }])),
   );
   const [expenses, setExpenses] = useState<EditableExpense[]>(() =>
     (source?.customExpenseEntries ?? []).map((e) => ({
@@ -389,6 +399,7 @@ export const InvoiceEditor = ({
       status: (invoice?.status ?? "draft") as
         "draft" | "sent" | "paid" | "overdue",
       correctsId: correcting?.id,
+      holdId: fromHold?.id,
       days: billable,
       customExpenseEntries: parsedExpenses.map((e, i) => ({
         // The schema wants an id; the server never stores it
@@ -423,11 +434,11 @@ export const InvoiceEditor = ({
         nativeButton={false}
         render={
           <Link
-            href={source ? `/invoices/${source.id}` : "/invoices"}
+            href={source ? `/invoices/${source.id}` : fromHold ? "/invoices/diary" : "/invoices"}
             transitionTypes={["back"]}
           >
             <HugeiconsIcon icon={ArrowLeft01Icon} />
-            {source ? source.showName : "Invoices"}
+            {source ? source.showName : fromHold ? "Diary" : "Invoices"}
           </Link>
         }
       />
@@ -449,6 +460,18 @@ export const InvoiceEditor = ({
           <AlertDescription>
             The new invoice starts as a draft. {correcting.invoiceNumber} stays
             on record but stops counting, and can&apos;t be un-voided.
+          </AlertDescription>
+        </Alert>
+      )}
+
+      {fromHold && (
+        <Alert className="mt-6">
+          <AlertTitle>Confirming {fromHold.showName}</AlertTitle>
+          <AlertDescription>
+            Its {fromHold.dates.length} pencilled date
+            {fromHold.dates.length === 1 ? " is" : "s are"} painted as work days.
+            Add any travel, dark days or overtime, then create the invoice to
+            confirm the job.
           </AlertDescription>
         </Alert>
       )}

@@ -6,6 +6,7 @@ struct InvoiceListView: View {
     @State private var search = ""
     @Environment(AppNavigation.self) private var navigation
     @State private var creating = false
+    @State private var showingDiary = false
     @State private var selection: String?
     @Environment(\.horizontalSizeClass) private var sizeClass
 
@@ -102,10 +103,21 @@ struct InvoiceListView: View {
         .sheet(isPresented: $creating) {
             InvoiceEditorView(editing: nil) { Task { await store.load(auth: auth) } }
         }
+        // Pencils live beside the invoices they become, not in a tab of their own
+        .sheet(isPresented: $showingDiary) { DiaryView() }
+        .task(id: navigation.pendingDiary) {
+            guard navigation.pendingDiary else { return }
+            navigation.pendingDiary = false
+            showingDiary = true
+        }
         .toolbar {
             ToolbarItem(placement: .topBarLeading) {
                 Button { creating = true } label: { Image(systemName: "plus") }
                     .accessibilityLabel("New invoice")
+            }
+            ToolbarItem(placement: .topBarTrailing) {
+                Button { showingDiary = true } label: { Image(systemName: "calendar") }
+                    .accessibilityLabel("Diary")
             }
             ToolbarItem(placement: .topBarTrailing) {
                 Menu {

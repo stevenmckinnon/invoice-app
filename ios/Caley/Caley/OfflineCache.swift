@@ -12,7 +12,7 @@ enum DiskCache {
     /// answer would hand out a number that is already taken. PDFs and the tax-year export are fetched
     /// on demand.
     static func isCacheable(_ path: String) -> Bool {
-        if path == "api/invoices" || path == "api/clients" || path == "api/profile" { return true }
+        if path == "api/invoices" || path == "api/clients" || path == "api/profile" || path == "api/holds" { return true }
         guard path.hasPrefix("api/invoices/") else { return false }
         let rest = path.dropFirst("api/invoices/".count)
         return !rest.isEmpty && !rest.contains("/") && rest != "next-number" && !rest.hasPrefix("export")

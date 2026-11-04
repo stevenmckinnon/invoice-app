@@ -10,12 +10,13 @@ export const metadata: Metadata = {
 export default async function Page({
   searchParams,
 }: {
-  searchParams: Promise<{ corrects?: string | string[] }>;
+  searchParams: Promise<{ corrects?: string | string[]; hold?: string | string[] }>;
 }) {
-  const { corrects } = await searchParams;
+  const { corrects, hold } = await searchParams;
   return (
     <NewInvoicePage
       corrects={typeof corrects === "string" ? corrects : undefined}
+      hold={typeof hold === "string" ? hold : undefined}
     />
   );
 }

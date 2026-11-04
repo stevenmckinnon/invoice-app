@@ -181,6 +181,25 @@ struct APIClient {
         let _: Ignored = try await send("api/invoices/\(id)", method: "PUT", body: payload)
     }
 
+    // MARK: Pencils
+
+    func holds() async throws -> [Hold] { try await send("api/holds") }
+
+    func createHold(_ payload: HoldPayload) async throws {
+        let _: Hold = try await send("api/holds", method: "POST", body: payload)
+    }
+
+    func updateHold(id: String, _ payload: HoldPayload) async throws {
+        let _: Hold = try await send("api/holds/\(id)", method: "PATCH", body: payload)
+    }
+
+    /// Releases a pencil; returns the ids of the 2nd pencils that moved up to 1st
+    func releaseHold(id: String) async throws -> [String] {
+        struct Released: Decodable { let promoted: [String] }
+        let released: Released = try await send("api/holds/\(id)", method: "DELETE")
+        return released.promoted
+    }
+
     // MARK: Assistant
 
     /// Sends the conversation and yields the response as it streams. The server keeps no history:

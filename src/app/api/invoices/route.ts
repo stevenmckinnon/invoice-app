@@ -73,6 +73,8 @@ const invoiceInputSchema = z.object({
   notes: z.string().optional(),
   // The issued invoice this one replaces; creating it voids the original
   correctsId: z.string().min(1).optional(),
+  // The pencil this invoice confirms; creating it links the two
+  holdId: z.string().min(1).optional(),
 });
 
 export const POST = async (req: NextRequest) => {
@@ -144,6 +146,22 @@ export const POST = async (req: NextRequest) => {
         {
           error: `This invoice has already been replaced by ${original.corrections[0].invoiceNumber}.`,
         },
+        { status: 409 },
+      );
+    }
+
+    const hold = parsed.holdId
+      ? await prisma.hold.findFirst({
+          where: { id: parsed.holdId, userId: session.user.id },
+          select: { id: true, invoiceId: true },
+        })
+      : null;
+    if (parsed.holdId && !hold) {
+      return NextResponse.json({ error: "Pencil not found" }, { status: 404 });
+    }
+    if (hold?.invoiceId) {
+      return NextResponse.json(
+        { error: "This pencil is already confirmed." },
         { status: 409 },
       );
     }
@@ -228,6 +246,12 @@ export const POST = async (req: NextRequest) => {
         await tx.invoice.update({
           where: { id: original.id },
           data: { status: "void" },
+        });
+      }
+      if (hold) {
+        await tx.hold.update({
+          where: { id: hold.id },
+          data: { invoiceId: invoice.id },
         });
       }
       return invoice;

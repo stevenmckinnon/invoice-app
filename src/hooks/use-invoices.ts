@@ -230,6 +230,8 @@ export type CreateInvoiceInput = {
   status?: "draft" | "sent" | "paid" | "overdue";
   notes?: string;
   correctsId?: string;
+  /** The pencil this invoice confirms */
+  holdId?: string;
 };
 
 export type UpdateInvoiceInput = CreateInvoiceInput;
@@ -263,6 +265,8 @@ export const useCreateInvoice = () => {
       return res.json();
     },
     onSuccess: (data) => {
+      // A confirmed pencil now links to it
+      queryClient.invalidateQueries({ queryKey: ["holds"] });
       // Invalidate and refetch invoices after successful creation
       queryClient.invalidateQueries({ queryKey: ["invoices"] });
       // Also invalidate the single invoice query if it exists

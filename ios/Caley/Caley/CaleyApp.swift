@@ -88,6 +88,7 @@ struct RootView: View {
                     navigation.invoicesPath = []
                     navigation.pendingInvoiceID = nil
                     navigation.pendingNewInvoice = false
+                    navigation.pendingDiary = false
                     lock.signedOut()
                     navigation.accountPath = []
                 }
