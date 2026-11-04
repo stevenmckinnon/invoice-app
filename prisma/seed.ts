@@ -442,6 +442,23 @@ const main = async () => {
     await prisma.invoice.create({ data: data as never });
   }
 
+  // Pencils for the Diary, a month or so ahead so they stay in the future:
+  // two that clash (a 1st and a 2nd sharing two dates) and one on its own
+  const ahead = (days: number) => {
+    const d = new Date();
+    d.setDate(d.getDate() + days);
+    return d.toISOString().slice(0, 10);
+  };
+  const run = (from: number, count: number) =>
+    Array.from({ length: count }, (_, i) => ahead(from + i));
+  await prisma.hold.createMany({
+    data: [
+      { userId: user.id, clientId: mallard.id, showName: "Riverside Sessions (Series 2)", dates: run(28, 3), rank: 1 },
+      { userId: user.id, clientId: wwe.id, showName: "Triplemania 35", dates: run(36, 4), rank: 1 },
+      { userId: user.id, clientId: wwe.id, showName: "Raw Glasgow", dates: run(38, 2), rank: 2 },
+    ],
+  });
+
   console.log(`Seeded ${SEED_EMAIL} / ${SEED_PASSWORD}`);
   console.log(
     `  3 clients (1 with tiered overtime), ${invoices.length} invoices across two tax years (1 built from days), ${formatCurrencyTotals(invoices)} billed`,

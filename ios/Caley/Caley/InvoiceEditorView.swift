@@ -15,8 +15,9 @@ struct InvoiceEditorView: View {
     let onSaved: () -> Void
 
     init(editing: InvoiceDetail?, copying: InvoiceDetail? = nil, correcting: InvoiceDetail? = nil,
-         onSaved: @escaping () -> Void) {
-        _model = State(initialValue: InvoiceEditorModel(editing: editing, copying: copying, correcting: correcting))
+         fromHold: Hold? = nil, onSaved: @escaping () -> Void) {
+        _model = State(initialValue: InvoiceEditorModel(editing: editing, copying: copying, correcting: correcting,
+                                                        fromHold: fromHold))
         self.onSaved = onSaved
     }
 
@@ -31,6 +32,18 @@ struct InvoiceEditorView: View {
                     VStack(spacing: 12) {
                         if let error = model.loadError {
                             Text(error).font(.footnote).foregroundStyle(.red).frame(maxWidth: .infinity, alignment: .leading)
+                        }
+                        if let hold = model.fromHold {
+                            // Said once at the top, as the web editor does
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text("Confirming \(hold.showName)").font(.subheadline.weight(.semibold))
+                                Text("Its \(hold.dates.count) pencilled date\(hold.dates.count == 1 ? " is" : "s are") painted as work days. Add any travel, dark days or overtime, then save to confirm the job.")
+                                    .font(.footnote).foregroundStyle(.secondary)
+                            }
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .padding(16)
+                            .background(Color.brand.opacity(0.1), in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+                            .accessibilityElement(children: .combine)
                         }
                         if !model.profileGapText.isEmpty { profileNotice }
                         if twoColumns {

@@ -18,6 +18,8 @@ final class AppNavigation {
     var invoiceFilter: InvoiceStatus?
     var pendingInvoiceID: String?
     var pendingNewInvoice = false
+    /// Set by `caley://diary`; the Invoices tab opens the Diary and clears it
+    var pendingDiary = false
     /// The compact Invoices stack, so a link can push an invoice onto it
     var invoicesPath: [String] = []
     /// What Account has pushed, so another screen can open Clients inside it
@@ -32,6 +34,7 @@ extension AppNavigation {
     /// - `caley://new`: the new invoice editor
     /// - `caley://clients`: Clients, inside Account
     /// - `caley://assistant`: the Assistant
+    /// - `caley://diary`: the Diary, over the Invoices tab
     /// A caley.app web link is read as the same thing first (`AppLink.route`). Anything else is ignored.
     func handle(_ url: URL) {
         guard let url = url.scheme == "caley" ? url : AppLink.route(from: url) else { return }
@@ -57,6 +60,9 @@ extension AppNavigation {
             tab = .account
         case "assistant":
             tab = .assistant
+        case "diary":
+            tab = .invoices
+            pendingDiary = true
         default:
             break
         }
@@ -83,6 +89,7 @@ enum AppLink {
             return URL(string: "caley://assistant")
         case "invoices":
             guard parts.count > 1 else { return URL(string: "caley://invoices") }
+            if parts[1] == "diary" { return URL(string: "caley://diary") }
             if parts[1] == "new" {
                 // Starting a correction stays on the web; the app corrects from the invoice
                 return query.contains { $0.name == "corrects" } ? nil : URL(string: "caley://new")

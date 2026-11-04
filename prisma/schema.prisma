@@ -43,6 +43,7 @@ model User {
   sessions      Session[]
   invoices      Invoice[]
   clients       Client[]
+  holds         Hold[]
   photo         UserPhoto?
 
   // OAuth server for MCP clients (see src/lib/auth.ts)
@@ -202,6 +203,8 @@ model Invoice {
   // The dated days of the job. Empty on count-based invoices made before
   // days existed; those keep their stored lines and are never converted.
   days               InvoiceDay[]
+  // The pencil it was confirmed from, if any
+  hold               Hold?
 
   @@unique([userId, invoiceNumber])
 }
@@ -312,7 +315,31 @@ model Client {
 
   // Relations
   invoices    Invoice[]
+  holds       Hold[]
 }
+/// A pencil: dates held for a job before it's confirmed. It never counts as
+/// money. Confirming it makes a draft invoice from its dates (the invoice is
+/// then the record); deleting that draft turns it back into a pencil.
+/// Releasing one deletes it. Rules: src/lib/holds.ts.
+model Hold {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  clientId  String
+  client    Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  showName  String
+  // Calendar dates, yyyy-mm-dd, sorted and unique
+  dates     String[]
+  // 1st or 2nd pencil: first refusal, or next in line behind someone else's
+  rank      Int      @default(1)
+  invoiceId String?  @unique
+  invoice   Invoice? @relation(fields: [invoiceId], references: [id], onDelete: SetNull)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+}
+
 
 // Fixed-window request counters, keyed by purpose and subject
 // (e.g. "chat:burst:<userId>"). Lives in Postgres so the count is shared

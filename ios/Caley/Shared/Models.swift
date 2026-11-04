@@ -306,6 +306,8 @@ struct InvoicePayload: Encodable {
     let customExpenseEntries: [Expense]
     /// The issued invoice this one replaces; creating it voids that one
     var correctsId: String? = nil
+    /// The pencil this invoice confirms; saving links the two
+    var holdId: String? = nil
 }
 
 
@@ -347,4 +349,30 @@ struct ProfilePayload: Encodable {
     let sortCode: String
     let bankAddress: String
     let currency: String
+}
+
+/// A pencil from `GET /api/holds`: dates held for a job before it's confirmed. Confirmed once it has
+/// an invoice; the rules are in `HoldRules` (the web's `src/lib/holds.ts`).
+struct Hold: Decodable, Identifiable, Hashable {
+    struct ClientRef: Decodable, Hashable { let id: String; let name: String }
+    struct InvoiceRef: Decodable, Hashable { let id: String; let invoiceNumber: String; let status: InvoiceStatus? }
+
+    let id: String
+    let showName: String
+    /// yyyy-mm-dd, sorted
+    let dates: [String]
+    /// 1st or 2nd pencil
+    let rank: Int
+    let invoiceId: String?
+    let client: ClientRef
+    let invoice: InvoiceRef?
+
+    var isPencilled: Bool { invoiceId == nil }
+}
+
+struct HoldPayload: Encodable {
+    let clientId: String
+    let showName: String
+    let dates: [String]
+    let rank: Int
 }

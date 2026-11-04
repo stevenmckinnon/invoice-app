@@ -107,6 +107,19 @@ UI: the invoice page shows the paper document plus the day strip (`src/component
 
 **The job summary adds up.** The legend on the invoice page lists work, travel, dark, overtime, per diems and expenses (the last two only when there are some) with a Total, all from `summaryTotals` (`invoice-summary.ts`), which a test holds equal to the stored total. A per diem row with days but no rate (a client paid a travel per diem only) is left out rather than shown as £0.00.
 
+### Pencils (the Diary)
+
+Crew are asked to **hold** dates for a job before it's confirmed: a 1st pencil is first refusal, a 2nd is next in line behind someone else's. `Hold` (`prisma/schema.prisma`) stores one: client, job, `dates` (yyyy-mm-dd, sorted and unique), `rank` (1 or 2) and `invoiceId`. The rules are pure, in `src/lib/holds.ts` (tested in `holds.test.ts`, ported to iOS as `HoldRules.swift` and held to the same cases by `HoldRulesTests`).
+
+- **Pencilled until confirmed.** A hold with no invoice is a pencil. Confirming one opens the editor at `/invoices/new?hold=<id>` with its client, job and dates painted as work days; creating that invoice (`POST /api/invoices` with `holdId`) links the two in the same transaction, and a hold can't be confirmed twice. The invoice is then the record: `PATCH /api/holds/[id]` refuses a confirmed hold. **Deleting that draft makes it a pencil again** (`onDelete: SetNull`).
+- **Clashes** (`clashesOf`): a pencil sharing a date with another hold, pencilled or confirmed, is amber, and says with whom. A confirmed job never clashes itself. Confirming one never releases the other on its own; the clash shows until you do.
+- **Releasing** is `DELETE /api/holds/[id]`, and it deletes the hold. **Releasing a 1st moves the 2nd pencils on its dates up to 1st** (`promotedByRelease`), in the same transaction, and the confirmation says who before you agree. Releasing a 2nd or a confirmed job moves nobody.
+- **Pencils never count as money**: not in dashboards, totals, widgets, the export or the assistant's figures.
+- **Web**: `/invoices/diary`, a List / Diary switch on the Invoices page (`InvoicesViewSwitch`: links, so each view has an address; no fifth nav item, which doesn't fit at 375px). The month calendar is a picture (`aria-hidden`); the list under it carries the same jobs in words and every action. The pencil form (`PencilDialog`) picks dates with `DatePickerGrid`: one Tab stop with the calendar keys from `day-keyboard.ts`, tap or drag, and a dot on dates another hold has.
+- **iOS**: the Invoices tab's calendar button opens `DiaryView` as a sheet (list by month, swipe to release, Confirm opens the editor started `fromHold`), and `PencilEditorView` uses the system's `MultiDatePicker`. `caley://diary` and caley.app's `/invoices/diary` open it. `api/holds` is cached offline like the invoice list.
+- **The seed** pencils three jobs four to six weeks ahead of today: two that clash (a 1st and a 2nd) and one on its own.
+- **Deploying**: the `holds` migration adds a table, so it's additive; migrate Neon before merging as usual.
+
 ### Issued invoices are records
 
 A draft is yours to change or delete. Once it leaves draft its billing is locked and it can't be deleted. The rules are in one pure module, `src/lib/invoice-lifecycle.ts`, tested in `src/app/api/invoices/lifecycle.test.ts`; the status menu on iOS mirrors them (`InvoiceStatus.choices`).

@@ -9,6 +9,7 @@ import { useRouter } from "next/navigation";
 import { EmptyState } from "@/components/EmptyState";
 import { ExportMenu } from "@/components/ExportMenu";
 import { InvoiceStatusBadge } from "@/components/InvoiceStatusBadge";
+import { InvoicesViewSwitch } from "@/components/InvoicesViewSwitch";
 import { PageHeader } from "@/components/PageHeader";
 import { PdfPreviewDialog } from "@/components/PdfPreviewDialog";
 import { Button } from "@/components/ui/button";
@@ -187,6 +188,7 @@ export default function AllInvoicesPage() {
           </div>
         }
       />
+      <InvoicesViewSwitch current="list" />
 
       {/* Invoices: one card, with the toolbar on top. The count and total
           sit beside the filters because they're what the filters change. */}

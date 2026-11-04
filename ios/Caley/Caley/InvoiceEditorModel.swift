@@ -19,6 +19,8 @@ final class InvoiceEditorModel {
     /// The invoice being edited; nil for a new one
     let editing: InvoiceDetail?
     let correcting: InvoiceDetail?
+    /// The pencil a new invoice confirms: its client, job and dates (as work days)
+    let fromHold: Hold?
     /// Currency of the invoice a new one was copied from, so a copy of a dollar invoice stays in dollars
     private let copiedCurrency: String?
 
@@ -54,13 +56,16 @@ final class InvoiceEditorModel {
     /// over, the days don't (they'd be the old job's dates) and the number is the next free one.
     /// `correcting` replaces an issued invoice: its days, date and rates carry over too, since it is
     /// the same job, and saving voids the original.
-    init(editing: InvoiceDetail?, copying: InvoiceDetail? = nil, correcting: InvoiceDetail? = nil) {
+    /// `fromHold` confirms a pencil: its client, job and dates carry over, the dates as work days (as Add
+    /// from calendar paints them), and saving links the pencil to the invoice.
+    init(editing: InvoiceDetail?, copying: InvoiceDetail? = nil, correcting: InvoiceDetail? = nil, fromHold: Hold? = nil) {
         let base = editing ?? correcting ?? copying
         self.editing = editing
         self.correcting = correcting
+        self.fromHold = base == nil ? fromHold : nil
         copiedCurrency = (correcting ?? copying)?.currencyCode
-        clientId = base?.clientId
-        showName = base?.showName ?? ""
+        clientId = base?.clientId ?? (base == nil ? fromHold?.client.id : nil)
+        showName = base?.showName ?? (base == nil ? fromHold?.showName : nil) ?? ""
         invoiceNumber = editing?.invoiceNumber ?? ""
         invoiceDate = (editing ?? correcting).map { DateOnly.localDate($0.invoiceDate) } ?? .now
         notes = correcting.map { original in
@@ -71,7 +76,9 @@ final class InvoiceEditorModel {
                 .compactMap { $0 }.filter { !$0.isEmpty }.joined(separator: "\n\n")
         } ?? base?.notes ?? ""
         attention = base?.attentionTo
-        painted = (editing ?? correcting).map { DayEditor.fromStored($0.days) } ?? [:]
+        painted = (editing ?? correcting).map { DayEditor.fromStored($0.days) }
+            ?? (base == nil ? fromHold.map { CalendarImport.filling([:], dates: $0.dates) } : nil)
+            ?? [:]
         expenses = (base?.customExpenseEntries ?? []).map {
             var draft = ExpenseDraft()
             draft.description = $0.description
@@ -297,6 +304,7 @@ final class InvoiceEditorModel {
                     id: "new-\(index)", description: e.description, quantity: e.quantity, unitPrice: e.unitPrice,
                     cost: (Double(e.quantity) * e.unitPrice * 100).rounded() / 100)
             },
-            correctsId: correcting?.id)
+            correctsId: correcting?.id,
+            holdId: fromHold?.id)
     }
 }
