@@ -40,17 +40,13 @@ struct DashboardView: View {
             }
             .readableScroll()
             .background(Color.canvas)
-            .navigationTitle(sizeClass == .regular ? "" : "Dashboard")
-            .toolbarTitleDisplayMode(sizeClass == .regular ? .inline : .large)
+            // The title is drawn in the content, beside the year picker (see `header`). A large title
+            // can't share its line: iOS puts toolbar items on the row above it. The title still names
+            // the screen for the back button of anything pushed from here.
+            .navigationTitle("Dashboard")
+            .toolbarTitleDisplayMode(.inline)
+            .toolbar(sizeClass == .regular ? .automatic : .hidden, for: .navigationBar)
             .navigationDestination(for: String.self) { InvoiceDetailView(id: $0) }
-            .toolbar {
-                // On a wide screen the year picker joins the header row below instead: a toolbar item
-                // isn't kept inside the content's width on every wide layout (a foldable's side tab bar)
-                if sizeClass != .regular {
-                    ToolbarItem(placement: .topBarTrailing) { yearMenu }
-                }
-
-            }
             .refreshable { await store.load(auth: auth) }
             // A `caley://new` link from the widget: it may arrive before this screen exists
             .task(id: navigation.pendingNewInvoice) {
@@ -119,23 +115,22 @@ struct DashboardView: View {
         }
     }
 
-    @ViewBuilder
-    private var content: some View {
-        let outstanding = inYear.filter { $0.status == .sent || $0.status == .overdue }
-        let overdue = inYear.filter { $0.status == .overdue }
-        VStack(spacing: 12) {
-            if sizeClass == .regular {
-                // The large title belongs to the navigation bar and can't share its line, so on a wide
-                // screen the title is drawn here, with a compact button beside it
-                HStack(alignment: .center) {
-                    Text("Dashboard")
-                        .font(.largeTitle.bold())
-                        .accessibilityAddTraits(.isHeader)
-                    Spacer(minLength: 12)
-                    yearMenu
-                        .padding(.horizontal, 16)
-                        .frame(minHeight: 44)
-                        .background(Color.card, in: Capsule())
+    /// The title and the year on one line, on every size; a wide screen has room for a compact New
+    /// invoice button there too. Stacks once text is too large for one line.
+    private var header: some View {
+        let title = Text("Dashboard")
+            .font(.largeTitle.bold())
+            .accessibilityAddTraits(.isHeader)
+        let year = yearMenu
+            .padding(.horizontal, 16)
+            .frame(minHeight: 44)
+            .background(Color.card, in: Capsule())
+        return ViewThatFits(in: .horizontal) {
+            HStack(alignment: .center) {
+                title
+                Spacer(minLength: 12)
+                year
+                if sizeClass == .regular {
                     Button(action: startInvoice) {
                         Label("New invoice", systemImage: "plus")
                             .font(.headline)
@@ -146,10 +141,23 @@ struct DashboardView: View {
                     }
                     .buttonStyle(PressableStyle())
                 }
-                .padding(.top, 4)
-            } else {
-                newInvoiceButton
             }
+            VStack(alignment: .leading, spacing: 8) {
+                title
+                year
+            }
+        }
+        .padding(.top, 4)
+    }
+
+    @ViewBuilder
+    private var content: some View {
+        let outstanding = inYear.filter { $0.status == .sent || $0.status == .overdue }
+        let overdue = inYear.filter { $0.status == .overdue }
+        VStack(spacing: 12) {
+            header
+            // A phone keeps the full-width button: creating is the most common thing to do here
+            if sizeClass != .regular { newInvoiceButton }
             if store.invoices.isEmpty {
                 EmptyState(title: "Nothing to show yet", message: "Create your first invoice and your totals show up here.", symbol: "chart.bar")
             } else {
