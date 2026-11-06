@@ -2,7 +2,13 @@
 
 import { useEffect, useState } from "react";
 
-import { Alert01Icon, Clock01Icon, Copy01Icon, Refresh01Icon, Tick01Icon } from "@hugeicons/core-free-icons";
+import {
+  Alert01Icon,
+  Clock01Icon,
+  Copy01Icon,
+  Refresh01Icon,
+  Tick01Icon,
+} from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { isTextUIPart, type ToolUIPart, type UIMessage } from "ai";
 
@@ -39,6 +45,7 @@ import {
   ToolOutput,
 } from "@/components/ai-elements/tool";
 import { Button } from "@/components/ui/button";
+import { MessageScrollerItem } from "@/components/ui/message-scroller";
 import { cn } from "@/lib/utils";
 
 const SUGGESTIONS = [
@@ -262,73 +269,83 @@ export const ChatContent = ({
           ) : (
             visibleMessages.map((message, messageIndex) =>
               message.role === "assistant" ? (
-                <AssistantRow key={message.id}>
-                  {message.parts.map((part, i) => {
-                    if (part.type === "text") {
-                      if (!part.text) return null;
-                      return (
-                        <MessageContent key={i}>
-                          <MessageResponse>{part.text}</MessageResponse>
-                        </MessageContent>
-                      );
-                    }
-                    if (part.type.startsWith("tool-")) {
-                      const toolPart = part as ToolUIPart;
-                      if (isInvoiceToolPart(toolPart)) {
+                <MessageScrollerItem key={message.id} messageId={message.id}>
+                  <AssistantRow>
+                    {message.parts.map((part, i) => {
+                      if (part.type === "text") {
+                        if (!part.text) return null;
                         return (
-                          <InvoiceToolProgress
-                            key={i}
-                            part={toolPart}
-                            live={
-                              isGenerating &&
-                              messageIndex === visibleMessages.length - 1
-                            }
-                            className={
-                              onCanvas
-                                ? "bg-card shadow-sm dark:border"
-                                : "bg-muted/50"
-                            }
-                          />
+                          <MessageContent key={i}>
+                            <MessageResponse>{part.text}</MessageResponse>
+                          </MessageContent>
                         );
                       }
-                      return (
-                        <Tool key={i}>
-                          <ToolHeader
-                            type={toolPart.type}
-                            state={toolPart.state}
-                          />
-                          <ToolContent>
-                            <ToolInput input={toolPart.input} />
-                            <ToolOutput
-                              output={toolPart.output}
-                              errorText={toolPart.errorText}
+                      if (part.type.startsWith("tool-")) {
+                        const toolPart = part as ToolUIPart;
+                        if (isInvoiceToolPart(toolPart)) {
+                          return (
+                            <InvoiceToolProgress
+                              key={i}
+                              part={toolPart}
+                              live={
+                                isGenerating &&
+                                messageIndex === visibleMessages.length - 1
+                              }
+                              className={
+                                onCanvas
+                                  ? "bg-card shadow-sm dark:border"
+                                  : "bg-muted/50"
+                              }
                             />
-                          </ToolContent>
-                        </Tool>
-                      );
-                    }
-                    return null;
-                  })}
-                  {/* Streaming text is incomplete and not worth copying, and
-                      retrying mid-stream would abandon output still arriving */}
-                  {!isGenerating && getMessageText(message) && (
-                    <AssistantActions
-                      text={getMessageText(message)}
-                      alwaysVisible={messageIndex === visibleMessages.length - 1}
-                      onRetry={
-                        messageIndex === visibleMessages.length - 1
-                          ? handleRetry
-                          : undefined
+                          );
+                        }
+                        return (
+                          <Tool key={i}>
+                            <ToolHeader
+                              type={toolPart.type}
+                              state={toolPart.state}
+                            />
+                            <ToolContent>
+                              <ToolInput input={toolPart.input} />
+                              <ToolOutput
+                                output={toolPart.output}
+                                errorText={toolPart.errorText}
+                              />
+                            </ToolContent>
+                          </Tool>
+                        );
                       }
-                    />
-                  )}
-                </AssistantRow>
+                      return null;
+                    })}
+                    {/* Streaming text is incomplete and not worth copying, and
+                      retrying mid-stream would abandon output still arriving */}
+                    {!isGenerating && getMessageText(message) && (
+                      <AssistantActions
+                        text={getMessageText(message)}
+                        alwaysVisible={
+                          messageIndex === visibleMessages.length - 1
+                        }
+                        onRetry={
+                          messageIndex === visibleMessages.length - 1
+                            ? handleRetry
+                            : undefined
+                        }
+                      />
+                    )}
+                  </AssistantRow>
+                </MessageScrollerItem>
               ) : (
-                <Message key={message.id} from="user">
-                  <MessageContent>
-                    <span>{getMessageText(message)}</span>
-                  </MessageContent>
-                </Message>
+                <MessageScrollerItem
+                  key={message.id}
+                  messageId={message.id}
+                  scrollAnchor
+                >
+                  <Message from="user">
+                    <MessageContent>
+                      <span>{getMessageText(message)}</span>
+                    </MessageContent>
+                  </Message>
+                </MessageScrollerItem>
               ),
             )
           )}
@@ -349,13 +366,19 @@ export const ChatContent = ({
               // Not a fault, so not red, and no retry button — retrying is
               // exactly what won't work until the window resets
               <div className="bg-muted/60 text-muted-foreground flex items-start gap-2 rounded-xl px-4 py-3 text-sm">
-                <HugeiconsIcon icon={Clock01Icon} className="mt-0.5 size-4 shrink-0" />
+                <HugeiconsIcon
+                  icon={Clock01Icon}
+                  className="mt-0.5 size-4 shrink-0"
+                />
                 <p className="min-w-0">{rateLimitMessage}</p>
               </div>
             ) : (
               <div className="bg-destructive/10 flex flex-col gap-2 rounded-xl px-4 py-3">
                 <div className="text-destructive flex items-start gap-2 text-sm">
-                  <HugeiconsIcon icon={Alert01Icon} className="mt-0.5 size-4 shrink-0" />
+                  <HugeiconsIcon
+                    icon={Alert01Icon}
+                    className="mt-0.5 size-4 shrink-0"
+                  />
                   <p className="min-w-0">
                     Something went wrong reaching the assistant. Your message
                     wasn&apos;t lost — try again.

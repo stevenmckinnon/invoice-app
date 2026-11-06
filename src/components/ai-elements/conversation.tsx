@@ -3,45 +3,46 @@
 import type { ComponentProps } from "react";
 import { useCallback } from "react";
 
-import { ArrowDown01Icon, Download01Icon } from "@hugeicons/core-free-icons";
+import { Download01Icon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
-import { AnimatePresence, motion } from "motion/react";
-import { StickToBottom, useStickToBottomContext } from "use-stick-to-bottom";
 
 import { Button } from "@/components/ui/button";
+import {
+  MessageScroller,
+  MessageScrollerButton,
+  MessageScrollerContent,
+  MessageScrollerProvider,
+  MessageScrollerViewport,
+} from "@/components/ui/message-scroller";
 import { cn } from "@/lib/utils";
 
 import type { UIMessage } from "ai";
 
-export type ConversationProps = ComponentProps<typeof StickToBottom>;
+export type ConversationProps = ComponentProps<typeof MessageScroller>;
 
 export const Conversation = ({ className, ...props }: ConversationProps) => (
-  <StickToBottom
-    className={cn(
-      // overscroll-contain stops touch scrolls from chaining to the page
-      // behind the drawer on iPad
-      "relative flex-1 overflow-y-hidden [&>div]:touch-pan-y [&>div]:overscroll-contain",
-      className,
-    )}
-    initial="smooth"
-    resize="smooth"
-    role="log"
-    {...props}
-  />
+  <MessageScrollerProvider autoScroll>
+    <MessageScroller
+      className={cn("flex-1", className)}
+      role="log"
+      {...props}
+    />
+  </MessageScrollerProvider>
 );
 
 export type ConversationContentProps = ComponentProps<
-  typeof StickToBottom.Content
+  typeof MessageScrollerContent
 >;
 
 export const ConversationContent = ({
   className,
   ...props
 }: ConversationContentProps) => (
-  <StickToBottom.Content
-    className={cn("flex flex-col gap-8 p-4", className)}
-    {...props}
-  />
+  // touch-pan-y: vertical touch scrolls only, so they don't chain to the page
+  // behind the drawer on iPad
+  <MessageScrollerViewport className="touch-pan-y">
+    <MessageScrollerContent className={cn("gap-8 p-4", className)} {...props} />
+  </MessageScrollerViewport>
 );
 
 export type ConversationEmptyStateProps = ComponentProps<"div"> & {
@@ -79,48 +80,22 @@ export const ConversationEmptyState = ({
   </div>
 );
 
-export type ConversationScrollButtonProps = ComponentProps<typeof Button>;
+export type ConversationScrollButtonProps = ComponentProps<
+  typeof MessageScrollerButton
+>;
 
 export const ConversationScrollButton = ({
   className,
   ...props
-}: ConversationScrollButtonProps) => {
-  const { isAtBottom, scrollToBottom } = useStickToBottomContext();
-
-  const handleScrollToBottom = useCallback(() => {
-    scrollToBottom();
-  }, [scrollToBottom]);
-
-  return (
-    // initial={false} so it never animates in on first paint; the exit is a
-    // shorter, softer fade than the enter.
-    <AnimatePresence initial={false}>
-      {!isAtBottom && (
-        <motion.div
-          className="absolute bottom-4 left-[50%] z-10"
-          initial={{ opacity: 0, y: 4, x: "-50%" }}
-          animate={{ opacity: 1, y: 0, x: "-50%" }}
-          exit={{ opacity: 0, y: 4, x: "-50%" }}
-          transition={{ type: "spring", duration: 0.3, bounce: 0 }}
-        >
-          <Button
-            className={cn(
-              "dark:bg-background dark:hover:bg-muted rounded-full shadow-sm",
-              className,
-            )}
-            onClick={handleScrollToBottom}
-            size="icon"
-            type="button"
-            variant="outline"
-            {...props}
-          >
-            <HugeiconsIcon icon={ArrowDown01Icon} className="size-4" />
-          </Button>
-        </motion.div>
-      )}
-    </AnimatePresence>
-  );
-};
+}: ConversationScrollButtonProps) => (
+  <MessageScrollerButton
+    className={cn(
+      "dark:bg-background dark:hover:bg-muted rounded-full shadow-sm",
+      className,
+    )}
+    {...props}
+  />
+);
 
 const getMessageText = (message: UIMessage): string =>
   message.parts
