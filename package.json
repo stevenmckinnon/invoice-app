@@ -36,7 +36,6 @@
     "@prisma/adapter-pg": "^7.10.0",
     "@prisma/client": "^7.10.0",
     "@prisma/extension-accelerate": "^3.0.1",
-    "@react-pdf/renderer": "^4.9.0",
     "@rive-app/react-webgl2": "^4.33.0",
     "@sentry/nextjs": "11.10.0",
     "@shadcn/react": "^0.3.1",
