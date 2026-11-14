@@ -86,7 +86,7 @@ export const EditableText = ({
         setEditing(true);
       }}
       className={cn(
-        "hover:bg-muted/60 -mx-1 rounded px-1 text-left transition-colors",
+        "hover:bg-muted/60 -mx-1 -my-0.5 rounded px-1 py-0.5 text-left transition-colors",
         "decoration-muted-foreground/50 underline decoration-dotted underline-offset-4",
         "focus-visible:ring-ring focus-visible:ring-2 focus-visible:outline-none",
         !value && "text-muted-foreground",

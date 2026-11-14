@@ -5,12 +5,19 @@ import {
   isStepCount,
   streamText,
   toUIMessageStream,
+  tool,
   type UIMessage,
 } from "ai";
 import { headers } from "next/headers";
 
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
+import {
+  EDIT_OPEN_INVOICE_TOOL,
+  describeOpenEditor,
+  editorEditSchema,
+  parseEditorSnapshot,
+} from "@/lib/editor-edits";
 import { buildInvoiceTools, isProfileComplete } from "@/lib/invoice-tools";
 import { clientOvertimeRule } from "@/lib/overtime";
 import { checkRateLimit, type RateLimitWindow } from "@/lib/rate-limit";
@@ -51,7 +58,21 @@ export const POST = async (req: Request) => {
   }
 
   const body = await req.json();
-  const messages: UIMessage[] = body.messages ?? [];
+  // The invoice editor on screen, when the web chat is open beside it. Only
+  // then is the model offered the tool that works it.
+  const editor = parseEditorSnapshot(body.editor);
+  const sent: UIMessage[] = body.messages ?? [];
+  // Without an editor the tool isn't offered, so earlier calls to it (a chat
+  // reopened elsewhere, or on iOS) go too: each part holds both the call and
+  // its answer, so dropping it leaves no call unanswered
+  const messages = editor
+    ? sent
+    : sent.map((message) => ({
+        ...message,
+        parts: message.parts.filter(
+          (part) => part.type !== `tool-${EDIT_OPEN_INVOICE_TOOL}`,
+        ),
+      }));
   const userId = session.user.id;
 
   const [user, clients, invoices, totalsByStatus] = await Promise.all([
@@ -229,21 +250,32 @@ ${recentInvoices}
 - Per diems are added automatically from the days; never list them. Expenses and fixed fees (taxis, fuel, kit hire) go in expenses[].
 - Always pass clientId for a saved client, so their address and rates apply. For a client who isn't saved, pass clientName and the rates the user gives you; never guess a rate. If a saved client has no day rate, ask for it.
 - When correcting a draft, updateInvoiceDraft replaces days or expenses as a whole: send the full list, not only the change.
-- If a tool returns an error, read it and fix the call, or ask the user for what's missing. Don't retry the same arguments.`;
+- If a tool returns an error, read it and fix the call, or ask the user for what's missing. Don't retry the same arguments.${editor ? `\n\n${describeOpenEditor(editor)}` : ""}`;
 
   const result = streamText({
     model: anthropic("claude-haiku-4-5"),
     instructions: systemPrompt,
     messages: await convertToModelMessages(messages),
     stopWhen: isStepCount(5),
-    tools: buildInvoiceTools({
-      userId,
-      email: session.user.email,
-      user,
-      profileComplete,
-      currency,
-      sym,
-    }),
+    tools: {
+      ...buildInvoiceTools({
+        userId,
+        email: session.user.email,
+        user,
+        profileComplete,
+        currency,
+        sym,
+      }),
+      // No execute: the browser applies it to the editor and sends the result
+      // back, so nothing here touches the database
+      ...(editor && {
+        [EDIT_OPEN_INVOICE_TOOL]: tool({
+          description:
+            "Change the invoice in the editor the user has open: paint, repaint or clear dates, set overtime, and set the client, job name, invoice date, notes or extra expenses. Updates the screen in front of them; nothing is saved until they press the button.",
+          inputSchema: editorEditSchema,
+        }),
+      }),
+    },
   });
 
   return createUIMessageStreamResponse({

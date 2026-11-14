@@ -15,12 +15,14 @@ import { useQueryClient } from "@tanstack/react-query";
 import { DefaultChatTransport, type UIMessage } from "ai";
 import { toast } from "sonner";
 
+import { getOpenEditor } from "@/components/ai/editor-bridge";
 import {
   CHAT_CONVERSATIONS_KEY,
   deleteConversationRequest,
   loadConversation,
   saveConversation,
 } from "@/hooks/use-chat-conversations";
+import { EDIT_OPEN_INVOICE_TOOL, editorEditSchema } from "@/lib/editor-edits";
 
 const STORAGE_KEY = "caley-chat-session";
 
@@ -58,7 +60,45 @@ const useIsHydrated = () =>
     () => false,
   );
 
-const transport = new DefaultChatTransport({ api: "/api/chat" });
+// Each request says what the invoice editor shows, if one is open, so the
+// assistant can work it; the route offers the editor tool only then
+const transport = new DefaultChatTransport({
+  api: "/api/chat",
+  prepareSendMessagesRequest: ({ id, messages, body, trigger, messageId }) => ({
+    body: {
+      ...body,
+      id,
+      messages,
+      trigger,
+      messageId,
+      editor: getOpenEditor()?.snapshot(),
+    },
+  }),
+});
+
+const EDITOR_TOOL_PART = `tool-${EDIT_OPEN_INVOICE_TOOL}`;
+
+/**
+ * Carry on once the browser has answered the editor tool, so the model can
+ * say what changed. Only for that tool: a reply that ran out of steps on a
+ * server tool shouldn't send itself again.
+ */
+const editorCallAnswered = ({ messages }: { messages: UIMessage[] }) => {
+  const last = messages.at(-1);
+  if (last?.role !== "assistant") return false;
+  const stepStart = last.parts.findLastIndex((p) => p.type === "step-start");
+  const step = last.parts.slice(stepStart + 1);
+  const editorCalls = step.filter((p) => p.type === EDITOR_TOOL_PART);
+  return (
+    editorCalls.length > 0 &&
+    step.every(
+      (p) =>
+        !p.type.startsWith("tool-") ||
+        ("state" in p &&
+          (p.state === "output-available" || p.state === "output-error")),
+    )
+  );
+};
 
 /** Latest invoice id produced by a draft tool call, or null. */
 const findDraftInvoiceId = (messages: UIMessage[]): string | null => {
@@ -121,7 +161,49 @@ export const ChatProvider = ({ children }: { children: React.ReactNode }) => {
   const mounted = useIsHydrated();
   const [open, setOpen] = useState(false);
   const [historyOpen, setHistoryOpen] = useState(false);
-  const chat = useChat({ transport, throttle: 50 });
+  const chat = useChat({
+    transport,
+    throttle: 50,
+    // The editor tool runs here, not on the server: it changes the form on
+    // screen, and the person saves it themselves
+    onToolCall: ({ toolCall }) => {
+      if (toolCall.toolName !== EDIT_OPEN_INVOICE_TOOL) return;
+      const answer = (
+        result:
+          | { output: unknown }
+          | { errorText: string },
+      ) =>
+        void chat.addToolOutput(
+          "errorText" in result
+            ? {
+                tool: EDIT_OPEN_INVOICE_TOOL,
+                toolCallId: toolCall.toolCallId,
+                state: "output-error",
+                errorText: result.errorText,
+              }
+            : {
+                tool: EDIT_OPEN_INVOICE_TOOL,
+                toolCallId: toolCall.toolCallId,
+                output: result.output,
+              },
+        );
+      const editor = getOpenEditor();
+      if (!editor) {
+        answer({
+          errorText:
+            "The invoice editor isn't open any more, so nothing was changed.",
+        });
+        return;
+      }
+      const edit = editorEditSchema.safeParse(toolCall.input);
+      if (!edit.success) {
+        answer({ errorText: `Invalid edit: ${edit.error.message}` });
+        return;
+      }
+      answer({ output: editor.apply(edit.data) });
+    },
+    sendAutomaticallyWhen: editorCallAnswered,
+  });
   const { messages, setMessages, status, stop, clearError } = chat;
   const queryClient = useQueryClient();
   // Read once, before anything renders: the id is never drawn into the page,
