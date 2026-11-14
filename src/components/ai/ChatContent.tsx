@@ -14,6 +14,10 @@ import { isTextUIPart, type ToolUIPart, type UIMessage } from "ai";
 
 import { useChatSession } from "@/components/ai/ChatProvider";
 import {
+  EditorEditCard,
+  isEditorEditPart,
+} from "@/components/ai/EditorEditCard";
+import {
   InvoiceToolProgress,
   isInvoiceToolPart,
 } from "@/components/ai/InvoiceToolProgress";
@@ -282,6 +286,19 @@ export const ChatContent = ({
                       }
                       if (part.type.startsWith("tool-")) {
                         const toolPart = part as ToolUIPart;
+                        if (isEditorEditPart(toolPart)) {
+                          return (
+                            <EditorEditCard
+                              key={i}
+                              part={toolPart}
+                              className={
+                                onCanvas
+                                  ? "bg-card shadow-sm dark:border"
+                                  : "bg-muted/50"
+                              }
+                            />
+                          );
+                        }
                         if (isInvoiceToolPart(toolPart)) {
                           return (
                             <InvoiceToolProgress
@@ -415,6 +432,7 @@ export const ChatContent = ({
         >
           <PromptInputTextarea
             placeholder="Ask anything about your invoices…"
+            aria-label="Ask the assistant"
             // 16px at every breakpoint — below 16px iOS/iPadOS Safari zooms
             // the whole page when the input is focused
             className="font-sans text-base md:text-base"
