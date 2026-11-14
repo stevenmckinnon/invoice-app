@@ -14,6 +14,10 @@ import { isTextUIPart, type ToolUIPart, type UIMessage } from "ai";
 
 import { useChatSession } from "@/components/ai/ChatProvider";
 import {
+  EditorEditCard,
+  isEditorEditPart,
+} from "@/components/ai/EditorEditCard";
+import {
   InvoiceToolProgress,
   isInvoiceToolPart,
 } from "@/components/ai/InvoiceToolProgress";
@@ -282,6 +286,19 @@ export const ChatContent = ({
                       }
                       if (part.type.startsWith("tool-")) {
                         const toolPart = part as ToolUIPart;
+                        if (isEditorEditPart(toolPart)) {
+                          return (
+                            <EditorEditCard
+                              key={i}
+                              part={toolPart}
+                              className={
+                                onCanvas
+                                  ? "bg-card shadow-sm dark:border"
+                                  : "bg-muted/50"
+                              }
+                            />
+                          );
+                        }
                         if (isInvoiceToolPart(toolPart)) {
                           return (
                             <InvoiceToolProgress

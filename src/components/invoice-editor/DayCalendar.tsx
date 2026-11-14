@@ -65,6 +65,7 @@ export const DayCalendar = ({
   onSelect,
   total,
   initialMonth,
+  revealMonth,
 }: {
   painted: Painted;
   setPainted: React.Dispatch<React.SetStateAction<Painted>>;
@@ -76,11 +77,26 @@ export const DayCalendar = ({
   total: string;
   /** yyyy-mm-dd: which month to open on */
   initialMonth: string;
+  /** yyyy-mm-dd: a date changed from outside (the assistant); its month is
+   *  brought into view so the change is seen happening */
+  revealMonth?: string | null;
 }) => {
   const [cursor, setCursor] = useState(() => ({
     year: Number(initialMonth.slice(0, 4)),
     month: Number(initialMonth.slice(5, 7)) - 1,
   }));
+  // Adjusted while rendering rather than in an effect, so the month changes
+  // in the same frame the painted days do
+  const [revealed, setRevealed] = useState(revealMonth);
+  if (revealMonth !== revealed) {
+    setRevealed(revealMonth);
+    if (revealMonth) {
+      setCursor({
+        year: Number(revealMonth.slice(0, 4)),
+        month: Number(revealMonth.slice(5, 7)) - 1,
+      });
+    }
+  }
   const [brush, setBrush] = useState<Brush>("work");
   const brushRefs = useRef<Partial<Record<Brush, HTMLButtonElement | null>>>({});
   // The one day Tab lands on; arrow keys move it. Without this every day of

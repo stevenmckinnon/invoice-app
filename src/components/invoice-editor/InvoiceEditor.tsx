@@ -1,12 +1,13 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 
 import { ArrowLeft01Icon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
+import { registerOpenEditor } from "@/components/ai/editor-bridge";
 import { type Client, ClientSelector } from "@/components/ClientSelector";
 import { CreateClientDialog } from "@/components/CreateClientDialog";
 import {
@@ -34,6 +35,12 @@ import {
 } from "@/lib/billing";
 import { type Painted, fromStoredDays, toBillableDays } from "@/lib/day-editor";
 import { toStripDays } from "@/lib/day-strip";
+import {
+  type EditorFields,
+  type EditorSnapshot,
+  applyEditorEdits,
+  snapshotDays,
+} from "@/lib/editor-edits";
 import { summariseInvoice } from "@/lib/invoice-summary";
 import {
   describeGaps,
@@ -61,6 +68,13 @@ const RequiredMark = () => (
 );
 
 const today = () => new Date().toISOString().slice(0, 10);
+
+/** The form's working state: what the assistant can change, and the rest of
+ *  what the checks read */
+type Working = EditorFields & {
+  invoiceNumber: string;
+  expenses: EditableExpense[];
+};
 
 const ruleLine = (terms: InvoiceTerms, currency: string) => {
   const money = (n: number) => formatCurrency(n, currency);
@@ -177,47 +191,196 @@ export const InvoiceEditor = ({
     };
   }, [invoice]);
 
-  const client = clients.find((c) => c.id === clientId) ?? null;
-  const sameClient = source != null && clientId === source.clientId;
-
-  // An existing invoice keeps the terms it was priced under, and a correction
-  // takes the terms of the one it replaces; only a change of client re-prices
-  // it. The server applies the same rule.
-  const terms: InvoiceTerms | null =
-    sameClient && source?.terms
-      ? source.terms
-      : client
-        ? termsFromClient(client)
-        : null;
-
-  const currency = source?.currency ?? profile?.currency ?? "GBP";
-  const currencySymbol = formatCurrency(0, currency).replace(/[\d.,\s]/g, "");
-
-  const billable = useMemo(() => toBillableDays(painted), [painted]);
-  const stripDays = useMemo(() => toStripDays(billable), [billable]);
-  const parsedExpenses = expenses
-    .filter((e) => e.description.trim() || Number(e.unitPrice))
-    .map((e) => ({
-      description: e.description.trim() || "Expense",
-      quantity: e.quantity,
-      unitPrice: Number.parseFloat(e.unitPrice) || 0,
-    }));
-
-  // The same billing the server runs, so the preview is what gets stored
-  let bill: ReturnType<typeof billDays> | null = null;
-  let billingError: string | null = null;
-  if (terms) {
-    try {
-      bill = billDays({ days: billable, terms, expenses: parsedExpenses });
-    } catch (error) {
-      if (!(error instanceof BillingError)) throw error;
-      billingError = error.message;
-    }
-  }
 
   const youName = profileName(profile);
   // What a new invoice still needs from your profile, said up front
   const profileGap = !invoice && profile ? describeGaps(profileGaps(profile)) : "";
+  const profileProblem = profileGap ? `Add ${profileGap} to your profile.` : "";
+  const currency = source?.currency ?? profile?.currency ?? "GBP";
+  const currencySymbol = formatCurrency(0, currency).replace(/[\d.,\s]/g, "");
+
+  /**
+   * Everything the form works out from what's been entered: the terms, the
+   * bill and what still stands in the way. One function so the page and the
+   * snapshot the assistant reads can't disagree.
+   */
+  const evaluate = (state: Working) => {
+    const client = clients.find((c) => c.id === state.clientId) ?? null;
+    const sameClient = source != null && state.clientId === source.clientId;
+
+    // An existing invoice keeps the terms it was priced under, and a correction
+    // takes the terms of the one it replaces; only a change of client re-prices
+    // it. The server applies the same rule.
+    const terms: InvoiceTerms | null =
+      sameClient && source?.terms
+        ? source.terms
+        : client
+          ? termsFromClient(client)
+          : null;
+
+    const billable = toBillableDays(state.painted);
+    const parsedExpenses = state.expenses
+      .filter((e) => e.description.trim() || Number(e.unitPrice))
+      .map((e) => ({
+        description: e.description.trim() || "Expense",
+        quantity: e.quantity,
+        unitPrice: Number.parseFloat(e.unitPrice) || 0,
+      }));
+
+    // The same billing the server runs, so the preview is what gets stored
+    let bill: ReturnType<typeof billDays> | null = null;
+    let billingError: string | null = null;
+    if (terms) {
+      try {
+        bill = billDays({ days: billable, terms, expenses: parsedExpenses });
+      } catch (error) {
+        if (!(error instanceof BillingError)) throw error;
+        billingError = error.message;
+      }
+    }
+
+    // Each check, in the order a person would fix them. `short` is what's still
+    // to do, said before the first click; `message` is what the click answers
+    const checks = [
+      {
+        failed: !state.clientId,
+        message: "Pick a client: their rates price the invoice.",
+        short: "pick a client",
+      },
+      {
+        failed: Boolean(client && !terms),
+        message: "This client has no day rate yet.",
+        short: "give the client a day rate",
+      },
+      {
+        failed: !state.showName.trim(),
+        message: "Name the job.",
+        short: "name the job",
+      },
+      {
+        failed: !state.invoiceNumber.trim(),
+        message: "Give it an invoice number.",
+        short: "give it an invoice number",
+      },
+      {
+        failed: billable.length === 0 && parsedExpenses.length === 0,
+        message: "Paint at least one day.",
+        short: "paint a day",
+      },
+      {
+        failed: Boolean(billingError),
+        message: billingError ?? "",
+        short: "",
+      },
+      {
+        failed: Boolean(profileProblem),
+        message: profileProblem,
+        short: `add ${profileGap} to your profile`,
+      },
+    ].filter((c) => c.failed);
+
+    return {
+      client,
+      sameClient,
+      terms,
+      billable,
+      parsedExpenses,
+      bill,
+      billingError,
+      checks,
+    };
+  };
+
+  const working: Working = {
+    painted,
+    clientId,
+    showName,
+    invoiceDate,
+    notes,
+    invoiceNumber,
+    expenses,
+  };
+  const { client, sameClient, terms, billable, parsedExpenses, bill, checks } =
+    evaluate(working);
+  const stripDays = useMemo(
+    () => toStripDays(toBillableDays(painted)),
+    [painted],
+  );
+
+  /** What the assistant is told is on screen */
+  const snapshotOf = (state: Working): EditorSnapshot => {
+    const result = evaluate(state);
+    return {
+      mode: invoice ? "edit" : correcting ? "correction" : "new",
+      invoiceNumber: state.invoiceNumber,
+      clientId: state.clientId,
+      clientName: result.client?.name ?? null,
+      showName: state.showName,
+      invoiceDate: state.invoiceDate,
+      days: snapshotDays(result.billable),
+      expenses: result.parsedExpenses,
+      total: formatCurrency(result.bill?.totalAmount ?? 0, currency),
+      stillToDo: result.checks.map((c) => c.short || c.message),
+    };
+  };
+
+  // The assistant works this form while it's open. The bridge reads the
+  // latest state through a ref, and an edit moves the ref on at once, so two
+  // tool calls in a row build on each other rather than on the same render.
+  const latest = useRef({ working, snapshotOf, clients });
+  useLayoutEffect(() => {
+    latest.current = { working, snapshotOf, clients };
+  });
+  const [revealMonth, setRevealMonth] = useState<string | null>(null);
+  useEffect(
+    () =>
+      registerOpenEditor({
+        snapshot: () => latest.current.snapshotOf(latest.current.working),
+        apply: (edit) => {
+          const { working: before, snapshotOf: describe } = latest.current;
+          const result = applyEditorEdits(before, edit, latest.current.clients);
+          const next: Working = {
+            ...before,
+            ...result.fields,
+            expenses: [
+              ...before.expenses,
+              ...result.newExpenses.map((e) => ({
+                key: newExpenseKey(),
+                description: e.description,
+                quantity: e.quantity,
+                unitPrice: String(e.unitPrice),
+              })),
+            ],
+          };
+          latest.current = { ...latest.current, working: next };
+
+          setPainted(next.painted);
+          if (next.clientId !== before.clientId) {
+            setClientId(next.clientId);
+            setAttentionTo(undefined);
+          }
+          setShowName(next.showName);
+          setInvoiceDate(next.invoiceDate);
+          setNotes(next.notes);
+          setExpenses(next.expenses);
+          const firstChanged = edit.days
+            ?.map((d) => d.date)
+            .filter((date) => next.painted.has(date))
+            .sort()[0];
+          if (firstChanged) setRevealMonth(firstChanged);
+
+          const after = describe(next);
+          return {
+            applied: result.applied,
+            rejected: result.rejected,
+            total: after.total,
+            stillToDo: after.stillToDo,
+            saved: false,
+          };
+        },
+      }),
+    [],
+  );
 
   // Your details: a saved invoice keeps its own copy; a new one takes your
   // profile. The client's details likewise, unless the client changes.
@@ -304,42 +467,6 @@ export const InvoiceEditor = ({
   });
   const overtime = overtimeByDate(bill?.overtimeEntries ?? []);
 
-  // Each check, in the order a person would fix them. `short` is what's still
-  // to do, said before the first click; `message` is what the click answers
-  const profileProblem = profileGap ? `Add ${profileGap} to your profile.` : "";
-  const checks = [
-    {
-      failed: !clientId,
-      message: "Pick a client: their rates price the invoice.",
-      short: "pick a client",
-    },
-    {
-      failed: Boolean(client && !terms),
-      message: "This client has no day rate yet.",
-      short: "give the client a day rate",
-    },
-    { failed: !showName.trim(), message: "Name the job.", short: "name the job" },
-    {
-      failed: !invoiceNumber.trim(),
-      message: "Give it an invoice number.",
-      short: "give it an invoice number",
-    },
-    {
-      failed: billable.length === 0 && parsedExpenses.length === 0,
-      message: "Paint at least one day.",
-      short: "paint a day",
-    },
-    {
-      failed: Boolean(billingError),
-      message: billingError ?? "",
-      short: "",
-    },
-    {
-      failed: Boolean(profileProblem),
-      message: profileProblem,
-      short: `add ${profileGap} to your profile`,
-    },
-  ].filter((c) => c.failed);
   const problems = checks.map((c) => c.message);
   const stillToDo = checks.map((c) => c.short).filter(Boolean);
 
@@ -575,6 +702,7 @@ export const InvoiceEditor = ({
           onSelect={setSelected}
           total={total}
           initialMonth={initialMonth}
+          revealMonth={revealMonth}
         />
 
         {selected && (
