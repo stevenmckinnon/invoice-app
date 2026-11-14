@@ -432,6 +432,7 @@ export const ChatContent = ({
         >
           <PromptInputTextarea
             placeholder="Ask anything about your invoices…"
+            aria-label="Ask the assistant"
             // 16px at every breakpoint — below 16px iOS/iPadOS Safari zooms
             // the whole page when the input is focused
             className="font-sans text-base md:text-base"
