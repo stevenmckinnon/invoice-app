@@ -4,11 +4,21 @@ import * as React from "react";
 
 import { cn } from "@/lib/utils";
 
-function Table({ className, ...props }: React.ComponentProps<"table">) {
+/**
+ * `label` names the table for screen readers and makes its scroll box a
+ * keyboard stop, so a table wider than the screen can be scrolled with the
+ * arrow keys. Leave it off placeholder tables, like loading skeletons.
+ */
+function Table({
+  className,
+  label,
+  ...props
+}: React.ComponentProps<"table"> & { label?: string }) {
   return (
     <div
       data-slot="table-container"
-      className="relative w-full overflow-x-auto"
+      className="focus-visible:ring-ring relative w-full overflow-x-auto rounded-md focus-visible:ring-2 focus-visible:ring-inset focus-visible:outline-none"
+      {...(label && { role: "region", "aria-label": label, tabIndex: 0 })}
     >
       <table
         data-slot="table"

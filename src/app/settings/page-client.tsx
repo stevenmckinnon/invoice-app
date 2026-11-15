@@ -590,6 +590,7 @@ const SettingsPage = () => {
               <Input
                 id="current-password"
                 type="password"
+                autoComplete="current-password"
                 value={passwordData.currentPassword}
                 onChange={(e) =>
                   setPasswordData({
@@ -605,6 +606,7 @@ const SettingsPage = () => {
               <Input
                 id="new-password"
                 type="password"
+                autoComplete="new-password"
                 value={passwordData.newPassword}
                 onChange={(e) =>
                   setPasswordData({
@@ -623,6 +625,7 @@ const SettingsPage = () => {
               <Input
                 id="confirm-password"
                 type="password"
+                autoComplete="new-password"
                 value={passwordData.confirmPassword}
                 onChange={(e) =>
                   setPasswordData({
@@ -693,6 +696,7 @@ const SettingsPage = () => {
               <Input
                 id="delete-password"
                 type="password"
+                autoComplete="current-password"
                 value={deleteData.password}
                 onChange={(e) =>
                   setDeleteData({ ...deleteData, password: e.target.value })

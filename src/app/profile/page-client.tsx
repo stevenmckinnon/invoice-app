@@ -229,7 +229,7 @@ export default function ProfilePage() {
                     <FormItem>
                       <FormLabel>First Name *</FormLabel>
                       <FormControl>
-                        <Input placeholder="John" {...field} />
+                        <Input placeholder="John" autoComplete="given-name" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -243,7 +243,7 @@ export default function ProfilePage() {
                     <FormItem>
                       <FormLabel>Last Name *</FormLabel>
                       <FormControl>
-                        <Input placeholder="Doe" {...field} />
+                        <Input placeholder="Doe" autoComplete="family-name" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -336,7 +336,11 @@ export default function ProfilePage() {
                   <FormItem>
                     <FormLabel>Address Line 1 *</FormLabel>
                     <FormControl>
-                      <Input placeholder="123 Main Street" {...field} />
+                      <Input
+                        placeholder="123 Main Street"
+                        autoComplete="address-line1"
+                        {...field}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -350,7 +354,11 @@ export default function ProfilePage() {
                   <FormItem>
                     <FormLabel>Address Line 2</FormLabel>
                     <FormControl>
-                      <Input placeholder="Apt 4B" {...field} />
+                      <Input
+                        placeholder="Apt 4B"
+                        autoComplete="address-line2"
+                        {...field}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -365,7 +373,11 @@ export default function ProfilePage() {
                     <FormItem>
                       <FormLabel>City *</FormLabel>
                       <FormControl>
-                        <Input placeholder="London" {...field} />
+                        <Input
+                          placeholder="London"
+                          autoComplete="address-level2"
+                          {...field}
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -379,7 +391,11 @@ export default function ProfilePage() {
                     <FormItem>
                       <FormLabel>State/Province</FormLabel>
                       <FormControl>
-                        <Input placeholder="Optional" {...field} />
+                        <Input
+                          placeholder="Optional"
+                          autoComplete="address-level1"
+                          {...field}
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -395,7 +411,11 @@ export default function ProfilePage() {
                     <FormItem>
                       <FormLabel>Postal Code *</FormLabel>
                       <FormControl>
-                        <Input placeholder="SW1A 1AA" {...field} />
+                        <Input
+                          placeholder="SW1A 1AA"
+                          autoComplete="postal-code"
+                          {...field}
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
