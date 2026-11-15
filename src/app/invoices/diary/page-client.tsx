@@ -26,7 +26,7 @@ import { type Hold, useHolds, useReleaseHold } from "@/hooks/use-holds";
 import { monthGrid } from "@/lib/day-editor";
 import { dayOfMonth } from "@/lib/day-strip";
 import { clashesOf, holdRangeLabel, isPencilled, promotedByRelease } from "@/lib/holds";
-import { cn } from "@/lib/utils";
+import { cn, localDateString } from "@/lib/utils";
 
 const monthName = (year: number, month: number) =>
   new Date(Date.UTC(year, month, 1)).toLocaleDateString("en-GB", {
@@ -34,11 +34,6 @@ const monthName = (year: number, month: number) =>
     year: "numeric",
     timeZone: "UTC",
   });
-
-const today = () => {
-  const d = new Date();
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
-};
 
 const rankLabel = (hold: Hold) => (hold.rank === 1 ? "1st" : "2nd");
 
@@ -62,7 +57,7 @@ export default function DiaryPage() {
   const [dialog, setDialog] = useState<{ open: boolean; editing?: Hold }>({ open: false });
   const [releasing, setReleasing] = useState<Hold | null>(null);
 
-  const todayStr = today();
+  const todayStr = localDateString();
   const clashes = clashesOf(holds);
 
   // Everything that hasn't finished yet, across all months: clashes first,
@@ -243,7 +238,7 @@ export default function DiaryPage() {
                     className={cn(
                       "bg-muted/50 min-h-16 overflow-hidden rounded-lg p-1.5 sm:min-h-20 sm:p-2",
                       otherMonth && "opacity-50",
-                      date === today() && "ring-foreground/30 ring-1",
+                      date === localDateString() && "ring-foreground/30 ring-1",
                     )}
                   >
                     <span className="text-muted-foreground font-mono text-xs font-semibold tabular-nums">

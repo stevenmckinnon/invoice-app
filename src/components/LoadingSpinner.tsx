@@ -21,14 +21,29 @@ export const LoadingSpinner = ({
   };
 
   return (
+    // role="status" announces the text politely; with no text it still says
+    // "Loading". Reduced motion slows the spin rather than stopping it, so it
+    // still reads as busy.
     <div
+      role="status"
       className={cn(
         "flex flex-col items-center justify-center gap-4",
         className,
       )}
     >
-      <HugeiconsIcon icon={Loading02Icon} className={cn("text-primary animate-spin", sizeClasses[size])} />
-      {text && <p className="text-muted-foreground text-sm">{text}</p>}
+      <HugeiconsIcon
+        icon={Loading02Icon}
+        aria-hidden="true"
+        className={cn(
+          "text-primary animate-spin motion-reduce:animate-[spin_3s_linear_infinite]",
+          sizeClasses[size],
+        )}
+      />
+      {text ? (
+        <p className="text-muted-foreground text-sm">{text}</p>
+      ) : (
+        <span className="sr-only">Loading</span>
+      )}
     </div>
   );
 };
