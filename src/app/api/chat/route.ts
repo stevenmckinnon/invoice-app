@@ -3,6 +3,7 @@ import {
   convertToModelMessages,
   createUIMessageStreamResponse,
   isStepCount,
+  safeValidateUIMessages,
   streamText,
   toUIMessageStream,
   tool,
@@ -57,11 +58,22 @@ export const POST = async (req: Request) => {
     );
   }
 
-  const body = await req.json();
+  // The body comes from the browser or the iOS app, so check its shape before
+  // touching it: a malformed one answers 400 rather than crashing the route.
+  const body: unknown = await req.json().catch(() => null);
+  if (typeof body !== "object" || body === null) {
+    return Response.json({ error: "invalid_body" }, { status: 400 });
+  }
+  const validated = await safeValidateUIMessages({
+    messages: (body as { messages?: unknown }).messages,
+  });
+  if (!validated.success) {
+    return Response.json({ error: "invalid_messages" }, { status: 400 });
+  }
+  const sent: UIMessage[] = validated.data;
   // The invoice editor on screen, when the web chat is open beside it. Only
   // then is the model offered the tool that works it.
-  const editor = parseEditorSnapshot(body.editor);
-  const sent: UIMessage[] = body.messages ?? [];
+  const editor = parseEditorSnapshot((body as { editor?: unknown }).editor);
   // Without an editor the tool isn't offered, so earlier calls to it (a chat
   // reopened elsewhere, or on iOS) go too: each part holds both the call and
   // its answer, so dropping it leaves no call unanswered

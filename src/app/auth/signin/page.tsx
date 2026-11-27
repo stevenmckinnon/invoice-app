@@ -52,6 +52,15 @@ const SignInForm = () => {
         // Don't pass callbackURL - we'll handle redirect after animation
       });
 
+      if (result.error?.code === "EMAIL_NOT_VERIFIED") {
+        // better-auth has just sent a fresh link (sendOnSignIn)
+        toast.error("Confirm your email first", {
+          description: `We've sent a new link to ${formData.email}. Open it and you'll be signed in.`,
+        });
+        setIsLoading(false);
+        return;
+      }
+
       if (result.error) {
         toast.error("Sign in failed", {
           description:

@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
 
-import { Loading02Icon, SparklesIcon, Tick01Icon, ViewIcon, ViewOffIcon } from "@hugeicons/core-free-icons";
+import { Loading02Icon, Mail01Icon, SparklesIcon, Tick01Icon, ViewIcon, ViewOffIcon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { motion } from "motion/react";
 import Link from "next/link";
@@ -23,6 +23,8 @@ export default function SignUpPage() {
   });
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  // Set once the account exists but its email still needs confirming
+  const [sentTo, setSentTo] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -35,6 +37,10 @@ export default function SignUpPage() {
         email: formData.email,
         password: formData.password,
         name: fullName,
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        fullName,
+        // Where the verification link lands, signed in
         callbackURL: "/dashboard",
       });
 
@@ -59,22 +65,11 @@ export default function SignUpPage() {
         return;
       }
 
-      // After successful signup, update the user with firstName and lastName
-      if (result.data) {
-        try {
-          await fetch("/api/profile", {
-            method: "PUT",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              name: fullName,
-              firstName: formData.firstName,
-              lastName: formData.lastName,
-              fullName: fullName,
-            }),
-          });
-        } catch (error) {
-          console.error("Failed to update profile with names:", error);
-        }
+      // No session means the email has to be confirmed first (production)
+      if (!result.data?.token) {
+        setSentTo(formData.email);
+        setIsLoading(false);
+        return;
       }
 
       toast.success("Account created successfully!", {
@@ -152,114 +147,136 @@ export default function SignUpPage() {
             </p>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="firstName">First Name</Label>
-                <Input
-                  id="firstName"
-                  name="firstName"
-                  type="text"
-                  autoComplete="given-name"
-                  placeholder="John"
-                  value={formData.firstName}
-                  onChange={(e) =>
-                    setFormData({ ...formData, firstName: e.target.value })
-                  }
-                  required
-                  className="h-11"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="lastName">Last Name</Label>
-                <Input
-                  id="lastName"
-                  name="lastName"
-                  type="text"
-                  autoComplete="family-name"
-                  placeholder="Doe"
-                  value={formData.lastName}
-                  onChange={(e) =>
-                    setFormData({ ...formData, lastName: e.target.value })
-                  }
-                  required
-                  className="h-11"
-                />
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                name="email"
-                type="email"
-                autoComplete="email"
-                placeholder="name@example.com"
-                value={formData.email}
-                onChange={(e) =>
-                  setFormData({ ...formData, email: e.target.value })
-                }
-                required
-                className="h-11"
+          {sentTo ? (
+            <div
+              role="status"
+              className="bg-muted/50 space-y-3 rounded-xl border p-6 text-center"
+            >
+              <HugeiconsIcon
+                icon={Mail01Icon}
+                className="text-primary mx-auto h-8 w-8"
+                aria-hidden
               />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
-              <div className="relative">
-                <Input
-                  id="password"
-                  name="password"
-                  type={showPassword ? "text" : "password"}
-                  autoComplete="new-password"
-                  placeholder="••••••••"
-                  value={formData.password}
-                  onChange={(e) =>
-                    setFormData({ ...formData, password: e.target.value })
-                  }
-                  required
-                  minLength={6}
-                  className="h-11 pr-10"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword((prev) => !prev)}
-                  className="text-muted-foreground hover:text-foreground absolute inset-y-0 right-1 flex items-center rounded-sm px-2 transition-colors"
-                  aria-label={showPassword ? "Hide password" : "Show password"}
-                >
-                  {showPassword ? (
-                    <HugeiconsIcon icon={ViewOffIcon} className="h-4 w-4" />
-                  ) : (
-                    <HugeiconsIcon icon={ViewIcon} className="h-4 w-4" />
-                  )}
-                </button>
-              </div>
-              <p className="text-muted-foreground text-[0.8rem]">
-                Must be at least 6 characters long
+              <h2 className="text-lg font-semibold">Check your email</h2>
+              <p className="text-muted-foreground text-sm">
+                We sent a link to{" "}
+                <span className="text-foreground font-medium">{sentTo}</span>.
+                Open it to confirm your email and you&rsquo;ll be signed in.
+              </p>
+              <p className="text-muted-foreground text-sm">
+                Nothing there? Check spam, or sign in to get a new link.
               </p>
             </div>
+          ) : (
+            <form onSubmit={handleSubmit} className="space-y-6">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="firstName">First Name</Label>
+                  <Input
+                    id="firstName"
+                    name="firstName"
+                    type="text"
+                    autoComplete="given-name"
+                    placeholder="John"
+                    value={formData.firstName}
+                    onChange={(e) =>
+                      setFormData({ ...formData, firstName: e.target.value })
+                    }
+                    required
+                    className="h-11"
+                  />
+                </div>
 
-            <Button
-              type="submit"
-              className="h-11 w-full font-medium"
-              size="lg"
-              disabled={isLoading}
-            >
-              {isLoading ? (
-                <>
-                  <HugeiconsIcon icon={Loading02Icon} className="h-4 w-4 animate-spin" />
-                  Creating account...
-                </>
-              ) : (
-                <>
-                  Create Account
-                  <HugeiconsIcon icon={SparklesIcon} className="h-4 w-4" />
-                </>
-              )}
-            </Button>
-          </form>
+                <div className="space-y-2">
+                  <Label htmlFor="lastName">Last Name</Label>
+                  <Input
+                    id="lastName"
+                    name="lastName"
+                    type="text"
+                    autoComplete="family-name"
+                    placeholder="Doe"
+                    value={formData.lastName}
+                    onChange={(e) =>
+                      setFormData({ ...formData, lastName: e.target.value })
+                    }
+                    required
+                    className="h-11"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="email">Email</Label>
+                <Input
+                  id="email"
+                  name="email"
+                  type="email"
+                  autoComplete="email"
+                  placeholder="name@example.com"
+                  value={formData.email}
+                  onChange={(e) =>
+                    setFormData({ ...formData, email: e.target.value })
+                  }
+                  required
+                  className="h-11"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="password">Password</Label>
+                <div className="relative">
+                  <Input
+                    id="password"
+                    name="password"
+                    type={showPassword ? "text" : "password"}
+                    autoComplete="new-password"
+                    placeholder="••••••••"
+                    value={formData.password}
+                    onChange={(e) =>
+                      setFormData({ ...formData, password: e.target.value })
+                    }
+                    required
+                    minLength={6}
+                    className="h-11 pr-10"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword((prev) => !prev)}
+                    className="text-muted-foreground hover:text-foreground absolute inset-y-0 right-1 flex items-center rounded-sm px-2 transition-colors"
+                    aria-label={showPassword ? "Hide password" : "Show password"}
+                  >
+                    {showPassword ? (
+                      <HugeiconsIcon icon={ViewOffIcon} className="h-4 w-4" />
+                    ) : (
+                      <HugeiconsIcon icon={ViewIcon} className="h-4 w-4" />
+                    )}
+                  </button>
+                </div>
+                <p className="text-muted-foreground text-[0.8rem]">
+                  Must be at least 6 characters long
+                </p>
+              </div>
+
+              <Button
+                type="submit"
+                className="h-11 w-full font-medium"
+                size="lg"
+                disabled={isLoading}
+              >
+                {isLoading ? (
+                  <>
+                    <HugeiconsIcon icon={Loading02Icon} className="h-4 w-4 animate-spin" />
+                    Creating account...
+                  </>
+                ) : (
+                  <>
+                    Create Account
+                    <HugeiconsIcon icon={SparklesIcon} className="h-4 w-4" />
+                  </>
+                )}
+              </Button>
+            </form>
+          )}
 
           <div className="text-center text-sm">
             <span className="text-muted-foreground">
