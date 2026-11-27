@@ -4,15 +4,24 @@ import { fetchClientMetadataResource } from "@better-auth/cimd/node";
 import { mcp } from "@better-auth/mcp";
 import { betterAuth } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
+import { APIError, createAuthMiddleware } from "better-auth/api";
 import { bearer, jwt } from "better-auth/plugins";
 import { networkInterfaces } from "node:os";
 import { Resend } from "resend";
 
 import { prisma } from "@/lib/db";
+import { checkRateLimit } from "@/lib/rate-limit";
+import {
+  SIGNUP_RATE_LIMITS,
+  clientIp,
+  isDisposableEmail,
+} from "@/lib/signup-guard";
 
 import {
   getPasswordResetEmailHtml,
   getPasswordResetEmailText,
+  getVerifyEmailHtml,
+  getVerifyEmailText,
 } from "./email-templates";
 
 // Initialize Resend
@@ -65,13 +74,23 @@ export const MCP_SCOPES = [
   "invoices:write",
 ];
 
+/**
+ * A new account must confirm its email before it can sign in. Production
+ * only (or `REQUIRE_EMAIL_VERIFICATION=1` to try it locally): the seed and
+ * the App Store demo script sign up `.test` accounts and sign straight in.
+ * Accounts made before this was switched on were marked verified by hand.
+ */
+const requireEmailVerification =
+  process.env.NODE_ENV === "production" ||
+  process.env.REQUIRE_EMAIL_VERIFICATION === "1";
+
 export const auth = betterAuth({
   database: prismaAdapter(prisma, {
     provider: "postgresql",
   }),
   emailAndPassword: {
     enabled: true,
-    requireEmailVerification: false, // Set to true in production
+    requireEmailVerification,
     // A reset is how a user locks out whoever has their password
     revokeSessionsOnPasswordReset: true,
     sendResetPassword: async ({ user, url }) => {
@@ -129,6 +148,92 @@ export const auth = betterAuth({
         );
       }
     },
+  },
+  // Sign-up takes the names too: with verification on it opens no session,
+  // so they can't be saved by a profile update afterwards
+  user: {
+    additionalFields: {
+      firstName: { type: "string", required: false, input: true },
+      lastName: { type: "string", required: false, input: true },
+      fullName: { type: "string", required: false, input: true },
+    },
+  },
+  emailVerification: {
+    sendOnSignUp: requireEmailVerification,
+    // Signing in unverified sends a fresh link, so a lost or expired email
+    // is never a dead end
+    sendOnSignIn: true,
+    autoSignInAfterVerification: true,
+    sendVerificationEmail: async ({ user, url }) => {
+      if (process.env.NODE_ENV === "development") {
+        console.log("\n✉️ Email verification link:");
+        console.log(`User: ${user.email}`);
+        console.log(`URL: ${url}\n`);
+      }
+      // `.test` can't receive mail (the seed and demo accounts)
+      if (user.email.toLowerCase().endsWith(".test")) return;
+
+      if (!resend) {
+        if (process.env.NODE_ENV === "production") {
+          console.error(
+            "RESEND_API_KEY not configured. Verification email not sent.",
+          );
+          throw new Error("Verification email is not configured");
+        }
+        return;
+      }
+
+      const { error } = await resend.emails.send({
+        from: process.env.EMAIL_FROM || "onboarding@resend.dev",
+        to: user.email,
+        subject: "Confirm your email - Caley",
+        html: getVerifyEmailHtml({
+          verifyUrl: url,
+          userEmail: user.email,
+          logoUrl: `${baseURL}/email-logo.png`,
+        }),
+        text: getVerifyEmailText({ verifyUrl: url, userEmail: user.email }),
+      });
+      if (error) {
+        console.error("Failed to send verification email:", error);
+        throw new Error("Failed to send verification email");
+      }
+    },
+  },
+  hooks: {
+    // Sign-up is open to anyone, so refuse throwaway inboxes and cap how many
+    // accounts one IP can make (see signup-guard.ts)
+    before: createAuthMiddleware(async (ctx) => {
+      if (ctx.path !== "/sign-up/email") return;
+
+      const email = typeof ctx.body?.email === "string" ? ctx.body.email : "";
+      if (isDisposableEmail(email)) {
+        throw new APIError("BAD_REQUEST", {
+          code: "DISPOSABLE_EMAIL",
+          message:
+            "Please sign up with an email address you'll keep. Temporary inboxes can't be used.",
+        });
+      }
+
+      // Counted in Postgres, so it holds across serverless instances (the
+      // built-in limiter counts per instance). Off in development, where
+      // every request comes from the same machine.
+      if (process.env.NODE_ENV !== "production") return;
+      const ip = clientIp(ctx.headers);
+      if (!ip) return;
+      const limit = await checkRateLimit(`ip:${ip}`, SIGNUP_RATE_LIMITS);
+      if (!limit.ok) {
+        throw new APIError(
+          "TOO_MANY_REQUESTS",
+          {
+            code: "SIGNUP_RATE_LIMITED",
+            message:
+              "Too many accounts have been created from this connection. Please try again later.",
+          },
+          { "Retry-After": String(limit.retryAfterSeconds) },
+        );
+      }
+    }),
   },
   // The iOS app signs in with email + password, keeps the `set-auth-token`
   // response header in the Keychain and sends it back as a Bearer token. Web

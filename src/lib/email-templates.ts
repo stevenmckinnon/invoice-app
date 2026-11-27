@@ -2,17 +2,33 @@
  * Email templates for authentication-related emails
  */
 
-interface PasswordResetEmailProps {
-  resetUrl: string;
-  userEmail: string;
+/** An email address is user input, so it's escaped before going into HTML */
+const escapeHtml = (value: string): string =>
+  value
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+
+interface AuthEmailLayout {
+  title: string;
+  /** Paragraphs above the button; may contain inline HTML */
+  intro: string[];
+  buttonLabel: string;
+  url: string;
+  notice: string;
   logoUrl?: string;
 }
 
-export const getPasswordResetEmailHtml = ({
-  resetUrl,
-  userEmail,
+/** The shared layout of every account email: header, one button, the link, a notice */
+const renderAuthEmail = ({
+  title,
+  intro,
+  buttonLabel,
+  url,
+  notice,
   logoUrl,
-}: PasswordResetEmailProps): string => {
+}: AuthEmailLayout): string => {
   // Construct the full logo URL
   const baseUrl =
     logoUrl || process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
@@ -23,7 +39,7 @@ export const getPasswordResetEmailHtml = ({
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Reset Your Password</title>
+  <title>${title}</title>
   <!--[if mso]>
   <style type="text/css">
     body, table, td { font-family: Arial, Helvetica, sans-serif !important; }
@@ -59,13 +75,13 @@ export const getPasswordResetEmailHtml = ({
           <!-- Content -->
           <tr>
             <td style="padding: 40px 40px 32px;">
-              <h2 style="margin: 0 0 24px; font-size: 24px; font-weight: 700; color: #171717; letter-spacing: 0.025em;">Reset Your Password</h2>
-              <p style="margin: 0 0 16px; font-size: 16px; line-height: 1.6; color: #404040; letter-spacing: 0.025em;">
-                We received a request to reset the password for your account associated with <strong style="color: #171717;">${userEmail}</strong>.
-              </p>
-              <p style="margin: 0 0 32px; font-size: 16px; line-height: 1.6; color: #404040; letter-spacing: 0.025em;">
-                Click the button below to create a new password:
-              </p>
+              <h2 style="margin: 0 0 24px; font-size: 24px; font-weight: 700; color: #171717; letter-spacing: 0.025em;">${title}</h2>
+              ${intro
+                .map(
+                  (paragraph, i) =>
+                    `<p style="${i === intro.length - 1 ? "margin: 0 0 32px; font-size: 16px; line-height: 1.6; color: #404040; letter-spacing: 0.025em;" : "margin: 0 0 16px; font-size: 16px; line-height: 1.6; color: #404040; letter-spacing: 0.025em;"}">${paragraph}</p>`,
+                )
+                .join("\n              ")}
               
               <!-- Button -->
               <table role="presentation" style="margin: 0 0 32px; width: 100%;">
@@ -74,8 +90,8 @@ export const getPasswordResetEmailHtml = ({
                     <table role="presentation" style="border-collapse: separate;">
                       <tr>
                         <td style="border-radius: 18.8px; background: linear-gradient(135deg, #3467D3 0%, #2B5AA0 100%); box-shadow: 0 4px 12px rgba(52, 103, 211, 0.3);">
-                          <a href="${resetUrl}" target="_blank" style="display: inline-block; padding: 8px 12px; font-size: 16px; font-weight: 500; color: #ffffff; text-decoration: none; letter-spacing: 0.025em; border-radius: 8px;">
-                            Reset Password
+                          <a href="${url}" target="_blank" style="display: inline-block; padding: 8px 12px; font-size: 16px; font-weight: 500; color: #ffffff; text-decoration: none; letter-spacing: 0.025em; border-radius: 8px;">
+                            ${buttonLabel}
                           </a>
                         </td>
                       </tr>
@@ -95,7 +111,7 @@ export const getPasswordResetEmailHtml = ({
                 Or copy and paste this URL into your browser:
               </p>
               <p style="margin: 0 0 32px; font-size: 13px; line-height: 1.6; color: #3467D3; word-break: break-all; background-color: #f0f4ff; padding: 12px 16px; border-radius: 6px; border-left: 3px solid #3467D3; letter-spacing: 0.025em;">
-                ${resetUrl}
+                ${url}
               </p>
               
               <!-- Security Notice -->
@@ -106,7 +122,7 @@ export const getPasswordResetEmailHtml = ({
                       🔒 Security Notice
                     </p>
                     <p style="margin: 0; font-size: 13px; line-height: 1.6; color: #737373; letter-spacing: 0.025em;">
-                      This link will expire in <strong>1 hour</strong> for your security. If you didn't request this password reset, please ignore this email and your password will remain unchanged.
+                      ${notice}
                     </p>
                   </td>
                 </tr>
@@ -144,6 +160,78 @@ export const getPasswordResetEmailHtml = ({
 </html>
   `.trim();
 };
+
+interface PasswordResetEmailProps {
+  resetUrl: string;
+  userEmail: string;
+  logoUrl?: string;
+}
+
+export const getPasswordResetEmailHtml = ({
+  resetUrl,
+  userEmail,
+  logoUrl,
+}: PasswordResetEmailProps): string =>
+  renderAuthEmail({
+    title: "Reset Your Password",
+    intro: [
+      `We received a request to reset the password for your account associated with <strong style="color: #171717;">${escapeHtml(userEmail)}</strong>.`,
+      "Click the button below to create a new password:",
+    ],
+    buttonLabel: "Reset Password",
+    url: resetUrl,
+    notice:
+      "This link will expire in <strong>1 hour</strong> for your security. If you didn't request this password reset, please ignore this email and your password will remain unchanged.",
+    logoUrl,
+  });
+
+interface VerifyEmailProps {
+  verifyUrl: string;
+  userEmail: string;
+  logoUrl?: string;
+}
+
+export const getVerifyEmailHtml = ({
+  verifyUrl,
+  userEmail,
+  logoUrl,
+}: VerifyEmailProps): string =>
+  renderAuthEmail({
+    title: "Confirm Your Email",
+    intro: [
+      `Someone created a Caley account with <strong style="color: #171717;">${escapeHtml(userEmail)}</strong>.`,
+      "If it was you, confirm your email to start using it:",
+    ],
+    buttonLabel: "Confirm Email",
+    url: verifyUrl,
+    notice:
+      "This link will expire in <strong>1 hour</strong>. Signing in again sends a new one. If you didn't create this account, ignore this email: nothing is set up until the link is used.",
+    logoUrl,
+  });
+
+export const getVerifyEmailText = ({
+  verifyUrl,
+  userEmail,
+}: VerifyEmailProps): string =>
+  `
+CALEY
+=====
+
+CONFIRM YOUR EMAIL
+------------------
+
+Someone created a Caley account with ${userEmail}.
+
+If it was you, confirm your email to start using it:
+
+${verifyUrl}
+
+This link will expire in 1 hour. Signing in again sends a new one. If you didn't create this account, ignore this email: nothing is set up until the link is used.
+
+---
+
+© ${new Date().getFullYear()} Caley. All rights reserved.
+  `.trim();
 
 export const getPasswordResetEmailText = ({
   resetUrl,
