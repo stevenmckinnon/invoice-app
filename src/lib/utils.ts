@@ -78,6 +78,16 @@ export const formatCurrencyTotals = (
     .join(" + ");
 };
 
+/**
+ * A date as yyyy-mm-dd on the viewer's own calendar, today by default.
+ *
+ * Not `toISOString().slice(0, 10)`: that is the date in UTC, which during
+ * British Summer Time is still yesterday until 1am, so an invoice started
+ * just after midnight on 6 April would land in the previous tax year.
+ */
+export const localDateString = (date: Date = new Date()): string =>
+  `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+
 export const formatDate = (date: Date | string): string => {
   const d = typeof date === "string" ? new Date(date) : date;
   if (isNaN(d.getTime())) return "Invalid date";

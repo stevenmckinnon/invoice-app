@@ -29,6 +29,14 @@ const CHAT_RATE_LIMITS: RateLimitWindow[] = [
   { name: "chat:day", limit: 200, windowMs: 24 * 60 * 60 * 1000 },
 ];
 
+
+/** Today in the UK, as yyyy-mm-dd. The server runs on UTC, which during
+ *  British Summer Time is still yesterday until 1am. */
+const ukToday = () =>
+  new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/London" }).format(
+    new Date(),
+  );
+
 export const POST = async (req: Request) => {
   const session = await auth.api.getSession({ headers: await headers() });
   if (!session?.user?.id) {
@@ -254,7 +262,7 @@ ${recentInvoices}
 - For invoice creation, use the user's saved profile details automatically for their personal/banking info. Only ask for what's specific to this invoice: project name, date, client, and the work done.
 - If a client ID matches a saved client, use that client's saved details.
 - Invoices are built from the dates of the job. Call createInvoiceDraft once you have a project name, a client and the days. Don't wait for every detail — the user can edit it afterwards. Let them know the draft is saved and they can open it in the editor.
-- For revenue/stats questions, calculate from the data above. Today's date: ${new Date().toISOString().split("T")[0]}.
+- For revenue/stats questions, calculate from the data above. Today's date: ${ukToday()}.
 - When correcting an existing draft, use updateInvoiceDraft with the invoice ID.
 - Send one entry per date in days[]. Work out real dates from what the user says ("flew out Monday, worked Tuesday to Friday" is a travel day then four work days), using today's date for the year. A day off is simply left out.
 - Day types: work (a shoot or show day), travel, dark (a paid day with no work). When the user travelled and worked on the same day, it's a work day with alsoTravel "out" (flew in) or "home" (flew home after wrap); never add a separate travel day for it.

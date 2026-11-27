@@ -7,6 +7,7 @@ import { describe, it } from "node:test";
 
 import {
   formatCurrencyTotals,
+  localDateString,
   safeCallbackUrl,
   sumByCurrency,
 } from "@/lib/utils";
@@ -88,5 +89,18 @@ describe("formatCurrencyTotals", () => {
 
   it("shows zero in the fallback currency when empty", () => {
     assert.equal(formatCurrencyTotals([], "EUR"), "€0.00");
+  });
+});
+
+describe("localDateString", () => {
+  it("reads the local calendar, not UTC", () => {
+    // 00:30 on 6 April local time. In BST this is still 5 April in UTC,
+    // which put new invoices in the previous tax year.
+    assert.equal(localDateString(new Date(2026, 3, 6, 0, 30)), "2026-04-06");
+    assert.equal(localDateString(new Date(2026, 11, 31, 23, 59)), "2026-12-31");
+  });
+
+  it("pads single-digit months and days", () => {
+    assert.equal(localDateString(new Date(2027, 0, 5, 12)), "2027-01-05");
   });
 });

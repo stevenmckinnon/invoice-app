@@ -180,7 +180,7 @@ export default function ClientsPage() {
             <>
               {/* Desktop table — whole row opens the client */}
               <div className="hidden overflow-x-auto md:block">
-                <Table>
+                <Table label="Clients">
                   <TableHeader>
                     <TableRow>
                       <TableHead>Name</TableHead>

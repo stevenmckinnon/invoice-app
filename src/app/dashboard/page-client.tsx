@@ -730,7 +730,7 @@ export default function Home() {
               }
             />
           ) : (
-            <Table>
+            <Table label="Recent invoices">
               <TableHeader>
                 <TableRow>
                   <TableHead>Invoice #</TableHead>

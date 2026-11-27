@@ -47,7 +47,7 @@ import {
   profileGaps,
   profileName,
 } from "@/lib/profile-readiness";
-import { formatCurrency } from "@/lib/utils";
+import { formatCurrency, localDateString } from "@/lib/utils";
 
 import { DayCalendar } from "./DayCalendar";
 import { DayDetails } from "./DayDetails";
@@ -66,8 +66,6 @@ const RequiredMark = () => (
     <span className="sr-only">(required)</span>
   </>
 );
-
-const today = () => new Date().toISOString().slice(0, 10);
 
 /** The form's working state: what the assistant can change, and the rest of
  *  what the checks read */
@@ -138,7 +136,7 @@ export const InvoiceEditor = ({
   );
   const [invoiceDate, setInvoiceDate] = useState(
     // A correction keeps the original's date, so it stays in the same tax year
-    source ? String(source.invoiceDate).slice(0, 10) : today(),
+    source ? String(source.invoiceDate).slice(0, 10) : localDateString(),
   );
   // Undefined until edited on the paper: then it follows the client
   const [attentionTo, setAttentionTo] = useState<string | undefined>(

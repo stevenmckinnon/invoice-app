@@ -274,10 +274,13 @@
     }
   }
 
-  /* iOS-style smooth scrolling */
+  /* iOS-style smooth scrolling, unless the viewer asked for less motion */
   html {
     -webkit-overflow-scrolling: touch;
-    scroll-behavior: smooth;
+
+    @media (prefers-reduced-motion: no-preference) {
+      scroll-behavior: smooth;
+    }
   }
 
   /* iOS-style tap highlight */

@@ -386,7 +386,7 @@ export default function AllInvoicesPage() {
             <>
               {/* Desktop table — whole row navigates to the invoice */}
               <div className="hidden md:block">
-                <Table>
+                <Table label="Invoices">
                   <TableHeader>
                     <TableRow>
                       <TableHead className="w-10">
